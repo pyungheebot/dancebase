@@ -883,4 +883,24 @@ export const swrKeys = {
   // 복귀 온보딩 (localStorage 기반)
   returnOnboarding: (groupId: string) =>
     `return-onboarding-${groupId}` as const,
+
+  // 무대 조명 큐시트 (localStorage 기반)
+  lightingCue: (groupId: string, projectId: string) =>
+    `lighting-cue-${groupId}-${projectId}` as const,
+
+  // 그룹 공지 보드 (localStorage 기반)
+  groupAnnouncement: (groupId: string) =>
+    `group-announcement-${groupId}` as const,
+
+  // 멤버 목표 설정 (localStorage 기반)
+  memberGoal: (groupId: string) =>
+    `member-goal-${groupId}` as const,
+
+  // 연습 출결 예외 (localStorage 기반)
+  attendanceException: (groupId: string) =>
+    `attendance-exception-${groupId}` as const,
+
+  // 공연 리뷰 수집 (localStorage 기반)
+  showReview: (groupId: string, projectId: string) =>
+    `show-review-${groupId}-${projectId}` as const,
 };

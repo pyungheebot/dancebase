@@ -6589,3 +6589,134 @@ export type MemberOnboardingSession = {
   notes: string;
   createdAt: string;
 };
+
+// ================================================================
+// 멤버 목표 설정
+// ================================================================
+
+export type MemberGoalCategory =
+  | "technique"
+  | "flexibility"
+  | "stamina"
+  | "performance"
+  | "attendance"
+  | "leadership"
+  | "other";
+
+export type MemberGoalPriority = "high" | "medium" | "low";
+
+export type MemberGoalEntry = {
+  id: string;
+  memberName: string;
+  category: MemberGoalCategory;
+  title: string;
+  description: string;
+  priority: MemberGoalPriority;
+  targetDate: string;
+  progress: number; // 0~100
+  milestones: {
+    id: string;
+    title: string;
+    completed: boolean;
+  }[];
+  status: "active" | "completed" | "abandoned";
+  createdAt: string;
+};
+
+// ─── 그룹 공지 보드 ───────────────────────────────────────────
+export type AnnouncementPriority = "urgent" | "important" | "normal";
+
+export type GroupAnnouncementEntry = {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  priority: AnnouncementPriority;
+  pinned: boolean;
+  readBy: string[];
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ============================================
+// 무대 조명 큐시트
+// ============================================
+
+export type LightingCueAction =
+  | "on"
+  | "off"
+  | "fade_in"
+  | "fade_out"
+  | "color_change"
+  | "strobe"
+  | "spotlight"
+  | "blackout";
+
+export type LightingCueColor =
+  | "white"
+  | "red"
+  | "blue"
+  | "green"
+  | "yellow"
+  | "purple"
+  | "pink"
+  | "warm"
+  | "cool";
+
+export type LightingCueEntry = {
+  id: string;
+  cueNumber: number;
+  timestamp: string; // "MM:SS" 형식
+  action: LightingCueAction;
+  color?: LightingCueColor;
+  intensity: number; // 0~100
+  zone: string; // 예: "무대 전체" | "센터" | "좌측" | "우측"
+  notes?: string;
+  createdAt: string;
+};
+
+// ================================================================
+// 연습 출결 예외
+// ================================================================
+
+export type AttendanceExceptionType =
+  | "late"
+  | "early_leave"
+  | "excused"
+  | "sick"
+  | "personal"
+  | "emergency";
+
+export type AttendanceExceptionEntry = {
+  id: string;
+  memberName: string;
+  date: string;
+  type: AttendanceExceptionType;
+  reason: string;
+  duration?: number; // 분 단위 (지각/조퇴의 경우)
+  approvedBy?: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+};
+
+
+// ============================================
+// 공연 리뷰 수집
+// ============================================
+
+export type ShowReviewSource = "audience" | "member" | "judge" | "instructor";
+
+export type ShowReviewEntry = {
+  id: string;
+  reviewerName: string;
+  source: ShowReviewSource;
+  rating: number; // 1~5
+  choreographyRating: number; // 1~5
+  stagePresenceRating: number; // 1~5
+  teamworkRating: number; // 1~5
+  comment: string;
+  highlights: string[];
+  improvements: string[];
+  createdAt: string;
+};
