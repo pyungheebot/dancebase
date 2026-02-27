@@ -579,4 +579,24 @@ export const swrKeys = {
   // 프로젝트 마일스톤 트래커 (localStorage 기반)
   projectMilestones: (groupId: string, projectId: string) =>
     `/groups/${groupId}/projects/${projectId}/milestones` as const,
+
+  // 멤버 관여도 예측
+  memberEngagementForecast: (groupId: string) =>
+    `/groups/${groupId}/engagement-forecast` as const,
+
+  // 재정 개요 대시보드 (최근 6개월 집계)
+  financeOverviewMetrics: (groupId: string) =>
+    `/groups/${groupId}/finance-overview` as const,
+
+  // 멤버 짝 추천 (데이터 기반 호환성 매칭)
+  memberPairingSuggestion: (groupId: string) =>
+    `/groups/${groupId}/pairing-suggestions` as const,
+
+  // 개인 성장 포트폴리오 타임라인
+  personalGrowthTimeline: (groupId: string, userId: string) =>
+    `/groups/${groupId}/members/${userId}/growth-timeline` as const,
+
+  // 세션 피드백 생성기 (localStorage 기반)
+  sessionAutoFeedback: (groupId: string) =>
+    `/groups/${groupId}/session-feedback` as const,
 };

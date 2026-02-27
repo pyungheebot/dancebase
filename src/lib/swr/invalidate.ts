@@ -611,3 +611,23 @@ export function invalidateMemberAvailability(groupId: string, userId: string) {
 export function invalidateProjectMilestones(groupId: string, projectId: string) {
   mutate(swrKeys.projectMilestones(groupId, projectId));
 }
+
+export function invalidateMemberEngagementForecast(groupId: string) {
+  mutate(swrKeys.memberEngagementForecast(groupId));
+}
+
+export function invalidateFinanceOverviewMetrics(groupId: string) {
+  mutate(swrKeys.financeOverviewMetrics(groupId));
+}
+
+export function invalidateMemberPairingSuggestion(groupId: string) {
+  mutate(swrKeys.memberPairingSuggestion(groupId));
+}
+
+export function invalidatePersonalGrowthTimeline(groupId: string, userId: string) {
+  mutate(swrKeys.personalGrowthTimeline(groupId, userId));
+}
+
+export function invalidateSessionAutoFeedback(groupId: string) {
+  mutate(swrKeys.sessionAutoFeedback(groupId));
+}

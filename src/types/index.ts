@@ -4434,3 +4434,106 @@ export type ProjectMilestoneCard = {
   tasks: MilestoneTask[];
   createdAt: string;
 };
+
+// ============================================
+// Finance Overview Dashboard (재정 개요 대시보드)
+// ============================================
+
+export type MonthlyFinanceSummary = {
+  month: string;       // YYYY-MM
+  income: number;
+  expense: number;
+  net: number;
+};
+
+export type CategoryExpense = {
+  category: string;
+  amount: number;
+  percentage: number;  // 0-100
+};
+
+export type FinanceOverviewData = {
+  monthlySummaries: MonthlyFinanceSummary[];
+  categoryBreakdown: CategoryExpense[];
+  totalIncome: number;
+  totalExpense: number;
+  period: string;
+};
+
+// ============================================
+// Member Engagement Forecast (멤버 관여도 예측)
+// ============================================
+
+/** 멤버 관여도 수준 */
+export type MemberEngagementLevel = "high" | "medium" | "low" | "risk";
+
+/** 멤버 관여도 예측 데이터 */
+export type MemberEngagementForecast = {
+  userId: string;
+  displayName: string;
+  recentAttendanceRate: number;   // 최근 30일 출석률 (0-100)
+  previousAttendanceRate: number; // 31-60일 전 출석률 (0-100)
+  postCount: number;              // 최근 90일 게시글 수
+  commentCount: number;           // 최근 90일 댓글 수
+  engagementScore: number;        // 종합 관여도 점수 (0-100)
+  level: MemberEngagementLevel;   // 관여도 수준
+  trend: "improving" | "declining" | "stable"; // 추세
+};
+
+/** 멤버 관여도 예측 전체 결과 */
+export type MemberEngagementForecastResult = {
+  forecasts: MemberEngagementForecast[];
+  totalCount: number;
+  riskCount: number;     // 이탈 위험
+  lowCount: number;      // 저관여
+  mediumCount: number;   // 중관여
+  highCount: number;     // 고관여
+  generatedAt: string;
+};
+
+// ============================================
+// 멤버 짝 추천 (데이터 기반 호환성 매칭)
+// ============================================
+
+/** 멤버 짝 추천 결과 (출석 패턴 기반 호환성 점수) */
+export type MemberPairingSuggestion = {
+  member1: { userId: string; displayName: string; attendanceRate: number };
+  member2: { userId: string; displayName: string; attendanceRate: number };
+  compatibilityScore: number;  // 0-100
+  reason: string;              // 호환 이유
+};
+
+// ============================================
+// Personal Growth Portfolio (개인 성장 포트폴리오)
+// ============================================
+
+/** 성장 이벤트 유형 */
+export type GrowthEventType = "attendance_milestone" | "post" | "first_attendance" | "streak";
+
+/** 성장 타임라인 단일 이벤트 */
+export type GrowthTimelineEvent = {
+  id: string;
+  type: GrowthEventType;
+  title: string;
+  description: string;
+  date: string;
+  metadata?: Record<string, string | number>;
+};
+
+// ============================================
+// Session Auto Feedback (세션 피드백 생성기)
+// ============================================
+
+export type SessionAutoFeedback = {
+  id: string;
+  scheduleId: string;
+  scheduleName: string;
+  date: string;
+  presentCount: number;
+  absentCount: number;
+  lateCount: number;
+  attendanceRate: number;
+  autoSummary: string;     // 자동 생성된 요약
+  customNote: string;      // 리더 커스텀 메모
+  createdAt: string;
+};
