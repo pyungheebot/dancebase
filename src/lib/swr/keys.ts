@@ -256,6 +256,9 @@ export const swrKeys = {
   // 연습 곡/안무 트래커
   projectSongs: (projectId: string) => `project-songs-${projectId}` as const,
 
+  // 연습 메모
+  songNotes: (songId: string) => `song-notes-${songId}` as const,
+
   // 생일 달력
   birthdayCalendar: (groupId: string) =>
     `/groups/${groupId}/birthday-calendar` as const,
@@ -266,4 +269,11 @@ export const swrKeys = {
   // 영수증 공유 토큰
   receiptShareTokens: (transactionId: string) =>
     `/receipt-share-tokens/${transactionId}` as const,
+
+  // 일정 준비물 체크리스트
+  scheduleChecklist: (scheduleId: string) =>
+    `/schedules/${scheduleId}/checklist` as const,
+
+  // 게시글 읽음 현황
+  postReadStatus: (postId: string) => `post-read-status-${postId}` as const,
 };

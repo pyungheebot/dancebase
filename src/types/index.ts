@@ -553,6 +553,12 @@ export type PostBookmarkWithPost = PostBookmark & {
   };
 };
 
+export type PostReadStatus = {
+  post_id: string;
+  user_id: string;
+  read_at: string;
+};
+
 // ============================================
 // Activity Feed (최근 활동 피드)
 // ============================================
@@ -1119,6 +1125,66 @@ export type ProjectSong = {
   artist: string | null;
   status: 'not_started' | 'in_progress' | 'mastered';
   youtube_url: string | null;
+  sort_order: number;
+  created_by: string;
+  created_at: string;
+};
+
+// ============================================
+// Song Note (연습 메모)
+// ============================================
+
+export type SongNote = {
+  id: string;
+  song_id: string;
+  content: string;
+  created_by: string;
+  created_at: string;
+};
+
+// ============================================
+// Member Personal Goal (멤버 개인 목표, localStorage 기반)
+// ============================================
+
+export type MemberGoalType = "attendance" | "posts" | "payment";
+
+export type MemberGoal = {
+  id: string;
+  goalType: MemberGoalType;
+  targetValue: number;
+  yearMonth: string; // "YYYY-MM" 형식
+  createdAt: string;
+};
+
+export const MEMBER_GOAL_TYPE_LABELS: Record<MemberGoalType, string> = {
+  attendance: "출석 횟수",
+  posts: "게시글 수",
+  payment: "회비 납부",
+};
+
+// ============================================
+// Finance Goal (회비 목표, localStorage 기반)
+// ============================================
+
+export type FinanceGoal = {
+  id: string;
+  title: string;
+  targetAmount: number;
+  deadline: string | null; // "YYYY-MM-DD" 형식
+  isAchieved: boolean;
+  createdAt: string;
+};
+
+// ============================================
+// Schedule Checklist (일정 준비물 체크리스트)
+// ============================================
+
+export type ScheduleChecklistItem = {
+  id: string;
+  schedule_id: string;
+  title: string;
+  assignee_id: string | null;
+  is_done: boolean;
   sort_order: number;
   created_by: string;
   created_at: string;

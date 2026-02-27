@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { SongNoteSheet } from "@/components/projects/song-note-sheet";
 import {
   Music,
   Play,
@@ -20,6 +21,7 @@ import {
   ChevronRight,
   Loader2,
   Circle,
+  StickyNote,
 } from "lucide-react";
 
 interface SongTrackerSectionProps {
@@ -113,10 +115,11 @@ interface SongItemProps {
   song: ProjectSong;
   onCycleStatus: (song: ProjectSong) => void;
   onDelete: (songId: string) => void;
+  onOpenNotes: (song: ProjectSong) => void;
   canDelete: boolean;
 }
 
-function SongItem({ song, onCycleStatus, onDelete, canDelete }: SongItemProps) {
+function SongItem({ song, onCycleStatus, onDelete, onOpenNotes, canDelete }: SongItemProps) {
   const config = STATUS_CONFIG[song.status];
 
   return (
@@ -152,6 +155,17 @@ function SongItem({ song, onCycleStatus, onDelete, canDelete }: SongItemProps) {
 
       {/* 여백 */}
       <span className="flex-1" />
+
+      {/* 메모 버튼 */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+        onClick={() => onOpenNotes(song)}
+        title="연습 메모"
+      >
+        <StickyNote className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+      </Button>
 
       {/* YouTube 링크 */}
       {song.youtube_url && (
@@ -312,6 +326,9 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
   const [inProgressOpen, setInProgressOpen] = useState(true);
   const [masteredOpen, setMasteredOpen] = useState(false);
 
+  // 메모 Sheet 상태
+  const [noteSong, setNoteSong] = useState<ProjectSong | null>(null);
+
   const canManage =
     ctx.permissions.canEdit || ctx.permissions.canManageMembers;
 
@@ -319,131 +336,148 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
   if (!ctx.projectId) return null;
 
   return (
-    <Card className="mt-4">
-      <CardHeader className="px-3 py-2.5 flex flex-row items-center justify-between border-b">
-        <CardTitle className="text-xs font-semibold flex items-center gap-1.5">
-          <Music className="h-3.5 w-3.5 text-muted-foreground" />
-          곡/안무 트래커
-          {totalCount > 0 && (
-            <Badge
-              variant="secondary"
-              className="text-[10px] px-1.5 py-0 ml-1"
-            >
-              {masteredCount}/{totalCount}
-            </Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="px-3 py-3">
-        {/* 진행률 프로그레스 바 */}
-        {totalCount > 0 && (
-          <div className="mb-3 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-muted-foreground">완료율</span>
-              <span className="text-[10px] font-medium text-foreground">
-                {completionRate}%
-              </span>
-            </div>
-            <Progress value={completionRate} className="h-1.5" />
-          </div>
-        )}
-
-        {loading ? (
-          <div className="flex items-center justify-center py-6">
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          </div>
-        ) : totalCount === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-            <Music className="h-8 w-8 mb-2 opacity-30" />
-            <p className="text-xs">등록된 곡이 없습니다</p>
-            {canManage && (
-              <p className="text-[10px] mt-0.5">아래에서 첫 곡을 추가하세요</p>
+    <>
+      <Card className="mt-4">
+        <CardHeader className="px-3 py-2.5 flex flex-row items-center justify-between border-b">
+          <CardTitle className="text-xs font-semibold flex items-center gap-1.5">
+            <Music className="h-3.5 w-3.5 text-muted-foreground" />
+            곡/안무 트래커
+            {totalCount > 0 && (
+              <Badge
+                variant="secondary"
+                className="text-[10px] px-1.5 py-0 ml-1"
+              >
+                {masteredCount}/{totalCount}
+              </Badge>
             )}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {/* 미시작 섹션 */}
-            <div>
-              <SectionHeader
-                label="미시작"
-                count={notStartedSongs.length}
-                isOpen={notStartedOpen}
-                onToggle={() => setNotStartedOpen((v) => !v)}
-                badgeClass={STATUS_CONFIG.not_started.sectionBadgeClass}
-              />
-              {notStartedOpen && notStartedSongs.length > 0 && (
-                <div className="mt-0.5 ml-1">
-                  {notStartedSongs.map((song) => (
-                    <SongItem
-                      key={song.id}
-                      song={song}
-                      onCycleStatus={cycleSongStatus}
-                      onDelete={deleteSong}
-                      canDelete={canManage}
-                    />
-                  ))}
-                </div>
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="px-3 py-3">
+          {/* 진행률 프로그레스 바 */}
+          {totalCount > 0 && (
+            <div className="mb-3 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-muted-foreground">완료율</span>
+                <span className="text-[10px] font-medium text-foreground">
+                  {completionRate}%
+                </span>
+              </div>
+              <Progress value={completionRate} className="h-1.5" />
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : totalCount === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <Music className="h-8 w-8 mb-2 opacity-30" />
+              <p className="text-xs">등록된 곡이 없습니다</p>
+              {canManage && (
+                <p className="text-[10px] mt-0.5">아래에서 첫 곡을 추가하세요</p>
               )}
             </div>
+          ) : (
+            <div className="space-y-2">
+              {/* 미시작 섹션 */}
+              <div>
+                <SectionHeader
+                  label="미시작"
+                  count={notStartedSongs.length}
+                  isOpen={notStartedOpen}
+                  onToggle={() => setNotStartedOpen((v) => !v)}
+                  badgeClass={STATUS_CONFIG.not_started.sectionBadgeClass}
+                />
+                {notStartedOpen && notStartedSongs.length > 0 && (
+                  <div className="mt-0.5 ml-1">
+                    {notStartedSongs.map((song) => (
+                      <SongItem
+                        key={song.id}
+                        song={song}
+                        onCycleStatus={cycleSongStatus}
+                        onDelete={deleteSong}
+                        onOpenNotes={setNoteSong}
+                        canDelete={canManage}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
 
-            {/* 연습중 섹션 */}
-            <div>
-              <SectionHeader
-                label="연습 중"
-                count={inProgressSongs.length}
-                isOpen={inProgressOpen}
-                onToggle={() => setInProgressOpen((v) => !v)}
-                badgeClass={STATUS_CONFIG.in_progress.sectionBadgeClass}
-              />
-              {inProgressOpen && inProgressSongs.length > 0 && (
-                <div className="mt-0.5 ml-1">
-                  {inProgressSongs.map((song) => (
-                    <SongItem
-                      key={song.id}
-                      song={song}
-                      onCycleStatus={cycleSongStatus}
-                      onDelete={deleteSong}
-                      canDelete={canManage}
-                    />
-                  ))}
-                </div>
-              )}
+              {/* 연습중 섹션 */}
+              <div>
+                <SectionHeader
+                  label="연습 중"
+                  count={inProgressSongs.length}
+                  isOpen={inProgressOpen}
+                  onToggle={() => setInProgressOpen((v) => !v)}
+                  badgeClass={STATUS_CONFIG.in_progress.sectionBadgeClass}
+                />
+                {inProgressOpen && inProgressSongs.length > 0 && (
+                  <div className="mt-0.5 ml-1">
+                    {inProgressSongs.map((song) => (
+                      <SongItem
+                        key={song.id}
+                        song={song}
+                        onCycleStatus={cycleSongStatus}
+                        onDelete={deleteSong}
+                        onOpenNotes={setNoteSong}
+                        canDelete={canManage}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 완료 섹션 */}
+              <div>
+                <SectionHeader
+                  label="완료"
+                  count={masteredSongs.length}
+                  isOpen={masteredOpen}
+                  onToggle={() => setMasteredOpen((v) => !v)}
+                  badgeClass={STATUS_CONFIG.mastered.sectionBadgeClass}
+                />
+                {masteredOpen && masteredSongs.length > 0 && (
+                  <div className="mt-0.5 ml-1">
+                    {masteredSongs.map((song) => (
+                      <SongItem
+                        key={song.id}
+                        song={song}
+                        onCycleStatus={cycleSongStatus}
+                        onDelete={deleteSong}
+                        onOpenNotes={setNoteSong}
+                        canDelete={canManage}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
+          )}
 
-            {/* 완료 섹션 */}
-            <div>
-              <SectionHeader
-                label="완료"
-                count={masteredSongs.length}
-                isOpen={masteredOpen}
-                onToggle={() => setMasteredOpen((v) => !v)}
-                badgeClass={STATUS_CONFIG.mastered.sectionBadgeClass}
-              />
-              {masteredOpen && masteredSongs.length > 0 && (
-                <div className="mt-0.5 ml-1">
-                  {masteredSongs.map((song) => (
-                    <SongItem
-                      key={song.id}
-                      song={song}
-                      onCycleStatus={cycleSongStatus}
-                      onDelete={deleteSong}
-                      canDelete={canManage}
-                    />
-                  ))}
-                </div>
-              )}
+          {/* 인라인 추가 폼 (리더/매니저만) */}
+          {canManage && (
+            <div className="mt-3 pt-2 border-t">
+              <InlineAddForm onAdd={addSong} />
             </div>
-          </div>
-        )}
+          )}
+        </CardContent>
+      </Card>
 
-        {/* 인라인 추가 폼 (리더/매니저만) */}
-        {canManage && (
-          <div className="mt-3 pt-2 border-t">
-            <InlineAddForm onAdd={addSong} />
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* 연습 메모 Sheet */}
+      {noteSong && (
+        <SongNoteSheet
+          songId={noteSong.id}
+          songTitle={noteSong.title}
+          open={noteSong !== null}
+          onOpenChange={(open) => {
+            if (!open) setNoteSong(null);
+          }}
+        />
+      )}
+    </>
   );
 }

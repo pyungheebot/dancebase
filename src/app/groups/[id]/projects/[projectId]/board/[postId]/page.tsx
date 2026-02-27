@@ -13,9 +13,11 @@ import { BoardCommentSection } from "@/components/board/board-comment-section";
 import { BoardPollView } from "@/components/board/board-poll";
 import { BoardPostList } from "@/components/board/board-post-list";
 import { BoardPostForm } from "@/components/board/board-post-form";
+import { PostReadStatusSheet } from "@/components/board/post-read-status-sheet";
 import { useBoardPost } from "@/hooks/use-board";
 import { useGroupDetail } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
+import { useMarkPostAsRead } from "@/hooks/use-post-read-status";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -33,10 +35,13 @@ export default function ProjectBoardPostPage({
 }) {
   const { id, projectId, postId } = use(params);
   const { post, comments, poll, pollOptions, loading, refetch } = useBoardPost(postId);
-  const { nicknameMap, myRole } = useGroupDetail(id);
+  const { nicknameMap, myRole, members } = useGroupDetail(id);
   const { user } = useAuth();
   const router = useRouter();
   const supabase = createClient();
+
+  // 게시글 읽음 자동 처리
+  useMarkPostAsRead(postId, user?.id ?? null);
 
   const [editOpen, setEditOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -181,6 +186,12 @@ export default function ProjectBoardPostPage({
                 currentTitle={post.title}
               />
             )}
+            {/* 읽음 현황 (리더 전용) */}
+            <PostReadStatusSheet
+              postId={postId}
+              members={members}
+              isLeader={myRole === "leader"}
+            />
           </div>
         </div>
 

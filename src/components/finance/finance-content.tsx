@@ -15,6 +15,7 @@ import { FinanceSplitSection } from "@/components/finance/finance-split-section"
 import { ProjectCostAnalytics } from "@/components/finance/project-cost-analytics";
 import { ExpenseTemplateManager } from "@/components/finance/expense-template-manager";
 import { ReceiptShareDialog } from "@/components/finance/receipt-share-dialog";
+import { FinanceGoalCard } from "@/components/finance/finance-goal-card";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -355,6 +356,13 @@ export function FinanceContent({
         totalExpense={stats.totalExpense}
         balance={stats.balance}
         byCategory={stats.byCategory}
+      />
+
+      {/* 수입 목표 트래커 */}
+      <FinanceGoalCard
+        groupId={ctx.groupId}
+        projectId={ctx.projectId}
+        canManage={canManage}
       />
 
       {/* 거래 내역 / 납부 현황 / 예산 / 분할 정산 / 비용 분석 탭 */}

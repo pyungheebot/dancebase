@@ -301,3 +301,15 @@ export function invalidateReceiptShareTokens(transactionId: string) {
 export function invalidateProjectProgress(projectId: string) {
   mutate(swrKeys.projectProgress(projectId));
 }
+
+export function invalidateSongNotes(songId: string) {
+  mutate(swrKeys.songNotes(songId));
+}
+
+export function invalidateScheduleChecklist(scheduleId: string) {
+  mutate(swrKeys.scheduleChecklist(scheduleId));
+}
+
+export function invalidatePostReadStatus(postId: string) {
+  mutate(swrKeys.postReadStatus(postId));
+}
