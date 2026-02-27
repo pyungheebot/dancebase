@@ -404,6 +404,10 @@ export const swrKeys = {
   availabilityForecast: (groupId: string) =>
     `availability-forecast-${groupId}` as const,
 
+  // 일정 출석 예측 (특정 일정 기반 멤버별 확률)
+  scheduleAttendancePredictor: (groupId: string, scheduleId: string) =>
+    `schedule-attendance-predictor-${groupId}-${scheduleId}` as const,
+
   // 멤버 건강도 점수 대시보드
   memberHealthScore: (groupId: string) =>
     `/groups/${groupId}/member-health-score` as const,
@@ -415,4 +419,20 @@ export const swrKeys = {
   // 장르 역할 추천 (알고리즘 원시 데이터)
   genreRoleRecommendation: (groupId: string) =>
     `/groups/${groupId}/genre-role-recommendation` as const,
+
+  // 멤버 프로필 미리보기
+  memberPreview: (userId: string, groupId?: string | null) =>
+    `/member-preview/${userId}${groupId ? `?group=${groupId}` : ""}` as const,
+
+  // 출석 일관성 히트맵
+  attendanceConsistency: (groupId: string, userId: string) =>
+    `attendance-consistency-${groupId}-${userId}` as const,
+
+  // 그룹 건강도 트렌드 (최근 8주)
+  groupHealthTrends: (groupId: string) =>
+    `group-health-trends-${groupId}` as const,
+
+  // 주간 챌린지 보드
+  weeklyChallengeBoard: (groupId: string) =>
+    `weekly-challenge-board-${groupId}` as const,
 };

@@ -2202,6 +2202,30 @@ export type RoleRecommendationState = {
 };
 
 // ============================================
+// Member Preview (멤버 프로필 미리보기 팝오버)
+// ============================================
+
+/** 그룹 내 멤버 역할 */
+export type GroupMemberRole = "leader" | "sub_leader" | "member";
+
+/** 멤버 프로필 미리보기 데이터 */
+export type MemberPreviewData = {
+  /** 프로필 */
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  bio: string | null;
+  /** 그룹 멤버십 (groupId가 주어진 경우에만 존재) */
+  joinedAt: string | null;
+  role: GroupMemberRole | null;
+  /** 최근 30일 출석률 (0~100, %, groupId가 주어진 경우에만 계산) */
+  attendanceRate: number | null;
+  /** 최근 활동 요약 */
+  postCount: number;
+  commentCount: number;
+};
+
+// ============================================
 // Attendance Team Balancer (출석 팀 밸런서)
 // ============================================
 
@@ -2253,6 +2277,198 @@ export type AttendanceTeamBalanceResult = {
   rateDeviation: number;
   /** 데이터 존재 여부 */
   hasData: boolean;
+  loading: boolean;
+  refetch: () => void;
+};
+
+// ============================================
+// Group Health Trends
+// ============================================
+
+/** 주별 그룹 건강도 트렌드 단일 데이터 포인트 */
+export type WeeklyHealthPoint = {
+  /** "W1" ~ "W8" 형식 레이블 */
+  label: string;
+  /** 주 시작일 ISO 문자열 */
+  weekStart: string;
+  /** 출석률 (0~100, %) */
+  attendanceRate: number;
+  /** 게시판 활동 수 (게시글 + 댓글) */
+  activityCount: number;
+  /** 신규 멤버 수 */
+  newMemberCount: number;
+  /** RSVP 응답률 (0~100, %) */
+  rsvpRate: number;
+};
+
+/** 그룹 건강도 지표 (현재 값 + 변화율) */
+export type HealthMetric = {
+  /** 현재 값 (가장 최근 주) */
+  current: number;
+  /** 전주 대비 변화율 (%), null이면 계산 불가 */
+  changeRate: number | null;
+  /** 8주 추세 배열 */
+  trend: number[];
+};
+
+/** useGroupHealthTrends 훅 반환 타입 */
+export type GroupHealthTrendsResult = {
+  attendanceRate: HealthMetric;
+  activityCount: HealthMetric;
+  newMemberCount: HealthMetric;
+  rsvpRate: HealthMetric;
+  weeks: WeeklyHealthPoint[];
+  loading: boolean;
+  refetch: () => void;
+};
+
+// ============================================
+// Attendance Consistency (히트맵)
+// ============================================
+
+/** 출석 강도 레벨 */
+export type AttendanceIntensity = 0 | 1 | 2 | 3;
+
+/** 히트맵 단일 날짜 셀 */
+export type AttendanceHeatmapCell = {
+  /** YYYY-MM-DD 형식 날짜 */
+  date: string;
+  /** 해당 날짜에 일정이 있는지 여부 */
+  hasSchedule: boolean;
+  /** 출석 여부 (일정이 있을 경우) */
+  isPresent: boolean;
+  /** 색상 강도: 0=없음, 1=낮음(1-50%), 2=중간(50-80%), 3=높음(80%+) */
+  intensity: AttendanceIntensity;
+};
+
+/** 주별 출석 집계 데이터 */
+export type WeeklyAttendanceData = {
+  /** 주 인덱스 (0 = 가장 오래된 주) */
+  weekIndex: number;
+  /** 해당 주의 일정 수 */
+  scheduleCount: number;
+  /** 해당 주의 출석 수 */
+  presentCount: number;
+  /** 해당 주의 출석률 (0~100) */
+  attendanceRate: number;
+};
+
+/** useAttendanceConsistency 훅 반환 타입 */
+export type AttendanceConsistencyResult = {
+  /** 12주 x 7일 히트맵 그리드 (외부 배열: 12주, 내부 배열: 7일) */
+  weeks: AttendanceHeatmapCell[][];
+  /** 주별 출석 집계 */
+  weeklyData: WeeklyAttendanceData[];
+  /** 연속 출석 일수 (일정 기준) */
+  currentStreak: number;
+  /** 최근 12주 출석률 (0~100) */
+  overallRate: number;
+  /** 출석 일관성 점수 (0~100, 표준편차가 작을수록 높음) */
+  consistencyScore: number;
+  loading: boolean;
+  refetch: () => void;
+};
+
+// ============================================
+// Schedule Attendance Predictor (일정 출석 예측)
+// ============================================
+
+/** 일정 출석 예측 - 멤버별 예측 결과 */
+export type ScheduleAttendancePrediction = {
+  userId: string;
+  name: string;
+  /** 종합 예상 출석 확률 0-100 (가중 평균) */
+  probability: number;
+  /** 전체 출석률 (0-100) */
+  overallRate: number;
+  /** 같은 요일 출석률 (0-100) */
+  sameDayRate: number;
+  /** 같은 시간대 출석률 (0-100) */
+  sameSlotRate: number;
+  /** 분석에 사용된 전체 표본 수 */
+  sampleCount: number;
+  /** 추천 라벨 */
+  label: "참석 예상" | "불확실" | "불참 가능";
+};
+
+/** useScheduleAttendancePredictor 훅 반환 타입 */
+export type ScheduleAttendancePredictorResult = {
+  predictions: ScheduleAttendancePrediction[];
+  /** 예상 참석 인원 (50%+ 멤버 수) */
+  expectedCount: number;
+  /** 전체 멤버 수 */
+  totalCount: number;
+  /** 분석 기반 설명 (예: "월요일 19시 기준 과거 데이터 12건 분석") */
+  analysisSummary: string;
+  /** 대상 일정의 요일 (0=일~6=토) */
+  dayOfWeek: number;
+  /** 대상 일정의 시간대 */
+  timeSlot: TimeSlot;
+  /** 대상 일정의 시작 시각 (ISO) */
+  startsAt: string;
+  /** 데이터 존재 여부 */
+  hasData: boolean;
+  loading: boolean;
+  refetch: () => void;
+};
+
+// ============================================
+// Weekly Challenge Board (주간 챌린지 보드)
+// ============================================
+
+/** 챌린지 유형 */
+export type WeeklyChallengeType = "attendance" | "board" | "rsvp";
+
+/** 단일 챌린지 정의 */
+export type WeeklyChallenge = {
+  id: WeeklyChallengeType;
+  title: string;
+  /** 달성 목표 수 */
+  goal: number;
+};
+
+/** 멤버별 챌린지 진행 상황 */
+export type MemberChallengeProgress = {
+  /** 챌린지 ID */
+  challengeId: WeeklyChallengeType;
+  /** 현재 진행 수 */
+  current: number;
+  /** 목표 수 */
+  goal: number;
+  /** 완료 여부 */
+  completed: boolean;
+  /** 진행률 (0~100) */
+  progressRate: number;
+};
+
+/** 멤버별 주간 챌린지 결과 */
+export type WeeklyChallengeEntry = {
+  userId: string;
+  name: string;
+  /** 챌린지별 진행 상황 */
+  challenges: MemberChallengeProgress[];
+  /** 완료한 챌린지 수 */
+  completedCount: number;
+  /** 종합 점수 (completedCount 기준) */
+  score: number;
+  /** 리더보드 순위 (1-based) */
+  rank: number;
+};
+
+/** useWeeklyChallengeBoard 훅 반환 타입 */
+export type WeeklyChallengeBoardResult = {
+  /** 점수 내림차순 정렬된 멤버 목록 */
+  entries: WeeklyChallengeEntry[];
+  /** 챌린지 정의 목록 */
+  challenges: WeeklyChallenge[];
+  /** 이번 주 월요일 (ISO 날짜 문자열) */
+  weekStart: string;
+  /** 이번 주 일요일 (ISO 날짜 문자열) */
+  weekEnd: string;
+  /** 오늘 기준 이번 주 남은 일수 */
+  daysLeft: number;
+  /** 현재 사용자 항목 */
+  myEntry: WeeklyChallengeEntry | null;
   loading: boolean;
   refetch: () => void;
 };

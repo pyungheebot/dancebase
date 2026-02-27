@@ -416,6 +416,10 @@ export function invalidateAvailabilityForecast(groupId: string) {
   mutate(swrKeys.availabilityForecast(groupId));
 }
 
+export function invalidateScheduleAttendancePredictor(groupId: string, scheduleId: string) {
+  mutate(swrKeys.scheduleAttendancePredictor(groupId, scheduleId));
+}
+
 export function invalidateMemberHealthScore(groupId: string) {
   mutate(swrKeys.memberHealthScore(groupId));
 }
@@ -426,4 +430,24 @@ export function invalidateAttendanceTeamBalance(groupId: string) {
 
 export function invalidateGenreRoleRecommendation(groupId: string) {
   mutate(swrKeys.genreRoleRecommendation(groupId));
+}
+
+export function invalidateMemberPreview(userId: string, groupId?: string | null) {
+  mutate(swrKeys.memberPreview(userId, groupId));
+  // groupId 없는 버전도 함께 무효화
+  if (groupId) {
+    mutate(swrKeys.memberPreview(userId));
+  }
+}
+
+export function invalidateAttendanceConsistency(groupId: string, userId: string) {
+  mutate(swrKeys.attendanceConsistency(groupId, userId));
+}
+
+export function invalidateGroupHealthTrends(groupId: string) {
+  mutate(swrKeys.groupHealthTrends(groupId));
+}
+
+export function invalidateWeeklyChallengeBoard(groupId: string) {
+  mutate(swrKeys.weeklyChallengeBoard(groupId));
 }
