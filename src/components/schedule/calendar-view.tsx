@@ -20,7 +20,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar, Trash2, RefreshCw, CalendarPlus, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar, Trash2, RefreshCw, CalendarPlus, Download, AlertTriangle } from "lucide-react";
 import { ScheduleForm } from "./schedule-form";
 import { AttendancePredictionBadge, AttendancePredictionCard } from "./attendance-prediction-card";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
@@ -30,6 +30,8 @@ import { toast } from "sonner";
 import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
 import { scheduleToIcs, schedulesToIcs, downloadIcs } from "@/lib/ics";
+import { detectConflicts } from "@/lib/schedule-conflict";
+import { useMemo } from "react";
 
 const MAX_VISIBLE_EVENTS = 2;
 
@@ -309,6 +311,22 @@ function RecurrenceEditDialog({
 
 export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath, groupId }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  // 충돌하는 일정 ID 집합 계산 (양방향 충돌 감지)
+  const conflictingIds = useMemo(() => {
+    const ids = new Set<string>();
+    schedules.forEach((s) => {
+      const conflicts = detectConflicts(
+        { starts_at: s.starts_at, ends_at: s.ends_at },
+        schedules,
+        s.id
+      );
+      if (conflicts.length > 0) {
+        ids.add(s.id);
+      }
+    });
+    return ids;
+  }, [schedules]);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
   // 시리즈 수정 시 적용 범위 (null이면 단일 수정 모드)
   const [editScope, setEditScope] = useState<RecurrenceScope | null>(null);
@@ -579,6 +597,12 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   {schedule.recurrence_id && (
                     <RefreshCw className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
                   )}
+                  {conflictingIds.has(schedule.id) && (
+                    <AlertTriangle
+                      className="h-3 w-3 text-yellow-500 shrink-0"
+                      aria-label="다른 일정과 시간이 겹칩니다"
+                    />
+                  )}
                   {groupId && (
                     <AttendancePredictionBadge
                       groupId={groupId}
@@ -628,6 +652,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
           open={!!editSchedule}
           onOpenChange={(open) => { if (!open) { setEditSchedule(null); setEditScope(null); } }}
           onCreated={handleEditCreated}
+          existingSchedules={schedules}
         />
       )}
 

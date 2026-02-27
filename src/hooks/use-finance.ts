@@ -151,7 +151,7 @@ export function useFinance(groupId: string, projectId?: string | null) {
     const uncategorized = transactions.filter((t) => !t.category_id);
     if (uncategorized.length > 0) {
       byCategory.push({
-        category: { id: "", group_id: groupId, project_id: null, name: "미분류", sort_order: 999, created_at: "" },
+        category: { id: "", group_id: groupId, project_id: null, name: "미분류", sort_order: 999, fee_rate: 0, created_at: "" },
         income: uncategorized
           .filter((t) => t.type === "income")
           .reduce((sum, t) => sum + t.amount, 0),

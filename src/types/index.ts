@@ -273,6 +273,7 @@ export type FinanceCategory = {
   project_id: string | null;
   name: string;
   sort_order: number;
+  fee_rate: number;
   created_at: string;
 };
 
@@ -535,6 +536,25 @@ export type PostBookmarkWithPost = PostBookmark & {
   board_posts: Pick<BoardPost, "id" | "group_id" | "project_id" | "title" | "category" | "created_at"> & {
     groups: { id: string; name: string } | null;
   };
+};
+
+// ============================================
+// Activity Feed (최근 활동 피드)
+// ============================================
+
+export type ActivityFeedItemType = "post" | "comment" | "schedule";
+
+export type ActivityFeedItem = {
+  id: string;
+  type: ActivityFeedItemType;
+  title: string;
+  description: string | null;
+  groupId: string;
+  groupName: string;
+  createdAt: string;
+  userId: string;
+  /** 게시글/댓글의 경우 해당 게시글 ID */
+  postId?: string;
 };
 
 // ============================================

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,6 @@ import type { FinanceCategory, FinanceTransaction } from "@/types";
 import {
   validateRequired,
   validatePositiveNumber,
-  formatCurrency,
 } from "@/lib/validation";
 
 type MemberOption = {
@@ -79,6 +78,18 @@ export function FinanceTransactionForm({
   const [titleError, setTitleError] = useState<string | null>(null);
   const supabase = createClient();
 
+  // 선택된 카테고리의 fee_rate 계산
+  const selectedCategory = useMemo(
+    () => categories.find((c) => c.id === categoryId) ?? null,
+    [categories, categoryId]
+  );
+  const feeRate = selectedCategory?.fee_rate ?? 0;
+
+  // 수수료 / 실수령액 계산
+  const amountNum = parseFloat(amount) || 0;
+  const feeAmount = feeRate > 0 ? Math.round(amountNum * feeRate / 100) : 0;
+  const netAmount = amountNum - feeAmount;
+
   // Edit mode: initialize from data
   useEffect(() => {
     if (open && isEdit && initialData) {
@@ -93,6 +104,7 @@ export function FinanceTransactionForm({
     if (open && !isEdit) {
       reset();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isEdit, initialData]);
 
   const reset = () => {
@@ -205,7 +217,10 @@ export function FinanceTransactionForm({
             <SelectContent>
               {categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
-                  {cat.name}
+                  <span>{cat.name}</span>
+                  {cat.fee_rate > 0 && (
+                    <span className="ml-1.5 text-[10px] text-orange-600">({cat.fee_rate}% 수수료)</span>
+                  )}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -252,6 +267,25 @@ export function FinanceTransactionForm({
           />
           {amountError && (
             <p className="text-xs text-destructive">{amountError}</p>
+          )}
+          {/* 수수료 자동 계산 표시 (fee_rate > 0이고 금액이 입력된 경우) */}
+          {feeRate > 0 && amountNum > 0 && (
+            <div className="rounded-md bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 px-2.5 py-1.5 space-y-0.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-orange-700 dark:text-orange-400">
+                  수수료 ({feeRate}%)
+                </span>
+                <span className="font-medium text-orange-700 dark:text-orange-400 tabular-nums">
+                  -{feeAmount.toLocaleString("ko-KR")}원
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-muted-foreground">실수령액</span>
+                <span className="font-semibold text-foreground tabular-nums">
+                  {netAmount.toLocaleString("ko-KR")}원
+                </span>
+              </div>
+            </div>
           )}
         </div>
 

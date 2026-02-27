@@ -4,7 +4,9 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { GroupCard } from "@/components/groups/group-card";
 import { JoinGroupModal } from "@/components/groups/invite-modal";
 import { OnboardingGuide } from "@/components/dashboard/onboarding-guide";
+import { DashboardQuickStats } from "@/components/dashboard/dashboard-quick-stats";
 import { ContactVerifyBanner } from "@/components/members/contact-verify-banner";
+import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed";
 import { useGroups } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -256,6 +258,32 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </section>
+
+        {/* 최근 활동 피드 - 그룹이 있을 때만 표시 */}
+        {!loading && groups.length > 0 && (
+          <section aria-label="최근 활동 피드">
+            <RecentActivityFeed
+              groupIds={groups.map((g) => g.id)}
+              limit={20}
+            />
+          </section>
+        )}
+
+        {/* 그룹별 핵심 수치 위젯 */}
+        {!loading && groups.length > 0 && (
+          <section aria-label="그룹별 핵심 수치">
+            <div className="space-y-4">
+              {groups.map((group) => (
+                <div key={group.id} className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground px-0.5">
+                    {group.name}
+                  </p>
+                  <DashboardQuickStats groupId={group.id} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* 내 그룹 섹션 */}
         <section aria-label="내 그룹 목록">

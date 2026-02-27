@@ -205,4 +205,16 @@ export const swrKeys = {
   // 멤버 메모
   memberNote: (groupId: string, targetUserId: string) =>
     `/groups/${groupId}/member-notes/${targetUserId}` as const,
+
+  // 대시보드 핵심 수치 (Quick Stats)
+  dashboardQuickStats: (groupId: string) =>
+    `/groups/${groupId}/dashboard-quick-stats` as const,
+
+  // 주간 출석 스냅샷
+  weeklyAttendanceStats: (groupId: string, projectId?: string | null) =>
+    `/weekly-attendance-stats/${groupId}${projectId ? `?project=${projectId}` : ""}` as const,
+
+  // 최근 활동 피드 (대시보드용)
+  recentActivityFeed: (groupIds: string[], limit: number) =>
+    `/recent-activity-feed?groups=${groupIds.slice().sort().join(",")}&limit=${limit}` as const,
 };

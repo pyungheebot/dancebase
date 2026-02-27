@@ -30,6 +30,7 @@ import { AttendanceAnalytics } from "@/components/attendance/attendance-analytic
 import { AttendanceComparisonChart } from "@/components/attendance/attendance-comparison-chart";
 import { AttendanceReportSection } from "@/components/attendance/attendance-report-section";
 import { AttendanceGoalCard } from "@/components/attendance/attendance-goal-card";
+import { WeeklyAttendanceSnapshot } from "@/components/attendance/weekly-attendance-snapshot";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows } from "lucide-react";
 import { toast } from "sonner";
@@ -594,6 +595,12 @@ export function AttendanceContent({
           <AttendanceGoalCard
             groupId={ctx.groupId}
             canEdit={ctx.permissions.canEdit}
+          />
+
+          {/* 주간 출석 스냅샷 */}
+          <WeeklyAttendanceSnapshot
+            groupId={ctx.groupId}
+            projectId={ctx.projectId}
           />
 
           {/* 기간 필터 */}

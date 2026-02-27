@@ -236,3 +236,11 @@ export function invalidatePollStatistics(postId: string) {
 export function invalidateMemberNote(groupId: string, targetUserId: string) {
   mutate(swrKeys.memberNote(groupId, targetUserId));
 }
+
+export function invalidateRecentActivityFeed() {
+  mutate(
+    (key: string) => typeof key === "string" && key.startsWith("/recent-activity-feed"),
+    undefined,
+    { revalidate: true }
+  );
+}

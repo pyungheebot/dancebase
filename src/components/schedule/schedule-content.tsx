@@ -115,6 +115,7 @@ export function ScheduleContent({
                 if (!v) setTemplatePrefill(null);
               }}
               prefill={templatePrefill}
+              existingSchedules={schedules}
             />
           )}
         </div>

@@ -207,6 +207,7 @@ export function FinanceContent({
           project_id: null,
           name: "미분류",
           sort_order: 999,
+          fee_rate: 0,
           created_at: "",
         },
         income: uncategorized
