@@ -3263,3 +3263,118 @@ export type GroupMilestone = {
   achievedAt: string | null;
   isDefault: boolean;
 };
+
+// ============================================
+// Group Wiki / FAQ (그룹 위키 문서)
+// ============================================
+
+export type WikiCategory = "general" | "practice_guide" | "rules" | "faq";
+
+export type WikiDocument = {
+  id: string;
+  groupId: string;
+  title: string;
+  content: string;
+  category: WikiCategory;
+  pinned: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ============================================
+// Anonymous Feedback (익명 피어 피드백)
+// ============================================
+
+export type FeedbackCategory = "praise" | "encouragement" | "improvement" | "other";
+
+export type AnonymousFeedback = {
+  id: string;
+  groupId: string;
+  targetUserId: string;
+  senderId: string; // 로컬에서만 사용, 표시 안함
+  category: FeedbackCategory;
+  content: string;
+  createdAt: string;
+};
+
+// ============================================
+// Custom Report Builder (커스텀 리포트 빌더, localStorage 기반)
+// ============================================
+
+export type ReportMetricType =
+  | "attendance_rate"
+  | "total_attendance"
+  | "post_count"
+  | "comment_count"
+  | "member_count"
+  | "new_member_count"
+  | "rsvp_rate";
+
+export type ReportPeriod = "7d" | "30d" | "90d" | "all";
+
+export type CustomReportConfig = {
+  id: string;
+  name: string;
+  metrics: ReportMetricType[];
+  period: ReportPeriod;
+  createdAt: string;
+};
+
+export type ReportMetricValue = {
+  type: ReportMetricType;
+  label: string;
+  value: number;
+  unit: string;
+};
+
+// ============================================
+// Reward Shop (출석 보상 포인트 상점, localStorage 기반)
+// ============================================
+
+export type RewardShopItem = {
+  id: string;
+  name: string;
+  description: string;
+  pointCost: number;
+  quantity: number; // -1 = 무제한
+  createdAt: string;
+};
+
+export type RewardExchangeRecord = {
+  id: string;
+  userId: string;
+  userName: string;
+  itemId: string;
+  itemName: string;
+  pointsSpent: number;
+  exchangedAt: string;
+};
+
+export type RewardShopData = {
+  items: RewardShopItem[];
+  exchanges: RewardExchangeRecord[];
+};
+
+// ============================================
+// Schedule Recurrence (일정 반복 설정, localStorage 기반)
+// ============================================
+
+export type RecurrenceType = "weekly" | "biweekly" | "monthly";
+
+export type RecurrenceEndType = "never" | "by_date" | "by_count";
+
+export type ScheduleRecurrenceRule = {
+  id: string;
+  groupId: string;
+  type: RecurrenceType;
+  daysOfWeek: number[]; // 0=일 ~ 6=토
+  startTime: string; // "HH:mm"
+  durationMinutes: number;
+  title: string;
+  location: string;
+  endType: RecurrenceEndType;
+  endDate: string | null;
+  endCount: number | null;
+  createdAt: string;
+};

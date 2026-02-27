@@ -536,3 +536,7 @@ export function invalidateAttendancePredictionCalendar(
 export function invalidateGroupMilestonesAchievements(groupId: string) {
   mutate(swrKeys.groupMilestonesAchievements(groupId));
 }
+
+export function invalidateCustomReport(groupId: string, reportId: string) {
+  mutate(swrKeys.customReport(groupId, reportId));
+}

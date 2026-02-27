@@ -499,4 +499,8 @@ export const swrKeys = {
   // 그룹 마일스톤 달성 기록
   groupMilestonesAchievements: (groupId: string) =>
     `/groups/${groupId}/milestones-achievements` as const,
+
+  // 커스텀 리포트 빌더
+  customReport: (groupId: string, reportId: string) =>
+    `/groups/${groupId}/custom-report/${reportId}` as const,
 };
