@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sidebar } from "./sidebar";
+import { ErrorBoundary } from "@/components/shared/error-boundary";
 import {
   Sheet,
   SheetContent,
@@ -42,7 +43,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="h-4 w-4" />
           </Button>
         </div>
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </main>
     </div>
   );

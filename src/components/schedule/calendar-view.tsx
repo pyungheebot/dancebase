@@ -20,7 +20,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar, Trash2, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar, Trash2, RefreshCw, CalendarPlus, Download } from "lucide-react";
 import { ScheduleForm } from "./schedule-form";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
@@ -28,6 +28,7 @@ import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
 import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
+import { scheduleToIcs, schedulesToIcs, downloadIcs } from "@/lib/ics";
 
 const MAX_VISIBLE_EVENTS = 2;
 
@@ -465,6 +466,21 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
           {format(currentMonth, "yyyy년 M월", { locale: ko })}
         </h3>
         <div className="flex gap-0.5">
+          {schedules.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 text-[11px] px-2 gap-1"
+              onClick={() => {
+                const icsContent = schedulesToIcs(schedules);
+                downloadIcs(icsContent, "DanceBase_일정.ics");
+                toast.success("전체 일정을 내보냈습니다");
+              }}
+            >
+              <Download className="h-3 w-3" />
+              전체 내보내기
+            </Button>
+          )}
           <Button
             variant="outline"
             size="icon"
@@ -508,10 +524,10 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
           return (
             <div
               key={day.toISOString()}
-              className={`bg-background px-1 py-0.5 min-h-16 ${!isCurrentMonth ? "opacity-40" : ""}`}
+              className={`bg-background px-0.5 md:px-1 py-0.5 min-h-12 md:min-h-16 ${!isCurrentMonth ? "opacity-40" : ""}`}
             >
               <span
-                className={`text-[11px] ${isToday ? "bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-[10px]" : ""}`}
+                className={`text-[10px] md:text-[11px] leading-tight ${isToday ? "bg-primary text-primary-foreground rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[9px] md:text-[10px]" : ""}`}
               >
                 {format(day, "d")}
               </span>
@@ -528,8 +544,8 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                     onClick={() => setOverflowDay(day)}
                     className="w-full text-left"
                   >
-                    <span className="text-[9px] text-muted-foreground hover:text-foreground px-1">
-                      +{hiddenCount}개 더보기
+                    <span className="text-[8px] md:text-[9px] text-muted-foreground hover:text-foreground px-0.5 md:px-1">
+                      +{hiddenCount}
                     </span>
                   </button>
                 )}
@@ -665,7 +681,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                 <RsvpSection scheduleId={detailSchedule.id} />
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {canEdit && (
                   <>
                     <Button
@@ -705,6 +721,19 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                     </Link>
                   </Button>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    const icsContent = scheduleToIcs(detailSchedule);
+                    downloadIcs(icsContent, `${detailSchedule.title}.ics`);
+                    toast.success("캘린더 파일을 다운로드했습니다");
+                  }}
+                >
+                  <CalendarPlus className="h-3 w-3 mr-1" />
+                  캘린더에 추가
+                </Button>
               </div>
             </div>
           )}

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -14,48 +15,169 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Download, Link2, QrCode, Hash } from "lucide-react";
+import { toast } from "sonner";
 
 type InviteModalProps = {
   inviteCode: string;
 };
 
 export function InviteModal({ inviteCode }: InviteModalProps) {
-  const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(inviteCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const getInviteUrl = () => {
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}/join/${inviteCode}`;
   };
+
+  const handleCopyCode = async () => {
+    await navigator.clipboard.writeText(inviteCode);
+    setCopiedCode(true);
+    toast.success("초대 코드가 복사되었습니다");
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const handleCopyUrl = async () => {
+    await navigator.clipboard.writeText(getInviteUrl());
+    setCopiedUrl(true);
+    toast.success("초대 링크가 복사되었습니다");
+    setTimeout(() => setCopiedUrl(false), 2000);
+  };
+
+  const handleDownloadQr = async () => {
+    const url = getInviteUrl();
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=400x400&margin=20`;
+
+    try {
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `groop-invite-qr.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objectUrl);
+      toast.success("QR코드가 저장되었습니다");
+    } catch {
+      toast.error("QR코드 저장에 실패했습니다");
+    }
+  };
+
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+    typeof window !== "undefined" ? getInviteUrl() : ""
+  )}&size=200x200&margin=10`;
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 text-xs">멤버 초대</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>멤버 초대</DialogTitle>
           <DialogDescription>
-            아래 초대 코드를 공유하여 멤버를 초대하세요
+            초대 코드, 링크, QR코드로 멤버를 초대하세요
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <Label className="text-xs">초대 코드</Label>
-            <div className="flex gap-2">
-              <Input value={inviteCode} readOnly className="font-mono text-sm" />
-              <Button variant="outline" size="icon" onClick={handleCopy}>
-                {copied ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
+
+        <Tabs defaultValue="code" className="w-full">
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="code" className="text-xs gap-1">
+              <Hash className="h-3 w-3" />
+              초대 코드
+            </TabsTrigger>
+            <TabsTrigger value="url" className="text-xs gap-1">
+              <Link2 className="h-3 w-3" />
+              초대 링크
+            </TabsTrigger>
+            <TabsTrigger value="qr" className="text-xs gap-1">
+              <QrCode className="h-3 w-3" />
+              QR코드
+            </TabsTrigger>
+          </TabsList>
+
+          {/* 초대 코드 탭 */}
+          <TabsContent value="code" className="mt-4 space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">초대 코드</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={inviteCode}
+                  readOnly
+                  className="font-mono text-sm"
+                />
+                <Button variant="outline" size="icon" onClick={handleCopyCode}>
+                  {copiedCode ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              이 코드를 공유하면 상대방이 직접 입력하여 참여할 수 있습니다
+            </p>
+          </TabsContent>
+
+          {/* 초대 링크 탭 */}
+          <TabsContent value="url" className="mt-4 space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">초대 링크</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={getInviteUrl()}
+                  readOnly
+                  className="text-xs"
+                />
+                <Button variant="outline" size="icon" onClick={handleCopyUrl}>
+                  {copiedUrl ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              링크를 클릭하면 바로 그룹에 참여할 수 있습니다
+            </p>
+          </TabsContent>
+
+          {/* QR코드 탭 */}
+          <TabsContent value="qr" className="mt-4 space-y-3">
+            <div className="flex flex-col items-center gap-3">
+              <div className="border rounded-lg p-3 bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={qrImageUrl}
+                  alt="초대 QR코드"
+                  width={200}
+                  height={200}
+                  className="block"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={handleDownloadQr}
+              >
+                <Download className="h-3 w-3" />
+                QR코드 저장
               </Button>
             </div>
-          </div>
-        </div>
+            <p className="text-xs text-muted-foreground text-center">
+              QR코드를 스캔하면 바로 그룹에 참여할 수 있습니다
+            </p>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

@@ -8,7 +8,8 @@ import { useNotifications } from "@/hooks/use-notifications";
 import { useTodaySchedules } from "@/hooks/use-schedule";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Loader2, Calendar, Bell } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Calendar, Bell } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -32,8 +33,10 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {schedulesLoading ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <div className="space-y-2 py-1">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-4 w-3/5" />
               </div>
             ) : todaySchedules.length === 0 ? (
               <p className="text-xs text-muted-foreground py-2">오늘 예정된 일정이 없습니다</p>
@@ -67,8 +70,10 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {notificationsLoading ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <div className="space-y-2 py-1">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-3/4" />
               </div>
             ) : notifications.length === 0 ? (
               <p className="text-xs text-muted-foreground py-2">새 알림이 없습니다</p>
@@ -114,8 +119,13 @@ export default function DashboardPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="rounded-lg border p-4 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ))}
             </div>
           ) : groups.length === 0 ? (
             <div className="text-center py-20 space-y-4">

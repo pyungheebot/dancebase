@@ -80,8 +80,8 @@ export function EntityNav({ ctx }: EntityNavProps) {
   };
 
   const navClass = isProject
-    ? "border-b mb-3 -mx-3 px-3 flex gap-px overflow-x-auto"
-    : "border-b mb-4 flex gap-1 overflow-x-auto px-6 -mx-6";
+    ? "border-b mb-3 -mx-3 px-3 flex gap-px overflow-x-auto scrollbar-none"
+    : "border-b mb-4 flex gap-1 overflow-x-auto scrollbar-none px-6 -mx-6";
 
   const linkClass = (active: boolean) =>
     isProject
@@ -92,7 +92,7 @@ export function EntityNav({ ctx }: EntityNavProps) {
             : "border-transparent text-muted-foreground hover:text-foreground"
         )
       : cn(
-          "flex items-center gap-1.5 px-3 py-2 text-sm whitespace-nowrap border-b-2 transition-colors",
+          "flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-2 text-xs md:text-sm whitespace-nowrap border-b-2 transition-colors",
           active
             ? "border-foreground text-foreground font-medium"
             : "border-transparent text-muted-foreground hover:text-foreground"
@@ -103,7 +103,7 @@ export function EntityNav({ ctx }: EntityNavProps) {
   return (
     <>
       {breadcrumbs.length > 0 && (
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1.5 overflow-x-auto">
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1.5 overflow-x-auto scrollbar-none">
           {breadcrumbs.map((crumb, i) => (
             <span key={crumb.href} className="flex items-center gap-1 shrink-0">
               {i === 0 && <ArrowLeft className="h-2.5 w-2.5" />}
@@ -115,28 +115,40 @@ export function EntityNav({ ctx }: EntityNavProps) {
           ))}
         </div>
       )}
-      <nav className={navClass}>
-        {visibleTabs.map((tab) => {
-          const Icon = tab.icon;
-          const active = isActive(tab.path);
-          const showBadge = tab.key === "settings" && isGroupLeader && pendingCount > 0;
-          return (
-            <Link
-              key={tab.path}
-              href={basePath + tab.path}
-              className={linkClass(active)}
-            >
-              <Icon className={iconClass} />
-              {tab.label}
-              {showBadge && (
-                <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none ml-0.5">
-                  {pendingCount > 99 ? "99+" : pendingCount}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="relative">
+        <nav className={navClass}>
+          {visibleTabs.map((tab) => {
+            const Icon = tab.icon;
+            const active = isActive(tab.path);
+            const showBadge = tab.key === "settings" && isGroupLeader && pendingCount > 0;
+            return (
+              <Link
+                key={tab.path}
+                href={basePath + tab.path}
+                className={linkClass(active)}
+              >
+                <Icon className={iconClass} />
+                {isProject ? (
+                  tab.label
+                ) : (
+                  <>
+                    <span className="hidden md:inline">{tab.label}</span>
+                  </>
+                )}
+                {showBadge && (
+                  <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none ml-0.5">
+                    {pendingCount > 99 ? "99+" : pendingCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+        {/* 오른쪽 끝 그라데이션 fade - 모바일에서만 표시 */}
+        {!isProject && (
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent md:hidden" />
+        )}
+      </div>
     </>
   );
 }

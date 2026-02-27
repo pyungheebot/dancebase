@@ -7,7 +7,8 @@ import { useBoard, useBoardCategories } from "@/hooks/use-board";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, MessageSquare, Pin, FolderOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageSquare, Pin, FolderOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BoardPostForm } from "./board-post-form";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -95,8 +96,14 @@ export function BoardPostList({
 
       {/* 글 목록 — 한줄 컴팩트 */}
       {loading ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <div className="rounded-lg border divide-y">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-center gap-2 px-3 py-2">
+              <Skeleton className="h-4 w-10 shrink-0" />
+              <Skeleton className="h-4 flex-1" />
+              <Skeleton className="h-4 w-12 shrink-0" />
+            </div>
+          ))}
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-8">
@@ -109,33 +116,39 @@ export function BoardPostList({
               key={post.id}
               href={getPostHref(post)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 hover:bg-accent transition-colors text-xs",
+                "flex flex-col px-3 py-1.5 hover:bg-accent transition-colors text-xs gap-0.5",
                 activePostId === post.id && "bg-accent"
               )}
             >
-              {post.is_pinned && <Pin className="h-3 w-3 text-primary shrink-0" />}
-              <Badge variant="secondary" className="text-[10px] px-1 py-0 font-normal shrink-0">
-                {post.category}
-              </Badge>
-              {isIntegrated && post.project_id && post.projects && (
-                <span className="flex items-center gap-0.5 text-primary/70 shrink-0">
-                  <FolderOpen className="h-3 w-3" />
-                  <span className="text-[10px]">{post.projects.name}</span>
+              {/* 상단 행: 핀 + 카테고리 + 프로젝트 + 제목 + 댓글 수 */}
+              <div className="flex items-center gap-1.5">
+                {post.is_pinned && <Pin className="h-3 w-3 text-primary shrink-0" />}
+                <Badge variant="secondary" className="text-[10px] px-1 py-0 font-normal shrink-0">
+                  {post.category}
+                </Badge>
+                {isIntegrated && post.project_id && post.projects && (
+                  <span className="flex items-center gap-0.5 text-primary/70 shrink-0">
+                    <FolderOpen className="h-3 w-3" />
+                    <span className="text-[10px] hidden sm:inline">{post.projects.name}</span>
+                  </span>
+                )}
+                <span className="font-medium truncate">{post.title}</span>
+                {post.comment_count > 0 && (
+                  <span className="flex items-center gap-0.5 text-muted-foreground shrink-0">
+                    <MessageSquare className="h-2.5 w-2.5" />
+                    {post.comment_count}
+                  </span>
+                )}
+              </div>
+              {/* 하단 행: 작성자 + 날짜 */}
+              <div className="flex items-center gap-1.5 text-muted-foreground text-[10px]">
+                <span className="truncate max-w-[8rem]">
+                  {nicknameMap?.[post.author_id] || post.profiles?.name}
                 </span>
-              )}
-              <span className="font-medium truncate">{post.title}</span>
-              {post.comment_count > 0 && (
-                <span className="flex items-center gap-0.5 text-muted-foreground shrink-0">
-                  <MessageSquare className="h-2.5 w-2.5" />
-                  {post.comment_count}
+                <span className="text-muted-foreground/50 shrink-0">
+                  {format(new Date(post.created_at), "M/d", { locale: ko })}
                 </span>
-              )}
-              <span className="ml-auto shrink-0 text-muted-foreground">
-                {nicknameMap?.[post.author_id] || post.profiles?.name}
-              </span>
-              <span className="shrink-0 text-muted-foreground/50">
-                {format(new Date(post.created_at), "M/d", { locale: ko })}
-              </span>
+              </div>
             </Link>
           ))}
         </div>

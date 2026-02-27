@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
-import { Trash2, Pencil, Check, X } from "lucide-react";
+import { Trash2, Pencil, Check, X, CornerDownRight } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
@@ -19,6 +19,151 @@ interface BoardCommentSectionProps {
   onUpdate: () => void;
   nicknameMap?: Record<string, string>;
   groupId?: string;
+}
+
+// 트리 구조 타입
+type CommentNode = BoardCommentWithProfile & {
+  replies: BoardCommentWithProfile[];
+};
+
+// 댓글을 트리 구조로 변환 (parent_id 기준, 최대 2단계)
+function buildCommentTree(comments: BoardCommentWithProfile[]): CommentNode[] {
+  const rootComments = comments.filter((c) => !c.parent_id);
+  return rootComments.map((root) => ({
+    ...root,
+    replies: comments.filter((c) => c.parent_id === root.id),
+  }));
+}
+
+// 개별 댓글 아이템 컴포넌트
+function CommentItem({
+  comment,
+  currentUserId,
+  editingId,
+  editingContent,
+  editSaving,
+  nicknameMap,
+  groupId,
+  isReply,
+  onEditStart,
+  onEditCancel,
+  onEditSave,
+  onDelete,
+  onReplyClick,
+  activeReplyId,
+  editingContentChange,
+}: {
+  comment: BoardCommentWithProfile;
+  currentUserId: string | null;
+  editingId: string | null;
+  editingContent: string;
+  editSaving: boolean;
+  nicknameMap?: Record<string, string>;
+  groupId?: string;
+  isReply: boolean;
+  onEditStart: (comment: BoardCommentWithProfile) => void;
+  onEditCancel: () => void;
+  onEditSave: (commentId: string) => void;
+  onDelete: (commentId: string) => void;
+  onReplyClick: (commentId: string) => void;
+  activeReplyId: string | null;
+  editingContentChange: (value: string) => void;
+}) {
+  const displayName = nicknameMap?.[comment.author_id] || comment.profiles.name;
+
+  return (
+    <div className={`flex gap-2 ${isReply ? "ml-8" : ""}`}>
+      {isReply && (
+        <CornerDownRight className="h-3 w-3 text-muted-foreground mt-1.5 shrink-0" />
+      )}
+      <Avatar className="h-6 w-6 mt-0.5 shrink-0">
+        <AvatarFallback className="text-[10px]">
+          {displayName?.charAt(0)?.toUpperCase() || "U"}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <UserPopoverMenu
+            userId={comment.author_id}
+            displayName={displayName}
+            groupId={groupId}
+            className="text-xs font-medium hover:underline"
+          >
+            {displayName}
+          </UserPopoverMenu>
+          <span className="text-[11px] text-muted-foreground">
+            {format(new Date(comment.created_at), "M/d HH:mm", { locale: ko })}
+          </span>
+          {currentUserId === comment.author_id && editingId !== comment.id && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 text-muted-foreground hover:text-foreground"
+                onClick={() => onEditStart(comment)}
+                aria-label="댓글 수정"
+              >
+                <Pencil className="h-2.5 w-2.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                onClick={() => onDelete(comment.id)}
+                aria-label="댓글 삭제"
+              >
+                <Trash2 className="h-2.5 w-2.5" />
+              </Button>
+            </>
+          )}
+          {/* 답글 버튼: 원댓글에만 표시 (대댓글에는 표시하지 않음) */}
+          {!isReply && editingId !== comment.id && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+              onClick={() => onReplyClick(comment.id)}
+            >
+              {activeReplyId === comment.id ? "취소" : "답글"}
+            </Button>
+          )}
+        </div>
+        {editingId === comment.id ? (
+          <div className="mt-1 space-y-1">
+            <Textarea
+              value={editingContent}
+              onChange={(e) => editingContentChange(e.target.value)}
+              className="text-sm min-h-[60px] resize-none"
+              autoFocus
+            />
+            <div className="flex gap-1">
+              <Button
+                size="sm"
+                className="h-6 text-[11px] px-2"
+                onClick={() => onEditSave(comment.id)}
+                disabled={!editingContent.trim() || editSaving}
+              >
+                <Check className="h-2.5 w-2.5 mr-1" />
+                저장
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 text-[11px] px-2"
+                onClick={onEditCancel}
+                disabled={editSaving}
+              >
+                <X className="h-2.5 w-2.5 mr-1" />
+                취소
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function BoardCommentSection({
@@ -34,45 +179,78 @@ export function BoardCommentSection({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+  // 답글 관련 상태
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [replySubmitting, setReplySubmitting] = useState(false);
   const supabase = createClient();
 
   // 현재 유저 확인
   useEffect(() => {
     if (currentUserId !== null) return;
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) setCurrentUserId(user.id);
     };
     fetchUser();
   }, [supabase, currentUserId]);
 
-  const handleSubmit = async () => {
-    if (!content.trim() || submitting) return;
-    setSubmitting(true);
+  // 댓글 제출 (parent_id 포함)
+  const handleSubmit = async (parentId: string | null = null) => {
+    const targetContent = parentId ? replyContent : content;
+    if (!targetContent.trim() || (parentId ? replySubmitting : submitting)) return;
+
+    if (parentId) {
+      setReplySubmitting(true);
+    } else {
+      setSubmitting(true);
+    }
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      setSubmitting(false);
+      if (parentId) setReplySubmitting(false);
+      else setSubmitting(false);
       return;
     }
 
     const { error } = await supabase.from("board_comments").insert({
       post_id: postId,
       author_id: user.id,
-      content: content.trim(),
+      content: targetContent.trim(),
+      parent_id: parentId ?? null,
     });
 
-    if (error) { toast.error("댓글 작성에 실패했습니다"); setSubmitting(false); return; }
-    setContent("");
-    setSubmitting(false);
+    if (error) {
+      toast.error("댓글 작성에 실패했습니다");
+      if (parentId) setReplySubmitting(false);
+      else setSubmitting(false);
+      return;
+    }
+
+    if (parentId) {
+      setReplyContent("");
+      setActiveReplyId(null);
+      setReplySubmitting(false);
+    } else {
+      setContent("");
+      setSubmitting(false);
+    }
     onUpdate();
   };
 
   const handleDelete = async (commentId: string) => {
-    const { error } = await supabase.from("board_comments").delete().eq("id", commentId);
-    if (error) { toast.error("댓글 삭제에 실패했습니다"); return; }
+    const { error } = await supabase
+      .from("board_comments")
+      .delete()
+      .eq("id", commentId);
+    if (error) {
+      toast.error("댓글 삭제에 실패했습니다");
+      return;
+    }
     onUpdate();
   };
 
@@ -93,7 +271,11 @@ export function BoardCommentSection({
       .from("board_comments")
       .update({ content: editingContent.trim() })
       .eq("id", commentId);
-    if (error) { toast.error("댓글 수정에 실패했습니다"); setEditSaving(false); return; }
+    if (error) {
+      toast.error("댓글 수정에 실패했습니다");
+      setEditSaving(false);
+      return;
+    }
     toast.success("댓글이 수정되었습니다");
     setEditingId(null);
     setEditingContent("");
@@ -101,94 +283,185 @@ export function BoardCommentSection({
     onUpdate();
   };
 
+  const handleReplyClick = (commentId: string) => {
+    if (activeReplyId === commentId) {
+      // 이미 열린 경우 닫기
+      setActiveReplyId(null);
+      setReplyContent("");
+    } else {
+      setActiveReplyId(commentId);
+      setReplyContent("");
+    }
+  };
+
+  // 트리 구조로 변환
+  const commentTree = buildCommentTree(comments);
+
+  // 총 댓글 수 (원댓글 + 대댓글)
+  const totalCount = comments.length;
+
+  const commonItemProps = {
+    currentUserId,
+    editingId,
+    editingContent,
+    editSaving,
+    nicknameMap,
+    groupId,
+    onEditStart: handleEditStart,
+    onEditCancel: handleEditCancel,
+    onEditSave: handleEditSave,
+    onDelete: handleDelete,
+    onReplyClick: handleReplyClick,
+    activeReplyId,
+    editingContentChange: setEditingContent,
+  };
+
   return (
     <div className="space-y-2">
-      <h3 className="text-[11px] font-medium">댓글 ({comments.length})</h3>
+      <h3 className="text-[11px] font-medium">댓글 ({totalCount})</h3>
 
-      {comments.length > 0 && (
+      {commentTree.length > 0 && (
         <div className="space-y-2">
-          {comments.map((comment) => (
-            <div key={comment.id} className="flex gap-2">
-              <Avatar className="h-6 w-6 mt-0.5 shrink-0">
-                <AvatarFallback className="text-[10px]">
-                  {(nicknameMap?.[comment.author_id] || comment.profiles.name)?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <UserPopoverMenu
-                    userId={comment.author_id}
-                    displayName={nicknameMap?.[comment.author_id] || comment.profiles.name}
-                    groupId={groupId}
-                    className="text-xs font-medium hover:underline"
-                  >
-                    {nicknameMap?.[comment.author_id] || comment.profiles.name}
-                  </UserPopoverMenu>
-                  <span className="text-[11px] text-muted-foreground">
-                    {format(new Date(comment.created_at), "M/d HH:mm", { locale: ko })}
-                  </span>
-                  {currentUserId === comment.author_id && editingId !== comment.id && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                        onClick={() => handleEditStart(comment)}
-                        aria-label="댓글 수정"
-                      >
-                        <Pencil className="h-2.5 w-2.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleDelete(comment.id)}
-                        aria-label="댓글 삭제"
-                      >
-                        <Trash2 className="h-2.5 w-2.5" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-                {editingId === comment.id ? (
-                  <div className="mt-1 space-y-1">
-                    <Textarea
-                      value={editingContent}
-                      onChange={(e) => setEditingContent(e.target.value)}
-                      className="text-sm min-h-[60px] resize-none"
+          {commentTree.map((commentNode) => (
+            <div key={commentNode.id} className="space-y-2">
+              {/* 원댓글 */}
+              <CommentItem
+                comment={commentNode}
+                isReply={false}
+                {...commonItemProps}
+              />
+
+              {/* 답글 입력폼 (원댓글 아래, 대댓글 위) */}
+              {activeReplyId === commentNode.id && (
+                <div className="ml-8 flex gap-2 items-start">
+                  <CornerDownRight className="h-3 w-3 text-muted-foreground mt-2.5 shrink-0" />
+                  <div className="flex-1 flex gap-2">
+                    <Input
+                      placeholder={`@${nicknameMap?.[commentNode.author_id] || commentNode.profiles.name} 에게 답글 작성`}
+                      value={replyContent}
+                      onChange={(e) => setReplyContent(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSubmit(commentNode.id);
+                        }
+                      }}
+                      className="flex-1 h-8 text-sm"
                       autoFocus
                     />
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        className="h-6 text-[11px] px-2"
-                        onClick={() => handleEditSave(comment.id)}
-                        disabled={!editingContent.trim() || editSaving}
-                      >
-                        <Check className="h-2.5 w-2.5 mr-1" />
-                        저장
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-6 text-[11px] px-2"
-                        onClick={handleEditCancel}
-                        disabled={editSaving}
-                      >
-                        <X className="h-2.5 w-2.5 mr-1" />
-                        취소
-                      </Button>
-                    </div>
+                    <Button
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => handleSubmit(commentNode.id)}
+                      disabled={!replyContent.trim() || replySubmitting}
+                    >
+                      {replySubmitting ? "..." : "답글"}
+                    </Button>
                   </div>
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-                )}
-              </div>
+                </div>
+              )}
+
+              {/* 대댓글 목록 */}
+              {commentNode.replies.length > 0 && (
+                <div className="space-y-2">
+                  {commentNode.replies.map((reply) => (
+                    <div key={reply.id} className="space-y-1">
+                      {/* @원댓글작성자 멘션 + 내용 */}
+                      <div className="ml-8 flex gap-1.5">
+                        <CornerDownRight className="h-3 w-3 text-muted-foreground mt-1.5 shrink-0" />
+                        <Avatar className="h-6 w-6 mt-0.5 shrink-0">
+                          <AvatarFallback className="text-[10px]">
+                            {(nicknameMap?.[reply.author_id] || reply.profiles.name)
+                              ?.charAt(0)
+                              ?.toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <UserPopoverMenu
+                              userId={reply.author_id}
+                              displayName={nicknameMap?.[reply.author_id] || reply.profiles.name}
+                              groupId={groupId}
+                              className="text-xs font-medium hover:underline"
+                            >
+                              {nicknameMap?.[reply.author_id] || reply.profiles.name}
+                            </UserPopoverMenu>
+                            <span className="text-[11px] text-muted-foreground">
+                              {format(new Date(reply.created_at), "M/d HH:mm", { locale: ko })}
+                            </span>
+                            {currentUserId === reply.author_id && editingId !== reply.id && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5 text-muted-foreground hover:text-foreground"
+                                  onClick={() => handleEditStart(reply)}
+                                  aria-label="댓글 수정"
+                                >
+                                  <Pencil className="h-2.5 w-2.5" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                                  onClick={() => handleDelete(reply.id)}
+                                  aria-label="댓글 삭제"
+                                >
+                                  <Trash2 className="h-2.5 w-2.5" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                          {editingId === reply.id ? (
+                            <div className="mt-1 space-y-1">
+                              <Textarea
+                                value={editingContent}
+                                onChange={(e) => setEditingContent(e.target.value)}
+                                className="text-sm min-h-[60px] resize-none"
+                                autoFocus
+                              />
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  className="h-6 text-[11px] px-2"
+                                  onClick={() => handleEditSave(reply.id)}
+                                  disabled={!editingContent.trim() || editSaving}
+                                >
+                                  <Check className="h-2.5 w-2.5 mr-1" />
+                                  저장
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-6 text-[11px] px-2"
+                                  onClick={handleEditCancel}
+                                  disabled={editSaving}
+                                >
+                                  <X className="h-2.5 w-2.5 mr-1" />
+                                  취소
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm whitespace-pre-wrap">
+                              <span className="text-blue-500 text-xs font-medium mr-1">
+                                @{nicknameMap?.[commentNode.author_id] || commentNode.profiles.name}
+                              </span>
+                              {reply.content}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
+      {/* 새 댓글 작성 */}
       <div className="flex gap-2">
         <Input
           placeholder="댓글을 입력하세요"
@@ -197,14 +470,14 @@ export function BoardCommentSection({
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              handleSubmit();
+              handleSubmit(null);
             }
           }}
           className="flex-1"
         />
         <Button
           size="sm"
-          onClick={handleSubmit}
+          onClick={() => handleSubmit(null)}
           disabled={!content.trim() || submitting}
         >
           {submitting ? "..." : "작성"}

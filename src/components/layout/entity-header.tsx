@@ -23,8 +23,8 @@ export function EntityHeader({ ctx, leaderLabel, children }: EntityHeaderProps) 
   return (
     <>
       <div className="flex items-start justify-between mb-1">
-        <div>
-          <h1 className="text-base font-semibold flex items-center gap-1">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-base font-semibold flex items-center gap-1 truncate">
             {ctx.header.name}
             {ctx.header.badge && (
               isGroup ? (
@@ -41,7 +41,7 @@ export function EntityHeader({ ctx, leaderLabel, children }: EntityHeaderProps) 
             )}
           </h1>
           {ctx.header.description && (
-            <p className="text-[11px] text-muted-foreground">{ctx.header.description}</p>
+            <p className="text-[11px] text-muted-foreground truncate">{ctx.header.description}</p>
           )}
         </div>
         {children}

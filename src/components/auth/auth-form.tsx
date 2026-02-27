@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function AuthForm() {
+type AuthFormProps = {
+  inviteCode?: string;
+};
+
+export function AuthForm({ inviteCode }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +20,11 @@ export function AuthForm() {
   const [showEmailLogin, setShowEmailLogin] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+
+  const getRedirectPath = () => {
+    if (inviteCode) return `/join/${inviteCode}`;
+    return "/dashboard";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +37,7 @@ export function AuthForm() {
         password,
       });
       if (error) throw error;
-      router.push("/dashboard");
+      router.push(getRedirectPath());
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다");
@@ -38,10 +47,13 @@ export function AuthForm() {
   };
 
   const handleGoogleLogin = async () => {
+    const callbackUrl = inviteCode
+      ? `${window.location.origin}/join/${inviteCode}`
+      : `${window.location.origin}/auth/callback`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
       },
     });
   };
