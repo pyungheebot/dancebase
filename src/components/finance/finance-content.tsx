@@ -10,6 +10,7 @@ import { FinancePaymentStatus } from "@/components/finance/finance-payment-statu
 import { FinanceBudgetTab } from "@/components/finance/finance-budget-tab";
 import { UnpaidSummary } from "@/components/finance/unpaid-summary";
 import { FinanceSplitSection } from "@/components/finance/finance-split-section";
+import { ProjectCostAnalytics } from "@/components/finance/project-cost-analytics";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -341,7 +342,7 @@ export function FinanceContent({
         byCategory={stats.byCategory}
       />
 
-      {/* 거래 내역 / 납부 현황 / 예산 / 분할 정산 탭 */}
+      {/* 거래 내역 / 납부 현황 / 예산 / 분할 정산 / 비용 분석 탭 */}
       <div className="mt-3">
         <Tabs defaultValue="transactions">
           <TabsList className="w-full h-7 mb-3">
@@ -357,6 +358,11 @@ export function FinanceContent({
             <TabsTrigger value="split" className="flex-1 text-xs">
               분할 정산
             </TabsTrigger>
+            {ctx.projectId && (
+              <TabsTrigger value="cost-analytics" className="flex-1 text-xs">
+                비용 분석
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* 거래 내역 탭 */}
@@ -645,6 +651,16 @@ export function FinanceContent({
               currentUserId={currentUserId}
             />
           </TabsContent>
+
+          {/* 비용 분석 탭 (프로젝트 컨텍스트에서만) */}
+          {ctx.projectId && (
+            <TabsContent value="cost-analytics" className="mt-0">
+              <ProjectCostAnalytics
+                groupId={ctx.groupId}
+                projectId={ctx.projectId}
+              />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 

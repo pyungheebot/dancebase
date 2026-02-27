@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { eachDayOfInterval, getDay, getDate, format, parse } from "date-fns";
-import { ko } from "date-fns/locale";
+import { format } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -15,13 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,26 +25,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { ScheduleFormFields, type ScheduleFieldValues } from "./schedule-form-fields";
 import type { ScheduleFormFieldErrors } from "./schedule-form-fields";
+import { RecurringScheduleForm, type RecurringScheduleValue } from "./recurring-schedule-form";
 import type { Schedule } from "@/types";
+import { generateRecurringDates } from "@/lib/recurring-schedule";
 import {
   validateRequired,
   validateDateRange,
   validateTimeRange,
 } from "@/lib/validation";
-
-type RecurrenceType = "daily" | "weekly" | "monthly";
-
-const WEEKDAYS = [
-  { value: 1, label: "월" },
-  { value: 2, label: "화" },
-  { value: 3, label: "수" },
-  { value: 4, label: "목" },
-  { value: 5, label: "금" },
-  { value: 6, label: "토" },
-  { value: 0, label: "일" },
-];
 
 const DEFAULT_FIELDS: ScheduleFieldValues = {
   title: "",
@@ -142,12 +124,11 @@ export function ScheduleForm({
   const supabase = createClient();
 
   // Create mode: recurrence
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("weekly");
-  const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([]);
-  const [monthDay, setMonthDay] = useState(1);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [recurringValue, setRecurringValue] = useState<RecurringScheduleValue>({
+    enabled: false,
+    pattern: "weekly",
+    endDate: "",
+  });
 
   // Create mode: prefill from template
   useEffect(() => {
@@ -183,41 +164,15 @@ export function ScheduleForm({
     }
   }, [open, isEdit, schedule]);
 
-  const recurringDates = useMemo(() => {
-    if (!isRecurring || !startDate || !endDate) return [];
-    const start = parse(startDate, "yyyy-MM-dd", new Date());
-    const end = parse(endDate, "yyyy-MM-dd", new Date());
-    if (start > end) return [];
-
-    const allDays = eachDayOfInterval({ start, end });
-
-    switch (recurrenceType) {
-      case "daily":
-        return allDays;
-      case "weekly":
-        return allDays.filter((d) => selectedWeekdays.includes(getDay(d)));
-      case "monthly":
-        return allDays.filter((d) => getDate(d) === monthDay);
-      default:
-        return [];
-    }
-  }, [isRecurring, startDate, endDate, recurrenceType, selectedWeekdays, monthDay]);
-
-  const toggleWeekday = (day: number) => {
-    setSelectedWeekdays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
-  };
+  const recurringDateStrings = useMemo(() => {
+    if (!recurringValue.enabled || !date || !recurringValue.endDate) return [];
+    return generateRecurringDates(date, recurringValue.endDate, recurringValue.pattern);
+  }, [recurringValue.enabled, recurringValue.pattern, date, recurringValue.endDate]);
 
   const resetForm = () => {
     setFields(DEFAULT_FIELDS);
     setDate("");
-    setIsRecurring(false);
-    setRecurrenceType("weekly");
-    setSelectedWeekdays([]);
-    setMonthDay(1);
-    setStartDate("");
-    setEndDate("");
+    setRecurringValue({ enabled: false, pattern: "weekly", endDate: "" });
     setError(null);
     setTitleError(null);
     setTimeError(null);
@@ -227,7 +182,9 @@ export function ScheduleForm({
   const validateScheduleForm = (): boolean => {
     const newTitleError = validateRequired(fields.title, "제목");
     const newTimeError = validateTimeRange(fields.startTime, fields.endTime);
-    const newDateRangeError = isRecurring ? validateDateRange(startDate, endDate) : null;
+    const newDateRangeError = recurringValue.enabled
+      ? validateDateRange(date, recurringValue.endDate)
+      : null;
     setTitleError(newTitleError);
     setTimeError(newTimeError);
     setDateRangeError(newDateRangeError);
@@ -237,7 +194,7 @@ export function ScheduleForm({
   const isScheduleFormValid =
     !validateRequired(fields.title, "제목") &&
     !validateTimeRange(fields.startTime, fields.endTime) &&
-    !(isRecurring ? validateDateRange(startDate, endDate) : null);
+    !(recurringValue.enabled ? validateDateRange(date, recurringValue.endDate) : null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -365,8 +322,8 @@ export function ScheduleForm({
           require_checkout: fields.attendanceMethod !== "none" ? fields.requireCheckout : false,
         });
 
-        if (isRecurring) {
-          if (recurringDates.length === 0) {
+        if (recurringValue.enabled) {
+          if (recurringDateStrings.length === 0) {
             setError("생성할 일정이 없습니다. 반복 설정을 확인해주세요.");
             setLoading(false);
             return;
@@ -374,18 +331,20 @@ export function ScheduleForm({
 
           // 같은 시리즈 전체에 동일한 recurrence_id 부여
           const seriesId = crypto.randomUUID();
-          const rows = recurringDates.map((d) => ({
-            ...buildRow(format(d, "yyyy-MM-dd")),
+          const rows = recurringDateStrings.map((dateStr) => ({
+            ...buildRow(dateStr),
             recurrence_id: seriesId,
           }));
           const { error } = await supabase.from("schedules").insert(rows);
           if (error) throw error;
+          toast.success(`${recurringDateStrings.length}개의 일정이 생성되었습니다`);
         } else {
           const { error } = await supabase.from("schedules").insert({
             ...buildRow(date),
             recurrence_id: null,
           });
           if (error) throw error;
+          toast.success("일정이 생성되었습니다");
         }
       }
 
@@ -428,126 +387,38 @@ export function ScheduleForm({
     </div>
   ) : (
     <>
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="recurring"
-          checked={isRecurring}
-          onCheckedChange={(checked) => setIsRecurring(checked === true)}
-        />
-        <Label htmlFor="recurring" className="font-normal cursor-pointer">
-          반복 일정
+      {/* 시작일 (단일/반복 공통) */}
+      <div className="space-y-1">
+        <Label htmlFor="date" className="text-xs">
+          {recurringValue.enabled ? "시작일" : "날짜"}
         </Label>
+        <Input
+          id="date"
+          type="date"
+          value={date}
+          onChange={(e) => {
+            setDate(e.target.value);
+            if (recurringValue.enabled) {
+              setDateRangeError(validateDateRange(e.target.value, recurringValue.endDate));
+            }
+          }}
+          required
+        />
       </div>
 
-      {isRecurring ? (
-        <>
-          <div className="space-y-1">
-            <Label className="text-xs">반복 유형</Label>
-            <Select
-              value={recurrenceType}
-              onValueChange={(v) => setRecurrenceType(v as RecurrenceType)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">매일</SelectItem>
-                <SelectItem value="weekly">매주</SelectItem>
-                <SelectItem value="monthly">매월</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {recurrenceType === "weekly" && (
-            <div className="space-y-1">
-              <Label className="text-xs">요일 선택</Label>
-              <div className="flex gap-1">
-                {WEEKDAYS.map((wd) => (
-                  <button
-                    key={wd.value}
-                    type="button"
-                    onClick={() => toggleWeekday(wd.value)}
-                    className={`w-7 h-7 rounded text-xs font-medium border transition-colors ${
-                      selectedWeekdays.includes(wd.value)
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background hover:bg-accent border-input"
-                    }`}
-                  >
-                    {wd.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {recurrenceType === "monthly" && (
-            <div className="space-y-1">
-              <Label htmlFor="monthDay" className="text-xs">매월 반복일</Label>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">매월</span>
-                <Input
-                  id="monthDay"
-                  type="number"
-                  min={1}
-                  max={31}
-                  value={monthDay}
-                  onChange={(e) => setMonthDay(Number(e.target.value))}
-                  className="w-20"
-                />
-                <span className="text-xs text-muted-foreground">일</span>
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="startDate" className="text-xs">
-                  시작일 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                    setDateRangeError(validateDateRange(e.target.value, endDate));
-                  }}
-                  required
-                  className={dateRangeError ? "border-destructive focus-visible:ring-destructive" : ""}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="endDate" className="text-xs">
-                  종료일 <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => {
-                    setEndDate(e.target.value);
-                    setDateRangeError(validateDateRange(startDate, e.target.value));
-                  }}
-                  required
-                  className={dateRangeError ? "border-destructive focus-visible:ring-destructive" : ""}
-                />
-              </div>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className="space-y-1">
-          <Label htmlFor="date" className="text-xs">날짜</Label>
-          <Input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-          />
-        </div>
-      )}
+      {/* 반복 설정 서브컴포넌트 */}
+      <RecurringScheduleForm
+        value={recurringValue}
+        onChange={(v) => {
+          setRecurringValue(v);
+          if (v.enabled) {
+            setDateRangeError(validateDateRange(date, v.endDate));
+          } else {
+            setDateRangeError(null);
+          }
+        }}
+        startDate={date}
+      />
     </>
   );
 
@@ -596,17 +467,8 @@ export function ScheduleForm({
           onBlurTime={() => setTimeError(validateTimeRange(fields.startTime, fields.endTime))}
         />
 
-        {dateRangeError && isRecurring && (
+        {dateRangeError && recurringValue.enabled && (
           <p className="text-xs text-destructive">{dateRangeError}</p>
-        )}
-
-        {!isEdit && isRecurring && recurringDates.length > 0 && (
-          <p className="text-sm text-muted-foreground">
-            총 <span className="font-semibold text-foreground">{recurringDates.length}개</span>의 일정이 등록됩니다
-            <span className="block text-xs mt-1">
-              {format(recurringDates[0], "M/d(EEE)", { locale: ko })} ~ {format(recurringDates[recurringDates.length - 1], "M/d(EEE)", { locale: ko })}
-            </span>
-          </p>
         )}
 
         {error && <p className="text-sm text-destructive">{error}</p>}

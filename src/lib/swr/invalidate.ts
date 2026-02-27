@@ -196,3 +196,7 @@ export function invalidateContactVerification(groupId: string) {
 export function invalidatePermissionAudits(groupId: string) {
   mutate(swrKeys.permissionAudits(groupId));
 }
+
+export function invalidateRolePromotionCandidates(groupId: string) {
+  mutate(swrKeys.rolePromotionCandidates(groupId));
+}

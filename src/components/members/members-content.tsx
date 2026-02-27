@@ -38,7 +38,8 @@ import {
 } from "@/components/ui/select";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { SubgroupInviteFromParent } from "@/components/subgroups/subgroup-invite-from-parent";
-import { ChevronDown, Download, Plus, Search, Tags, Trash2, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronDown, Download, Plus, Search, Tags, Trash2, TrendingUp, Users } from "lucide-react";
 import { InviteGroupMembersDialog } from "@/components/members/invite-group-members-dialog";
 import { toast } from "sonner";
 import { exportToCsv } from "@/lib/export-csv";
@@ -46,9 +47,11 @@ import { getCategoryColorClasses } from "@/types";
 import { EmptyState } from "@/components/shared/empty-state";
 import { InactiveMembersSection } from "@/components/members/inactive-members-section";
 import { MemberActivityReport } from "@/components/members/member-activity-report";
+import { MemberActivityTrendChart } from "@/components/members/member-activity-trend-chart";
 import { SkillMatrixSection } from "@/components/members/skill-matrix-section";
 import { ContactVerificationSection } from "@/components/members/contact-verification-section";
 import { ContactVerifyBanner } from "@/components/members/contact-verify-banner";
+import { RolePromotionSection } from "@/components/members/role-promotion-section";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -130,6 +133,9 @@ function GroupMembersContent({
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("name");
+
+  // 활동 추세 차트용 선택 멤버
+  const [trendUserId, setTrendUserId] = useState<string>("");
 
   // 일괄 선택 상태
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -493,6 +499,15 @@ function GroupMembersContent({
       {/* 비활성 멤버 섹션 (리더 전용, 비활성 멤버가 없으면 숨김) */}
       <InactiveMembersSection ctx={ctx} />
 
+      {/* 역할 자동 승격 제안 (canEdit 권한 + 멤버가 있는 경우에만 표시) */}
+      {ctx.permissions.canEdit && ctx.members.length > 0 && (
+        <RolePromotionSection
+          groupId={ctx.groupId}
+          members={ctx.members}
+          onUpdate={onUpdate}
+        />
+      )}
+
       {/* 멤버 활동 리포트 (canEdit 권한인 경우에만 표시) */}
       {ctx.permissions.canEdit && ctx.members.length > 0 && (
         <MemberActivityReport
@@ -524,6 +539,48 @@ function GroupMembersContent({
       {/* 연락처 재확인 관리 섹션 (리더/서브리더 전용) */}
       {ctx.permissions.canEdit && ctx.members.length > 0 && (
         <ContactVerificationSection ctx={ctx} />
+      )}
+
+      {/* 멤버 활동 추세 차트 */}
+      {ctx.members.length > 0 && (
+        <Card className="mt-4">
+          <CardHeader className="pb-2 pt-3 px-4">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-xs font-semibold flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                활동 추세
+              </CardTitle>
+              <Select
+                value={trendUserId}
+                onValueChange={setTrendUserId}
+              >
+                <SelectTrigger className="w-32 h-6 text-[11px]">
+                  <SelectValue placeholder="멤버 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ctx.members.map((m) => (
+                    <SelectItem key={m.userId} value={m.userId}>
+                      {m.nickname || m.profile.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+          <CardContent className="px-4 pb-3">
+            {trendUserId ? (
+              <MemberActivityTrendChart
+                groupId={ctx.groupId}
+                userId={trendUserId}
+                weeks={8}
+              />
+            ) : (
+              <p className="text-[11px] text-muted-foreground text-center py-6">
+                멤버를 선택하면 최근 8주간 활동 추세를 확인할 수 있습니다
+              </p>
+            )}
+          </CardContent>
+        </Card>
       )}
     </>
   );

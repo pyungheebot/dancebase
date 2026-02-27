@@ -38,6 +38,10 @@ export const swrKeys = {
   finance: (groupId: string, projectId?: string | null) =>
     `/groups/${groupId}/finance${projectId ? `?project=${projectId}` : ""}` as const,
 
+  // 프로젝트 비용 분석
+  projectCostAnalytics: (groupId: string, projectId: string) =>
+    `/groups/${groupId}/projects/${projectId}/cost-analytics` as const,
+
   // 재정 예산
   financeBudget: (entityType: string, entityId: string, yearMonth: string) =>
     `/finance-budget/${entityType}/${entityId}/${yearMonth}` as const,
@@ -171,4 +175,12 @@ export const swrKeys = {
   // 권한 감사 로그
   permissionAudits: (groupId: string) =>
     `/groups/${groupId}/permission-audits` as const,
+
+  // 멤버 활동 추세 (주별)
+  memberActivityTrend: (groupId: string, userId: string, weeks: number) =>
+    `/member-activity-trend/${groupId}/${userId}?weeks=${weeks}` as const,
+
+  // 역할 승격 후보
+  rolePromotionCandidates: (groupId: string) =>
+    `/groups/${groupId}/role-promotion-candidates` as const,
 };
