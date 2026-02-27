@@ -823,4 +823,24 @@ export const swrKeys = {
   // 세션 레이팅 (localStorage 기반)
   sessionRating: (groupId: string) =>
     `session-rating-${groupId}` as const,
+
+  // 연습 플레이리스트 큐 (localStorage 기반)
+  practiceQueue: (groupId: string, projectId: string) =>
+    `practice-queue-${groupId}-${projectId}` as const,
+
+  // 소셜 그래프 (localStorage 기반)
+  socialGraph: (groupId: string) =>
+    `social-graph-${groupId}` as const,
+
+  // 출석 히트맵 (localStorage 기반)
+  attendanceHeatmap: (groupId: string) =>
+    `attendance-heatmap-${groupId}` as const,
+
+  // 의사결정 투표 (localStorage 기반)
+  decisionPoll: (groupId: string) =>
+    `decision-poll-${groupId}` as const,
+
+  // 집중 모드 타이머 (localStorage 기반)
+  focusTimer: (groupId: string) =>
+    `focus-timer-${groupId}` as const,
 };

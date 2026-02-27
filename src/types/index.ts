@@ -6206,3 +6206,112 @@ export type SharedPracticeNote = {
   pinned: boolean;
   createdAt: string;
 };
+
+// ============================================
+// Attendance Heatmap (출석 히트맵)
+// ============================================
+
+export type HeatmapDayData = {
+  date: string; // YYYY-MM-DD
+  count: number; // 해당일 활동 횟수 (0-4+)
+  activities: string[]; // "연습", "공연" 등
+};
+
+export type AttendanceHeatmapData = {
+  memberName: string;
+  year: number;
+  days: HeatmapDayData[];
+  totalActiveDays: number;
+  longestStreak: number;
+};
+
+// ============================================
+// Practice Queue (연습 플레이리스트 큐)
+// ============================================
+
+export type QueueItemStatus = "pending" | "playing" | "done" | "skipped";
+
+export type PracticeQueueItem = {
+  id: string;
+  songTitle: string;
+  artist: string;
+  duration: string; // MM:SS
+  repeatCount: number;
+  status: QueueItemStatus;
+  order: number;
+  note: string;
+};
+
+export type PracticeQueue = {
+  id: string;
+  name: string;
+  items: PracticeQueueItem[];
+  currentIndex: number;
+  createdAt: string;
+};
+
+// ============================================
+// Social Graph (소셜 그래프)
+// ============================================
+
+export type SocialRelationType = "friend" | "practice_partner" | "mentor" | "rival";
+
+export type SocialRelation = {
+  id: string;
+  member1: string;
+  member2: string;
+  relationType: SocialRelationType;
+  strength: number; // 1-10
+  since: string;
+  note: string;
+  createdAt: string;
+};
+
+// ============================================
+// Decision Poll (의사결정 투표)
+// ============================================
+
+export type PollVoteChoice = "agree" | "disagree" | "abstain";
+
+export type PollVote = {
+  id: string;
+  voterName: string;
+  choice: PollVoteChoice;
+  reason: string;
+  createdAt: string;
+};
+
+export type DecisionPoll = {
+  id: string;
+  topic: string;
+  description: string;
+  deadline: string;
+  votes: PollVote[];
+  isClosed: boolean;
+  result?: PollVoteChoice; // 최다 득표
+  createdAt: string;
+};
+
+// ============================================
+// Focus Timer (집중 모드 타이머)
+// ============================================
+
+export type FocusTimerPhase = "focus" | "short_break" | "long_break";
+
+export type FocusTimerSession = {
+  id: string;
+  date: string;
+  focusMinutes: number;
+  breakMinutes: number;
+  completedCycles: number;
+  totalFocusTime: number; // 분 단위
+  note: string;
+  createdAt: string;
+};
+
+export type FocusTimerConfig = {
+  focusDuration: number; // 기본 25분
+  shortBreak: number; // 기본 5분
+  longBreak: number; // 기본 15분
+  cyclesBeforeLongBreak: number; // 기본 4
+};
