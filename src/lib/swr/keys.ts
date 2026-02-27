@@ -323,4 +323,8 @@ export const swrKeys = {
   // 일정 브로드캐스트 (RSVP 상태 + 멤버 목록)
   scheduleBroadcast: (scheduleId: string, groupId: string) =>
     `/schedules/${scheduleId}/broadcast?group=${groupId}` as const,
+
+  // 내 월간 활동 요약 (대시보드용)
+  myMonthlySummary: (yearMonth: string) =>
+    `/my-monthly-summary/${yearMonth}` as const,
 };

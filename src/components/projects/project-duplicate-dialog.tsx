@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -36,6 +37,7 @@ const DEFAULT_OPTIONS: DuplicateOptions = {
   boardCategories: true,
   financeCategories: true,
   scheduleTemplates: true,
+  includeMembers: false,
 };
 
 export function ProjectDuplicateDialog({
@@ -48,6 +50,7 @@ export function ProjectDuplicateDialog({
   const [newName, setNewName] = useState("");
   const [options, setOptions] = useState<DuplicateOptions>(DEFAULT_OPTIONS);
   const [submitting, setSubmitting] = useState(false);
+  const [sourceMemberCount, setSourceMemberCount] = useState<number | null>(null);
 
   const toggleOption = (key: keyof DuplicateOptions) => {
     setOptions((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -60,16 +63,25 @@ export function ProjectDuplicateDialog({
       setSourceProjectId("");
       setNewName("");
       setOptions(DEFAULT_OPTIONS);
+      setSourceMemberCount(null);
     }
   };
 
-  const handleSourceSelect = (projectId: string) => {
+  const handleSourceSelect = async (projectId: string) => {
     setSourceProjectId(projectId);
+    setSourceMemberCount(null);
     // 선택한 프로젝트 이름을 기본값으로 채움
     const selected = projects.find((p) => p.id === projectId);
     if (selected) {
       setNewName(`${selected.name} 복제본`);
     }
+    // 원본 프로젝트 멤버 수 조회
+    const supabase = createClient();
+    const { count } = await supabase
+      .from("project_members")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", projectId);
+    setSourceMemberCount(count ?? 0);
   };
 
   const handleSubmit = async () => {
@@ -190,13 +202,25 @@ export function ProjectDuplicateDialog({
                 />
                 <span className="text-sm">일정 템플릿</span>
               </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox
+                  checked={options.includeMembers}
+                  onCheckedChange={() => toggleOption("includeMembers")}
+                />
+                <span className="text-sm">멤버 구성</span>
+                {options.includeMembers && sourceMemberCount !== null && (
+                  <Badge className="text-[10px] px-1.5 py-0 ml-1">
+                    {sourceMemberCount}명
+                  </Badge>
+                )}
+              </label>
             </div>
           </div>
 
           {/* 안내 문구 */}
           <p className="text-[11px] text-muted-foreground leading-relaxed">
             프로젝트 기본 정보(이름, 설명, 유형, 공개 설정)와 선택한 항목이 복사됩니다.
-            복제된 프로젝트의 상태는 "신규"로 설정됩니다.
+            복제된 프로젝트의 상태는 "신규"로 설정되며, 복제한 사용자는 리더로 추가됩니다.
           </p>
 
           <Button

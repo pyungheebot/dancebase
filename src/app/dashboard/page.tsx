@@ -7,6 +7,7 @@ import { OnboardingGuide } from "@/components/dashboard/onboarding-guide";
 import { DashboardQuickStats } from "@/components/dashboard/dashboard-quick-stats";
 import { ContactVerifyBanner } from "@/components/members/contact-verify-banner";
 import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed";
+import { MyMonthlySummaryCard } from "@/components/dashboard/my-monthly-summary-card";
 import { useGroups } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -50,6 +51,11 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+
+        {/* 이번 달 내 활동 요약 카드 */}
+        <section aria-label="이번 달 내 활동 요약">
+          <MyMonthlySummaryCard />
+        </section>
 
         {/* 오늘의 일정 카드 */}
         <section aria-label="오늘의 일정">

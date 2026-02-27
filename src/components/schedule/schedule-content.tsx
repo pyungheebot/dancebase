@@ -15,6 +15,7 @@ import { BulkRsvpDialog } from "@/components/schedule/bulk-rsvp-dialog";
 import { ScheduleCopyDialog } from "@/components/schedule/schedule-copy-dialog";
 import { AvailabilityPollDialog } from "@/components/schedule/availability-poll-dialog";
 import { PreRsvpPoll } from "@/components/schedule/pre-rsvp-poll";
+import { ScheduleIcsSubscribe } from "@/components/schedule/schedule-ics-subscribe";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { EmptyState } from "@/components/shared/empty-state";
 import { usePreRsvp } from "@/hooks/use-pre-rsvp";
@@ -80,6 +81,7 @@ export function ScheduleContent({
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xs font-medium">일정</h2>
         <div className="flex items-center gap-1.5">
+          <ScheduleIcsSubscribe groupId={ctx.groupId} />
           <Button
             variant="outline"
             size="sm"

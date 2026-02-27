@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ScheduleFormFields, type ScheduleFieldValues } from "./schedule-form-fields";
 import type { ScheduleFormFieldErrors } from "./schedule-form-fields";
@@ -36,8 +36,8 @@ import {
   validateDateRange,
   validateTimeRange,
 } from "@/lib/validation";
-import { detectConflicts } from "@/lib/schedule-conflict";
-import { format as formatDate } from "date-fns";
+import { useScheduleConflictCheck } from "@/hooks/use-schedule-conflict-check";
+import { ScheduleConflictWarning } from "./schedule-conflict-warning";
 
 const DEFAULT_FIELDS: ScheduleFieldValues = {
   title: "",
@@ -112,7 +112,7 @@ export function ScheduleForm({
   editScope = "this",
   hideDeleteButton = false,
   prefill,
-  existingSchedules = [],
+  existingSchedules: _existingSchedules = [],
 }: ScheduleFormProps) {
   const isEdit = mode === "edit";
 
@@ -176,21 +176,20 @@ export function ScheduleForm({
     return generateRecurringDates(date, recurringValue.endDate, recurringValue.pattern);
   }, [recurringValue.enabled, recurringValue.pattern, date, recurringValue.endDate]);
 
-  // 충돌 감지: 날짜/시간이 모두 입력된 경우에만 검사
-  const conflictingSchedules = useMemo(() => {
-    if (!date || !fields.startTime || !fields.endTime) return [];
-    try {
-      const startsAt = toISOWithLocalOffset(date, fields.startTime);
-      const endsAt = toISOWithLocalOffset(date, fields.endTime);
-      return detectConflicts(
-        { starts_at: startsAt, ends_at: endsAt },
-        existingSchedules,
-        isEdit ? schedule?.id : undefined
-      );
-    } catch {
-      return [];
-    }
-  }, [date, fields.startTime, fields.endTime, existingSchedules, isEdit, schedule?.id]);
+  // 충돌 감지: 날짜/시간이 모두 입력된 경우에만 검사 (debounce 500ms)
+  const conflictStartsAt = date && fields.startTime
+    ? (() => { try { return toISOWithLocalOffset(date, fields.startTime); } catch { return null; } })()
+    : null;
+  const conflictEndsAt = date && fields.endTime
+    ? (() => { try { return toISOWithLocalOffset(date, fields.endTime); } catch { return null; } })()
+    : null;
+
+  const { conflicts: conflictingSchedules } = useScheduleConflictCheck({
+    startsAt: conflictStartsAt,
+    endsAt: conflictEndsAt,
+    groupId,
+    excludeScheduleId: isEdit ? schedule?.id : undefined,
+  });
 
   const resetForm = () => {
     setFields(DEFAULT_FIELDS);
@@ -496,27 +495,8 @@ export function ScheduleForm({
           <p className="text-xs text-destructive">{dateRangeError}</p>
         )}
 
-        {/* 일정 충돌 경고 배너 */}
-        {conflictingSchedules.length > 0 && (
-          <div className="rounded-md bg-yellow-50 border border-yellow-200 px-3 py-2 space-y-1">
-            <div className="flex items-center gap-1.5">
-              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-yellow-600" />
-              <p className="text-xs font-medium text-yellow-800">겹치는 일정이 있습니다</p>
-            </div>
-            <ul className="space-y-0.5 pl-5">
-              {conflictingSchedules.map((s) => (
-                <li key={s.id} className="text-[11px] text-yellow-700 list-disc">
-                  {s.title}{" "}
-                  <span className="text-yellow-600">
-                    ({formatDate(new Date(s.starts_at), "M/d HH:mm")}
-                    {" ~ "}
-                    {formatDate(new Date(s.ends_at), "HH:mm")})
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* 일정 충돌 경고 */}
+        <ScheduleConflictWarning conflicts={conflictingSchedules} />
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 

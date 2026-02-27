@@ -4,6 +4,11 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useMeetingMinutes } from "@/hooks/use-meeting-minutes";
 import { invalidateMeetingMinutes } from "@/lib/swr/invalidate";
+import {
+  notifyActionItemAssigned,
+  getNotifiedActionItemIds,
+  markActionItemNotified,
+} from "@/lib/notifications";
 import type { EntityContext } from "@/types/entity-context";
 import type { MeetingMinute } from "@/types";
 import {
@@ -42,8 +47,14 @@ import {
   CheckSquare,
   Loader2,
   Users,
+  Bell,
 } from "lucide-react";
 import { toast } from "sonner";
+
+/** action_item 알림 발송 이력 localStorage 복합 ID 생성 */
+function buildActionItemNotifId(minuteId: string, itemIdx: number): string {
+  return `${minuteId}:${itemIdx}`;
+}
 
 type ActionItem = { title: string; owner: string | null; done: boolean };
 
@@ -174,24 +185,61 @@ function WriteDialog({ ctx, onSuccess }: WriteDialogProps) {
       const filteredDecisions = decisions.filter((d) => d.trim() !== "");
       const filteredActionItems = actionItems.filter((a) => a.title.trim() !== "");
 
-      const { error } = await supabase.from("meeting_minutes").insert({
-        group_id: ctx.groupId,
-        project_id: ctx.projectId ?? null,
-        title: title.trim(),
-        content: content.trim() || null,
-        attendees: selectedAttendees,
-        decisions: filteredDecisions,
-        action_items: filteredActionItems,
-        meeting_date: meetingDate,
-        created_by: user.id,
-      });
+      const { data: insertedData, error } = await supabase
+        .from("meeting_minutes")
+        .insert({
+          group_id: ctx.groupId,
+          project_id: ctx.projectId ?? null,
+          title: title.trim(),
+          content: content.trim() || null,
+          attendees: selectedAttendees,
+          decisions: filteredDecisions,
+          action_items: filteredActionItems,
+          meeting_date: meetingDate,
+          created_by: user.id,
+        })
+        .select("id")
+        .single();
 
       if (error) {
         toast.error("회의록 저장에 실패했습니다");
         return;
       }
 
-      toast.success("회의록이 저장되었습니다");
+      // owner가 지정된 action_item에 알림 발송 (본인 제외, 중복 방지)
+      const minuteId = insertedData?.id ?? "";
+      const minuteTitle = title.trim();
+      const notifiedSet = getNotifiedActionItemIds();
+      let notifiedCount = 0;
+
+      for (let idx = 0; idx < filteredActionItems.length; idx++) {
+        const item = filteredActionItems[idx];
+        if (!item.owner) continue;
+
+        const compositeId = buildActionItemNotifId(minuteId, idx);
+        if (notifiedSet.has(compositeId)) continue;
+        if (item.owner === user.id) continue;
+
+        await notifyActionItemAssigned({
+          groupId: ctx.groupId,
+          projectId: ctx.projectId,
+          minuteId,
+          minuteTitle,
+          actionItemTitle: item.title,
+          assigneeUserId: item.owner,
+          assignerUserId: user.id,
+        });
+
+        markActionItemNotified(compositeId);
+        notifiedCount++;
+      }
+
+      if (notifiedCount > 0) {
+        toast.success(`회의록이 저장되었습니다 (알림 ${notifiedCount}건 발송)`);
+      } else {
+        toast.success("회의록이 저장되었습니다");
+      }
+
       invalidateMeetingMinutes(ctx.groupId, ctx.projectId);
       setOpen(false);
       resetForm();
@@ -567,36 +615,46 @@ function MinuteCard({
                 액션 아이템
               </p>
               <div className="space-y-1">
-                {minute.action_items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-2 group"
-                  >
-                    <Checkbox
-                      checked={item.done}
-                      onCheckedChange={(checked) =>
-                        onActionItemToggle(minute.id, idx, checked as boolean)
-                      }
-                      className="h-3.5 w-3.5 mt-0.5 shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <span
-                        className={`text-xs ${
-                          item.done
-                            ? "line-through text-muted-foreground"
-                            : "text-foreground"
-                        }`}
-                      >
-                        {item.title}
-                      </span>
-                      {item.owner && (
-                        <span className="text-[10px] text-muted-foreground ml-1.5">
-                          @ {getMemberName(item.owner, ctx)}
+                {minute.action_items.map((item, idx) => {
+                  const compositeId = buildActionItemNotifId(minute.id, idx);
+                  const isNotified = getNotifiedActionItemIds().has(compositeId);
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-2 group"
+                    >
+                      <Checkbox
+                        checked={item.done}
+                        onCheckedChange={(checked) =>
+                          onActionItemToggle(minute.id, idx, checked as boolean)
+                        }
+                        className="h-3.5 w-3.5 mt-0.5 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0 flex flex-wrap items-center gap-1">
+                        <span
+                          className={`text-xs ${
+                            item.done
+                              ? "line-through text-muted-foreground"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {item.title}
                         </span>
-                      )}
+                        {item.owner && (
+                          <span className="text-[10px] text-muted-foreground">
+                            @ {getMemberName(item.owner, ctx)}
+                          </span>
+                        )}
+                        {isNotified && item.owner && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-green-600 bg-green-50 rounded px-1 py-0">
+                            <Bell className="h-2.5 w-2.5" />
+                            알림 발송됨
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

@@ -644,7 +644,8 @@ export type NotificationType =
   | "join_request"
   | "join_approved"
   | "join_rejected"
-  | "finance_unpaid";
+  | "finance_unpaid"
+  | "action_item";
 
 export type Notification = {
   id: string;

@@ -4,6 +4,7 @@ export type DuplicateOptions = {
   boardCategories: boolean;
   financeCategories: boolean;
   scheduleTemplates: boolean;
+  includeMembers: boolean;
 };
 
 export type DuplicateResult = {
@@ -78,7 +79,32 @@ export async function duplicateProject(
     console.warn("프로젝트 멤버 추가 실패:", memberError.message);
   }
 
-  // 4. 게시판 카테고리 복사 (board_categories는 group_id 기준)
+  // 4. 멤버 구성 복사 (복제한 사용자 본인 제외)
+  if (options.includeMembers) {
+    const { data: sourceMembers } = await supabase
+      .from("project_members")
+      .select("user_id, role")
+      .eq("project_id", sourceProjectId)
+      .neq("user_id", userId); // 복제한 사용자는 이미 leader로 추가됨
+
+    if (sourceMembers && sourceMembers.length > 0) {
+      const toInsert = sourceMembers.map((m) => ({
+        project_id: newProjectId,
+        user_id: m.user_id,
+        role: m.role,
+      }));
+
+      const { error: membersInsertError } = await supabase
+        .from("project_members")
+        .insert(toInsert);
+
+      if (membersInsertError) {
+        console.warn("멤버 복사 실패:", membersInsertError.message);
+      }
+    }
+  }
+
+  // 5. 게시판 카테고리 복사 (board_categories는 group_id 기준)
   if (options.boardCategories) {
     const { data: boardCats } = await supabase
       .from("board_categories")
@@ -101,7 +127,7 @@ export async function duplicateProject(
     }
   }
 
-  // 5. 회비 카테고리 복사 (finance_categories는 project_id 기준)
+  // 6. 회비 카테고리 복사 (finance_categories는 project_id 기준)
   if (options.financeCategories) {
     const { data: financeCats } = await supabase
       .from("finance_categories")
@@ -124,7 +150,7 @@ export async function duplicateProject(
     }
   }
 
-  // 6. 일정 템플릿 복사
+  // 7. 일정 템플릿 복사
   if (options.scheduleTemplates) {
     const { data: templates } = await supabase
       .from("schedule_templates")
