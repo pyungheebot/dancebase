@@ -6095,3 +6095,114 @@ export type ImpressionPost = {
   eventTitle: string; // 관련 공연/연습명
   createdAt: string;
 };
+
+// ============================================
+// Performance Checkin (공연 체크인)
+// ============================================
+
+export type CheckinStatus = "pending" | "arrived" | "costume_ready" | "stage_ready";
+
+export type CheckinMember = {
+  id: string;
+  memberName: string;
+  status: CheckinStatus;
+  arrivedAt?: string;
+  costumeNote: string;
+  isReady: boolean;
+};
+
+export type PerformanceCheckinEvent = {
+  id: string;
+  eventName: string;
+  eventDate: string;
+  callTime: string; // HH:MM
+  members: CheckinMember[];
+  createdAt: string;
+};
+
+// ============================================
+// Group Wishlist (그룹 위시리스트)
+// ============================================
+
+export type WishCategory = "song" | "performance" | "event" | "workshop" | "other";
+export type WishPriority = "high" | "medium" | "low";
+
+export type WishlistItem = {
+  id: string;
+  title: string;
+  description: string;
+  category: WishCategory;
+  priority: WishPriority;
+  proposedBy: string;
+  votes: number;
+  isCompleted: boolean;
+  completedAt?: string;
+  createdAt: string;
+};
+
+// ============================================
+// Session Rating (세션 레이팅)
+// ============================================
+
+export type SessionRatingEntry = {
+  id: string;
+  sessionDate: string;
+  sessionTitle: string;
+  raterName: string;
+  satisfaction: number; // 1-5
+  efficiency: number; // 1-5
+  difficulty: number; // 1-5
+  comment: string;
+  createdAt: string;
+};
+
+export type SessionRatingAvg = {
+  sessionDate: string;
+  sessionTitle: string;
+  avgSatisfaction: number;
+  avgEfficiency: number;
+  avgDifficulty: number;
+  ratingCount: number;
+};
+
+// ============================================
+// Contribution Board (기여도 보드)
+// ============================================
+
+export type ContributionType = "teaching" | "organizing" | "choreography" | "music" | "logistics" | "mentoring" | "other";
+
+export type ContributionRecord = {
+  id: string;
+  memberName: string;
+  type: ContributionType;
+  description: string;
+  points: number; // 1-10
+  date: string;
+  awardedBy: string;
+  createdAt: string;
+};
+
+export type ContributionSummary = {
+  memberName: string;
+  totalPoints: number;
+  typeBreakdown: Record<ContributionType, number>;
+  recordCount: number;
+};
+
+// ============================================
+// Practice Notes (연습 노트 공유)
+// ============================================
+
+export type PracticeNoteTag = "tip" | "correction" | "idea" | "reminder" | "question";
+
+export type SharedPracticeNote = {
+  id: string;
+  authorName: string;
+  content: string;
+  tags: PracticeNoteTag[];
+  sessionDate: string;
+  songTitle: string;
+  likes: number;
+  pinned: boolean;
+  createdAt: string;
+};

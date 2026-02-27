@@ -803,4 +803,24 @@ export const swrKeys = {
   // 그룹 출결 스트릭 (localStorage 기반)
   attendanceStreakGroup: (groupId: string) =>
     `attendance-streak-group-${groupId}` as const,
+
+  // 공연 체크인 (localStorage 기반)
+  performanceCheckin: (groupId: string, projectId: string) =>
+    `performance-checkin-${groupId}-${projectId}` as const,
+
+  // 그룹 위시리스트 (localStorage 기반)
+  groupWishlist: (groupId: string) =>
+    `group-wishlist-${groupId}` as const,
+
+  // 기여도 보드 (localStorage 기반)
+  contributionBoard: (groupId: string) =>
+    `contribution-board-${groupId}` as const,
+
+  // 연습 노트 공유 (localStorage 기반)
+  practiceNotes: (groupId: string) =>
+    `practice-notes-${groupId}` as const,
+
+  // 세션 레이팅 (localStorage 기반)
+  sessionRating: (groupId: string) =>
+    `session-rating-${groupId}` as const,
 };
