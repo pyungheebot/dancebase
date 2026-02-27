@@ -96,6 +96,9 @@ export const swrKeys = {
   // 그룹 통계 요약
   groupStats: (groupId: string) => `/groups/${groupId}/stats` as const,
 
+  // 그룹 건강도 지수
+  groupHealth: (groupId: string) => `/groups/${groupId}/health` as const,
+
   // 비활성 멤버 참여도
   memberEngagement: (groupId: string) =>
     `/member-engagement/${groupId}` as const,
@@ -103,4 +106,12 @@ export const swrKeys = {
   // 장소 자동완성 (기존 일정에서 추출)
   locationSuggestions: (groupId: string) =>
     `/groups/${groupId}/location-suggestions` as const,
+
+  // 사용자 활동 통계
+  userActivityStats: (userId: string) =>
+    `/user-activity-stats/${userId}` as const,
+
+  // 멤버 활동 타임라인
+  memberActivityTimeline: (userId: string) =>
+    `/member-activity-timeline/${userId}` as const,
 };

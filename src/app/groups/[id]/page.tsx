@@ -7,6 +7,7 @@ import { EntityNav } from "@/components/layout/entity-nav";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
 import { InviteModal } from "@/components/groups/invite-modal";
 import { GroupStatsCards } from "@/components/groups/group-stats-cards";
+import { GroupHealthCard } from "@/components/groups/group-health-card";
 import { Badge } from "@/components/ui/badge";
 import { LeaderInfo } from "@/components/ui/leader-info";
 
@@ -52,6 +53,8 @@ export default function GroupDetailPage({
           )}
 
           <GroupStatsCards groupId={ctx.groupId} memberCount={ctx.members.length} />
+
+          <GroupHealthCard groupId={ctx.groupId} />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

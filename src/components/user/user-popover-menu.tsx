@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { SendMessageDialog } from "@/components/messages/send-message-dialog";
 import { InviteToGroupDialog } from "@/components/user/invite-to-group-dialog";
 import { InviteToProjectDialog } from "@/components/user/invite-to-project-dialog";
+import { MemberActivityTimeline } from "@/components/members/member-activity-timeline";
 import { User, Mail, UserPlus, FolderPlus, UserCheck, Users } from "lucide-react";
 import type { Profile } from "@/types";
 
@@ -191,13 +192,21 @@ export function UserPopoverMenu({
             {children ?? displayName}
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-52 p-0" align="start">
+        <PopoverContent className="w-64 p-0" align="start">
           {/* 미니 프로필 — 팝오버가 열릴 때만 마운트 */}
           {popoverOpen && (
             <MiniProfile userId={userId} displayName={displayName} />
           )}
 
           <Separator />
+
+          {/* 최근 활동 타임라인 */}
+          {popoverOpen && (
+            <>
+              <MemberActivityTimeline userId={userId} />
+              <Separator />
+            </>
+          )}
 
           {/* 액션 버튼 */}
           <div className="p-1">

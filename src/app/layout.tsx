@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { SWRProvider } from "@/lib/swr/provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CommandPalette } from "@/components/shared/command-palette";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,6 +44,7 @@ export default function RootLayout({
             <SettingsProvider>
               <TooltipProvider>
                 {children}
+                <CommandPalette />
                 <Toaster richColors position="top-center" />
               </TooltipProvider>
             </SettingsProvider>

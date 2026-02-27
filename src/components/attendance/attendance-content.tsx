@@ -28,8 +28,9 @@ import {
 } from "@/components/ui/table";
 import { AttendanceAnalytics } from "@/components/attendance/attendance-analytics";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
-import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3 } from "lucide-react";
+import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { EntityContext } from "@/types/entity-context";
 import type {
   Schedule,
@@ -99,6 +100,10 @@ export function AttendanceContent({
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const [editOpen, setEditOpen] = useState(false);
+  const [bulkConfirm, setBulkConfirm] = useState<{
+    open: boolean;
+    status: "present" | "absent" | "undecided" | null;
+  }>({ open: false, status: null });
 
   // 멤버별 보기 상태
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("this_month");
@@ -470,37 +475,81 @@ export function AttendanceContent({
                   />
 
                   {ctx.permissions.canEdit && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-muted-foreground mr-1">일괄 처리:</span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs"
-                        disabled={bulkUpdating || loadingAttendance}
-                        onClick={() => handleBulkStatus("present")}
-                      >
-                        {bulkUpdating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                        전체 출석
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs"
-                        disabled={bulkUpdating || loadingAttendance}
-                        onClick={() => handleBulkStatus("absent")}
-                      >
-                        전체 결석
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs"
-                        disabled={bulkUpdating || loadingAttendance}
-                        onClick={() => handleBulkStatus("undecided")}
-                      >
-                        전체 미정
-                      </Button>
-                    </div>
+                    <>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs text-muted-foreground mr-1 font-medium">일괄 등록:</span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs gap-1 border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800"
+                          disabled={bulkUpdating || loadingAttendance}
+                          onClick={() => setBulkConfirm({ open: true, status: "present" })}
+                        >
+                          {bulkUpdating && bulkConfirm.status === "present" ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <CheckCheck className="h-3 w-3" />
+                          )}
+                          전체 출석
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs gap-1 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+                          disabled={bulkUpdating || loadingAttendance}
+                          onClick={() => setBulkConfirm({ open: true, status: "absent" })}
+                        >
+                          {bulkUpdating && bulkConfirm.status === "absent" ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <XCircle className="h-3 w-3" />
+                          )}
+                          전체 결석
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs gap-1"
+                          disabled={bulkUpdating || loadingAttendance}
+                          onClick={() => setBulkConfirm({ open: true, status: "undecided" })}
+                        >
+                          {bulkUpdating && bulkConfirm.status === "undecided" ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <RotateCcw className="h-3 w-3" />
+                          )}
+                          전체 미정
+                        </Button>
+                      </div>
+
+                      <ConfirmDialog
+                        open={bulkConfirm.open}
+                        onOpenChange={(open) =>
+                          setBulkConfirm((prev) => ({ ...prev, open }))
+                        }
+                        title={
+                          bulkConfirm.status === "present"
+                            ? "전체 출석 처리"
+                            : bulkConfirm.status === "absent"
+                            ? "전체 결석 처리"
+                            : "전체 미정 처리"
+                        }
+                        description={
+                          bulkConfirm.status === "present"
+                            ? `${membersForTable.length}명 전체를 출석으로 일괄 등록합니다. 기존 출석 기록이 덮어씌워집니다. 계속하시겠습니까?`
+                            : bulkConfirm.status === "absent"
+                            ? `${membersForTable.length}명 전체를 결석으로 일괄 등록합니다. 기존 출석 기록이 덮어씌워집니다. 계속하시겠습니까?`
+                            : `${membersForTable.length}명 전체의 출석 기록을 초기화(미정)합니다. 계속하시겠습니까?`
+                        }
+                        destructive={bulkConfirm.status === "absent" || bulkConfirm.status === "undecided"}
+                        onConfirm={() => {
+                          if (bulkConfirm.status) {
+                            handleBulkStatus(bulkConfirm.status);
+                          }
+                          setBulkConfirm({ open: false, status: null });
+                        }}
+                      />
+                    </>
                   )}
 
                   {loadingAttendance ? (

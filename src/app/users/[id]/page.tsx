@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppLayout } from "@/components/layout/app-layout";
 import { FollowButton } from "@/components/profile/follow-button";
+import { UserActivityStats } from "@/components/user/user-activity-stats";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserProfile } from "@/hooks/use-profile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -200,6 +201,9 @@ export default function UserProfilePage({
             </div>
           </CardContent>
         </Card>
+
+        {/* 활동 통계 섹션 */}
+        <UserActivityStats userId={id} />
 
         {/* 소속 그룹 섹션 */}
         <Card>
