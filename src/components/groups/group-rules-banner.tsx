@@ -12,7 +12,7 @@ type GroupRulesBannerProps = {
 const SESSION_KEY_PREFIX = "group-rules-hidden-";
 
 export function GroupRulesBanner({ groupId }: GroupRulesBannerProps) {
-  const { rules, loading } = useGroupRules(groupId);
+  const { rules } = useGroupRules(groupId);
   const [expanded, setExpanded] = useState(false);
   const [hidden, setHidden] = useState(false);
 
@@ -30,8 +30,9 @@ export function GroupRulesBanner({ groupId }: GroupRulesBannerProps) {
     setHidden(true);
   };
 
-  if (loading) return null;
-  if (!rules || !rules.title || !rules.isVisible) return null;
+  const activeRules = rules.filter((r) => r.isActive);
+
+  if (activeRules.length === 0) return null;
   if (hidden) return null;
 
   return (
@@ -44,7 +45,9 @@ export function GroupRulesBanner({ groupId }: GroupRulesBannerProps) {
           aria-expanded={expanded}
         >
           <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />
-          <span className="text-xs font-semibold truncate">{rules.title}</span>
+          <span className="text-xs font-semibold truncate">
+            그룹 규칙 ({activeRules.length}개)
+          </span>
           {expanded ? (
             <ChevronUp className="h-3.5 w-3.5 text-muted-foreground shrink-0 ml-auto" />
           ) : (
@@ -62,12 +65,24 @@ export function GroupRulesBanner({ groupId }: GroupRulesBannerProps) {
         </Button>
       </div>
 
-      {expanded && rules.content && (
+      {expanded && (
         <div className="px-3 pb-3">
-          <div className="border-t pt-2">
-            <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
-              {rules.content}
-            </p>
+          <div className="border-t pt-2 space-y-1.5">
+            {activeRules.map((rule, idx) => (
+              <div key={rule.id} className="flex items-start gap-1.5">
+                <span className="text-[10px] text-muted-foreground font-mono mt-0.5 shrink-0">
+                  {idx + 1}.
+                </span>
+                <div>
+                  <p className="text-xs font-medium text-foreground">
+                    {rule.title}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground whitespace-pre-wrap leading-relaxed mt-0.5">
+                    {rule.content}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

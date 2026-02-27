@@ -943,4 +943,20 @@ export const swrKeys = {
   // 공연 백스테이지 체크 (localStorage 기반)
   backstageCheck: (groupId: string, projectId: string) =>
     `backstage-check-${groupId}-${projectId}` as const,
+
+  // 멤버 긴급 연락처 (localStorage 기반)
+  emergencyContact: (groupId: string) =>
+    `emergency-contact-${groupId}` as const,
+
+  // 공연 물품 목록 (localStorage 기반)
+  showInventory: (groupId: string, projectId: string) =>
+    `show-inventory-${groupId}-${projectId}` as const,
+
+  // 연습 피드백 (localStorage 기반)
+  practiceFeedback: (groupId: string) =>
+    `practice-feedback-${groupId}` as const,
+
+  // 멤버 스케줄 선호도 (localStorage 기반)
+  schedulePreference: (groupId: string) =>
+    `schedule-preference-${groupId}` as const,
 };

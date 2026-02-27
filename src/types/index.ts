@@ -4413,10 +4413,13 @@ export type LeadershipCandidate = {
 // 멤버 가용 시간 캘린더
 // ============================================
 
-export type DayOfWeek = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export type DayOfWeekKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+
+/** @deprecated DayOfWeekKey 를 사용하세요 */
+export type DayOfWeek = DayOfWeekKey;
 
 export type AvailabilitySlot = {
-  day: DayOfWeek;
+  day: DayOfWeekKey;
   startTime: string; // HH:MM
   endTime: string;   // HH:MM
 };
@@ -6998,4 +7001,149 @@ export type BackstageCheckSession = {
   startedAt: string;
   completedAt?: string;
   notes?: string;
+};
+
+// ============================================
+// 공연 물품 목록
+// ============================================
+
+export type ShowInventoryCategory =
+  | "costume"
+  | "prop"
+  | "tech"
+  | "music"
+  | "document"
+  | "first_aid"
+  | "other";
+
+export type ShowInventoryItem = {
+  id: string;
+  name: string;
+  category: ShowInventoryCategory;
+  quantity: number;
+  assignedTo?: string;
+  packed: boolean;
+  packedBy?: string;
+  packedAt?: string;
+  notes?: string;
+  priority: "essential" | "important" | "optional";
+  createdAt: string;
+};
+
+// ============================================
+// 멤버 긴급 연락처
+// ============================================
+
+export type EmergencyContactRelation =
+  | "parent"
+  | "spouse"
+  | "sibling"
+  | "friend"
+  | "other";
+
+export type EmergencyContactEntry = {
+  id: string;
+  memberName: string;
+  contactName: string;
+  relation: EmergencyContactRelation;
+  phone: string;
+  email?: string;
+  notes?: string;
+  bloodType?: string;
+  allergies?: string;
+  medicalNotes?: string;
+  createdAt: string;
+};
+
+// ============================================
+// 연습 피드백
+// ============================================
+
+export type PracticeFeedbackMood =
+  | "great"
+  | "good"
+  | "okay"
+  | "tired"
+  | "frustrated";
+
+export type PracticeFeedbackEntry = {
+  id: string;
+  memberName: string;
+  date: string;
+  mood: PracticeFeedbackMood;
+  energyLevel: number;
+  focusLevel: number;
+  enjoymentLevel: number;
+  learnedToday?: string;
+  wantToImprove?: string;
+  generalComment?: string;
+  createdAt: string;
+};
+
+// ============================================
+// 그룹 규칙 관리
+// ============================================
+
+export type GroupRuleCategory =
+  | "attendance"
+  | "behavior"
+  | "finance"
+  | "performance"
+  | "communication"
+  | "general";
+
+export type GroupRuleEntry = {
+  id: string;
+  category: GroupRuleCategory;
+  title: string;
+  content: string;
+  order: number;
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type GroupRuleAcknowledgment = {
+  id: string;
+  ruleId: string;
+  memberName: string;
+  acknowledgedAt: string;
+};
+
+// ============================================
+// 멤버 스케줄 선호도
+// ============================================
+
+/** 0=일요일, 1=월요일, ... 6=토요일 */
+export type WeekDayIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+/** 시간대별 선호도 상태 */
+export type TimeSlotPreference = "available" | "preferred" | "unavailable";
+
+/** 특정 시간대의 선호도 항목 */
+export type TimeSlotEntry = {
+  day: WeekDayIndex;
+  startHour: number; // 0~23
+  endHour: number;   // 0~23
+  preference: TimeSlotPreference;
+};
+
+/** 멤버 한 명의 스케줄 선호도 */
+export type MemberSchedulePreference = {
+  id: string;
+  memberName: string;
+  preferences: TimeSlotEntry[];
+  updatedAt: string;
+  createdAt: string;
+};
+
+/** 최적 슬롯 분석 결과 */
+export type OptimalSlotResult = {
+  day: WeekDayIndex;
+  startHour: number;
+  endHour: number;
+  availableCount: number;
+  preferredCount: number;
+  score: number;
 };
