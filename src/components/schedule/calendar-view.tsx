@@ -26,6 +26,7 @@ import { AttendancePredictionBadge, AttendancePredictionCard } from "./attendanc
 import { ScheduleWaitlistSection } from "./schedule-waitlist-section";
 import { ScheduleRolesSection } from "./schedule-roles-section";
 import { ScheduleWeatherBadge } from "./schedule-weather-badge";
+import { ScheduleRetroSheet } from "./schedule-retro-sheet";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
@@ -754,6 +755,14 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   />
                 </div>
               )}
+
+              {/* 회고록 섹션 */}
+              <div className="border-t pt-3">
+                <ScheduleRetroSheet
+                  scheduleId={detailSchedule.id}
+                  canEdit={canEditRoles ?? canEdit ?? false}
+                />
+              </div>
 
               <div className="flex gap-2 flex-wrap">
                 {canEdit && (

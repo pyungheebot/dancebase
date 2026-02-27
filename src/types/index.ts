@@ -829,6 +829,27 @@ export const GROUP_LINK_ICONS: { emoji: string; label: string }[] = [
   { emoji: "📝", label: "문서" },
 ];
 
+// ============================================
+// Group FAQ (그룹 자주 묻는 질문)
+// ============================================
+
+export type GroupFaq = {
+  id: string;
+  question: string;
+  answer: string;
+  order: number;
+};
+
+export type GroupFaqSettingValue = {
+  faqs: GroupFaq[];
+};
+
+export const GROUP_FAQ_SETTING_KEY = "group_faq";
+
+export const DEFAULT_GROUP_FAQ_SETTING: GroupFaqSettingValue = {
+  faqs: [],
+};
+
 export type Conversation = {
   partner_id: string;
   partner_name: string;
@@ -1010,6 +1031,44 @@ export type ScheduleRoleWithProfile = ScheduleRole & {
 };
 
 // ============================================
+// Schedule Retro (일정 회고록, localStorage 기반)
+// ============================================
+
+export type ScheduleRetro = {
+  good: string;
+  improve: string;
+  nextGoal: string;
+  createdAt: string;
+  createdBy: string;
+};
+
+// ============================================
+// Attendance Achievement (출석 달성 배지)
+// ============================================
+
+export type AttendanceAchievementId =
+  | "first_attendance"
+  | "attendance_10"
+  | "attendance_50"
+  | "attendance_100"
+  | "perfect_streak"
+  | "attendance_king";
+
+export type AttendanceAchievement = {
+  id: AttendanceAchievementId;
+  emoji: string;
+  label: string;
+  description: string;
+  achieved: boolean;
+  /** 진행도 텍스트 (예: "10/50회 출석") */
+  progress: string;
+  /** 현재 달성값 */
+  current: number;
+  /** 달성 기준값 */
+  required: number;
+};
+
+// ============================================
 // Schedule Weather (일정 날씨 예보)
 // ============================================
 
@@ -1021,4 +1080,33 @@ export type ScheduleWeather = {
   weatherCode: number;
   emoji: string;
   description: string;
+};
+
+// ============================================
+// Schedule Feedback (일정 만족도 평가)
+// ============================================
+
+export type ScheduleFeedback = {
+  id: string;
+  schedule_id: string;
+  user_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+};
+
+// ============================================
+// Project Song (연습 곡/안무 트래커)
+// ============================================
+
+export type ProjectSong = {
+  id: string;
+  project_id: string;
+  title: string;
+  artist: string | null;
+  status: 'not_started' | 'in_progress' | 'mastered';
+  youtube_url: string | null;
+  sort_order: number;
+  created_by: string;
+  created_at: string;
 };

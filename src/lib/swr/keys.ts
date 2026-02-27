@@ -244,4 +244,15 @@ export const swrKeys = {
   // 출석 면제 목록
   attendanceExcuses: (scheduleId: string) =>
     `/schedules/${scheduleId}/attendance-excuses` as const,
+
+  // 출석 달성 배지
+  attendanceAchievements: (groupId: string, userId: string) =>
+    `/attendance-achievements/${groupId}/${userId}` as const,
+
+  // 일정 만족도 피드백
+  scheduleFeedback: (scheduleId: string) =>
+    `/schedules/${scheduleId}/feedback` as const,
+
+  // 연습 곡/안무 트래커
+  projectSongs: (projectId: string) => `project-songs-${projectId}` as const,
 };

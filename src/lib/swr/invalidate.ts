@@ -277,3 +277,15 @@ export function invalidateAttendanceExcuses(scheduleId: string) {
   mutate(swrKeys.attendanceExcuses(scheduleId));
   mutate(swrKeys.attendance(scheduleId));
 }
+
+export function invalidateAttendanceAchievements(groupId: string, userId: string) {
+  mutate(swrKeys.attendanceAchievements(groupId, userId));
+}
+
+export function invalidateScheduleFeedback(scheduleId: string) {
+  mutate(swrKeys.scheduleFeedback(scheduleId));
+}
+
+export function invalidateProjectSongs(projectId: string) {
+  mutate(swrKeys.projectSongs(projectId));
+}

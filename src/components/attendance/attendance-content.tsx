@@ -33,7 +33,9 @@ import { AttendanceGoalCard } from "@/components/attendance/attendance-goal-card
 import { WeeklyAttendanceSnapshot } from "@/components/attendance/weekly-attendance-snapshot";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { ScheduleCheckinSection } from "@/components/schedule/schedule-checkin-section";
-import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows } from "lucide-react";
+import { ScheduleFeedbackDialog } from "@/components/schedule/schedule-feedback-dialog";
+import { ScheduleFeedbackSummary } from "@/components/schedule/schedule-feedback-summary";
+import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows, Star } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { EntityContext } from "@/types/entity-context";
@@ -105,6 +107,7 @@ export function AttendanceContent({
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const [editOpen, setEditOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [bulkConfirm, setBulkConfirm] = useState<{
     open: boolean;
     status: "present" | "absent" | "undecided" | null;
@@ -483,6 +486,39 @@ export function AttendanceContent({
                   <ScheduleCheckinSection
                     scheduleId={selectedScheduleId}
                     isLeader={ctx.permissions.canEdit}
+                  />
+
+                  {/* 만족도 평가 섹션 */}
+                  <div className="rounded-lg border p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Star className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs font-medium">만족도 평가</span>
+                      </div>
+                      {!ctx.permissions.canEdit && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs gap-1"
+                          onClick={() => setFeedbackOpen(true)}
+                        >
+                          <Star className="h-3 w-3" />
+                          평가하기
+                        </Button>
+                      )}
+                    </div>
+                    <ScheduleFeedbackSummary
+                      scheduleId={selectedScheduleId}
+                      anonymous={true}
+                    />
+                  </div>
+
+                  {/* 피드백 다이얼로그 */}
+                  <ScheduleFeedbackDialog
+                    scheduleId={selectedScheduleId}
+                    scheduleTitle={selectedSchedule.title}
+                    open={feedbackOpen}
+                    onOpenChange={setFeedbackOpen}
                   />
 
                   <AttendanceStats
