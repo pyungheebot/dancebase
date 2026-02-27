@@ -334,6 +334,16 @@ export function invalidateGroupActivity(groupId: string) {
   mutate(swrKeys.groupActivity(groupId));
 }
 
+export function invalidateFilteredActivityTimeline(groupId: string) {
+  mutate(
+    (key: string) =>
+      typeof key === "string" &&
+      key.startsWith(`/groups/${groupId}/filtered-activity-timeline`),
+    undefined,
+    { revalidate: true }
+  );
+}
+
 export function invalidatePerformanceRecords(groupId: string) {
   mutate(swrKeys.performanceRecords(groupId));
 }
@@ -459,4 +469,8 @@ export function invalidateActivityTimeHeatmap(groupId: string) {
 export function invalidateGroupActivityReport(groupId: string) {
   mutate(swrKeys.groupActivityReport(groupId, "week"));
   mutate(swrKeys.groupActivityReport(groupId, "month"));
+}
+
+export function invalidateMemberBenchmarking(groupId: string, userId: string) {
+  mutate(swrKeys.memberBenchmarking(groupId, userId));
 }

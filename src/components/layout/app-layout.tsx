@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sidebar } from "./sidebar";
+import { CommandPalette } from "./command-palette";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import {
   Sheet,
@@ -16,6 +17,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      <CommandPalette />
       {/* 데스크톱 사이드바 */}
       <aside className="hidden md:flex w-60 shrink-0 border-r bg-sidebar">
         <Sidebar />

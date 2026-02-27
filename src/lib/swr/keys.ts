@@ -296,6 +296,10 @@ export const swrKeys = {
   groupActivity: (groupId: string) =>
     `group-activity-${groupId}` as const,
 
+  // 필터링 가능한 활동 타임라인
+  filteredActivityTimeline: (groupId: string, daysBack: number) =>
+    `/groups/${groupId}/filtered-activity-timeline?days=${daysBack}` as const,
+
   // 공연/대회 성과 기록
   performanceRecords: (groupId: string) =>
     `performance-records-${groupId}` as const,
@@ -443,4 +447,8 @@ export const swrKeys = {
   // 그룹 활동 보고서 (주간/월간)
   groupActivityReport: (groupId: string, period: "week" | "month") =>
     `/groups/${groupId}/activity-report?period=${period}` as const,
+
+  // 멤버 벤치마킹 (개인 성과 카드)
+  memberBenchmarking: (groupId: string, userId: string) =>
+    `/member-benchmarking/${groupId}/${userId}` as const,
 };

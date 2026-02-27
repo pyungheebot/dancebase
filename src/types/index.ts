@@ -1,4 +1,26 @@
 // ============================================
+// Command Palette
+// ============================================
+
+export type CommandItemType = "navigation" | "action" | "recent";
+
+export type CommandItem = {
+  id: string;
+  label: string;
+  href: string;
+  type: CommandItemType;
+  group: string;
+  shortcut?: string;
+  icon?: string;
+};
+
+export type RecentPage = {
+  href: string;
+  label: string;
+  visitedAt: number;
+};
+
+// ============================================
 // Privacy
 // ============================================
 
@@ -2594,4 +2616,180 @@ export type ProjectMilestone = {
   /** 정렬 순서 (낮을수록 앞) */
   sortOrder: number;
   createdAt: string;
+};
+
+// ============================================
+// Member Benchmarking (멤버 벤치마킹)
+// ============================================
+
+/** 단일 벤치마킹 지표 */
+export type BenchmarkMetric = {
+  /** 내 값 (0~100, %) */
+  myValue: number;
+  /** 그룹 평균 (0~100, %) */
+  groupAverage: number;
+  /** 그룹 평균 대비 차이 (양수=평균 초과, 음수=평균 미만) */
+  diffFromAverage: number;
+  /** 상위 백분위 (1=상위 1%, 100=하위) */
+  percentile: number;
+};
+
+/** 멤버 벤치마킹 결과 */
+export type MemberBenchmarkingResult = {
+  /** 출석률 지표 */
+  attendance: BenchmarkMetric;
+  /** 활동량 지표 (게시글 + 댓글) */
+  activity: BenchmarkMetric;
+  /** RSVP 응답률 지표 */
+  rsvp: BenchmarkMetric;
+  /** 데이터 존재 여부 */
+  hasData: boolean;
+  /** 총 멤버 수 */
+  totalMemberCount: number;
+};
+
+// ============================================
+// Dashboard Layout (대시보드 레이아웃, localStorage 기반)
+// ============================================
+
+/** 대시보드 위젯 ID */
+export type DashboardWidgetId =
+  | "upcoming-schedules"
+  | "quick-stats"
+  | "recent-activity"
+  | "monthly-summary"
+  | "weekly-challenge"
+  | "health-trend"
+  | "activity-report"
+  | "member-activity";
+
+/** 대시보드 위젯 메타 (ID + 라벨) */
+export type DashboardWidgetMeta = {
+  id: DashboardWidgetId;
+  label: string;
+};
+
+/** 대시보드 위젯 레이아웃 항목 */
+export type DashboardWidgetItem = {
+  id: DashboardWidgetId;
+  visible: boolean;
+  order: number;
+};
+
+/** 대시보드 레이아웃 전체 */
+export type DashboardLayout = DashboardWidgetItem[];
+
+// ============================================
+// Filtered Activity Timeline (활동 타임라인 뷰)
+// ============================================
+
+/** 필터링 가능한 활동 타임라인 유형 */
+export type FilteredActivityType =
+  | "attendance"
+  | "post"
+  | "comment"
+  | "rsvp"
+  | "member_join";
+
+/** 필터 옵션 (전체 포함) */
+export type FilteredActivityFilterType = FilteredActivityType | "all";
+
+/** 활동 타임라인 단일 항목 */
+export type FilteredActivityItem = {
+  id: string;
+  type: FilteredActivityType;
+  description: string;
+  userName: string;
+  userId: string;
+  occurredAt: string; // ISO 8601
+  metadata?: Record<string, string>;
+};
+
+/** 월별 그룹화 결과 */
+export type FilteredActivityMonthGroup = {
+  /** YYYY-MM 형식 */
+  month: string;
+  /** 한글 월 레이블 (예: "2026년 2월") */
+  label: string;
+  items: FilteredActivityItem[];
+};
+
+/** useFilteredActivityTimeline 훅 반환 타입 */
+export type FilteredActivityTimelineResult = {
+  items: FilteredActivityItem[];
+  loading: boolean;
+  filterByTypes: (types: FilteredActivityType[]) => FilteredActivityItem[];
+  groupByMonth: () => FilteredActivityMonthGroup[];
+  refetch: () => void;
+};
+
+/** 위젯 이동 방향 */
+export type DashboardWidgetDirection = "up" | "down";
+
+/** 모든 위젯 메타 목록 */
+export const DASHBOARD_WIDGETS: DashboardWidgetMeta[] = [
+  { id: "upcoming-schedules", label: "예정 일정" },
+  { id: "quick-stats", label: "빠른 통계" },
+  { id: "recent-activity", label: "최근 활동" },
+  { id: "monthly-summary", label: "월간 요약" },
+  { id: "weekly-challenge", label: "주간 챌린지" },
+  { id: "health-trend", label: "건강도 트렌드" },
+  { id: "activity-report", label: "활동 보고서" },
+  { id: "member-activity", label: "내 활동" },
+];
+
+/** 기본 대시보드 레이아웃 */
+export const DEFAULT_DASHBOARD_LAYOUT: DashboardLayout = DASHBOARD_WIDGETS.map((w, i) => ({
+  id: w.id,
+  visible: true,
+  order: i,
+}));
+
+// ============================================
+// Notification Rules Builder (알림 규칙 빌더, localStorage 기반)
+// ============================================
+
+/** 알림 조건 유형 */
+export type NotificationConditionType =
+  | "attendance_below"   // 출석률 N% 미만
+  | "inactive_days"      // N일 이상 미활동
+  | "schedule_upcoming"  // 일정 N일 전
+  | "rsvp_missing"       // RSVP 미응답 N회 이상
+  | "new_post";          // 새 게시글 등록됨
+
+/** 알림 조건 단일 항목 */
+export type NotificationCondition = {
+  /** 조건 유형 */
+  type: NotificationConditionType;
+  /**
+   * 조건 값 (숫자 기반 조건에서 사용)
+   * - attendance_below: 출석률 임계값 (0~100)
+   * - inactive_days: 미활동 일수
+   * - schedule_upcoming: 일정 전 일수
+   * - rsvp_missing: 무응답 횟수
+   * - new_post: 사용하지 않음 (undefined 가능)
+   */
+  value?: number;
+};
+
+/** 알림 규칙 액션 유형 */
+export type NotificationRuleAction = "in-app";
+
+/** 알림 규칙 단일 항목 */
+export type NotificationRule = {
+  id: string;
+  /** 그룹 ID */
+  groupId: string;
+  /** 규칙 이름 */
+  name: string;
+  /** 활성화 여부 */
+  enabled: boolean;
+  /** 조건 목록 (AND 조건) */
+  conditions: NotificationCondition[];
+  /** 트리거 시 실행할 액션 */
+  action: NotificationRuleAction;
+  /** 기본 규칙 여부 */
+  isDefault?: boolean;
+  createdAt: string;
+  updatedAt: string;
 };

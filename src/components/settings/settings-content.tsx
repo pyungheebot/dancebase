@@ -59,6 +59,7 @@ import { ActivityLogSection } from "@/components/settings/activity-log-section";
 import { ReminderSettingsSection } from "@/components/settings/reminder-settings-section";
 import { PermissionAuditSection } from "@/components/settings/permission-audit-section";
 import { NotificationPreferencesSection } from "@/components/settings/notification-preferences-section";
+import { NotificationRulesBuilder } from "@/components/settings/notification-rules-builder";
 import { GroupRulesEditor } from "@/components/groups/group-rules-editor";
 
 type SettingsContentProps = {
@@ -947,6 +948,11 @@ export function SettingsContent({
             groupId={ctx.groupId}
             userId={user?.id}
           />
+
+          {/* 알림 규칙 빌더 (리더 전용) */}
+          {isGroupLeader && (
+            <NotificationRulesBuilder groupId={ctx.groupId} />
+          )}
 
           {/* 활동 기록 (리더 전용) */}
           {isGroupLeader && (
