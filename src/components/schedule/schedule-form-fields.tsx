@@ -29,6 +29,7 @@ export type ScheduleFieldValues = {
   requireCheckout: boolean;
   startTime: string;
   endTime: string;
+  maxAttendees: string;
 };
 
 export type ScheduleFormFieldErrors = {
@@ -220,6 +221,20 @@ export function ScheduleFormFields({
         {errors.timeRange && (
           <p className="text-xs text-destructive">{errors.timeRange}</p>
         )}
+      </div>
+
+      {/* 정원 설정 */}
+      <div className="space-y-1">
+        <Label htmlFor={p("maxAttendees")} className="text-xs">정원 (선택사항)</Label>
+        <Input
+          id={p("maxAttendees")}
+          type="number"
+          min={1}
+          placeholder="제한 없음"
+          value={values.maxAttendees}
+          onChange={(e) => onChange({ maxAttendees: e.target.value })}
+        />
+        <p className="text-[10px] text-muted-foreground">정원 초과 시 대기 명단 등록 가능</p>
       </div>
     </>
   );

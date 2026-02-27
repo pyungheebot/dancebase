@@ -19,6 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { invalidateBoard, invalidateBoardPost } from "@/lib/swr/invalidate";
 import { BoardBookmarkButton } from "./board-bookmark-button";
+import { BoardScheduledBadge } from "./board-scheduled-badge";
 import type { BoardPostWithDetails } from "@/types";
 
 /** 검색어 하이라이트 컴포넌트 */
@@ -77,6 +78,17 @@ export function BoardPostList({
 
   // 글쓰기 폼 오픈 상태 (EmptyState CTA와 공유)
   const [formOpen, setFormOpen] = useState(false);
+
+  // 현재 사용자 ID (예약 뱃지 표시 여부 판단용)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  useEffect(() => {
+    const supabase = createClient();
+    async function fetchUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id ?? null);
+    }
+    void fetchUser();
+  }, []);
 
   // 핀 토글 중인 postId
   const [pinningId, setPinningId] = useState<string | null>(null);
@@ -262,6 +274,13 @@ export function BoardPostList({
                           <span aria-hidden="true">{post.like_count}</span>
                         </span>
                       )}
+                      {/* 예약 발행 뱃지 (작성자/관리자에게만 표시) */}
+                      <BoardScheduledBadge
+                        publishedAt={post.published_at ?? null}
+                        isAuthorOrAdmin={
+                          post.author_id === currentUserId || !!canEdit
+                        }
+                      />
                     </div>
                     {/* 하단 행: 작성자 + 날짜 */}
                     <div className="flex items-center gap-1.5 text-muted-foreground text-[10px]">

@@ -58,6 +58,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { ActivityLogSection } from "@/components/settings/activity-log-section";
 import { ReminderSettingsSection } from "@/components/settings/reminder-settings-section";
 import { PermissionAuditSection } from "@/components/settings/permission-audit-section";
+import { NotificationPreferencesSection } from "@/components/settings/notification-preferences-section";
 
 type SettingsContentProps = {
   ctx: EntityContext;
@@ -931,6 +932,12 @@ export function SettingsContent({
           {isGroupLeader && (
             <ReminderSettingsSection entityType="group" entityId={ctx.groupId} />
           )}
+
+          {/* 개인 알림 구독 설정 (모든 멤버) */}
+          <NotificationPreferencesSection
+            groupId={ctx.groupId}
+            userId={user?.id}
+          />
 
           {/* 활동 기록 (리더 전용) */}
           {isGroupLeader && (

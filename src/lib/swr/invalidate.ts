@@ -112,6 +112,10 @@ export function invalidateScheduleRsvp(scheduleId: string) {
   mutate(swrKeys.scheduleRsvp(scheduleId));
 }
 
+export function invalidateScheduleWaitlist(scheduleId: string) {
+  mutate(swrKeys.scheduleWaitlist(scheduleId));
+}
+
 export function invalidateConversations() {
   mutate(swrKeys.conversations());
   mutate(swrKeys.unreadCount());
@@ -247,4 +251,12 @@ export function invalidateRecentActivityFeed() {
 
 export function invalidateLocationHistory(groupId: string) {
   mutate(swrKeys.locationSuggestions(groupId));
+}
+
+export function invalidatePostRevisions(postId: string) {
+  mutate(swrKeys.postRevisions(postId));
+}
+
+export function invalidateProjectTasks(projectId: string) {
+  mutate(swrKeys.projectTasks(projectId));
 }

@@ -28,6 +28,12 @@ function useBoardNotices(groupId: string, projectId?: string | null) {
     async () => {
       const supabase = createClient();
 
+      // 현재 사용자 ID 조회 (예약 게시글 필터링에 사용)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const userId = user?.id ?? null;
+
       let query = supabase
         .from("board_posts")
         .select(
@@ -55,6 +61,18 @@ function useBoardNotices(groupId: string, projectId?: string | null) {
             `(${excludeIds.join(",")})`,
           );
         }
+      }
+
+      // 예약 발행 필터 (즉시 발행 + 발행 시각 경과 + 내 예약 글)
+      const nowIso = new Date().toISOString();
+      if (userId) {
+        query = query.or(
+          `published_at.is.null,published_at.lte.${nowIso},author_id.eq.${userId}`,
+        );
+      } else {
+        query = query.or(
+          `published_at.is.null,published_at.lte.${nowIso}`,
+        );
       }
 
       const { data: rows, error } = await query;

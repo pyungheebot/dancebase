@@ -24,6 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { BoardBookmarkButton } from "@/components/board/board-bookmark-button";
+import { BoardPostRevisionsSheet } from "@/components/board/board-post-revisions-sheet";
 import { ArrowLeft, Loader2, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -201,6 +202,12 @@ export default function BoardPostPage({
             <span className="text-[11px] text-muted-foreground">
               {format(new Date(post.created_at), "yyyy.M.d HH:mm", { locale: ko })}
             </span>
+            {post.updated_at !== post.created_at && (
+              <BoardPostRevisionsSheet
+                postId={postId}
+                currentTitle={post.title}
+              />
+            )}
           </div>
         </div>
 

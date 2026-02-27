@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useBoardCategories } from "@/hooks/use-board";
 import { useFormDraft } from "@/hooks/use-form-draft";
 import type { BoardPost } from "@/types";
-import { invalidateBoardPostAttachments } from "@/lib/swr/invalidate";
+import { invalidateBoardPostAttachments, invalidatePostRevisions } from "@/lib/swr/invalidate";
+import { savePostRevision } from "@/hooks/use-post-revisions";
 import { formatFileSize } from "@/lib/utils";
 import { createNotification } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Paperclip, X, FileText, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { BoardScheduleInput } from "./board-schedule-input";
 
 interface BoardPostFormProps {
   groupId: string;
@@ -76,6 +78,9 @@ export function BoardPostForm({
     debounceMs: 3000,
   });
 
+  // 예약 발행
+  const [publishedAt, setPublishedAt] = useState<string | null>(null);
+
   // 투표
   const [pollOptions, setPollOptions] = useState<string[]>([""]);
   const [allowMultiple, setAllowMultiple] = useState(false);
@@ -93,6 +98,7 @@ export function BoardPostForm({
       setTitle(initialData.title);
       setContent(initialData.content);
       setCategory(initialData.category);
+      setPublishedAt(initialData.published_at ?? null);
     }
     if (open && mode === "create") {
       setTitle("");
@@ -102,6 +108,7 @@ export function BoardPostForm({
         ? "미분류"
         : (writeCategories[0] ?? "미분류");
       setCategory(defaultCat);
+      setPublishedAt(null);
       setPollOptions([""]);
       setAllowMultiple(false);
       setPollEndsAt(null);
@@ -262,12 +269,28 @@ export function BoardPostForm({
     setSubmitting(true);
 
     if (mode === "edit" && initialData) {
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+
+      // 수정 전 내용을 리비전으로 저장
+      if (currentUser) {
+        await savePostRevision({
+          postId: initialData.id,
+          title: initialData.title,
+          content: initialData.content,
+          revisedBy: currentUser.id,
+        });
+        invalidatePostRevisions(initialData.id);
+      }
+
       const { error } = await supabase
         .from("board_posts")
         .update({
           title: title.trim(),
           content: content.trim(),
           category,
+          published_at: publishedAt ?? null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", initialData.id);
@@ -307,6 +330,7 @@ export function BoardPostForm({
         author_id: user.id,
         title: title.trim(),
         content: content.trim(),
+        published_at: publishedAt ?? null,
       })
       .select("id")
       .single();
@@ -346,8 +370,8 @@ export function BoardPostForm({
     // 파일 업로드
     await uploadFiles(post.id);
 
-    // 공지사항 카테고리 게시글 작성 시 그룹 멤버 전체에게 알림
-    if (category === "공지사항") {
+    // 공지사항 카테고리 게시글 작성 시 그룹 멤버 전체에게 알림 (즉시 발행인 경우만)
+    if (category === "공지사항" && !publishedAt) {
       const { data: members } = await supabase
         .from("group_members")
         .select("user_id")
@@ -382,6 +406,7 @@ export function BoardPostForm({
     setTitle("");
     setContent("");
     setCategory("미분류");
+    setPublishedAt(null);
     setPollOptions([""]);
     setAllowMultiple(false);
     setPollEndsAt(null);
@@ -389,6 +414,11 @@ export function BoardPostForm({
     setPendingFiles([]);
     setSubmitting(false);
     setOpen(false);
+
+    if (publishedAt && new Date(publishedAt) > new Date()) {
+      toast.success(`글이 예약되었습니다. ${new Date(publishedAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })} 발행 예정`);
+    }
+
     onCreated();
   };
 
@@ -605,12 +635,22 @@ export function BoardPostForm({
           />
         </div>
 
+        {/* 예약 발행 */}
+        <BoardScheduleInput
+          value={publishedAt}
+          onChange={setPublishedAt}
+        />
+
         <Button
           className="w-full"
           onClick={handleSubmit}
           disabled={submitting || !title.trim()}
         >
-          {submitting ? (mode === "edit" ? "수정 중..." : "작성 중...") : (mode === "edit" ? "수정" : "작성")}
+          {submitting
+            ? (mode === "edit" ? "수정 중..." : "작성 중...")
+            : publishedAt && new Date(publishedAt) > new Date()
+              ? (mode === "edit" ? "예약 수정" : "예약 발행")
+              : (mode === "edit" ? "수정" : "작성")}
         </Button>
       </div>
     </DialogContent>

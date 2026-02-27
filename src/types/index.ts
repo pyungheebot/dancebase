@@ -237,6 +237,7 @@ export type Schedule = {
   attendance_deadline: string | null;
   require_checkout: boolean;
   recurrence_id: string | null;
+  max_attendees: number | null;
 };
 
 export type AttendanceStatus = "present" | "absent" | "late" | "early_leave";
@@ -457,6 +458,7 @@ export type BoardPost = {
   is_pinned: boolean;
   pinned_at: string | null;
   pinned_by: string | null;
+  published_at: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -523,6 +525,15 @@ export type BoardPostLike = {
   post_id: string;
   user_id: string;
   created_at: string;
+};
+
+export type BoardPostRevision = {
+  id: string;
+  post_id: string;
+  title: string;
+  content: string;
+  revised_by: string | null;
+  revised_at: string;
 };
 
 export type PostBookmark = {
@@ -617,6 +628,22 @@ export type Notification = {
   link: string | null;
   is_read: boolean;
   created_at: string;
+};
+
+// ============================================
+// Schedule Waitlist (일정 대기자 명단)
+// ============================================
+
+export type ScheduleWaitlist = {
+  id: string;
+  schedule_id: string;
+  user_id: string;
+  position: number;
+  joined_at: string;
+};
+
+export type ScheduleWaitlistWithProfile = ScheduleWaitlist & {
+  profiles: Pick<Profile, "id" | "name" | "avatar_url">;
 };
 
 // ============================================
@@ -789,6 +816,23 @@ export type ScheduleTemplate = {
   duration_minutes: number | null;
   created_by: string | null;
   created_at: string;
+};
+
+// ============================================
+// Project Task (프로젝트 할 일)
+// ============================================
+
+export type ProjectTask = {
+  id: string;
+  project_id: string;
+  title: string;
+  assignee_id: string | null;
+  due_date: string | null;
+  status: 'todo' | 'in_progress' | 'done';
+  created_by: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
 };
 
 // ============================================

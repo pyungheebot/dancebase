@@ -23,6 +23,7 @@ import {
 import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar, Trash2, RefreshCw, CalendarPlus, Download, AlertTriangle } from "lucide-react";
 import { ScheduleForm } from "./schedule-form";
 import { AttendancePredictionBadge, AttendancePredictionCard } from "./attendance-prediction-card";
+import { ScheduleWaitlistSection } from "./schedule-waitlist-section";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
@@ -48,9 +49,9 @@ type CalendarViewProps = {
   groupId?: string;
 };
 
-// RSVP 버튼 섹션 (내부 컴포넌트)
-function RsvpSection({ scheduleId }: { scheduleId: string }) {
-  const { rsvp, loading, refetch } = useScheduleRsvp(scheduleId);
+// RSVP + 대기 명단 통합 섹션
+function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
+  const { rsvp, loading, refetch } = useScheduleRsvp(schedule.id);
   const [submitting, setSubmitting] = useState(false);
 
   const handleRsvp = async (response: ScheduleRsvpResponse) => {
@@ -64,18 +65,17 @@ function RsvpSection({ scheduleId }: { scheduleId: string }) {
       return;
     }
 
-    // 이미 같은 응답이면 취소(삭제)
     if (rsvp?.my_response === response) {
       setSubmitting(true);
       try {
         const { error } = await supabase
           .from("schedule_rsvp")
           .delete()
-          .eq("schedule_id", scheduleId)
+          .eq("schedule_id", schedule.id)
           .eq("user_id", user.id);
 
         if (error) throw error;
-        invalidateScheduleRsvp(scheduleId);
+        invalidateScheduleRsvp(schedule.id);
         refetch();
         toast.success("RSVP를 취소했습니다");
       } catch {
@@ -90,7 +90,7 @@ function RsvpSection({ scheduleId }: { scheduleId: string }) {
     try {
       const { error } = await supabase.from("schedule_rsvp").upsert(
         {
-          schedule_id: scheduleId,
+          schedule_id: schedule.id,
           user_id: user.id,
           response,
           updated_at: new Date().toISOString(),
@@ -99,7 +99,7 @@ function RsvpSection({ scheduleId }: { scheduleId: string }) {
       );
 
       if (error) throw error;
-      invalidateScheduleRsvp(scheduleId);
+      invalidateScheduleRsvp(schedule.id);
       refetch();
 
       const labels: Record<ScheduleRsvpResponse, string> = {
@@ -125,44 +125,52 @@ function RsvpSection({ scheduleId }: { scheduleId: string }) {
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-muted-foreground">참석 여부</p>
-        {rsvp && (
-          <span className="text-[10px] text-muted-foreground">
-            참석 {rsvp.going} · 불참 {rsvp.not_going} · 미정 {rsvp.maybe}
-          </span>
-        )}
+    <div className="space-y-3">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-muted-foreground">참석 여부</p>
+          {rsvp && (
+            <span className="text-[10px] text-muted-foreground">
+              참석 {rsvp.going} · 불참 {rsvp.not_going} · 미정 {rsvp.maybe}
+            </span>
+          )}
+        </div>
+        <div className="flex gap-1.5">
+          <Button
+            size="sm"
+            className="h-7 text-xs flex-1"
+            variant={rsvp?.my_response === "going" ? "default" : "outline"}
+            disabled={submitting}
+            onClick={() => handleRsvp("going")}
+          >
+            참석{rsvp && rsvp.going > 0 ? ` ${rsvp.going}` : ""}
+          </Button>
+          <Button
+            size="sm"
+            className="h-7 text-xs flex-1"
+            variant={rsvp?.my_response === "not_going" ? "default" : "outline"}
+            disabled={submitting}
+            onClick={() => handleRsvp("not_going")}
+          >
+            불참{rsvp && rsvp.not_going > 0 ? ` ${rsvp.not_going}` : ""}
+          </Button>
+          <Button
+            size="sm"
+            className="h-7 text-xs flex-1"
+            variant={rsvp?.my_response === "maybe" ? "default" : "outline"}
+            disabled={submitting}
+            onClick={() => handleRsvp("maybe")}
+          >
+            미정{rsvp && rsvp.maybe > 0 ? ` ${rsvp.maybe}` : ""}
+          </Button>
+        </div>
       </div>
-      <div className="flex gap-1.5">
-        <Button
-          size="sm"
-          className="h-7 text-xs flex-1"
-          variant={rsvp?.my_response === "going" ? "default" : "outline"}
-          disabled={submitting}
-          onClick={() => handleRsvp("going")}
-        >
-          참석{rsvp && rsvp.going > 0 ? ` ${rsvp.going}` : ""}
-        </Button>
-        <Button
-          size="sm"
-          className="h-7 text-xs flex-1"
-          variant={rsvp?.my_response === "not_going" ? "default" : "outline"}
-          disabled={submitting}
-          onClick={() => handleRsvp("not_going")}
-        >
-          불참{rsvp && rsvp.not_going > 0 ? ` ${rsvp.not_going}` : ""}
-        </Button>
-        <Button
-          size="sm"
-          className="h-7 text-xs flex-1"
-          variant={rsvp?.my_response === "maybe" ? "default" : "outline"}
-          disabled={submitting}
-          onClick={() => handleRsvp("maybe")}
-        >
-          미정{rsvp && rsvp.maybe > 0 ? ` ${rsvp.maybe}` : ""}
-        </Button>
-      </div>
+
+      {/* 대기 명단 섹션 */}
+      <ScheduleWaitlistSection
+        schedule={schedule}
+        goingCount={rsvp?.going ?? 0}
+      />
     </div>
   );
 }
@@ -714,9 +722,9 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                 )}
               </div>
 
-              {/* RSVP 섹션 */}
+              {/* RSVP + 대기 명단 섹션 */}
               <div className="border-t pt-3">
-                <RsvpSection scheduleId={detailSchedule.id} />
+                <RsvpSectionWithWaitlist schedule={detailSchedule} />
               </div>
 
               {/* 출석 예측 섹션 */}

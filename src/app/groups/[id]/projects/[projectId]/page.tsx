@@ -7,6 +7,7 @@ import { EntityHeader } from "@/components/layout/entity-header";
 import { EntityNav } from "@/components/layout/entity-nav";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
 import { MeetingMinutesSection } from "@/components/projects/meeting-minutes-section";
+import { ProjectTaskBoard } from "@/components/projects/project-task-board";
 
 export default function ProjectDetailPage({
   params,
@@ -23,6 +24,7 @@ export default function ProjectDetailPage({
           <EntityHeader ctx={ctx} leaderLabel="프로젝트장" />
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />
+          <ProjectTaskBoard ctx={ctx} />
           <MeetingMinutesSection ctx={ctx} />
         </>
       )}

@@ -30,6 +30,12 @@ export function useBoard(groupId: string, projectId?: string | null) {
     async () => {
       const supabase = createClient();
 
+      // 현재 사용자 ID 조회 (예약 게시글 필터링에 사용)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const userId = user?.id ?? null;
+
       let query = supabase
         .from("board_posts")
         .select(
@@ -67,6 +73,22 @@ export function useBoard(groupId: string, projectId?: string | null) {
       if (search.trim()) {
         query = query.or(
           `title.ilike.%${search.trim()}%,content.ilike.%${search.trim()}%`,
+        );
+      }
+
+      // 예약 발행 필터:
+      // - published_at IS NULL → 즉시 발행 게시글 (항상 표시)
+      // - published_at <= now() → 발행 시각이 지난 예약 게시글 (항상 표시)
+      // - published_at > now() AND author_id = userId → 내가 작성한 미발행 예약 게시글 (작성자에게만 표시)
+      // 관리자 여부는 클라이언트 UI에서 별도 처리, 여기서는 작성자 기준으로 필터링
+      const nowIso = new Date().toISOString();
+      if (userId) {
+        query = query.or(
+          `published_at.is.null,published_at.lte.${nowIso},author_id.eq.${userId}`,
+        );
+      } else {
+        query = query.or(
+          `published_at.is.null,published_at.lte.${nowIso}`,
         );
       }
 

@@ -22,6 +22,7 @@ export const swrKeys = {
     `/groups/${groupId}/schedules${projectId ? `?project=${projectId}` : ""}` as const,
   attendance: (scheduleId: string) => `/schedules/${scheduleId}/attendance` as const,
   scheduleRsvp: (scheduleId: string) => `/schedules/${scheduleId}/rsvp` as const,
+  scheduleWaitlist: (scheduleId: string) => `schedule-waitlist-${scheduleId}` as const,
 
   // 게시판
   board: (groupId: string, projectId: string | null | undefined, category: string, search: string, page: number) =>
@@ -217,4 +218,10 @@ export const swrKeys = {
   // 최근 활동 피드 (대시보드용)
   recentActivityFeed: (groupIds: string[], limit: number) =>
     `/recent-activity-feed?groups=${groupIds.slice().sort().join(",")}&limit=${limit}` as const,
+
+  // 프로젝트 할 일 (체크리스트)
+  projectTasks: (projectId: string) => `project-tasks-${projectId}` as const,
+
+  // 게시글 편집 이력
+  postRevisions: (postId: string) => `post-revisions-${postId}` as const,
 };

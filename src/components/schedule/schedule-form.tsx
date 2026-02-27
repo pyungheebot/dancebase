@@ -52,6 +52,7 @@ const DEFAULT_FIELDS: ScheduleFieldValues = {
   requireCheckout: false,
   startTime: "",
   endTime: "",
+  maxAttendees: "",
 };
 
 function toLocalDate(iso: string) {
@@ -163,6 +164,7 @@ export function ScheduleForm({
         requireCheckout: schedule.require_checkout,
         startTime: toLocalTime(schedule.starts_at),
         endTime: toLocalTime(schedule.ends_at),
+        maxAttendees: schedule.max_attendees != null ? String(schedule.max_attendees) : "",
       });
       setDate(toLocalDate(schedule.starts_at));
       setError(null);
@@ -248,6 +250,7 @@ export function ScheduleForm({
               late_threshold: fields.lateThresholdTime ? toISOWithLocalOffset(date, fields.lateThresholdTime) : null,
               attendance_deadline: fields.attendanceDeadlineTime ? toISOWithLocalOffset(date, fields.attendanceDeadlineTime) : null,
               require_checkout: fields.attendanceMethod !== "none" ? fields.requireCheckout : false,
+              max_attendees: fields.maxAttendees ? parseInt(fields.maxAttendees, 10) : null,
             })
             .eq("id", schedule.id);
 
@@ -332,6 +335,7 @@ export function ScheduleForm({
           longitude: fields.longitude,
           attendance_method: fields.attendanceMethod,
           created_by: user.id,
+          max_attendees: fields.maxAttendees ? parseInt(fields.maxAttendees, 10) : null,
         };
 
         const buildRow = (dateStr: string) => ({
