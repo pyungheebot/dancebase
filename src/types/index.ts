@@ -873,6 +873,26 @@ export const DEFAULT_GROUP_FAQ_SETTING: GroupFaqSettingValue = {
   faqs: [],
 };
 
+// ============================================
+// Group Rules (그룹 규칙/공지 고정 배너)
+// ============================================
+
+export type GroupRulesData = {
+  title: string;
+  content: string; // 마크다운 또는 줄바꿈 텍스트
+  isVisible: boolean;
+  updatedAt: string;
+};
+
+export const GROUP_RULES_SETTING_KEY = "group_rules";
+
+export const DEFAULT_GROUP_RULES_DATA: GroupRulesData = {
+  title: "",
+  content: "",
+  isVisible: false,
+  updatedAt: "",
+};
+
 export type Conversation = {
   partner_id: string;
   partner_name: string;
@@ -1398,6 +1418,59 @@ export const SPLIT_RULE_TYPE_LABELS: Record<SplitRuleType, string> = {
   by_role: "역할별",
   by_attendance: "출석률별",
   custom_ratio: "수동 비율",
+};
+
+// ============================================
+// Video Timestamp (연습 영상 구간 타임스탬프 메모, localStorage 기반)
+// ============================================
+
+export type VideoTimestamp = {
+  id: string;
+  videoId: string;
+  seconds: number; // 초 단위
+  comment: string;
+  authorName: string;
+  authorId: string;
+  createdAt: string;
+};
+
+// ============================================
+// Schedule Carpool (일정 카풀 조율)
+// ============================================
+
+export type CarpoolOffer = {
+  id: string;
+  schedule_id: string;
+  driver_id: string;
+  total_seats: number;
+  departure_location: string | null;
+  departure_time: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type CarpoolRequestStatus = "pending" | "accepted" | "rejected";
+
+export type CarpoolRequest = {
+  id: string;
+  offer_id: string;
+  passenger_id: string;
+  status: CarpoolRequestStatus;
+  created_at: string;
+};
+
+// ============================================
+// Member Intro Card (멤버 자기소개 카드, localStorage 기반)
+// ============================================
+
+export type MemberIntroCard = {
+  userId: string;
+  userName: string;
+  joinReason: string; // 입단 계기
+  mainPart: string; // 주로 담당하는 파트
+  favoriteGenre: string; // 좋아하는 장르
+  oneWord: string; // 한마디
+  updatedAt: string;
 };
 
 // ============================================

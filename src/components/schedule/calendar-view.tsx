@@ -28,6 +28,8 @@ import { ScheduleRolesSection } from "./schedule-roles-section";
 import { ScheduleWeatherBadge } from "./schedule-weather-badge";
 import { ScheduleRetroSheet } from "./schedule-retro-sheet";
 import { ScheduleLocationShare } from "./schedule-location-share";
+import { ScheduleCarpoolSection } from "./schedule-carpool-section";
+import { ScheduleBroadcastDialog } from "./schedule-broadcast-dialog";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
@@ -765,6 +767,11 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                 />
               </div>
 
+              {/* 카풀 섹션 */}
+              <div className="border-t pt-3">
+                <ScheduleCarpoolSection scheduleId={detailSchedule.id} />
+              </div>
+
               <div className="flex gap-2 flex-wrap">
                 {canEdit && (
                   <>
@@ -829,6 +836,13 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   <CalendarPlus className="h-3 w-3 mr-1" />
                   캘린더에 추가
                 </Button>
+                {groupId && canEdit && (
+                  <ScheduleBroadcastDialog
+                    schedule={detailSchedule}
+                    groupId={groupId}
+                    canBroadcast={true}
+                  />
+                )}
               </div>
             </div>
           )}

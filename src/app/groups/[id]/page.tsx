@@ -9,6 +9,7 @@ import { InviteModal } from "@/components/groups/invite-modal";
 import { GroupStatsCards } from "@/components/groups/group-stats-cards";
 import { GroupHealthCard } from "@/components/groups/group-health-card";
 import { GroupLinksSection } from "@/components/groups/group-links-section";
+import { GroupRulesBanner } from "@/components/groups/group-rules-banner";
 import { PracticePlaylistSection } from "@/components/groups/practice-playlist-section";
 import { PerformanceRecordSection } from "@/components/groups/performance-record-section";
 import { RoleOnboardingChecklist } from "@/components/groups/role-onboarding-checklist";
@@ -88,6 +89,8 @@ export default function GroupDetailPage({
           ) : (
             <div className="mb-3" />
           )}
+
+          <GroupRulesBanner groupId={ctx.groupId} />
 
           <RoleOnboardingChecklist
             groupId={ctx.groupId}

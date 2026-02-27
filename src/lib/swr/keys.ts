@@ -311,4 +311,16 @@ export const swrKeys = {
   // 그룹 챌린지
   groupChallenges: (groupId: string) =>
     `group-challenges-${groupId}` as const,
+
+  // 일정 카풀
+  scheduleCarpool: (scheduleId: string) =>
+    `schedule-carpool-${scheduleId}` as const,
+
+  // 그룹 규칙/공지 배너
+  groupRules: (groupId: string) =>
+    `group-rules-${groupId}` as const,
+
+  // 일정 브로드캐스트 (RSVP 상태 + 멤버 목록)
+  scheduleBroadcast: (scheduleId: string, groupId: string) =>
+    `/schedules/${scheduleId}/broadcast?group=${groupId}` as const,
 };

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Video, Plus, Trash2, ExternalLink, Film } from "lucide-react";
+import { Video, Plus, Trash2, ExternalLink, Film, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePracticeVideos } from "@/hooks/use-practice-videos";
+import { VideoTimestampSection } from "@/components/projects/video-timestamp-section";
 import type { ProjectSong } from "@/types";
 
 // URL에서 플랫폼 자동 감지
@@ -258,6 +259,128 @@ function AddVideoDialog({ open, onOpenChange, onAdd, songs }: AddVideoDialogProp
   );
 }
 
+// 영상 카드 컴포넌트 (개별 타임스탬프 토글 상태 관리)
+interface VideoCardProps {
+  video: ReturnType<typeof usePracticeVideos>["videos"][number];
+  groupId: string;
+  canEdit: boolean;
+  linkedSong?: ProjectSong;
+  onDelete: (id: string) => void;
+  onTagClick: (tag: string) => void;
+}
+
+function VideoCard({
+  video,
+  groupId,
+  canEdit,
+  linkedSong,
+  onDelete,
+  onTagClick,
+}: VideoCardProps) {
+  const [showTimestamps, setShowTimestamps] = useState(false);
+
+  return (
+    <div className="rounded-lg border bg-card p-3 space-y-1.5">
+      {/* 상단: 플랫폼 배지 + 제목 + 링크 */}
+      <div className="flex items-start gap-2">
+        <Badge
+          className={`text-[10px] px-1.5 py-0 shrink-0 mt-0.5 ${getPlatformBadgeClass(video.platform)}`}
+        >
+          {PLATFORM_LABELS[video.platform] ?? video.platform}
+        </Badge>
+        <p className="text-xs font-medium flex-1 leading-tight break-all">
+          {video.title}
+        </p>
+        <a
+          href={video.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0"
+          title="새 탭에서 열기"
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+          >
+            <ExternalLink className="h-3 w-3" />
+          </Button>
+        </a>
+        {canEdit && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+            onClick={() => onDelete(video.id)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        )}
+      </div>
+
+      {/* 연결 곡 */}
+      {linkedSong && (
+        <p className="text-[10px] text-muted-foreground">
+          곡: {linkedSong.title}
+          {linkedSong.artist ? ` - ${linkedSong.artist}` : ""}
+        </p>
+      )}
+
+      {/* 태그 */}
+      {video.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {video.tags.map((tag) => (
+            <Badge
+              key={tag}
+              variant="outline"
+              className="text-[10px] px-1.5 py-0 cursor-pointer"
+              onClick={() => onTagClick(tag)}
+            >
+              #{tag}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* 하단: 업로더 + 날짜 + 타임스탬프 토글 버튼 */}
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] text-muted-foreground">
+          {video.profiles?.name ?? "알 수 없음"}
+        </p>
+        <div className="flex items-center gap-1">
+          <p className="text-[10px] text-muted-foreground">
+            {format(new Date(video.created_at), "M/d HH:mm", {
+              locale: ko,
+            })}
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-5 px-1.5 gap-0.5 text-[10px] ${showTimestamps ? "text-primary" : "text-muted-foreground"}`}
+            onClick={() => setShowTimestamps((v) => !v)}
+            title="타임스탬프 메모"
+          >
+            <MessageSquare className="h-3 w-3" />
+            메모
+          </Button>
+        </div>
+      </div>
+
+      {/* 타임스탬프 섹션 (토글) */}
+      {showTimestamps && (
+        <div className="border-t pt-2 mt-1">
+          <VideoTimestampSection
+            videoId={video.id}
+            videoUrl={video.url}
+            groupId={groupId}
+            canEdit={canEdit}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface PracticeVideoGalleryProps {
   groupId: string;
   projectId?: string | null;
@@ -410,83 +533,15 @@ export function PracticeVideoGallery({
                 {filteredVideos.map((video) => {
                   const linkedSong = songs.find((s) => s.id === video.song_id);
                   return (
-                    <div
+                    <VideoCard
                       key={video.id}
-                      className="rounded-lg border bg-card p-3 space-y-1.5"
-                    >
-                      {/* 상단: 플랫폼 배지 + 제목 + 링크 */}
-                      <div className="flex items-start gap-2">
-                        <Badge
-                          className={`text-[10px] px-1.5 py-0 shrink-0 mt-0.5 ${getPlatformBadgeClass(video.platform)}`}
-                        >
-                          {PLATFORM_LABELS[video.platform] ?? video.platform}
-                        </Badge>
-                        <p className="text-xs font-medium flex-1 leading-tight break-all">
-                          {video.title}
-                        </p>
-                        <a
-                          href={video.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="shrink-0"
-                          title="새 탭에서 열기"
-                        >
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                        </a>
-                        {canEdit && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                            onClick={() => deleteVideo(video.id)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
-
-                      {/* 연결 곡 */}
-                      {linkedSong && (
-                        <p className="text-[10px] text-muted-foreground">
-                          곡: {linkedSong.title}
-                          {linkedSong.artist ? ` - ${linkedSong.artist}` : ""}
-                        </p>
-                      )}
-
-                      {/* 태그 */}
-                      {video.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {video.tags.map((tag) => (
-                            <Badge
-                              key={tag}
-                              variant="outline"
-                              className="text-[10px] px-1.5 py-0 cursor-pointer"
-                              onClick={() => setTagFilter(tag)}
-                            >
-                              #{tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* 하단: 업로더 + 날짜 */}
-                      <div className="flex items-center justify-between">
-                        <p className="text-[10px] text-muted-foreground">
-                          {video.profiles?.name ?? "알 수 없음"}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {format(new Date(video.created_at), "M/d HH:mm", {
-                            locale: ko,
-                          })}
-                        </p>
-                      </div>
-                    </div>
+                      video={video}
+                      groupId={groupId}
+                      canEdit={canEdit}
+                      linkedSong={linkedSong}
+                      onDelete={deleteVideo}
+                      onTagClick={setTagFilter}
+                    />
                   );
                 })}
               </div>

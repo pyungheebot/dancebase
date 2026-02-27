@@ -16,11 +16,13 @@ import {
 } from "@/components/ui/select";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { MemberBadgeIcons } from "@/components/members/member-badge-icons";
-import { UserMinus, Pencil, Check, X } from "lucide-react";
+import { UserMinus, Pencil, Check, X, IdCard } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MemberNotePopover } from "@/components/members/member-note-popover";
 import { PracticePlanSheet } from "@/components/members/practice-plan-sheet";
+import { MemberIntroCardDialog } from "@/components/members/member-intro-card-dialog";
+import { useMemberIntroCards } from "@/hooks/use-member-intro-cards";
 import type { GroupMemberWithProfile, MemberCategory } from "@/types";
 import { getCategoryColorClasses } from "@/types";
 
@@ -54,7 +56,9 @@ export function MemberList({
   const [editingNickname, setEditingNickname] = useState<string | null>(null);
   const [nicknameValue, setNicknameValue] = useState("");
   const [removeMemberId, setRemoveMemberId] = useState<string | null>(null);
+  const [introCardTarget, setIntroCardTarget] = useState<GroupMemberWithProfile | null>(null);
   const supabase = createClient();
+  const { hasCard } = useMemberIntroCards(groupId);
 
   const ROLE_LABELS: Record<string, string> = {
     leader: "그룹장",
@@ -207,6 +211,17 @@ export function MemberList({
                   joinedAt={member.joined_at}
                   role={member.role}
                 />
+                <button
+                  onClick={() => setIntroCardTarget(member)}
+                  className={
+                    hasCard(member.user_id)
+                      ? "text-primary hover:text-primary/80"
+                      : "text-muted-foreground hover:text-foreground"
+                  }
+                  title="자기소개 카드"
+                >
+                  <IdCard className="h-3 w-3" />
+                </button>
                 {(myRole === "leader" || myRole === "sub_leader") && (
                   <MemberNotePopover
                     groupId={groupId}
@@ -328,9 +343,21 @@ export function MemberList({
     />
   );
 
+  const introCardDialog = introCardTarget ? (
+    <MemberIntroCardDialog
+      open={!!introCardTarget}
+      onOpenChange={(open) => { if (!open) setIntroCardTarget(null); }}
+      groupId={groupId}
+      targetUserId={introCardTarget.user_id}
+      targetUserName={introCardTarget.nickname || introCardTarget.profiles.name}
+      targetUserRole={introCardTarget.role}
+      currentUserId={currentUserId}
+    />
+  ) : null;
+
   // 카테고리가 없거나 그룹핑 비활성화 시 flat list
   if (categories.length === 0 || !grouped) {
-    return <>{confirmDialog}<div className="space-y-1.5">{members.map(renderMember)}</div></>;
+    return <>{confirmDialog}{introCardDialog}<div className="space-y-1.5">{members.map(renderMember)}</div></>;
   }
 
   // 카테고리별 그룹핑
@@ -350,7 +377,7 @@ export function MemberList({
   }
 
   return (
-    <>{confirmDialog}<div className="space-y-4">
+    <>{confirmDialog}{introCardDialog}<div className="space-y-4">
       {grouped_members.map((group) => {
         const colorClasses = group.category
           ? getCategoryColorClasses(group.category.color || "gray")

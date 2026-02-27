@@ -349,3 +349,11 @@ export function invalidateAttendanceStreak(groupId: string, userId: string) {
 export function invalidateGroupChallenges(groupId: string) {
   mutate(swrKeys.groupChallenges(groupId));
 }
+
+export function invalidateScheduleCarpool(scheduleId: string) {
+  mutate(swrKeys.scheduleCarpool(scheduleId));
+}
+
+export function invalidateGroupRules(groupId: string) {
+  mutate(swrKeys.groupRules(groupId));
+}

@@ -59,6 +59,7 @@ import { ActivityLogSection } from "@/components/settings/activity-log-section";
 import { ReminderSettingsSection } from "@/components/settings/reminder-settings-section";
 import { PermissionAuditSection } from "@/components/settings/permission-audit-section";
 import { NotificationPreferencesSection } from "@/components/settings/notification-preferences-section";
+import { GroupRulesEditor } from "@/components/groups/group-rules-editor";
 
 type SettingsContentProps = {
   ctx: EntityContext;
@@ -926,6 +927,14 @@ export function SettingsContent({
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* 그룹 규칙/공지 배너 (리더/서브리더) */}
+          {(ctx.permissions.canEdit || ctx.permissions.canManageMembers) && (
+            <GroupRulesEditor
+              groupId={ctx.groupId}
+              canEdit={ctx.permissions.canEdit || ctx.permissions.canManageMembers}
+            />
           )}
 
           {/* 알림 설정 (리더 전용) */}
