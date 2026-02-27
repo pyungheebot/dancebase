@@ -1,0 +1,145 @@
+"use client";
+
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { BoardPoll, BoardPollOptionWithVotes } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+
+interface BoardPollProps {
+  poll: BoardPoll;
+  options: BoardPollOptionWithVotes[];
+  onUpdate: () => void;
+}
+
+export function BoardPollView({ poll, options, onUpdate }: BoardPollProps) {
+  const [selected, setSelected] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const supabase = createClient();
+
+  const totalVotes = options.reduce((sum, o) => sum + o.vote_count, 0);
+  const hasVoted = options.some((o) => o.voted_by_me);
+  const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
+
+  const handleToggle = (optionId: string) => {
+    if (poll.allow_multiple) {
+      setSelected((prev) =>
+        prev.includes(optionId)
+          ? prev.filter((id) => id !== optionId)
+          : [...prev, optionId]
+      );
+    } else {
+      setSelected([optionId]);
+    }
+  };
+
+  const handleVote = async () => {
+    if (selected.length === 0) return;
+    setSubmitting(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setSubmitting(false);
+      return;
+    }
+
+    for (const optionId of selected) {
+      await supabase.from("board_poll_votes").insert({
+        option_id: optionId,
+        user_id: user.id,
+      });
+    }
+
+    setSelected([]);
+    setSubmitting(false);
+    onUpdate();
+  };
+
+  const handleUnvote = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const votedOptionIds = options.filter((o) => o.voted_by_me).map((o) => o.id);
+    for (const optionId of votedOptionIds) {
+      await supabase
+        .from("board_poll_votes")
+        .delete()
+        .eq("option_id", optionId)
+        .eq("user_id", user.id);
+    }
+    onUpdate();
+  };
+
+  // 결과 표시 (투표 완료 또는 마감)
+  if (hasVoted || isExpired) {
+    return (
+      <div className="rounded-lg border p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-muted-foreground">
+            투표 결과 · {totalVotes}표
+            {poll.allow_multiple && " (복수선택)"}
+          </span>
+          {hasVoted && !isExpired && (
+            <Button variant="ghost" size="sm" className="h-6 text-[11px]" onClick={handleUnvote}>
+              투표 취소
+            </Button>
+          )}
+        </div>
+        {options.map((opt) => {
+          const pct = totalVotes > 0 ? Math.round((opt.vote_count / totalVotes) * 100) : 0;
+          return (
+            <div key={opt.id} className="space-y-0.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className={opt.voted_by_me ? "font-medium" : ""}>
+                  {opt.text}
+                  {opt.voted_by_me && " ✓"}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {opt.vote_count}표 ({pct}%)
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // 투표 선택 UI
+  return (
+    <div className="rounded-lg border p-3 space-y-2">
+      <span className="text-xs font-medium text-muted-foreground">
+        투표{poll.allow_multiple ? " (복수선택 가능)" : ""}
+      </span>
+      {options.map((opt) => (
+        <label
+          key={opt.id}
+          className="flex items-center gap-2 p-2 rounded hover:bg-accent cursor-pointer transition-colors"
+        >
+          <Checkbox
+            checked={selected.includes(opt.id)}
+            onCheckedChange={() => handleToggle(opt.id)}
+          />
+          <span className="text-sm">{opt.text}</span>
+        </label>
+      ))}
+      <Button
+        className="w-full h-8 text-xs"
+        onClick={handleVote}
+        disabled={selected.length === 0 || submitting}
+      >
+        {submitting ? "투표 중..." : "투표하기"}
+      </Button>
+    </div>
+  );
+}

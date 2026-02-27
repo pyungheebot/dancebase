@@ -1,0 +1,143 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { createClient } from "@/lib/supabase/client";
+import type { BoardCommentWithProfile } from "@/types";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { UserPopoverMenu } from "@/components/user/user-popover-menu";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+interface BoardCommentSectionProps {
+  postId: string;
+  comments: BoardCommentWithProfile[];
+  onUpdate: () => void;
+  nicknameMap?: Record<string, string>;
+  groupId?: string;
+}
+
+export function BoardCommentSection({
+  postId,
+  comments,
+  onUpdate,
+  nicknameMap,
+  groupId,
+}: BoardCommentSectionProps) {
+  const [content, setContent] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const supabase = createClient();
+
+  // 현재 유저 확인
+  useEffect(() => {
+    if (currentUserId !== null) return;
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setCurrentUserId(user.id);
+    };
+    fetchUser();
+  }, [supabase, currentUserId]);
+
+  const handleSubmit = async () => {
+    if (!content.trim() || submitting) return;
+    setSubmitting(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setSubmitting(false);
+      return;
+    }
+
+    const { error } = await supabase.from("board_comments").insert({
+      post_id: postId,
+      author_id: user.id,
+      content: content.trim(),
+    });
+
+    if (error) { toast.error("댓글 작성에 실패했습니다"); setSubmitting(false); return; }
+    setContent("");
+    setSubmitting(false);
+    onUpdate();
+  };
+
+  const handleDelete = async (commentId: string) => {
+    const { error } = await supabase.from("board_comments").delete().eq("id", commentId);
+    if (error) { toast.error("댓글 삭제에 실패했습니다"); return; }
+    onUpdate();
+  };
+
+  return (
+    <div className="space-y-2">
+      <h3 className="text-[11px] font-medium">댓글 ({comments.length})</h3>
+
+      {comments.length > 0 && (
+        <div className="space-y-2">
+          {comments.map((comment) => (
+            <div key={comment.id} className="flex gap-2">
+              <Avatar className="h-6 w-6 mt-0.5 shrink-0">
+                <AvatarFallback className="text-[10px]">
+                  {(nicknameMap?.[comment.author_id] || comment.profiles.name)?.charAt(0)?.toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <UserPopoverMenu
+                    userId={comment.author_id}
+                    displayName={nicknameMap?.[comment.author_id] || comment.profiles.name}
+                    groupId={groupId}
+                    className="text-xs font-medium hover:underline"
+                  >
+                    {nicknameMap?.[comment.author_id] || comment.profiles.name}
+                  </UserPopoverMenu>
+                  <span className="text-[11px] text-muted-foreground">
+                    {format(new Date(comment.created_at), "M/d HH:mm", { locale: ko })}
+                  </span>
+                  {currentUserId === comment.author_id && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDelete(comment.id)}
+                      aria-label="댓글 삭제"
+                    >
+                      <Trash2 className="h-2.5 w-2.5" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <Input
+          placeholder="댓글을 입력하세요"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+          className="flex-1"
+        />
+        <Button
+          size="sm"
+          onClick={handleSubmit}
+          disabled={!content.trim() || submitting}
+        >
+          {submitting ? "..." : "작성"}
+        </Button>
+      </div>
+    </div>
+  );
+}
