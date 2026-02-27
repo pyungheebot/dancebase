@@ -20,6 +20,7 @@ import { UserMinus, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MemberNotePopover } from "@/components/members/member-note-popover";
+import { PracticePlanSheet } from "@/components/members/practice-plan-sheet";
 import type { GroupMemberWithProfile, MemberCategory } from "@/types";
 import { getCategoryColorClasses } from "@/types";
 
@@ -236,6 +237,14 @@ export function MemberList({
         <div className="flex items-center gap-2">
           {myRole === "leader" ? (
             <>
+              <PracticePlanSheet
+                groupId={groupId}
+                userId={member.user_id}
+                memberName={displayName}
+                memberAvatarUrl={member.profiles.avatar_url}
+                currentUserId={currentUserId}
+                isLeader={true}
+              />
               {categories.length > 0 && (
                 <Select
                   value={member.category_id || "none"}

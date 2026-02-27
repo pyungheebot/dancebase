@@ -280,4 +280,20 @@ export const swrKeys = {
   // 연간 일정 히트맵
   yearlySchedules: (groupId: string, year: number) =>
     `/groups/${groupId}/yearly-schedules?year=${year}` as const,
+
+  // 연습 영상 아카이브
+  practiceVideos: (groupId: string) =>
+    `practice-videos-${groupId}` as const,
+
+  // 그룹 운영 월별 리포트
+  monthlyReport: (groupId: string, year: number, month: number) =>
+    `monthly-report-${groupId}-${year}-${month}` as const,
+
+  // 그룹 활동 타임라인
+  groupActivity: (groupId: string) =>
+    `group-activity-${groupId}` as const,
+
+  // 공연/대회 성과 기록
+  performanceRecords: (groupId: string) =>
+    `performance-records-${groupId}` as const,
 };

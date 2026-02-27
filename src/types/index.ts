@@ -579,6 +579,23 @@ export type ActivityFeedItem = {
 };
 
 // ============================================
+// Group Activity Timeline (그룹 활동 타임라인)
+// ============================================
+
+export type ActivityType = "post" | "comment" | "rsvp" | "member_join" | "schedule_create" | "finance";
+
+export type ActivityItem = {
+  id: string;
+  type: ActivityType;
+  title: string;
+  description: string;
+  userName: string;
+  userId: string;
+  createdAt: string;
+  metadata?: Record<string, string>;
+};
+
+// ============================================
 // Content Report (콘텐츠 신고)
 // ============================================
 
@@ -1254,6 +1271,69 @@ export type MentorMenteeMatch = {
   menteeName: string;
   skillTag: string;
   status: MentorMenteeStatus;
+  createdAt: string;
+};
+
+// ============================================
+// Practice Video (연습 영상 아카이브)
+// ============================================
+
+export type PracticeVideo = {
+  id: string;
+  group_id: string;
+  project_id: string | null;
+  schedule_id: string | null;
+  song_id: string | null;
+  url: string;
+  title: string;
+  platform: string;
+  tags: string[];
+  uploaded_by: string;
+  created_at: string;
+};
+
+// ============================================
+// Performance Records (공연/대회 성과 기록)
+// ============================================
+
+export type PerformanceEventType = "performance" | "competition" | "showcase" | "workshop";
+
+export type PerformanceRecord = {
+  id: string;
+  group_id: string;
+  project_id: string | null;
+  event_name: string;
+  event_date: string;
+  event_type: PerformanceEventType;
+  result: string | null;
+  ranking: string | null;
+  audience_count: number | null;
+  venue: string | null;
+  notes: string | null;
+  created_by: string;
+  created_at: string;
+};
+
+// ============================================
+// Practice Playlist (연습 음악 플레이리스트, localStorage 기반)
+// ============================================
+
+export type PlaylistTrack = {
+  id: string;
+  title: string;
+  artist: string;
+  url: string; // YouTube/Spotify URL
+  platform: "youtube" | "spotify" | "soundcloud" | "other";
+  category: "warmup" | "practice" | "cooldown" | "freestyle";
+  addedBy: string; // user name
+  addedAt: string;
+  likes: number;
+};
+
+export type PracticePlaylist = {
+  id: string;
+  name: string;
+  tracks: PlaylistTrack[];
   createdAt: string;
 };
 

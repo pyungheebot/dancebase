@@ -17,6 +17,7 @@ interface SendMessageDialogProps {
   receiverName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultContent?: string;
 }
 
 export function SendMessageDialog({
@@ -24,8 +25,9 @@ export function SendMessageDialog({
   receiverName,
   open,
   onOpenChange,
+  defaultContent = "",
 }: SendMessageDialogProps) {
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(defaultContent);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const supabase = createClient();
@@ -58,7 +60,7 @@ export function SendMessageDialog({
   const handleClose = (value: boolean) => {
     if (!value) {
       setSent(false);
-      setContent("");
+      setContent(defaultContent);
     }
     onOpenChange(value);
   };

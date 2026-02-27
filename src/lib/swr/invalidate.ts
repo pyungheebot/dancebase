@@ -317,3 +317,19 @@ export function invalidatePostReadStatus(postId: string) {
 export function invalidateYearlySchedules(groupId: string, year: number) {
   mutate(swrKeys.yearlySchedules(groupId, year));
 }
+
+export function invalidatePracticeVideos(groupId: string) {
+  mutate(swrKeys.practiceVideos(groupId));
+}
+
+export function invalidateMonthlyReport(groupId: string, year: number, month: number) {
+  mutate(swrKeys.monthlyReport(groupId, year, month));
+}
+
+export function invalidateGroupActivity(groupId: string) {
+  mutate(swrKeys.groupActivity(groupId));
+}
+
+export function invalidatePerformanceRecords(groupId: string) {
+  mutate(swrKeys.performanceRecords(groupId));
+}

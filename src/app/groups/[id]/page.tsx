@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import { useGroupEntity } from "@/hooks/use-entity-data";
 import { EntityPageLayout } from "@/components/layout/entity-page-layout";
 import { EntityNav } from "@/components/layout/entity-nav";
@@ -9,9 +9,15 @@ import { InviteModal } from "@/components/groups/invite-modal";
 import { GroupStatsCards } from "@/components/groups/group-stats-cards";
 import { GroupHealthCard } from "@/components/groups/group-health-card";
 import { GroupLinksSection } from "@/components/groups/group-links-section";
+import { PracticePlaylistSection } from "@/components/groups/practice-playlist-section";
+import { PerformanceRecordSection } from "@/components/groups/performance-record-section";
 import { RoleOnboardingChecklist } from "@/components/groups/role-onboarding-checklist";
+import { MonthlyReportDialog } from "@/components/groups/monthly-report-dialog";
+import { GroupActivityFeed } from "@/components/groups/group-activity-feed";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { LeaderInfo } from "@/components/ui/leader-info";
+import { BarChart3 } from "lucide-react";
 
 export default function GroupDetailPage({
   params,
@@ -20,6 +26,7 @@ export default function GroupDetailPage({
 }) {
   const { id } = use(params);
   const { ctx, loading } = useGroupEntity(id);
+  const [reportOpen, setReportOpen] = useState(false);
 
   return (
     <EntityPageLayout ctx={ctx} loading={loading} notFoundMessage="그룹을 찾을 수 없습니다">
@@ -41,7 +48,21 @@ export default function GroupDetailPage({
                 leaderNames={ctx.members.filter((m) => m.role === "leader").map((m) => m.nickname || m.profile.name)}
               />
             </div>
-            {ctx.permissions.canEdit && <InviteModal inviteCode={ctx.inviteCode || ""} />}
+            <div className="flex items-center gap-2 shrink-0">
+              <GroupActivityFeed groupId={ctx.groupId} />
+              {(ctx.permissions.canEdit || ctx.permissions.canManageMembers) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setReportOpen(true)}
+                >
+                  <BarChart3 className="h-3 w-3 mr-1" />
+                  월별 리포트
+                </Button>
+              )}
+              {ctx.permissions.canEdit && <InviteModal inviteCode={ctx.inviteCode || ""} />}
+            </div>
           </div>
 
           {ctx.raw.group?.dance_genre && ctx.raw.group.dance_genre.length > 0 ? (
@@ -74,8 +95,21 @@ export default function GroupDetailPage({
             canEdit={ctx.permissions.canEdit || ctx.permissions.canManageMembers}
           />
 
+          <PracticePlaylistSection groupId={ctx.groupId} />
+
+          <PerformanceRecordSection
+            groupId={ctx.groupId}
+            canEdit={ctx.permissions.canEdit || ctx.permissions.canManageMembers}
+          />
+
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />
+
+          <MonthlyReportDialog
+            open={reportOpen}
+            onOpenChange={setReportOpen}
+            groupId={ctx.groupId}
+          />
         </>
       )}
     </EntityPageLayout>
