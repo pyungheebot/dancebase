@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CardGridSkeleton } from "@/components/shared/page-skeleton";
 import { Plus, Calendar, Bell, AlertCircle, CreditCard, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -253,14 +254,7 @@ export default function DashboardPage() {
 
           <div aria-live="polite" aria-atomic="false">
             {loading ? (
-              <div className="space-y-2" aria-label="그룹 목록 불러오는 중" aria-busy="true">
-                {[0, 1, 2].map((i) => (
-                  <div key={i} className="rounded-lg border p-4 space-y-2">
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                ))}
-              </div>
+              <CardGridSkeleton count={4} />
             ) : groups.length === 0 ? (
               <div className="text-center py-20 space-y-4" role="status">
                 <p className="text-muted-foreground">아직 참여한 그룹이 없습니다</p>

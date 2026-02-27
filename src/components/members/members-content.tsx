@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { createClient } from "@/lib/supabase/client";
 import { MemberList } from "@/components/groups/member-list";
 import { InviteModal } from "@/components/groups/invite-modal";
@@ -130,6 +131,9 @@ function GroupMembersContent({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkRemoveOpen, setBulkRemoveOpen] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
+
+  // 스크롤 위치 복원
+  useScrollRestore();
 
   const supabase = createClient();
 
@@ -510,6 +514,10 @@ function ProjectMembersContent({
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("name");
+
+  // 스크롤 위치 복원
+  useScrollRestore();
+
   const supabase = createClient();
 
   const handleExportCsv = () => {

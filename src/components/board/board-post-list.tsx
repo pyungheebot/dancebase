@@ -4,6 +4,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useBoard, useBoardCategories } from "@/hooks/use-board";
+import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +63,9 @@ export function BoardPostList({
 }: BoardPostListProps) {
   const { posts, loading, category, setCategory, search, setSearch, page, setPage, totalPages, refetch } = useBoard(groupId, projectId);
   const { filterCategories } = useBoardCategories(groupId);
+
+  // 스크롤 위치 복원
+  useScrollRestore();
 
   // 글쓰기 폼 오픈 상태 (EmptyState CTA와 공유)
   const [formOpen, setFormOpen] = useState(false);

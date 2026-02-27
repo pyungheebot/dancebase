@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,6 +35,9 @@ export function InviteGroupMembersDialog({
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
+
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const toggleAllRef = useRef<HTMLButtonElement>(null);
 
   // 이미 프로젝트에 있는 멤버를 제외한 초대 가능 목록
   const availableMembers = groupMembers.filter(
@@ -93,12 +96,22 @@ export function InviteGroupMembersDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="h-7 text-xs">
+        <Button ref={triggerRef} size="sm" variant="outline" className="h-7 text-xs">
           <UserPlus className="h-3 w-3 mr-1" />
           그룹 멤버 초대
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          toggleAllRef.current?.focus();
+        }}
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          triggerRef.current?.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-sm">그룹 멤버 초대</DialogTitle>
         </DialogHeader>
@@ -116,6 +129,7 @@ export function InviteGroupMembersDialog({
                 초대할 멤버 선택 ({availableMembers.length}명 초대 가능)
               </span>
               <button
+                ref={toggleAllRef}
                 type="button"
                 onClick={toggleAll}
                 className="text-xs text-primary hover:underline"

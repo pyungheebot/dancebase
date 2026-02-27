@@ -87,6 +87,11 @@ export function EntityNav({ ctx }: EntityNavProps) {
     return pathname.startsWith(fullPath);
   };
 
+  // 현재 활성 탭 (브레드크럼 끝에 표시할 현재 페이지명)
+  const activeTab = visibleTabs.find((tab) => isActive(tab.path)) ?? null;
+  // 대시보드(루트) 탭은 별도 표시 없이 생략
+  const currentPageLabel = activeTab && activeTab.key !== "dashboard" ? activeTab.label : null;
+
   const navClass = isProject
     ? "border-b mb-3 -mx-3 px-3 flex gap-px overflow-x-auto scrollbar-none"
     : "border-b mb-4 flex gap-1 overflow-x-auto scrollbar-none px-6 -mx-6";
@@ -110,7 +115,7 @@ export function EntityNav({ ctx }: EntityNavProps) {
 
   return (
     <>
-      {breadcrumbs.length > 0 && (
+      {(breadcrumbs.length > 0 || currentPageLabel) && (
         <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1.5 overflow-x-auto scrollbar-none">
           {breadcrumbs.map((crumb, i) => (
             <span key={crumb.href} className="flex items-center gap-1 shrink-0">
@@ -121,6 +126,14 @@ export function EntityNav({ ctx }: EntityNavProps) {
               </Link>
             </span>
           ))}
+          {currentPageLabel && (
+            <span className="flex items-center gap-1 shrink-0">
+              <ChevronRight className="h-2.5 w-2.5" />
+              <span className="text-foreground font-bold whitespace-nowrap">
+                {currentPageLabel}
+              </span>
+            </span>
+          )}
         </div>
       )}
       <div className="relative">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Plus, Trash2, LayoutTemplate, Clock, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -68,6 +68,9 @@ function ScheduleTemplateAddDialog({
   const [loading, setLoading] = useState(false);
   const [fields, setFields] = useState<TemplateFieldValues>(DEFAULT_TEMPLATE_FIELDS);
 
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
   const resetFields = () => setFields(DEFAULT_TEMPLATE_FIELDS);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,12 +128,21 @@ function ScheduleTemplateAddDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm" className="h-7 text-xs">
+        <Button ref={triggerRef} size="sm" className="h-7 text-xs">
           <Plus className="mr-1 h-3 w-3" />
           템플릿 추가
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          nameInputRef.current?.focus();
+        }}
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+          triggerRef.current?.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>일정 템플릿 추가</DialogTitle>
         </DialogHeader>
@@ -140,6 +152,7 @@ function ScheduleTemplateAddDialog({
               템플릿 이름 <span className="text-destructive">*</span>
             </Label>
             <Input
+              ref={nameInputRef}
               id="tpl-name"
               placeholder="예: 정기 연습, 공연 준비"
               value={fields.name}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useBoardCategories } from "@/hooks/use-board";
+import { useFormDraft } from "@/hooks/use-form-draft";
 import type { BoardPost } from "@/types";
 import { invalidateBoardPostAttachments } from "@/lib/swr/invalidate";
 import { formatFileSize } from "@/lib/utils";
@@ -67,6 +68,14 @@ export function BoardPostForm({
   const [category, setCategory] = useState("미분류");
   const [submitting, setSubmitting] = useState(false);
 
+  // 드래프트 훅 - 새 글 작성 모드에서만 활성화
+  const draftKey = `draft-board-post-${groupId}${projectId ? `-${projectId}` : ""}`;
+  const { hasDraft, restoreDraft, saveDraft, clearDraft } = useFormDraft({
+    key: draftKey,
+    enabled: mode === "create",
+    debounceMs: 3000,
+  });
+
   // 투표
   const [pollOptions, setPollOptions] = useState<string[]>([""]);
   const [allowMultiple, setAllowMultiple] = useState(false);
@@ -98,6 +107,32 @@ export function BoardPostForm({
       setPollEndsAt(null);
       setCustomEndsAt("");
       setPendingFiles([]);
+
+      // 드래프트가 있으면 복원 여부를 묻는 토스트 표시
+      if (hasDraft) {
+        toast("이전 작성 내용 복원", {
+          description: "이전에 작성하던 내용이 있습니다.",
+          duration: 8000,
+          action: {
+            label: "복원",
+            onClick: () => {
+              const draft = restoreDraft();
+              if (draft) {
+                setTitle(draft.title ?? "");
+                setContent(draft.content ?? "");
+                toast.success("이전 작성 내용을 복원했습니다.");
+              }
+            },
+          },
+          cancel: {
+            label: "삭제",
+            onClick: () => {
+              clearDraft();
+              toast("임시 저장 내용을 삭제했습니다.");
+            },
+          },
+        });
+      }
     }
   }, [open, mode, initialData, writeCategories]);
 
@@ -341,6 +376,9 @@ export function BoardPostForm({
       }
     }
 
+    // 제출 성공 후 드래프트 삭제
+    clearDraft();
+
     setTitle("");
     setContent("");
     setCategory("미분류");
@@ -381,7 +419,12 @@ export function BoardPostForm({
             className="mt-1"
             placeholder="제목을 입력하세요"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (mode === "create") {
+                saveDraft({ title: e.target.value, content });
+              }
+            }}
           />
         </div>
         <div>
@@ -390,7 +433,12 @@ export function BoardPostForm({
             className="mt-1 min-h-[120px]"
             placeholder="내용을 입력하세요"
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => {
+              setContent(e.target.value);
+              if (mode === "create") {
+                saveDraft({ title, content: e.target.value });
+              }
+            }}
           />
         </div>
 

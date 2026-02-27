@@ -12,8 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ContentSkeleton } from "@/components/shared/page-skeleton";
 import {
-  Loader2,
   MapPin,
   Users,
   Instagram,
@@ -44,8 +44,8 @@ export default function UserProfilePage({
   if (loading || authLoading) {
     return (
       <AppLayout>
-        <div className="flex justify-center py-24">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="max-w-2xl mx-auto px-6 py-6">
+          <ContentSkeleton />
         </div>
       </AppLayout>
     );

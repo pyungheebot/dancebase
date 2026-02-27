@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +59,9 @@ export function FinanceTransactionForm({
   onOpenChange: controlledOnOpenChange,
 }: Props) {
   const isEdit = mode === "edit";
+
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const amountInputRef = useRef<HTMLInputElement>(null);
 
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -172,7 +175,16 @@ export function FinanceTransactionForm({
   };
 
   const dialogContent = (
-    <DialogContent>
+    <DialogContent
+      onOpenAutoFocus={(e) => {
+        e.preventDefault();
+        amountInputRef.current?.focus();
+      }}
+      onCloseAutoFocus={(e) => {
+        e.preventDefault();
+        triggerRef.current?.focus();
+      }}
+    >
       <DialogHeader>
         <DialogTitle>{isEdit ? "거래 수정" : "거래 추가"}</DialogTitle>
       </DialogHeader>
@@ -225,6 +237,7 @@ export function FinanceTransactionForm({
             금액 (원) <span className="text-destructive">*</span>
           </Label>
           <Input
+            ref={amountInputRef}
             type="number"
             min="1"
             placeholder="0"
@@ -302,7 +315,7 @@ export function FinanceTransactionForm({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-7 text-xs px-2.5">
+        <Button ref={triggerRef} size="sm" className="h-7 text-xs px-2.5">
           <Plus className="h-3 w-3 mr-1" />
           추가
         </Button>

@@ -7,7 +7,8 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { useConversations } from "@/hooks/use-messages";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Mail } from "lucide-react";
+import { ListSkeleton } from "@/components/shared/page-skeleton";
+import { Mail } from "lucide-react";
 
 export default function MessagesPage() {
   const { conversations, loading } = useConversations();
@@ -15,8 +16,12 @@ export default function MessagesPage() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex justify-center py-24">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="max-w-2xl mx-auto px-6 py-6">
+          <h1 className="text-xl font-bold mb-4 flex items-center gap-1.5">
+            <Mail className="h-3.5 w-3.5" />
+            쪽지함
+          </h1>
+          <ListSkeleton rows={5} />
         </div>
       </AppLayout>
     );
