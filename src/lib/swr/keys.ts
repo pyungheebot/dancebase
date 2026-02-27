@@ -255,4 +255,15 @@ export const swrKeys = {
 
   // 연습 곡/안무 트래커
   projectSongs: (projectId: string) => `project-songs-${projectId}` as const,
+
+  // 생일 달력
+  birthdayCalendar: (groupId: string) =>
+    `/groups/${groupId}/birthday-calendar` as const,
+
+  // 프로젝트 진행률 대시보드
+  projectProgress: (projectId: string) => `project-progress-${projectId}` as const,
+
+  // 영수증 공유 토큰
+  receiptShareTokens: (transactionId: string) =>
+    `/receipt-share-tokens/${transactionId}` as const,
 };

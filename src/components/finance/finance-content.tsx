@@ -14,6 +14,7 @@ import { FinanceReminderSettings } from "@/components/finance/finance-reminder-s
 import { FinanceSplitSection } from "@/components/finance/finance-split-section";
 import { ProjectCostAnalytics } from "@/components/finance/project-cost-analytics";
 import { ExpenseTemplateManager } from "@/components/finance/expense-template-manager";
+import { ReceiptShareDialog } from "@/components/finance/receipt-share-dialog";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -607,6 +608,7 @@ export function FinanceContent({
                           {txn.finance_categories.name}
                         </Badge>
                       )}
+                      <ReceiptShareDialog transaction={txn} />
                       {(isManager || canManage) && (
                         <>
                           <Button

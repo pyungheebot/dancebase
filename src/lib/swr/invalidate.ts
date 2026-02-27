@@ -289,3 +289,15 @@ export function invalidateScheduleFeedback(scheduleId: string) {
 export function invalidateProjectSongs(projectId: string) {
   mutate(swrKeys.projectSongs(projectId));
 }
+
+export function invalidateBirthdayCalendar(groupId: string) {
+  mutate(swrKeys.birthdayCalendar(groupId));
+}
+
+export function invalidateReceiptShareTokens(transactionId: string) {
+  mutate(swrKeys.receiptShareTokens(transactionId));
+}
+
+export function invalidateProjectProgress(projectId: string) {
+  mutate(swrKeys.projectProgress(projectId));
+}

@@ -35,6 +35,7 @@ import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { ScheduleCheckinSection } from "@/components/schedule/schedule-checkin-section";
 import { ScheduleFeedbackDialog } from "@/components/schedule/schedule-feedback-dialog";
 import { ScheduleFeedbackSummary } from "@/components/schedule/schedule-feedback-summary";
+import { PracticeTimer } from "@/components/schedule/practice-timer";
 import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows, Star } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -455,6 +456,7 @@ export function AttendanceContent({
                     수정
                   </Button>
                 )}
+                <PracticeTimer />
               </div>
             )}
             {selectedSchedule && ctx.permissions.canEdit && (

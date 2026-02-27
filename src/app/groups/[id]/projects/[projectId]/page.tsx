@@ -9,6 +9,7 @@ import { DashboardContent } from "@/components/dashboard/dashboard-content";
 import { MeetingMinutesSection } from "@/components/projects/meeting-minutes-section";
 import { ProjectTaskBoard } from "@/components/projects/project-task-board";
 import { ProjectNoticeFeed } from "@/components/projects/project-notice-feed";
+import { ProjectProgressOverview } from "@/components/projects/project-progress-overview";
 
 export default function ProjectDetailPage({
   params,
@@ -25,6 +26,13 @@ export default function ProjectDetailPage({
           <EntityHeader ctx={ctx} leaderLabel="프로젝트장" />
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />
+          {ctx.projectId && (
+            <ProjectProgressOverview
+              projectId={ctx.projectId}
+              groupId={ctx.groupId}
+              basePath={ctx.basePath}
+            />
+          )}
           <ProjectNoticeFeed ctx={ctx} />
           <ProjectTaskBoard ctx={ctx} />
           <MeetingMinutesSection ctx={ctx} />

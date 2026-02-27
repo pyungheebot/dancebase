@@ -1096,6 +1096,19 @@ export type ScheduleFeedback = {
 };
 
 // ============================================
+// Receipt Share Token (영수증 공유 링크)
+// ============================================
+
+export type ReceiptShareToken = {
+  id: string;
+  transaction_id: string;
+  token: string;
+  expires_at: string;
+  created_by: string;
+  created_at: string;
+};
+
+// ============================================
 // Project Song (연습 곡/안무 트래커)
 // ============================================
 
@@ -1109,4 +1122,25 @@ export type ProjectSong = {
   sort_order: number;
   created_by: string;
   created_at: string;
+};
+
+// ============================================
+// Birthday Calendar (생일 달력)
+// ============================================
+
+export type BirthdayMember = {
+  /** profiles.id */
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  /** 생년월일 원본 문자열 (YYYY-MM-DD) */
+  birthDate: string;
+  /** 이번 연도 기준 생일 날짜 (MM-DD 형식) */
+  monthDay: string;
+  /** 이번 연도 생일 (Date 객체) */
+  birthdayThisYear: Date;
+  /** D-Day (0 = 오늘, 양수 = N일 후, 음수 = N일 전) */
+  dDay: number;
+  /** 오늘이 생일인지 여부 */
+  isToday: boolean;
 };
