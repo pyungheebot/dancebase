@@ -703,4 +703,24 @@ export const swrKeys = {
   // 멘토링 매칭 시스템 (localStorage 기반)
   mentoringSystem: (groupId: string) =>
     `mentoring-system-${groupId}` as const,
+
+  // 안무 스타일 투표 (localStorage 기반)
+  styleVote: (groupId: string) =>
+    `style-vote-${groupId}` as const,
+
+  // 개인 맞춤 학습 경로 (localStorage 기반)
+  learningPath: (groupId: string, userId: string) =>
+    `learning-path-${groupId}-${userId}` as const,
+
+  // Q&A 보드 (localStorage 기반)
+  qnaBoard: (groupId: string) =>
+    `qna-board-${groupId}` as const,
+
+  // 멤버 스킬 트리 (localStorage 기반)
+  skillTree: (groupId: string, userId: string) =>
+    `skill-tree-${groupId}-${userId}` as const,
+
+  // 연습 루틴 빌더 (localStorage 기반)
+  routineBuilder: (groupId: string) =>
+    `routine-builder-${groupId}` as const,
 };

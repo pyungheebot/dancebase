@@ -4047,7 +4047,8 @@ export type GroupMemoryItem = {
 
 export type LearningLevel = "beginner" | "intermediate" | "advanced";
 
-export type LearningStep = {
+/** @deprecated LearningPath로 교체됨 */
+export type LearningStep_Legacy = {
   id: string;
   title: string;
   description: string;
@@ -4055,12 +4056,40 @@ export type LearningStep = {
   completedAt: string | null;
 };
 
+/** @deprecated LearningPath로 교체됨 */
 export type LearningPathItem = {
   id: string;
   title: string;
   level: LearningLevel;
+  steps: LearningStep_Legacy[];
+  createdAt: string;
+};
+
+// ============================================
+// Learning Path v2 (개인 학습 경로)
+// ============================================
+
+export type LearningStepStatus = "locked" | "in_progress" | "completed";
+
+export type LearningStep = {
+  id: string;
+  order: number;
+  title: string;
+  description: string;
+  skills: string[];
+  status: LearningStepStatus;
+  completedAt?: string;
+};
+
+export type LearningPath = {
+  id: string;
+  userId: string;
+  currentLevel: string;
+  targetLevel: string;
+  genre: string;
   steps: LearningStep[];
   createdAt: string;
+  updatedAt: string;
 };
 
 // ============================================
@@ -5508,4 +5537,102 @@ export type MentoringFeedback = {
   content: string;
   rating: number;        // 1-5 (만족도)
   writtenBy: "mentor" | "mentee";
+};
+
+// ============================================
+// Choreography Style Vote (안무 스타일 투표)
+// ============================================
+
+export type StyleVoteStatus = "open" | "closed";
+
+export type StyleVoteCandidate = {
+  id: string;
+  title: string;       // 곡명 또는 스타일명
+  description: string;
+  proposedBy: string;
+  votes: string[];     // 투표한 멤버명 배열
+};
+
+export type StyleVoteSession = {
+  id: string;
+  topic: string;        // "다음 안무 선택", "공연 곡 투표" 등
+  status: StyleVoteStatus;
+  candidates: StyleVoteCandidate[];
+  maxVotesPerPerson: number;  // 1인 최대 투표 수
+  createdAt: string;
+  closedAt?: string;
+};
+
+// ============================================
+// Skill Tree (스킬 트리)
+// ============================================
+
+export type SkillTreeNodeStatus = "locked" | "available" | "learned";
+
+export type SkillTreeNode = {
+  id: string;
+  name: string;
+  description: string;
+  tier: number;            // 1(기본)~5(최상급)
+  prerequisiteIds: string[];  // 선행 스킬 ID
+  status: SkillTreeNodeStatus;
+  learnedAt?: string;
+};
+
+export type SkillTreeData = {
+  userId: string;
+  genre: string;
+  nodes: SkillTreeNode[];
+  totalLearned: number;
+  updatedAt: string;
+};
+
+// ============================================
+// Q&A Board (Q&A 보드)
+// ============================================
+
+export type QnaStatus = "open" | "answered" | "resolved";
+
+export type QnaAnswer = {
+  id: string;
+  content: string;
+  authorName: string;
+  isAccepted: boolean;
+  createdAt: string;
+};
+
+export type QnaQuestion = {
+  id: string;
+  title: string;
+  content: string;
+  authorName: string;
+  category: string;       // "안무", "연습", "운영", "기타"
+  status: QnaStatus;
+  answers: QnaAnswer[];
+  createdAt: string;
+};
+
+// ============================================
+// Practice Routine Builder (연습 루틴 빌더)
+// ============================================
+
+export type RoutineBlockType = "warmup" | "basics" | "technique" | "choreography" | "freestyle" | "cooldown" | "break";
+
+export type RoutineBlock = {
+  id: string;
+  type: RoutineBlockType;
+  title: string;
+  durationMinutes: number;
+  description: string;
+  order: number;
+};
+
+export type PracticeRoutine = {
+  id: string;
+  name: string;
+  blocks: RoutineBlock[];
+  totalMinutes: number;
+  usageCount: number;
+  createdAt: string;
+  lastUsedAt?: string;
 };

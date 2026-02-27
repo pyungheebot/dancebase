@@ -61,6 +61,7 @@ import { MyFeedbackSheet } from "@/components/members/peer-feedback-dialog";
 import { RewardPointsShop } from "@/components/members/reward-points-shop";
 import { DynamicTeamManager } from "@/components/members/dynamic-team-manager";
 import { PartnerMatchingPanel } from "@/components/members/partner-matching-panel";
+import { SkillTreeCard } from "@/components/members/skill-tree-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -669,6 +670,13 @@ function GroupMembersContent({
           </CardContent>
         </Card>
       )}
+
+      {/* 멤버 스킬 트리 (개인 스킬 성장 시각화) */}
+      <SkillTreeCard
+        groupId={ctx.groupId}
+        userId={currentUserId}
+        canEdit={ctx.permissions.canEdit}
+      />
     </>
   );
 }
