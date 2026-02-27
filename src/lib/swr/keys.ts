@@ -462,4 +462,21 @@ export const swrKeys = {
 
   // 그룹 투표/설문
   groupPolls: (groupId: string) => `/groups/${groupId}/polls` as const,
+
+  // 주간 출석 체크인
+  weeklyAttendanceCheckin: (groupId: string, userId: string) =>
+    `/groups/${groupId}/weekly-checkin/${userId}` as const,
+
+  // 그룹 활동 아카이브 (월별 요약)
+  activityArchive: (groupId: string) =>
+    `/groups/${groupId}/activity-archive` as const,
+
+  // 사전 결석 신고 (localStorage 기반)
+  preExcuse: (groupId: string) => `pre-excuse-${groupId}` as const,
+  preExcuseBySchedule: (groupId: string, scheduleId: string) =>
+    `pre-excuse-${groupId}-${scheduleId}` as const,
+
+  // 멤버 종합 점수 리더보드
+  memberScoreLeaderboard: (groupId: string) =>
+    `/groups/${groupId}/member-score-leaderboard` as const,
 };

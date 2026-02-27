@@ -486,3 +486,22 @@ export function invalidateAttendanceCertificate(groupId: string, userId: string)
 export function invalidateGroupPolls(groupId: string) {
   mutate(swrKeys.groupPolls(groupId));
 }
+
+export function invalidateWeeklyAttendanceCheckin(groupId: string, userId: string) {
+  mutate(swrKeys.weeklyAttendanceCheckin(groupId, userId));
+}
+
+export function invalidateActivityArchive(groupId: string) {
+  mutate(swrKeys.activityArchive(groupId));
+}
+
+export function invalidatePreExcuse(groupId: string, scheduleId?: string) {
+  mutate(swrKeys.preExcuse(groupId));
+  if (scheduleId) {
+    mutate(swrKeys.preExcuseBySchedule(groupId, scheduleId));
+  }
+}
+
+export function invalidateMemberScoreLeaderboard(groupId: string) {
+  mutate(swrKeys.memberScoreLeaderboard(groupId));
+}

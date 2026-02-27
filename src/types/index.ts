@@ -2922,3 +2922,114 @@ export type PracticeWeeklyStats = {
   goalMinutes: number;
   goalProgress: number; // 0~100
 };
+
+// ============================================
+// Weekly Attendance Checkin (주간 출석 체크인, localStorage 기반)
+// ============================================
+
+export type WeeklyCheckinRecord = {
+  weekStart: string; // ISO (월요일)
+  goal: number; // 1~7
+  actual: number;
+  achieved: boolean;
+};
+
+export type WeeklyCheckinData = {
+  currentGoal: number | null;
+  history: WeeklyCheckinRecord[];
+};
+
+// ============================================
+// Activity Archive (그룹 활동 아카이브)
+// ============================================
+
+export type MonthlyArchiveTopMember = {
+  userId: string;
+  name: string;
+  score: number;
+};
+
+export type MonthlyArchivePopularPost = {
+  postId: string;
+  title: string;
+  commentCount: number;
+};
+
+export type MonthlyArchiveEntry = {
+  month: string; // YYYY-MM
+  label: string; // "2026년 2월"
+  totalSchedules: number;
+  totalAttendance: number;
+  avgAttendanceRate: number;
+  postCount: number;
+  commentCount: number;
+  newMemberCount: number;
+  topMembers: MonthlyArchiveTopMember[];
+  popularPost: MonthlyArchivePopularPost | null;
+};
+
+// ============================================
+// Pre-Excuse (사전 결석 신고, localStorage 기반)
+// ============================================
+
+export type PreExcuseReason = "personal" | "health" | "conflict" | "other";
+
+export type PreExcuseEntry = {
+  id: string;
+  scheduleId: string;
+  userId: string;
+  userName: string;
+  reason: PreExcuseReason;
+  memo: string;
+  createdAt: string;
+};
+
+// ============================================
+// Member Score Leaderboard (멤버 종합 점수 리더보드)
+// ============================================
+
+/** 멤버 종합 점수 세부 내역 */
+export type MemberScoreBreakdown = {
+  /** 출석 점수 (present: 10점, late: 5점) */
+  attendance: number;
+  /** 게시글 작성 점수 (건당 15점) */
+  posts: number;
+  /** 댓글 작성 점수 (건당 5점) */
+  comments: number;
+  /** RSVP 응답 점수 (건당 3점) */
+  rsvp: number;
+};
+
+/** 멤버 종합 점수 리더보드 단일 항목 */
+export type MemberScoreEntry = {
+  userId: string;
+  name: string;
+  totalScore: number;
+  breakdown: MemberScoreBreakdown;
+  rank: number;
+};
+
+/** useMemberScoreLeaderboard 훅 반환 타입 */
+export type MemberScoreLeaderboardResult = {
+  /** 점수 내림차순 정렬된 전체 멤버 목록 (최대 20명) */
+  entries: MemberScoreEntry[];
+  /** 전체 참여 멤버 수 */
+  totalMembers: number;
+  /** 현재 로그인 사용자 항목 (없으면 null) */
+  myEntry: MemberScoreEntry | null;
+};
+
+// ============================================
+// Bookmark (즐겨찾기/북마크 시스템, localStorage 기반)
+// ============================================
+
+export type BookmarkTargetType = "post" | "schedule" | "member";
+
+export type BookmarkItem = {
+  id: string;
+  targetId: string;
+  targetType: BookmarkTargetType;
+  title: string;
+  href: string;
+  createdAt: string;
+};
