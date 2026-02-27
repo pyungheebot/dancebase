@@ -260,3 +260,15 @@ export function invalidatePostRevisions(postId: string) {
 export function invalidateProjectTasks(projectId: string) {
   mutate(swrKeys.projectTasks(projectId));
 }
+
+export function invalidateScheduleCheckinCode(scheduleId: string) {
+  mutate(swrKeys.scheduleCheckinCode(scheduleId));
+}
+
+export function invalidateScheduleRoles(scheduleId: string) {
+  mutate(swrKeys.scheduleRoles(scheduleId));
+}
+
+export function invalidateMemberRisk(groupId: string) {
+  mutate(swrKeys.memberRisk(groupId));
+}

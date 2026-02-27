@@ -16,9 +16,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Loader2, Users, ChevronRight, CalendarRange, MoreVertical, Settings, Trash2, Check, FolderOpen, Plus } from "lucide-react";
+import { Loader2, Users, ChevronRight, CalendarRange, MoreVertical, Settings, Trash2, Check, FolderOpen, Plus, List, GanttChart } from "lucide-react";
 import { ProjectForm } from "./project-form";
 import { ProjectDuplicateDialog } from "./project-duplicate-dialog";
+import { ProjectTimeline } from "./project-timeline";
 import { EmptyState } from "@/components/shared/empty-state";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateProject } from "@/lib/swr/invalidate";
@@ -98,12 +99,15 @@ function getDdayLabel(startDate: string | null, endDate: string | null): { label
   return null;
 }
 
+type ViewMode = "list" | "timeline";
+
 export function ProjectList({ groupId }: ProjectListProps) {
   const { projects, canManage, loading, refetch } = useProjects(groupId);
   const [statusFilter, setStatusFilter] = useState<string>("전체");
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const router = useRouter();
 
   const filtered =
@@ -159,19 +163,51 @@ export function ProjectList({ groupId }: ProjectListProps) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-lg font-semibold">프로젝트</h1>
-        {canManage && (
-          <div className="flex items-center gap-1.5">
-            {projects.length > 0 && (
-              <ProjectDuplicateDialog
-                groupId={groupId}
-                projects={projects}
-                onDuplicated={refetch}
-              />
-            )}
-            <ProjectForm groupId={groupId} onCreated={refetch} />
+        <div className="flex items-center gap-1.5">
+          {/* 뷰 전환 버튼 */}
+          <div className="flex items-center border rounded-md overflow-hidden">
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-7 w-7 p-0 rounded-none border-0"
+              onClick={() => setViewMode("list")}
+              title="목록 보기"
+            >
+              <List className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === "timeline" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-7 w-7 p-0 rounded-none border-0"
+              onClick={() => setViewMode("timeline")}
+              title="타임라인 보기"
+            >
+              <GanttChart className="h-3.5 w-3.5" />
+            </Button>
           </div>
-        )}
+          {canManage && (
+            <>
+              {projects.length > 0 && (
+                <ProjectDuplicateDialog
+                  groupId={groupId}
+                  projects={projects}
+                  onDuplicated={refetch}
+                />
+              )}
+              <ProjectForm groupId={groupId} onCreated={refetch} />
+            </>
+          )}
+        </div>
       </div>
+
+      {/* 타임라인 뷰 */}
+      {viewMode === "timeline" && (
+        <ProjectTimeline groupId={groupId} />
+      )}
+
+      {/* 목록 뷰 */}
+      {viewMode === "list" && (
+      <>
 
       {/* 상태 필터 */}
       <div className="flex flex-wrap gap-1.5 mb-4">
@@ -368,6 +404,9 @@ export function ProjectList({ groupId }: ProjectListProps) {
         onConfirm={handleDelete}
         destructive
       />
+
+      </>
+      )}
     </div>
   );
 }

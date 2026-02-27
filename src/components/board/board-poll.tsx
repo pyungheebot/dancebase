@@ -5,14 +5,17 @@ import { createClient } from "@/lib/supabase/client";
 import type { BoardPoll, BoardPollOptionWithVotes } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PollShareCard } from "@/components/board/poll-share-card";
 
 interface BoardPollProps {
   poll: BoardPoll;
   options: BoardPollOptionWithVotes[];
   onUpdate: () => void;
+  /** 투표 질문 (게시글 제목 등 외부에서 전달). 없으면 "투표"로 표시 */
+  question?: string;
 }
 
-export function BoardPollView({ poll, options, onUpdate }: BoardPollProps) {
+export function BoardPollView({ poll, options, onUpdate, question }: BoardPollProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const supabase = createClient();
@@ -83,11 +86,18 @@ export function BoardPollView({ poll, options, onUpdate }: BoardPollProps) {
             투표 결과 · {totalVotes}표
             {poll.allow_multiple && " (복수선택)"}
           </span>
-          {hasVoted && !isExpired && (
-            <Button variant="ghost" size="sm" className="h-6 text-[11px]" onClick={handleUnvote}>
-              투표 취소
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            <PollShareCard
+              question={question ?? "투표"}
+              options={options.map((o) => ({ text: o.text, voteCount: o.vote_count }))}
+              totalVotes={totalVotes}
+            />
+            {hasVoted && !isExpired && (
+              <Button variant="ghost" size="sm" className="h-6 text-[11px]" onClick={handleUnvote}>
+                투표 취소
+              </Button>
+            )}
+          </div>
         </div>
         {options.map((opt) => {
           const pct = totalVotes > 0 ? Math.round((opt.vote_count / totalVotes) * 100) : 0;

@@ -224,4 +224,17 @@ export const swrKeys = {
 
   // 게시글 편집 이력
   postRevisions: (postId: string) => `post-revisions-${postId}` as const,
+
+  // 프로젝트 타임라인
+  projectTimeline: (groupId: string) => `/groups/${groupId}/project-timeline` as const,
+
+  // 일정 체크인 코드
+  scheduleCheckinCode: (scheduleId: string) =>
+    `/schedules/${scheduleId}/checkin-code` as const,
+
+  // 위험 멤버 (출석률 + 미납 연동 경고)
+  memberRisk: (groupId: string) => `/groups/${groupId}/member-risk` as const,
+
+  // 일정 역할 배정
+  scheduleRoles: (scheduleId: string) => `/schedules/${scheduleId}/roles` as const,
 };

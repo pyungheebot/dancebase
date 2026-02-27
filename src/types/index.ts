@@ -926,3 +926,33 @@ export type PermissionAuditWithProfiles = PermissionAudit & {
   actor: Pick<Profile, "id" | "name" | "avatar_url"> | null;
   target: Pick<Profile, "id" | "name" | "avatar_url"> | null;
 };
+
+// ============================================
+// Schedule Checkin Code (일정 QR 체크인 코드)
+// ============================================
+
+export type ScheduleCheckinCode = {
+  id: string;
+  schedule_id: string;
+  code: string;
+  expires_at: string;
+  created_by: string;
+  created_at: string;
+};
+
+// ============================================
+// Schedule Role (일정 역할 배정)
+// ============================================
+
+export type ScheduleRole = {
+  id: string;
+  schedule_id: string;
+  user_id: string;
+  role_name: string;
+  created_by: string;
+  created_at: string;
+};
+
+export type ScheduleRoleWithProfile = ScheduleRole & {
+  profiles: Pick<Profile, "id" | "name" | "avatar_url">;
+};

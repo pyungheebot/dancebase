@@ -54,6 +54,7 @@ import { SkillMatrixSection } from "@/components/members/skill-matrix-section";
 import { ContactVerificationSection } from "@/components/members/contact-verification-section";
 import { ContactVerifyBanner } from "@/components/members/contact-verify-banner";
 import { RolePromotionSection } from "@/components/members/role-promotion-section";
+import { MemberRiskAlert } from "@/components/members/member-risk-alert";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -542,6 +543,9 @@ function GroupMembersContent({
         onOpenChange={setCategoryManagerOpen}
         onUpdate={onUpdate}
       />
+
+      {/* 출석/납부 위험 멤버 경고 (리더/매니저 전용, 위험 멤버 없으면 숨김) */}
+      <MemberRiskAlert ctx={ctx} />
 
       {/* 비활성 멤버 섹션 (리더 전용, 비활성 멤버가 없으면 숨김) */}
       <InactiveMembersSection ctx={ctx} />

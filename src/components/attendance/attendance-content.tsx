@@ -32,6 +32,7 @@ import { AttendanceReportSection } from "@/components/attendance/attendance-repo
 import { AttendanceGoalCard } from "@/components/attendance/attendance-goal-card";
 import { WeeklyAttendanceSnapshot } from "@/components/attendance/weekly-attendance-snapshot";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
+import { ScheduleCheckinSection } from "@/components/schedule/schedule-checkin-section";
 import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -478,6 +479,12 @@ export function AttendanceContent({
                 </div>
               ) : (
                 <>
+                  {/* QR 체크인 섹션 */}
+                  <ScheduleCheckinSection
+                    scheduleId={selectedScheduleId}
+                    isLeader={ctx.permissions.canEdit}
+                  />
+
                   <AttendanceStats
                     attendance={attendance}
                     totalMembers={membersForTable.length}

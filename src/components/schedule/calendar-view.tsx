@@ -24,6 +24,7 @@ import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar, Trash2, Ref
 import { ScheduleForm } from "./schedule-form";
 import { AttendancePredictionBadge, AttendancePredictionCard } from "./attendance-prediction-card";
 import { ScheduleWaitlistSection } from "./schedule-waitlist-section";
+import { ScheduleRolesSection } from "./schedule-roles-section";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
@@ -47,6 +48,8 @@ type CalendarViewProps = {
   attendancePath?: string;
   /** 출석 예측 Badge 표시를 위한 그룹 ID */
   groupId?: string;
+  /** 역할 배정 섹션 표시 여부 (그룹 ID 겸용) */
+  canEditRoles?: boolean;
 };
 
 // RSVP + 대기 명단 통합 섹션
@@ -317,7 +320,7 @@ function RecurrenceEditDialog({
   );
 }
 
-export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath, groupId }: CalendarViewProps) {
+export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath, groupId, canEditRoles }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // 충돌하는 일정 ID 집합 계산 (양방향 충돌 감지)
@@ -734,6 +737,17 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   <AttendancePredictionCard
                     groupId={groupId}
                     scheduleId={detailSchedule.id}
+                  />
+                </div>
+              )}
+
+              {/* 역할 배정 섹션 */}
+              {groupId && (
+                <div className="border-t pt-3">
+                  <ScheduleRolesSection
+                    scheduleId={detailSchedule.id}
+                    groupId={groupId}
+                    canEdit={canEditRoles ?? canEdit ?? false}
                   />
                 </div>
               )}

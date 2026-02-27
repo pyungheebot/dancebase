@@ -220,7 +220,7 @@ export default function BoardPostPage({
         {/* 투표 */}
         {poll && (
           <div className="mt-4 space-y-3">
-            <BoardPollView poll={poll} options={pollOptions} onUpdate={refetch} />
+            <BoardPollView poll={poll} options={pollOptions} onUpdate={refetch} question={post.title} />
             <PollStatisticsCard postId={postId} groupId={id} />
           </div>
         )}

@@ -191,7 +191,7 @@ export default function ProjectBoardPostPage({
 
         {poll && (
           <div className="mt-4">
-            <BoardPollView poll={poll} options={pollOptions} onUpdate={refetch} />
+            <BoardPollView poll={poll} options={pollOptions} onUpdate={refetch} question={post.title} />
           </div>
         )}
 
