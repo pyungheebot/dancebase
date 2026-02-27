@@ -3875,6 +3875,40 @@ export const ENGAGEMENT_CAMPAIGN_STATUS_LABELS: Record<EngagementCampaignStatus,
 export const ENGAGEMENT_CAMPAIGN_MAX = 10;
 
 // ============================================
+// Group Guideline (그룹 규칙/가이드, localStorage 기반)
+// ============================================
+
+/** 그룹 가이드라인 카테고리 */
+export type GroupGuidelineCategory = "출석" | "매너" | "연습" | "재무" | "기타";
+
+/** 그룹 가이드라인 카테고리 목록 */
+export const GROUP_GUIDELINE_CATEGORIES: GroupGuidelineCategory[] = [
+  "출석",
+  "매너",
+  "연습",
+  "재무",
+  "기타",
+];
+
+/** 그룹 가이드라인 단일 항목 */
+export type GroupGuidelineItem = {
+  id: string;
+  title: string;
+  description: string;
+  category: GroupGuidelineCategory;
+  order: number;
+  createdAt: string;
+};
+
+/** localStorage에 저장되는 가이드라인 전체 데이터 */
+export type GroupGuidelinesData = {
+  items: GroupGuidelineItem[];
+};
+
+/** 최대 가이드라인 항목 수 */
+export const GROUP_GUIDELINE_MAX = 30;
+
+// ============================================
 // Partner Matching (랜덤 짝꿍 매칭, localStorage 기반)
 // ============================================
 
@@ -4051,4 +4085,119 @@ export type GroupPerformanceReport = {
   totalIncome: ReportMetricItem;
   totalExpense: ReportMetricItem;
   netIncome: ReportMetricItem;
+};
+
+// ============================================
+// Schedule Notes (일정 메모)
+// ============================================
+
+export type ScheduleNoteCategory =
+  | "준비사항"
+  | "변경사항"
+  | "메모"
+  | "중요";
+
+export type ScheduleNoteItem = {
+  id: string;
+  scheduleId: string;
+  content: string;
+  category: ScheduleNoteCategory;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ============================================
+// Attendance Comparison Detail (멤버 출석 비교 카드)
+// ============================================
+
+/** 멤버 출석 비교 카드의 개별 멤버 통계 */
+export type AttendanceComparisonDetail = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  totalSchedules: number;
+  presentCount: number;
+  absentCount: number;
+  lateCount: number;
+  attendanceRate: number; // 0~100
+};
+
+/** useAttendanceComparisonDetail 훅 반환 타입 */
+export type AttendanceComparisonDetailResult = {
+  members: AttendanceComparisonDetail[];
+  hasData: boolean;
+};
+
+// ============================================
+// Practice Weekly Digest (연습 일지 주간 요약)
+// ============================================
+
+export type PracticeWeeklyDigestStat = {
+  /** 이번 주 값 */
+  current: number;
+  /** 전주 값 */
+  previous: number;
+  /** 변화율(%) - 양수: 증가, 음수: 감소, null: 비교 불가 */
+  changeRate: number | null;
+};
+
+export type PracticeWeeklyDigest = {
+  /** 이번 주 시작일 (YYYY-MM-DD, 월요일) */
+  weekStart: string;
+  /** 이번 주 종료일 (YYYY-MM-DD, 일요일) */
+  weekEnd: string;
+  /** 주간 연습 횟수 */
+  practiceCount: PracticeWeeklyDigestStat;
+  /** 총 연습 시간(분) */
+  totalMinutes: PracticeWeeklyDigestStat;
+  /** 평균 만족도(별점 1~5) */
+  averageRating: PracticeWeeklyDigestStat;
+  /** 연속 연습 일수 (오늘 기준) */
+  streakDays: number;
+  /** 가장 많이 연습한 카테고리/내용 키워드 */
+  topCategory: string | null;
+  /** 자동 생성 요약 텍스트 */
+  summaryText: string;
+  /** 이번 주 연습한 날짜 Set (YYYY-MM-DD) */
+  practicedDates: string[];
+  /** 데이터 존재 여부 */
+  hasData: boolean;
+};
+
+// ============================================
+// Personal Attendance Goal (개인 출석 목표, localStorage 기반)
+// ============================================
+
+/** localStorage에 저장되는 개인 월간 출석 횟수 목표 */
+export type PersonalAttendanceGoal = {
+  /** 목표 출석 횟수 (예: 8회) */
+  targetCount: number;
+  /** 해당 월 (YYYY-MM 형식) */
+  month: string;
+  /** 목표 저장 일시 (ISO 8601) */
+  savedAt: string;
+};
+
+/** 개인 출석 목표 진행 데이터 */
+export type PersonalAttendanceGoalData = {
+  /** 저장된 목표 (없으면 null) */
+  goal: PersonalAttendanceGoal | null;
+  /** 이번 달 실제 출석 횟수 */
+  actualCount: number;
+  /** 이번 달 총 일정 수 */
+  totalSchedules: number;
+  /** 이미 지난 일정 수 */
+  passedSchedules: number;
+  /** 남은 일정 수 */
+  remainingSchedules: number;
+  /** 달성률 (0~100, 목표 기준) */
+  achievementRate: number;
+  /** 목표 달성 여부 */
+  isAchieved: boolean;
+  /** 목표 달성까지 남은 출석 횟수 (달성 시 0) */
+  remainingCount: number;
+  /** 이번 달 남은 일수 */
+  remainingDays: number;
+  /** 목표 달성을 위해 하루에 필요한 평균 출석 페이스 (남은 일수 기준, null이면 계산 불가) */
+  dailyPaceNeeded: number | null;
 };

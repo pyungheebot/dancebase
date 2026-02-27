@@ -233,6 +233,16 @@ export function invalidateAttendanceComparison(groupId: string) {
   );
 }
 
+export function invalidateAttendanceComparisonDetail(groupId: string) {
+  mutate(
+    (key: string) =>
+      typeof key === "string" &&
+      key.startsWith(`/attendance-comparison-detail/${groupId}`),
+    undefined,
+    { revalidate: true }
+  );
+}
+
 export function invalidatePollStatistics(postId: string) {
   mutate(swrKeys.pollStatistics(postId));
 }
@@ -572,4 +582,8 @@ export function invalidateMemberInteractionScore(groupId: string) {
 
 export function invalidateGroupPerformanceReport(groupId: string) {
   mutate(swrKeys.groupPerformanceReport(groupId));
+}
+
+export function invalidatePersonalAttendanceGoal(groupId: string, userId: string) {
+  mutate(swrKeys.personalAttendanceGoal(groupId, userId));
 }

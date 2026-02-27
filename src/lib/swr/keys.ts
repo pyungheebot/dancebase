@@ -196,9 +196,17 @@ export const swrKeys = {
   attendanceGoal: (groupId: string) =>
     `/groups/${groupId}/attendance-goal` as const,
 
+  // 개인 출석 목표 (localStorage 기반)
+  personalAttendanceGoal: (groupId: string, userId: string) =>
+    `personal-attendance-goal-${groupId}-${userId}` as const,
+
   // 멤버 출석률 비교
   attendanceComparison: (groupId: string, userIds: string[], projectId?: string | null) =>
     `/attendance-comparison/${groupId}?users=${userIds.sort().join(",")}&project=${projectId ?? ""}` as const,
+
+  // 멤버 출석 비교 카드 (상세 통계: 출석/결석/지각 횟수)
+  attendanceComparisonDetail: (groupId: string, userIds: string[], projectId?: string | null) =>
+    `/attendance-comparison-detail/${groupId}?users=${userIds.slice().sort().join(",")}&project=${projectId ?? ""}` as const,
 
   // 투표 통계
   pollStatistics: (postId: string) => `/poll-statistics/${postId}` as const,
