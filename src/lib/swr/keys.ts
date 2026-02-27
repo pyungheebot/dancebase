@@ -863,4 +863,24 @@ export const swrKeys = {
   // 멤버 퀴즈 (localStorage 기반)
   memberQuiz: (groupId: string) =>
     `member-quiz-${groupId}` as const,
+
+  // 의상 대여 관리 (localStorage 기반)
+  costumeRental: (groupId: string, projectId: string) =>
+    `costume-rental-${groupId}-${projectId}` as const,
+
+  // 멤버 호환도 매칭 (localStorage 기반)
+  compatibilityMatching: (groupId: string) =>
+    `compatibility-matching-${groupId}` as const,
+
+  // 멤버 휴가 관리 (localStorage 기반)
+  leaveManagement: (groupId: string) =>
+    `leave-management-${groupId}` as const,
+
+  // 장르 탐색기 (localStorage 기반)
+  genreExplorer: (groupId: string) =>
+    `genre-explorer-${groupId}` as const,
+
+  // 복귀 온보딩 (localStorage 기반)
+  returnOnboarding: (groupId: string) =>
+    `return-onboarding-${groupId}` as const,
 };

@@ -6428,3 +6428,164 @@ export type MemberQuizData = {
   attempts: QuizAttempt[];
   createdAt: string;
 };
+
+// ================================================================
+// 의상 대여 관리
+// ================================================================
+
+export type CostumeRentalItemStatus =
+  | "available"
+  | "rented"
+  | "damaged"
+  | "lost";
+
+export type CostumeRentalItem = {
+  id: string;
+  name: string;
+  category: "상의" | "하의" | "소품" | "신발" | "기타";
+  size: string;
+  status: CostumeRentalItemStatus;
+  currentRenter?: string;
+  rentedAt?: string;
+  dueDate?: string;
+  notes?: string;
+  createdAt: string;
+};
+
+export type CostumeRentalRecord = {
+  id: string;
+  itemId: string;
+  renterName: string;
+  rentedAt: string;
+  returnedAt?: string;
+  condition?: "good" | "damaged" | "lost";
+  notes?: string;
+};
+
+// ================================================================
+// 멤버 호환도 매칭
+// ================================================================
+
+export type CompatibilityDimension =
+  | "personality"
+  | "skill_level"
+  | "schedule"
+  | "communication"
+  | "dance_style";
+
+export type MemberCompatibilityProfile = {
+  id: string;
+  memberName: string;
+  dimensions: Record<CompatibilityDimension, number>;
+  createdAt: string;
+};
+
+export type CompatibilityPairResult = {
+  memberA: string;
+  memberB: string;
+  overallScore: number;
+  dimensionScores: Record<CompatibilityDimension, number>;
+};
+
+// ================================================================
+// 멤버 휴가 관리
+// ================================================================
+
+export type MemberLeaveReason =
+  | "health"
+  | "travel"
+  | "personal"
+  | "academic"
+  | "work"
+  | "other";
+
+export type MemberLeaveStatus =
+  | "applied"
+  | "approved"
+  | "active"
+  | "completed"
+  | "rejected";
+
+export type MemberLeaveEntry = {
+  id: string;
+  memberName: string;
+  reason: MemberLeaveReason;
+  reasonDetail: string;
+  startDate: string;
+  endDate: string;
+  status: MemberLeaveStatus;
+  approvedBy?: string;
+  appliedAt: string;
+  createdAt: string;
+};
+
+// ================================================================
+// 장르 탐색기
+// ================================================================
+
+export type DanceGenreType =
+  | "hiphop"
+  | "kpop"
+  | "ballet"
+  | "jazz"
+  | "contemporary"
+  | "latin"
+  | "waacking"
+  | "locking"
+  | "popping"
+  | "breaking"
+  | "other";
+
+export type GenreExplorerEntry = {
+  id: string;
+  genre: DanceGenreType;
+  title: string;
+  description: string;
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  recommendedSongs: string[];
+  tips: string[];
+  addedBy: string;
+  createdAt: string;
+};
+
+export type GenreMemberInterest = {
+  id: string;
+  memberName: string;
+  genre: DanceGenreType;
+  experienceLevel: 1 | 2 | 3 | 4 | 5;
+  interest: boolean;
+};
+
+// ================================================================
+// 복귀 온보딩
+// ================================================================
+
+export type OnboardingCheckItemCategory =
+  | "choreography"
+  | "schedule"
+  | "rule_change"
+  | "member_change"
+  | "equipment"
+  | "other";
+
+export type OnboardingCheckItem = {
+  id: string;
+  category: OnboardingCheckItemCategory;
+  title: string;
+  description: string;
+  createdAt: string;
+};
+
+export type MemberOnboardingSession = {
+  id: string;
+  memberName: string;
+  startDate: string;
+  items: {
+    itemId: string;
+    checked: boolean;
+    checkedAt?: string;
+  }[];
+  completedAt?: string;
+  notes: string;
+  createdAt: string;
+};
