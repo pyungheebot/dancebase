@@ -335,4 +335,24 @@ export const swrKeys = {
   // 스마트 리마인더 (멤버별 출석 이탈 위험도)
   smartReminder: (scheduleId: string, groupId: string) =>
     `/schedules/${scheduleId}/smart-reminder?group=${groupId}` as const,
+
+  // 멤버별 활동 대시보드 (최근 7일)
+  memberDashboardActivity: (userId: string) =>
+    `/member-dashboard-activity/${userId}` as const,
+
+  // 그룹 건강도 개선 제안
+  groupHealthSuggestions: (groupId: string) =>
+    `/groups/${groupId}/health-suggestions` as const,
+
+  // 출석 목표 진행 추적
+  goalProgressTracker: (groupId: string, userId: string) =>
+    `goal-progress-tracker-${groupId}-${userId}` as const,
+
+  // 윈백 캠페인 (30일 이상 비활성 멤버)
+  winbackCandidates: (groupId: string) =>
+    `/groups/${groupId}/winback-candidates` as const,
+
+  // 그룹 성과 스냅샷 (주간/월간)
+  groupPerformanceSnapshot: (groupId: string, period: "week" | "month") =>
+    `/groups/${groupId}/performance-snapshot?period=${period}` as const,
 };

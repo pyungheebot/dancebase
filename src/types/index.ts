@@ -1608,3 +1608,119 @@ export type ScheduleExpense = {
   category: string; // venue, drink, transport, food, other
   createdAt: string;
 };
+
+// ============================================
+// Member Dashboard Activity (멤버별 활동 대시보드)
+// ============================================
+
+export type MemberActivityType = "attendance" | "post" | "comment" | "rsvp";
+
+export type MemberActivityItem = {
+  id: string;
+  type: MemberActivityType;
+  description: string;
+  occurredAt: string; // ISO 8601
+};
+
+export type MemberActivitySummary = {
+  attendanceCount: number;
+  postCount: number;
+  commentCount: number;
+  rsvpCount: number;
+};
+
+export type MemberDashboardActivityData = {
+  summary: MemberActivitySummary;
+  timeline: MemberActivityItem[];
+};
+
+// ============================================
+// Group Health Suggestions (그룹 건강도 개선 제안)
+// ============================================
+
+export type HealthSuggestionType = "warning" | "info" | "success";
+
+export type HealthSuggestion = {
+  type: HealthSuggestionType;
+  message: string;
+  actionLabel?: string;
+};
+
+export type GroupHealthSuggestionsData = {
+  score: number | null;
+  attendanceRate: number | null;
+  activityWeeklyCount: number | null;
+  inactiveMemberRatio: number | null;
+  suggestions: HealthSuggestion[];
+  hasEnoughData: boolean;
+};
+
+// ============================================
+// Goal Progress Tracker (출석 목표 진행 추적)
+// ============================================
+
+export type GoalProgressSetting = {
+  targetRate: number; // 0-100
+  month: string;      // YYYY-MM 형식
+};
+
+export type GoalProgressStatus = "achievable" | "warning" | "impossible" | "achieved";
+
+export type GoalProgressTrackerData = {
+  // 목표 설정
+  setting: GoalProgressSetting | null;
+  // 이번 달 일정/출석 현황
+  totalSchedules: number;
+  attendedSchedules: number;
+  remainingSchedules: number;
+  // 계산 결과
+  currentRate: number;          // 현재 출석률 (0-100)
+  progressRate: number;         // 목표 대비 진행률 (0-100)
+  neededAttendances: number;    // 목표 달성까지 필요한 추가 출석 횟수
+  status: GoalProgressStatus;   // 달성 가능 여부
+  isAchieved: boolean;          // 이미 달성 여부
+};
+
+// ============================================
+// Winback Campaign (멤버 재참여 캠페인)
+// ============================================
+
+export type WinbackCandidate = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  lastActivityAt: string | null;   // 마지막 활동일 (ISO 8601), null이면 활동 기록 없음
+  inactiveDays: number;            // 비활성 일수
+};
+
+export type WinbackCampaignData = {
+  candidates: WinbackCandidate[];
+  totalCount: number;
+};
+
+// ============================================
+// Group Performance Snapshot (그룹 성과 스냅샷)
+// ============================================
+
+export type PerformancePeriod = "week" | "month";
+
+export type PerformanceMetric = {
+  value: number;
+  changeRate: number | null; // 이전 기간 대비 변화율 (%), null이면 비교 불가
+};
+
+export type TopContributor = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  activityCount: number; // 게시글 + 댓글 수
+};
+
+export type GroupPerformanceSnapshotData = {
+  period: PerformancePeriod;
+  scheduleCount: PerformanceMetric;
+  attendanceRate: PerformanceMetric; // 0~100 (%)
+  contentCount: PerformanceMetric;   // 게시글 + 댓글 합계
+  newMemberCount: PerformanceMetric;
+  topContributor: TopContributor | null;
+};

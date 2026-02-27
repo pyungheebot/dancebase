@@ -361,3 +361,24 @@ export function invalidateGroupRules(groupId: string) {
 export function invalidatePracticeStats(groupId: string) {
   mutate(swrKeys.practiceStats(groupId));
 }
+
+export function invalidateMemberDashboardActivity(userId: string) {
+  mutate(swrKeys.memberDashboardActivity(userId));
+}
+
+export function invalidateGroupHealthSuggestions(groupId: string) {
+  mutate(swrKeys.groupHealthSuggestions(groupId));
+}
+
+export function invalidateGoalProgressTracker(groupId: string, userId: string) {
+  mutate(swrKeys.goalProgressTracker(groupId, userId));
+}
+
+export function invalidateWinbackCandidates(groupId: string) {
+  mutate(swrKeys.winbackCandidates(groupId));
+}
+
+export function invalidateGroupPerformanceSnapshot(groupId: string) {
+  mutate(swrKeys.groupPerformanceSnapshot(groupId, "week"));
+  mutate(swrKeys.groupPerformanceSnapshot(groupId, "month"));
+}
