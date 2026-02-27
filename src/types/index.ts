@@ -1338,6 +1338,69 @@ export type PracticePlaylist = {
 };
 
 // ============================================
+// Song Part (안무 파트 배정)
+// ============================================
+
+export type SongPartType = "all" | "solo" | "point" | "backup" | "intro" | "outro" | "bridge";
+
+export type SongPart = {
+  id: string;
+  song_id: string;
+  user_id: string;
+  part_name: string;
+  part_type: SongPartType;
+  sort_order: number;
+  notes: string | null;
+  created_by: string;
+  created_at: string;
+};
+
+// ============================================
+// Group Challenge (팀 챌린지)
+// ============================================
+
+export type GroupChallenge = {
+  id: string;
+  group_id: string;
+  title: string;
+  description: string | null;
+  target_rate: number;
+  starts_at: string;
+  ends_at: string;
+  is_achieved: boolean;
+  created_by: string;
+  created_at: string;
+};
+
+// ============================================
+// Split Preset (회비 분담 비율 프리셋, localStorage 기반)
+// ============================================
+
+export type SplitRuleType = "equal" | "by_role" | "by_attendance" | "custom_ratio";
+
+export type SplitPreset = {
+  id: string;
+  name: string;
+  ruleType: SplitRuleType;
+  config: {
+    /** by_role: 역할별 비율 (0~100, 0이면 면제) */
+    roleRatios?: Record<string, number>; // { leader: 0, sub_leader: 50, member: 100 }
+    /** by_attendance: 출석률 구간별 분담 비율 */
+    attendanceThresholds?: Array<{ minRate: number; ratio: number }>; // [{ minRate: 90, ratio: 80 }, ...]
+    /** custom_ratio: 수동 비율 (userId → ratio) */
+    customRatios?: Record<string, number>;
+  };
+  createdAt: string;
+};
+
+export const SPLIT_RULE_TYPE_LABELS: Record<SplitRuleType, string> = {
+  equal: "균등 분배",
+  by_role: "역할별",
+  by_attendance: "출석률별",
+  custom_ratio: "수동 비율",
+};
+
+// ============================================
 // Birthday Calendar (생일 달력)
 // ============================================
 

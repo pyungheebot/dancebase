@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, ChevronDown, ChevronUp, CheckCircle2, Circle } from "lucide-react";
 import { toast } from "sonner";
+import { SplitPresetManager } from "@/components/finance/split-preset-manager";
 import type { GroupMemberWithProfile } from "@/types";
 
 type Props = {
@@ -506,17 +507,25 @@ export function FinanceSplitSection({
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-medium text-muted-foreground">분할 정산</h3>
-        {canManage && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-xs gap-1"
-            onClick={() => setCreateOpen(true)}
-          >
-            <Plus className="h-3 w-3" />
-            새 정산
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          <SplitPresetManager
+            groupId={groupId}
+            groupMembers={groupMembers}
+            nicknameMap={nicknameMap}
+            canEdit={canManage}
+          />
+          {canManage && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs gap-1"
+              onClick={() => setCreateOpen(true)}
+            >
+              <Plus className="h-3 w-3" />
+              새 정산
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 목록 */}

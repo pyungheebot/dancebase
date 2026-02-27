@@ -31,6 +31,8 @@ import { AttendanceComparisonChart } from "@/components/attendance/attendance-co
 import { AttendanceReportSection } from "@/components/attendance/attendance-report-section";
 import { AttendanceGoalCard } from "@/components/attendance/attendance-goal-card";
 import { WeeklyAttendanceSnapshot } from "@/components/attendance/weekly-attendance-snapshot";
+import { AttendanceStreakCard } from "@/components/attendance/attendance-streak-card";
+import { TeamChallengeCard } from "@/components/attendance/team-challenge-card";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { ScheduleCheckinSection } from "@/components/schedule/schedule-checkin-section";
 import { ScheduleFeedbackDialog } from "@/components/schedule/schedule-feedback-dialog";
@@ -652,6 +654,20 @@ export function AttendanceContent({
       {/* ===== 멤버별 보기 ===== */}
       <TabsContent value="by-member">
         <div className="space-y-4">
+          {/* 나의 출석 스트릭 카드 */}
+          {currentUserId && (
+            <AttendanceStreakCard
+              groupId={ctx.groupId}
+              userId={currentUserId}
+            />
+          )}
+
+          {/* 팀 챌린지 카드 */}
+          <TeamChallengeCard
+            groupId={ctx.groupId}
+            canEdit={ctx.permissions.canEdit}
+          />
+
           {/* 출석 목표 카드 */}
           <AttendanceGoalCard
             groupId={ctx.groupId}

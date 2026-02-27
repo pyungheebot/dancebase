@@ -259,6 +259,9 @@ export const swrKeys = {
   // 연습 메모
   songNotes: (songId: string) => `song-notes-${songId}` as const,
 
+  // 안무 파트 배정
+  songParts: (songId: string) => `song-parts-${songId}` as const,
+
   // 생일 달력
   birthdayCalendar: (groupId: string) =>
     `/groups/${groupId}/birthday-calendar` as const,
@@ -296,4 +299,16 @@ export const swrKeys = {
   // 공연/대회 성과 기록
   performanceRecords: (groupId: string) =>
     `performance-records-${groupId}` as const,
+
+  // 그룹 공개 포트폴리오
+  groupPortfolio: (groupId: string) =>
+    `group-portfolio-${groupId}` as const,
+
+  // 개인 출석 스트릭
+  attendanceStreak: (groupId: string, userId: string) =>
+    `attendance-streak-${groupId}-${userId}` as const,
+
+  // 그룹 챌린지
+  groupChallenges: (groupId: string) =>
+    `group-challenges-${groupId}` as const,
 };

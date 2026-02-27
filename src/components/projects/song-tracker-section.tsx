@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { SongNoteSheet } from "@/components/projects/song-note-sheet";
+import { SongPartAssignment } from "@/components/projects/song-part-assignment";
 import {
   Music,
   Play,
@@ -22,6 +23,7 @@ import {
   Loader2,
   Circle,
   StickyNote,
+  Users,
 } from "lucide-react";
 
 interface SongTrackerSectionProps {
@@ -116,10 +118,11 @@ interface SongItemProps {
   onCycleStatus: (song: ProjectSong) => void;
   onDelete: (songId: string) => void;
   onOpenNotes: (song: ProjectSong) => void;
+  onOpenParts: (song: ProjectSong) => void;
   canDelete: boolean;
 }
 
-function SongItem({ song, onCycleStatus, onDelete, onOpenNotes, canDelete }: SongItemProps) {
+function SongItem({ song, onCycleStatus, onDelete, onOpenNotes, onOpenParts, canDelete }: SongItemProps) {
   const config = STATUS_CONFIG[song.status];
 
   return (
@@ -155,6 +158,17 @@ function SongItem({ song, onCycleStatus, onDelete, onOpenNotes, canDelete }: Son
 
       {/* 여백 */}
       <span className="flex-1" />
+
+      {/* 파트 배정 버튼 */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+        onClick={() => onOpenParts(song)}
+        title="파트 배정"
+      >
+        <Users className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+      </Button>
 
       {/* 메모 버튼 */}
       <Button
@@ -329,6 +343,9 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
   // 메모 Sheet 상태
   const [noteSong, setNoteSong] = useState<ProjectSong | null>(null);
 
+  // 파트 배정 Sheet 상태
+  const [partSong, setPartSong] = useState<ProjectSong | null>(null);
+
   const canManage =
     ctx.permissions.canEdit || ctx.permissions.canManageMembers;
 
@@ -399,6 +416,7 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
                         onCycleStatus={cycleSongStatus}
                         onDelete={deleteSong}
                         onOpenNotes={setNoteSong}
+                        onOpenParts={setPartSong}
                         canDelete={canManage}
                       />
                     ))}
@@ -424,6 +442,7 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
                         onCycleStatus={cycleSongStatus}
                         onDelete={deleteSong}
                         onOpenNotes={setNoteSong}
+                        onOpenParts={setPartSong}
                         canDelete={canManage}
                       />
                     ))}
@@ -449,6 +468,7 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
                         onCycleStatus={cycleSongStatus}
                         onDelete={deleteSong}
                         onOpenNotes={setNoteSong}
+                        onOpenParts={setPartSong}
                         canDelete={canManage}
                       />
                     ))}
@@ -476,6 +496,21 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
           onOpenChange={(open) => {
             if (!open) setNoteSong(null);
           }}
+        />
+      )}
+
+      {/* 파트 배정 Sheet */}
+      {partSong && (
+        <SongPartAssignment
+          songId={partSong.id}
+          songTitle={partSong.title}
+          songArtist={partSong.artist}
+          groupId={ctx.groupId}
+          open={partSong !== null}
+          onOpenChange={(open) => {
+            if (!open) setPartSong(null);
+          }}
+          canEdit={canManage}
         />
       )}
     </>

@@ -17,7 +17,8 @@ import { GroupActivityFeed } from "@/components/groups/group-activity-feed";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LeaderInfo } from "@/components/ui/leader-info";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Globe } from "lucide-react";
+import Link from "next/link";
 
 export default function GroupDetailPage({
   params,
@@ -50,6 +51,19 @@ export default function GroupDetailPage({
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <GroupActivityFeed groupId={ctx.groupId} />
+              {ctx.raw.group?.visibility === "public" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  asChild
+                >
+                  <Link href={`/groups/${ctx.groupId}/portfolio`}>
+                    <Globe className="h-3 w-3 mr-1" />
+                    포트폴리오
+                  </Link>
+                </Button>
+              )}
               {(ctx.permissions.canEdit || ctx.permissions.canManageMembers) && (
                 <Button
                   variant="outline"

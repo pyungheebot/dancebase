@@ -27,6 +27,7 @@ import { ScheduleWaitlistSection } from "./schedule-waitlist-section";
 import { ScheduleRolesSection } from "./schedule-roles-section";
 import { ScheduleWeatherBadge } from "./schedule-weather-badge";
 import { ScheduleRetroSheet } from "./schedule-retro-sheet";
+import { ScheduleLocationShare } from "./schedule-location-share";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
@@ -805,6 +806,15 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                       출석 관리
                     </Link>
                   </Button>
+                )}
+                {detailSchedule.location && (
+                  <ScheduleLocationShare
+                    scheduleTitle={detailSchedule.title}
+                    location={detailSchedule.location}
+                    address={detailSchedule.address}
+                    latitude={detailSchedule.latitude}
+                    longitude={detailSchedule.longitude}
+                  />
                 )}
                 <Button
                   variant="outline"

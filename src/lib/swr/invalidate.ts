@@ -306,6 +306,10 @@ export function invalidateSongNotes(songId: string) {
   mutate(swrKeys.songNotes(songId));
 }
 
+export function invalidateSongParts(songId: string) {
+  mutate(swrKeys.songParts(songId));
+}
+
 export function invalidateScheduleChecklist(scheduleId: string) {
   mutate(swrKeys.scheduleChecklist(scheduleId));
 }
@@ -332,4 +336,16 @@ export function invalidateGroupActivity(groupId: string) {
 
 export function invalidatePerformanceRecords(groupId: string) {
   mutate(swrKeys.performanceRecords(groupId));
+}
+
+export function invalidateGroupPortfolio(groupId: string) {
+  mutate(swrKeys.groupPortfolio(groupId));
+}
+
+export function invalidateAttendanceStreak(groupId: string, userId: string) {
+  mutate(swrKeys.attendanceStreak(groupId, userId));
+}
+
+export function invalidateGroupChallenges(groupId: string) {
+  mutate(swrKeys.groupChallenges(groupId));
 }
