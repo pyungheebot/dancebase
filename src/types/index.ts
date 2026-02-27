@@ -5380,3 +5380,132 @@ export type PerformanceSetlistData = {
   createdAt: string;
   updatedAt: string;
 };
+
+// ============================================
+// Dance Glossary (댄스 용어 사전)
+// ============================================
+
+export type GlossaryCategory =
+  | "basic"
+  | "hiphop"
+  | "popping"
+  | "locking"
+  | "breaking"
+  | "waacking"
+  | "contemporary"
+  | "general";
+
+export type GlossaryTerm = {
+  id: string;
+  term: string;
+  definition: string;      // 최대 500자
+  category: GlossaryCategory;
+  difficulty: "beginner" | "intermediate" | "advanced";
+  example: string;          // 사용 예시
+  addedBy: string;
+  createdAt: string;
+};
+
+// ============================================
+// Group Energy Tracker (그룹 에너지 트래커)
+// ============================================
+
+export type EnergyDimension = "morale" | "motivation" | "fatigue";
+
+export type EnergyRecord = {
+  id: string;
+  date: string;
+  recordedBy: string;
+  scores: Record<EnergyDimension, number>; // 0-100
+  note: string;
+  createdAt: string;
+};
+
+// ============================================
+// Reward Points (보상 포인트)
+// ============================================
+
+export type PointActionType = "attendance" | "post" | "comment" | "kudos" | "streak" | "manual";
+
+export type ActivityPointTransaction = {
+  id: string;
+  memberId: string;
+  memberName: string;
+  actionType: PointActionType;
+  points: number;
+  description: string;
+  createdAt: string;
+};
+
+export type MemberPointSummary = {
+  memberId: string;
+  memberName: string;
+  totalPoints: number;
+  rank: number;
+};
+
+export const ACTIVITY_POINT_DEFAULTS: Record<PointActionType, number> = {
+  attendance: 10,
+  post: 5,
+  comment: 2,
+  kudos: 3,
+  streak: 20,
+  manual: 0,
+};
+
+export const ACTIVITY_POINT_LABELS: Record<PointActionType, string> = {
+  attendance: "출석",
+  post: "게시글 작성",
+  comment: "댓글",
+  kudos: "칭찬 받기",
+  streak: "연속 출석",
+  manual: "직접 입력",
+};
+
+// ============================================
+// Practice Goal Board (연습 목표 보드)
+// ============================================
+
+export type GoalBoardStatus = "todo" | "in_progress" | "done";
+export type GoalBoardPriority = "low" | "medium" | "high";
+
+export type GoalBoardItem = {
+  id: string;
+  title: string;
+  description: string;
+  status: GoalBoardStatus;
+  priority: GoalBoardPriority;
+  assignees: string[];
+  dueDate?: string;
+  createdBy: string;
+  createdAt: string;
+  completedAt?: string;
+};
+
+// ============================================
+// Mentoring System (멘토링 매칭)
+// ============================================
+
+export type MentoringStatus = "active" | "completed" | "paused";
+
+export type MentoringPair = {
+  id: string;
+  mentorId: string;
+  mentorName: string;
+  menteeId: string;
+  menteeName: string;
+  goal: string;
+  status: MentoringStatus;
+  startDate: string;
+  endDate?: string;
+  feedbacks: MentoringFeedback[];
+  createdAt: string;
+};
+
+export type MentoringFeedback = {
+  id: string;
+  date: string;
+  content: string;
+  rating: number;        // 1-5 (만족도)
+  writtenBy: "mentor" | "mentee";
+};

@@ -655,3 +655,7 @@ export function invalidateThankYouLetters(groupId: string) {
 export function invalidatePerformanceRevenue(groupId: string) {
   mutate(swrKeys.performanceRevenue(groupId));
 }
+
+export function invalidateGroupEnergyTracker(groupId: string) {
+  mutate(swrKeys.groupEnergyTracker(groupId));
+}

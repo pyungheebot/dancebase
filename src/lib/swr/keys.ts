@@ -683,4 +683,24 @@ export const swrKeys = {
   // 세트리스트 관리
   setlistManagement: (groupId: string, projectId: string) =>
     `setlist-management-${groupId}-${projectId}` as const,
+
+  // 댄스 용어 사전
+  danceGlossary: (groupId: string) =>
+    `dance-glossary-${groupId}` as const,
+
+  // 그룹 에너지 트래커
+  groupEnergyTracker: (groupId: string) =>
+    `group-energy-tracker-${groupId}` as const,
+
+  // 연습 목표 보드
+  practiceGoalBoard: (groupId: string) =>
+    `practice-goal-board-${groupId}` as const,
+
+  // 보상 포인트
+  rewardPoints: (groupId: string) =>
+    `reward-points-${groupId}` as const,
+
+  // 멘토링 매칭 시스템 (localStorage 기반)
+  mentoringSystem: (groupId: string) =>
+    `mentoring-system-${groupId}` as const,
 };
