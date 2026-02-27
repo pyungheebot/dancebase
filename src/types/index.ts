@@ -3033,3 +3033,127 @@ export type BookmarkItem = {
   href: string;
   createdAt: string;
 };
+
+// ============================================
+// Music Playlist (그룹 음악 플레이리스트, localStorage 기반)
+// ============================================
+
+export type MusicPlaylistTrack = {
+  id: string;
+  title: string;
+  artist: string;
+  bpm: number | null;
+  genre: string;
+  memo: string;
+  order: number;
+};
+
+export type MusicPlaylist = {
+  id: string;
+  groupId: string;
+  name: string;
+  description: string;
+  tracks: MusicPlaylistTrack[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ============================================
+// Practice Assignment (연습 과제 할당, localStorage 기반)
+// ============================================
+
+export type AssignmentPriority = "high" | "medium" | "low";
+export type AssignmentProgress = "not_started" | "in_progress" | "completed";
+
+export type AssignmentMemberStatus = {
+  userId: string;
+  userName: string;
+  progress: AssignmentProgress;
+  note: string;
+  updatedAt: string;
+};
+
+export type PracticeAssignment = {
+  id: string;
+  groupId: string;
+  title: string;
+  description: string;
+  memberStatuses: AssignmentMemberStatus[];
+  priority: AssignmentPriority;
+  dueDate: string | null;
+  createdBy: string;
+  createdAt: string;
+};
+
+// ============================================
+// Churn Risk Detection (멤버 이탈 위험 감지)
+// ============================================
+
+export type ChurnRiskLevel = "safe" | "caution" | "risk" | "critical";
+
+export type ChurnRiskFactor =
+  | "low_attendance"
+  | "inactive_days"
+  | "no_board_activity"
+  | "low_rsvp";
+
+export type ChurnRiskEntry = {
+  userId: string;
+  name: string;
+  riskScore: number;
+  riskLevel: ChurnRiskLevel;
+  factors: ChurnRiskFactor[];
+  lastActiveAt: string | null;
+  recentAttendanceRate: number;
+};
+
+export type ChurnRiskDetectionResult = {
+  entries: ChurnRiskEntry[];
+  byLevel: Record<ChurnRiskLevel, ChurnRiskEntry[]>;
+  totalCount: number;
+  criticalCount: number;
+  riskCount: number;
+  cautionCount: number;
+  safeCount: number;
+};
+
+// ============================================
+// Schedule Template Item (일정 템플릿/복제, localStorage 기반)
+// ============================================
+
+export type ScheduleTemplateItem = {
+  id: string;
+  groupId: string;
+  title: string;
+  location: string;
+  dayOfWeek: number | null; // 0=일 ~ 6=토
+  startTime: string; // "HH:mm"
+  durationMinutes: number;
+  attendanceMethod: string;
+  memo: string;
+  createdAt: string;
+};
+
+export type ScheduleTemplateFormData = {
+  title: string;
+  location: string;
+  startTime: string;
+  durationMinutes: number;
+  attendanceMethod: string;
+  memo: string;
+};
+
+// ============================================
+// Member Notes (멤버 메모/노트, localStorage 기반)
+// ============================================
+
+export type MemberNoteCategory = "general" | "attendance" | "skill" | "attitude";
+
+export type MemberNoteV2 = {
+  id: string;
+  targetUserId: string;
+  content: string;
+  category: MemberNoteCategory;
+  createdAt: string;
+  updatedAt: string;
+};

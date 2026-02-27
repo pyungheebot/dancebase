@@ -479,4 +479,8 @@ export const swrKeys = {
   // 멤버 종합 점수 리더보드
   memberScoreLeaderboard: (groupId: string) =>
     `/groups/${groupId}/member-score-leaderboard` as const,
+
+  // 멤버 이탈 위험 감지
+  churnRiskDetection: (groupId: string) =>
+    `/groups/${groupId}/churn-risk-detection` as const,
 };

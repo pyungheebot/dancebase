@@ -505,3 +505,7 @@ export function invalidatePreExcuse(groupId: string, scheduleId?: string) {
 export function invalidateMemberScoreLeaderboard(groupId: string) {
   mutate(swrKeys.memberScoreLeaderboard(groupId));
 }
+
+export function invalidateChurnRiskDetection(groupId: string) {
+  mutate(swrKeys.churnRiskDetection(groupId));
+}
