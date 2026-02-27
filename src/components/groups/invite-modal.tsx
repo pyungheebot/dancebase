@@ -83,13 +83,28 @@ export function JoinGroupModal({ trigger }: JoinGroupModalProps) {
     try {
       const { data: group } = await supabase
         .from("groups")
-        .select("id, join_policy")
+        .select("id, join_policy, invite_code_enabled, invite_code_expires_at")
         .eq("invite_code", code.trim())
         .single();
 
       if (!group) {
         setError("유효하지 않은 초대 코드입니다");
         return;
+      }
+
+      // 비활성화 체크
+      if (group.invite_code_enabled === false) {
+        setError("현재 초대 코드가 비활성화되어 있습니다");
+        return;
+      }
+
+      // 만료일 체크
+      if (group.invite_code_expires_at) {
+        const expiresAt = new Date(group.invite_code_expires_at);
+        if (expiresAt < new Date()) {
+          setError("초대 코드가 만료되었습니다");
+          return;
+        }
       }
 
       const {

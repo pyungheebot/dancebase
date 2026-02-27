@@ -102,6 +102,8 @@ export type Group = {
   name: string;
   description: string | null;
   invite_code: string;
+  invite_code_enabled: boolean;
+  invite_code_expires_at: string | null;
   created_by: string;
   created_at: string;
   group_type: GroupType;
@@ -478,6 +480,32 @@ export type Notification = {
   link: string | null;
   is_read: boolean;
   created_at: string;
+};
+
+// ============================================
+// Schedule RSVP (참석 예정)
+// ============================================
+
+export type ScheduleRsvpResponse = "going" | "not_going" | "maybe";
+
+export type ScheduleRsvp = {
+  id: string;
+  schedule_id: string;
+  user_id: string;
+  response: ScheduleRsvpResponse;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ScheduleRsvpWithProfile = ScheduleRsvp & {
+  profiles: Pick<Profile, "id" | "name" | "avatar_url">;
+};
+
+export type ScheduleRsvpSummary = {
+  going: number;
+  not_going: number;
+  maybe: number;
+  my_response: ScheduleRsvpResponse | null;
 };
 
 // ============================================

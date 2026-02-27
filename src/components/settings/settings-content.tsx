@@ -11,7 +11,25 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { EntityContext } from "@/types/entity-context";
 import type {
@@ -60,10 +78,22 @@ export function SettingsContent({
   const [joinRequests, setJoinRequests] = useState<JoinRequestWithProfile[]>([]);
   const [processingRequest, setProcessingRequest] = useState<string | null>(null);
 
+  // 초대 코드 만료/비활성화 state
+  const [inviteCodeEnabled, setInviteCodeEnabled] = useState(true);
+  const [inviteCodeExpiry, setInviteCodeExpiry] = useState<string>("none");
+  const [savingInviteSettings, setSavingInviteSettings] = useState(false);
+
   // 프로젝트 폼 state
   const [projectForm, setProjectForm] = useState<ProjectFormValues>(DEFAULT_PROJECT_FORM_VALUES);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // 그룹 탈퇴/해산 state
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showDissolveConfirm, setShowDissolveConfirm] = useState(false);
+  const [dissolveNameInput, setDissolveNameInput] = useState("");
+  const [leavingGroup, setLeavingGroup] = useState(false);
+  const [dissolvingGroup, setDissolvingGroup] = useState(false);
 
   // 공유 그룹 관리 (프로젝트 전용)
   const sharedGroupsHook = useSharedGroups(ctx.projectId ?? "");
@@ -81,6 +111,14 @@ export function SettingsContent({
         danceGenre: group.dance_genre || [],
         maxMembers: group.max_members?.toString() || "",
       });
+      // 초대 코드 설정 초기화
+      setInviteCodeEnabled(group.invite_code_enabled ?? true);
+      if (group.invite_code_expires_at) {
+        // 만료일이 설정된 경우 "custom"으로 표시 (현재는 preset만 지원하므로 none으로 초기화)
+        setInviteCodeExpiry("none");
+      } else {
+        setInviteCodeExpiry("none");
+      }
     }
   }, [isGroup, group]);
 
@@ -160,14 +198,86 @@ export function SettingsContent({
     const newCode = Math.random().toString(36).substring(2, 10).toUpperCase();
     const { error } = await supabase
       .from("groups")
-      .update({ invite_code: newCode })
+      .update({
+        invite_code: newCode,
+        invite_code_expires_at: null,
+        invite_code_enabled: true,
+      })
       .eq("id", ctx.groupId);
     if (error) {
-      setMessage({ type: "error", text: "초대 코드 재생성에 실패했습니다" });
+      toast.error("초대 코드 재생성에 실패했습니다");
     } else {
-      setMessage({ type: "success", text: `새 초대 코드: ${newCode}` });
+      setInviteCodeExpiry("none");
+      setInviteCodeEnabled(true);
+      toast.success("초대 코드가 재생성되었습니다");
     }
     setRegenerating(false);
+  };
+
+  const handleSaveInviteSettings = async () => {
+    setSavingInviteSettings(true);
+    // 만료일 계산
+    let expiresAt: string | null = null;
+    if (inviteCodeExpiry !== "none") {
+      const days = parseInt(inviteCodeExpiry, 10);
+      const d = new Date();
+      d.setDate(d.getDate() + days);
+      expiresAt = d.toISOString();
+    }
+    const { error } = await supabase
+      .from("groups")
+      .update({
+        invite_code_enabled: inviteCodeEnabled,
+        invite_code_expires_at: expiresAt,
+      })
+      .eq("id", ctx.groupId);
+    if (error) {
+      toast.error("초대 코드 설정 저장에 실패했습니다");
+    } else {
+      toast.success("초대 코드 설정이 저장되었습니다");
+    }
+    setSavingInviteSettings(false);
+  };
+
+  // ============================================
+  // 그룹 탈퇴/해산 핸들러
+  // ============================================
+
+  const handleLeaveGroup = async () => {
+    setLeavingGroup(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      setLeavingGroup(false);
+      return;
+    }
+    const { error } = await supabase
+      .from("group_members")
+      .delete()
+      .eq("group_id", ctx.groupId)
+      .eq("user_id", user.id);
+    if (error) {
+      toast.error("그룹 탈퇴에 실패했습니다.");
+      setLeavingGroup(false);
+      return;
+    }
+    toast.success("그룹에서 탈퇴했습니다.");
+    router.push("/dashboard");
+  };
+
+  const handleDissolveGroup = async () => {
+    setDissolvingGroup(true);
+    const { error } = await supabase
+      .from("groups")
+      .delete()
+      .eq("id", ctx.groupId);
+    if (error) {
+      toast.error("그룹 해산에 실패했습니다.");
+      setDissolvingGroup(false);
+      return;
+    }
+    toast.success("그룹이 해산되었습니다.");
+    router.push("/dashboard");
   };
 
   // ============================================
@@ -257,6 +367,13 @@ export function SettingsContent({
   // ============================================
 
   const { features } = ctx;
+
+  // 현재 로그인 사용자의 그룹 내 역할 판별
+  // ctx.permissions.canEdit이 true이면 leader로 간주 (그룹 설정에서만 유효)
+  const myGroupRole = isGroup
+    ? (ctx.permissions.canEdit ? "leader" : "member")
+    : null;
+  const isGroupLeader = myGroupRole === "leader";
 
   return (
     <>
@@ -354,9 +471,14 @@ export function SettingsContent({
               <CardHeader>
                 <CardTitle className="text-xs font-semibold">초대 코드</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-4">
+                {/* 초대 코드 표시 + 재생성 */}
                 <div className="flex items-center gap-2">
-                  <Input value={group.invite_code} readOnly className="font-mono" />
+                  <Input
+                    value={inviteCodeEnabled ? group.invite_code : "비활성화됨"}
+                    readOnly
+                    className={`font-mono ${!inviteCodeEnabled ? "text-muted-foreground" : ""}`}
+                  />
                   <Button
                     variant="outline"
                     onClick={handleRegenerateInviteCode}
@@ -371,8 +493,68 @@ export function SettingsContent({
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  재생성하면 기존 초대 코드는 무효화됩니다
+                  재생성하면 기존 초대 코드는 무효화되며 만료일이 초기화됩니다
                 </p>
+
+                <Separator />
+
+                {/* 활성화/비활성화 토글 */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium">초대 코드 활성화</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      비활성화하면 기존 코드로 참여할 수 없습니다
+                    </p>
+                  </div>
+                  <Switch
+                    checked={inviteCodeEnabled}
+                    onCheckedChange={setInviteCodeEnabled}
+                  />
+                </div>
+
+                {/* 비활성화 시 안내 메시지 */}
+                {!inviteCodeEnabled && (
+                  <div className="rounded-md bg-yellow-50 border border-yellow-200 px-3 py-2 text-[11px] text-yellow-700 dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-300">
+                    초대 코드가 비활성화되어 있습니다. 멤버 초대를 원하면 활성화하세요.
+                  </div>
+                )}
+
+                {/* 만료일 설정 */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">만료 기간 설정</Label>
+                  <Select
+                    value={inviteCodeExpiry}
+                    onValueChange={setInviteCodeExpiry}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="만료 기간 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none" className="text-xs">만료 없음</SelectItem>
+                      <SelectItem value="1" className="text-xs">1일 후 만료</SelectItem>
+                      <SelectItem value="7" className="text-xs">7일 후 만료</SelectItem>
+                      <SelectItem value="30" className="text-xs">30일 후 만료</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {inviteCodeExpiry !== "none" && (
+                    <p className="text-[11px] text-muted-foreground">
+                      저장 시점부터 {inviteCodeExpiry}일 후에 초대 코드가 만료됩니다
+                    </p>
+                  )}
+                </div>
+
+                {/* 저장 버튼 */}
+                <Button
+                  size="sm"
+                  className="h-7 text-xs w-full"
+                  onClick={handleSaveInviteSettings}
+                  disabled={savingInviteSettings}
+                >
+                  {savingInviteSettings ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : null}
+                  초대 코드 설정 저장
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -385,6 +567,131 @@ export function SettingsContent({
             )}
             설정 저장
           </Button>
+
+          {/* 위험 구역 */}
+          <Separator />
+          <div className="space-y-3">
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+              <span className="text-xs font-semibold text-destructive">위험 구역</span>
+            </div>
+
+            {/* 그룹 탈퇴 (일반 멤버 전용) */}
+            {!isGroupLeader && (
+              <div className="rounded-lg border border-destructive/30 p-3 space-y-2">
+                <div>
+                  <p className="text-xs font-medium">그룹 탈퇴</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    그룹에서 탈퇴하면 모든 접근 권한을 잃게 됩니다.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={() => setShowLeaveConfirm(true)}
+                  disabled={leavingGroup}
+                >
+                  {leavingGroup ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : null}
+                  그룹 탈퇴
+                </Button>
+              </div>
+            )}
+
+            {/* 리더인 경우 탈퇴 불가 안내 */}
+            {isGroupLeader && (
+              <div className="rounded-lg border border-destructive/30 p-3 space-y-2">
+                <div>
+                  <p className="text-xs font-medium">그룹 탈퇴</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    리더는 직접 탈퇴할 수 없습니다. 다른 멤버에게 리더 권한을 위임한 후 탈퇴하세요.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  disabled
+                >
+                  그룹 탈퇴 불가
+                </Button>
+              </div>
+            )}
+
+            {/* 그룹 해산 (리더 전용) */}
+            {isGroupLeader && (
+              <div className="rounded-lg border border-destructive/30 p-3 space-y-2">
+                <div>
+                  <p className="text-xs font-medium">그룹 해산</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    그룹을 해산하면 모든 데이터가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    setDissolveNameInput("");
+                    setShowDissolveConfirm(true);
+                  }}
+                  disabled={dissolvingGroup}
+                >
+                  {dissolvingGroup ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : null}
+                  그룹 해산
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* 그룹 탈퇴 확인 다이얼로그 */}
+          <ConfirmDialog
+            open={showLeaveConfirm}
+            onOpenChange={setShowLeaveConfirm}
+            title="그룹 탈퇴"
+            description="정말 이 그룹을 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+            onConfirm={handleLeaveGroup}
+            destructive
+          />
+
+          {/* 그룹 해산 확인 다이얼로그 (이름 입력 이중 확인) */}
+          <AlertDialog open={showDissolveConfirm} onOpenChange={setShowDissolveConfirm}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>그룹 해산</AlertDialogTitle>
+                <AlertDialogDescription>
+                  정말 이 그룹을 해산하시겠습니까? 모든 데이터가 삭제되며 되돌릴 수 없습니다.
+                  <br />
+                  확인을 위해 아래에 그룹 이름 <strong>&quot;{group?.name}&quot;</strong>을 입력하세요.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="px-1 pb-2">
+                <Input
+                  placeholder={group?.name ?? "그룹 이름"}
+                  value={dissolveNameInput}
+                  onChange={(e) => setDissolveNameInput(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDissolveNameInput("")}>취소</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDissolveGroup}
+                  disabled={dissolveNameInput !== group?.name || dissolvingGroup}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+                >
+                  {dissolvingGroup ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : null}
+                  해산
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       ) : (
         /* ============================================ */

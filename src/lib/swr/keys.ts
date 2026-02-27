@@ -19,6 +19,7 @@ export const swrKeys = {
   schedules: (groupId: string, projectId?: string | null) =>
     `/groups/${groupId}/schedules${projectId ? `?project=${projectId}` : ""}` as const,
   attendance: (scheduleId: string) => `/schedules/${scheduleId}/attendance` as const,
+  scheduleRsvp: (scheduleId: string) => `/schedules/${scheduleId}/rsvp` as const,
 
   // 게시판
   board: (groupId: string, projectId: string | null | undefined, category: string, search: string, page: number) =>

@@ -62,6 +62,10 @@ export function invalidateAttendance(scheduleId: string) {
   mutate(swrKeys.attendance(scheduleId));
 }
 
+export function invalidateScheduleRsvp(scheduleId: string) {
+  mutate(swrKeys.scheduleRsvp(scheduleId));
+}
+
 export function invalidateConversations() {
   mutate(swrKeys.conversations());
   mutate(swrKeys.unreadCount());

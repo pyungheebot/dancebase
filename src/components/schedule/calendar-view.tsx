@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar } from "lucide-react";
 import { ScheduleForm } from "./schedule-form";
-import type { Schedule } from "@/types";
+import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
+import { createClient } from "@/lib/supabase/client";
+import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
+import { toast } from "sonner";
+import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
 
 const MAX_VISIBLE_EVENTS = 2;
@@ -25,6 +29,144 @@ type CalendarViewProps = {
   onScheduleUpdated?: () => void;
   attendancePath?: string;
 };
+
+// RSVP 버튼 섹션 (내부 컴포넌트)
+function RsvpSection({ scheduleId }: { scheduleId: string }) {
+  const { rsvp, loading, refetch } = useScheduleRsvp(scheduleId);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleRsvp = async (response: ScheduleRsvpResponse) => {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      toast.error("로그인이 필요합니다");
+      return;
+    }
+
+    // 이미 같은 응답이면 취소(삭제)
+    if (rsvp?.my_response === response) {
+      setSubmitting(true);
+      try {
+        const { error } = await supabase
+          .from("schedule_rsvp")
+          .delete()
+          .eq("schedule_id", scheduleId)
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+        invalidateScheduleRsvp(scheduleId);
+        refetch();
+        toast.success("RSVP를 취소했습니다");
+      } catch {
+        toast.error("RSVP 취소에 실패했습니다");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("schedule_rsvp").upsert(
+        {
+          schedule_id: scheduleId,
+          user_id: user.id,
+          response,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "schedule_id,user_id" }
+      );
+
+      if (error) throw error;
+      invalidateScheduleRsvp(scheduleId);
+      refetch();
+
+      const labels: Record<ScheduleRsvpResponse, string> = {
+        going: "참석",
+        not_going: "불참",
+        maybe: "미정",
+      };
+      toast.success(`"${labels[response]}"으로 응답했습니다`);
+    } catch {
+      toast.error("RSVP 응답에 실패했습니다");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">참석 여부</p>
+        <div className="h-7 bg-muted animate-pulse rounded" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">참석 여부</p>
+        {rsvp && (
+          <span className="text-[10px] text-muted-foreground">
+            참석 {rsvp.going} · 불참 {rsvp.not_going} · 미정 {rsvp.maybe}
+          </span>
+        )}
+      </div>
+      <div className="flex gap-1.5">
+        <Button
+          size="sm"
+          className="h-7 text-xs flex-1"
+          variant={rsvp?.my_response === "going" ? "default" : "outline"}
+          disabled={submitting}
+          onClick={() => handleRsvp("going")}
+        >
+          참석{rsvp && rsvp.going > 0 ? ` ${rsvp.going}` : ""}
+        </Button>
+        <Button
+          size="sm"
+          className="h-7 text-xs flex-1"
+          variant={rsvp?.my_response === "not_going" ? "default" : "outline"}
+          disabled={submitting}
+          onClick={() => handleRsvp("not_going")}
+        >
+          불참{rsvp && rsvp.not_going > 0 ? ` ${rsvp.not_going}` : ""}
+        </Button>
+        <Button
+          size="sm"
+          className="h-7 text-xs flex-1"
+          variant={rsvp?.my_response === "maybe" ? "default" : "outline"}
+          disabled={submitting}
+          onClick={() => handleRsvp("maybe")}
+        >
+          미정{rsvp && rsvp.maybe > 0 ? ` ${rsvp.maybe}` : ""}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// 캘린더 셀의 일정 배지 (going 수 표시 포함)
+function ScheduleBadge({ schedule, onClick }: { schedule: Schedule; onClick: () => void }) {
+  const { rsvp } = useScheduleRsvp(schedule.id);
+
+  return (
+    <button onClick={onClick} className="w-full text-left">
+      <Badge
+        variant="secondary"
+        className="w-full justify-between text-[9px] px-1 py-0 truncate cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+      >
+        <span className="truncate">{schedule.title}</span>
+        {rsvp && rsvp.going > 0 && (
+          <span className="shrink-0 ml-1 text-[8px] opacity-70">{rsvp.going}</span>
+        )}
+      </Badge>
+    </button>
+  );
+}
 
 export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -102,18 +244,11 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
               </span>
               <div className="mt-0.5 space-y-px">
                 {visibleSchedules.map((schedule) => (
-                  <button
+                  <ScheduleBadge
                     key={schedule.id}
+                    schedule={schedule}
                     onClick={() => setDetailSchedule(schedule)}
-                    className="w-full text-left"
-                  >
-                    <Badge
-                      variant="secondary"
-                      className="w-full justify-start text-[9px] px-1 py-0 truncate cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                    >
-                      {schedule.title}
-                    </Badge>
-                  </button>
+                  />
                 ))}
                 {hiddenCount > 0 && (
                   <button
@@ -216,6 +351,12 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   <p className="text-xs whitespace-pre-wrap pt-1">{detailSchedule.description}</p>
                 )}
               </div>
+
+              {/* RSVP 섹션 */}
+              <div className="border-t pt-3">
+                <RsvpSection scheduleId={detailSchedule.id} />
+              </div>
+
               <div className="flex gap-2">
                 {canEdit && (
                   <Button

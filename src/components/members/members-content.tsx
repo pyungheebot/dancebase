@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { MemberList } from "@/components/groups/member-list";
 import { InviteModal } from "@/components/groups/invite-modal";
 import { MemberCategoryManager } from "@/components/groups/member-category-manager";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -209,6 +210,7 @@ function ProjectMembersContent({
   const [addOpen, setAddOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
   const supabase = createClient();
 
   const projectMemberIds = new Set(ctx.members.map((m) => m.userId));
@@ -230,19 +232,20 @@ function ProjectMembersContent({
     onUpdate();
   };
 
-  const handleRemoveMember = async (userId: string) => {
-    if (!ctx.projectId) return;
-    if (!window.confirm("이 멤버를 제거하시겠습니까?")) return;
+  const handleRemoveConfirm = async () => {
+    if (!removeTargetId || !ctx.projectId) return;
     const { error } = await supabase
       .from("project_members")
       .delete()
       .eq("project_id", ctx.projectId)
-      .eq("user_id", userId);
+      .eq("user_id", removeTargetId);
     if (error) {
       toast.error("멤버 제거에 실패했습니다");
-      return;
+    } else {
+      toast.success("멤버가 제거되었습니다");
+      onUpdate();
     }
-    onUpdate();
+    setRemoveTargetId(null);
   };
 
   const handleRoleChange = async (memberId: string, newRole: string) => {
@@ -338,7 +341,7 @@ function ProjectMembersContent({
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                    onClick={() => handleRemoveMember(member.userId)}
+                    onClick={() => setRemoveTargetId(member.userId)}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -348,6 +351,17 @@ function ProjectMembersContent({
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={!!removeTargetId}
+        onOpenChange={(open) => {
+          if (!open) setRemoveTargetId(null);
+        }}
+        title="멤버 제거"
+        description="이 멤버를 프로젝트에서 제거하시겠습니까?"
+        onConfirm={handleRemoveConfirm}
+        destructive
+      />
     </>
   );
 }

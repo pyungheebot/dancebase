@@ -1,16 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FinanceTransactionForm } from "@/components/groups/finance-transaction-form";
 import { FinanceCategoryManager } from "@/components/groups/finance-category-manager";
 import { FinancePermissionManager } from "@/components/groups/finance-permission-manager";
 import { FinanceStats } from "@/components/groups/finance-stats";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
 import type { EntityContext } from "@/types/entity-context";
 import type {
   FinanceRole,
@@ -40,6 +49,23 @@ type FinanceContentProps = {
   groupMembers?: GroupMemberWithProfile[];
 };
 
+// 최근 N개월 옵션 생성
+function buildMonthOptions(transactions: FinanceTransactionWithDetails[]) {
+  const monthSet = new Set<string>();
+  transactions.forEach((txn) => {
+    if (txn.transaction_date) {
+      monthSet.add(txn.transaction_date.slice(0, 7)); // "YYYY-MM"
+    }
+  });
+
+  // 없으면 현재 월 포함
+  const now = format(new Date(), "yyyy-MM");
+  monthSet.add(now);
+
+  // 내림차순 정렬
+  return Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+}
+
 export function FinanceContent({
   ctx,
   financeRole,
@@ -51,22 +77,90 @@ export function FinanceContent({
 }: FinanceContentProps) {
   const supabase = createClient();
   const [editingTxn, setEditingTxn] = useState<FinanceTransaction | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  // 월 필터: 기본값은 현재 월
+  const currentMonth = format(new Date(), "yyyy-MM");
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
 
   const isManager = financeRole === "manager";
   const canManage = isManager || ctx.permissions.canEdit;
 
-  const handleDelete = async (txnId: string) => {
-    if (!window.confirm("이 거래를 삭제하시겠습니까?")) return;
+  // 월 옵션 목록
+  const monthOptions = useMemo(() => buildMonthOptions(transactions), [transactions]);
+
+  // 선택된 월에 해당하는 거래만 필터링
+  const filteredTransactions = useMemo(() => {
+    if (selectedMonth === "all") return transactions;
+    return transactions.filter((txn) =>
+      txn.transaction_date?.startsWith(selectedMonth)
+    );
+  }, [transactions, selectedMonth]);
+
+  // 선택된 월의 수입/지출/잔액 계산
+  const monthlyStats = useMemo(() => {
+    const totalIncome = filteredTransactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const totalExpense = filteredTransactions
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const balance = totalIncome - totalExpense;
+
+    const byCategory = categories.map((cat) => {
+      const catTxns = filteredTransactions.filter((t) => t.category_id === cat.id);
+      const income = catTxns
+        .filter((t) => t.type === "income")
+        .reduce((sum, t) => sum + t.amount, 0);
+      const expense = catTxns
+        .filter((t) => t.type === "expense")
+        .reduce((sum, t) => sum + t.amount, 0);
+      return { category: cat, income, expense };
+    });
+
+    const uncategorized = filteredTransactions.filter((t) => !t.category_id);
+    if (uncategorized.length > 0) {
+      byCategory.push({
+        category: {
+          id: "",
+          group_id: ctx.groupId,
+          project_id: null,
+          name: "미분류",
+          sort_order: 999,
+          created_at: "",
+        },
+        income: uncategorized
+          .filter((t) => t.type === "income")
+          .reduce((sum, t) => sum + t.amount, 0),
+        expense: uncategorized
+          .filter((t) => t.type === "expense")
+          .reduce((sum, t) => sum + t.amount, 0),
+      });
+    }
+
+    return { totalIncome, totalExpense, balance, byCategory };
+  }, [filteredTransactions, categories, ctx.groupId]);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTargetId) return;
     const { error } = await supabase
       .from("finance_transactions")
       .delete()
-      .eq("id", txnId);
+      .eq("id", deleteTargetId);
     if (error) {
       toast.error("거래 삭제에 실패했습니다");
-      return;
+    } else {
+      toast.success("거래가 삭제되었습니다");
+      refetch();
     }
-    refetch();
+    setDeleteTargetId(null);
   };
+
+  // 월 레이블 포맷: "2026-02" → "2026년 2월"
+  function formatMonthLabel(ym: string) {
+    const [year, month] = ym.split("-");
+    return `${year}년 ${parseInt(month, 10)}월`;
+  }
 
   return (
     <>
@@ -117,6 +211,7 @@ export function FinanceContent({
         )}
       </div>
 
+      {/* 전체 통계 (항상 전체 기준) */}
       <FinanceStats
         totalIncome={stats.totalIncome}
         totalExpense={stats.totalExpense}
@@ -124,17 +219,65 @@ export function FinanceContent({
         byCategory={stats.byCategory}
       />
 
+      {/* 거래 내역 섹션 */}
       <div className="mt-3">
-        <h2 className="text-xs font-medium text-muted-foreground mb-1.5">
-          거래 내역
-        </h2>
-        {transactions.length === 0 ? (
+        {/* 헤더: 제목 + 월 필터 드롭다운 */}
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xs font-medium text-muted-foreground">거래 내역</h2>
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="h-6 w-28 text-[11px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              {monthOptions.map((ym) => (
+                <SelectItem key={ym} value={ym}>
+                  {formatMonthLabel(ym)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* 월별 요약 카드 (전체가 아닌 경우) */}
+        {selectedMonth !== "all" && (
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="rounded-lg border bg-card px-3 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground mb-0.5">수입</p>
+              <p className="text-sm font-semibold text-green-600 tabular-nums">
+                +{monthlyStats.totalIncome.toLocaleString("ko-KR")}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-card px-3 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground mb-0.5">지출</p>
+              <p className="text-sm font-semibold text-red-600 tabular-nums">
+                -{monthlyStats.totalExpense.toLocaleString("ko-KR")}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-card px-3 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground mb-0.5">잔액</p>
+              <p
+                className={`text-sm font-semibold tabular-nums ${
+                  monthlyStats.balance >= 0 ? "text-blue-600" : "text-red-600"
+                }`}
+              >
+                {monthlyStats.balance >= 0 ? "+" : ""}
+                {monthlyStats.balance.toLocaleString("ko-KR")}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 거래 목록 */}
+        {filteredTransactions.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-8">
-            거래 내역이 없습니다
+            {selectedMonth === "all"
+              ? "거래 내역이 없습니다"
+              : `${formatMonthLabel(selectedMonth)}에 거래 내역이 없습니다`}
           </p>
         ) : (
           <div className="rounded-lg border divide-y">
-            {transactions.map((txn) => (
+            {filteredTransactions.map((txn) => (
               <div
                 key={txn.id}
                 className="flex items-center justify-between px-3 py-2 gap-3"
@@ -156,9 +299,7 @@ export function FinanceContent({
                       <span>{txn.transaction_date}</span>
                       {txn.profiles && (
                         <>
-                          <span className="text-muted-foreground/40">
-                            ·
-                          </span>
+                          <span className="text-muted-foreground/40">·</span>
                           <span>
                             {(txn.created_by &&
                               ctx.nicknameMap[txn.created_by]) ||
@@ -201,7 +342,7 @@ export function FinanceContent({
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleDelete(txn.id)}
+                        onClick={() => setDeleteTargetId(txn.id)}
                         aria-label="거래 삭제"
                       >
                         <Trash2 className="h-3 w-3" />
@@ -215,6 +356,7 @@ export function FinanceContent({
         )}
       </div>
 
+      {/* 거래 수정 폼 */}
       {editingTxn && (
         <FinanceTransactionForm
           mode="edit"
@@ -223,13 +365,27 @@ export function FinanceContent({
           categories={categories}
           initialData={editingTxn}
           open={!!editingTxn}
-          onOpenChange={(open) => { if (!open) setEditingTxn(null); }}
+          onOpenChange={(open) => {
+            if (!open) setEditingTxn(null);
+          }}
           onSuccess={() => {
             setEditingTxn(null);
             refetch();
           }}
         />
       )}
+
+      {/* 거래 삭제 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={!!deleteTargetId}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTargetId(null);
+        }}
+        title="거래 삭제"
+        description="이 거래를 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다."
+        onConfirm={handleDeleteConfirm}
+        destructive
+      />
     </>
   );
 }
