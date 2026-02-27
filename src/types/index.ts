@@ -4792,3 +4792,91 @@ export type ProjectRoleAssignment = {
   note: string;
   createdAt: string;
 };
+
+// ============================================
+// Countdown Event (이벤트 카운트다운)
+// ============================================
+
+export type CountdownEvent = {
+  id: string;
+  title: string;
+  eventDate: string;      // YYYY-MM-DD
+  eventTime?: string;     // HH:MM (선택)
+  emoji: string;          // "🎭", "🏆" 등
+  createdAt: string;
+};
+
+// ============================================
+// Shared Memo (그룹 공유 메모)
+// ============================================
+
+export type SharedMemoColor = "yellow" | "blue" | "green" | "pink" | "purple";
+
+export type SharedMemo = {
+  id: string;
+  content: string;       // 최대 200자
+  author: string;
+  color: SharedMemoColor;
+  pinned: boolean;
+  expiresAt?: string;    // YYYY-MM-DD (선택, 만료일)
+  createdAt: string;
+};
+
+// ============================================
+// Formation Editor (포메이션 에디터)
+// ============================================
+
+export type FormationPosition = {
+  memberId: string;
+  memberName: string;
+  x: number;    // 0-100 (%)
+  y: number;    // 0-100 (%)
+  color: string;
+};
+
+export type FormationScene = {
+  id: string;
+  label: string;         // "인트로", "1절" 등
+  positions: FormationPosition[];
+  createdAt: string;
+};
+
+export type FormationProject = {
+  scenes: FormationScene[];
+  updatedAt: string;
+};
+
+// ============================================
+// Member Intro Card v2 (자기소개 카드, localStorage 기반)
+// ============================================
+
+export type MemberIntroCardV2 = {
+  userId: string;
+  nickname: string;
+  danceExperience: string;   // "3년", "초보" 등
+  favoriteGenres: string[];  // ["힙합", "팝핀"] 최대 3개
+  motto: string;             // 한마디 (최대 50자)
+  joinReason: string;        // 가입 이유 (최대 100자)
+  updatedAt: string;
+};
+
+// ============================================
+// Video Library (연습 영상 라이브러리)
+// ============================================
+
+export type VideoCategory = "reference" | "tutorial" | "practice" | "performance" | "other";
+
+export type VideoLibraryItem = {
+  id: string;
+  title: string;
+  url: string;            // YouTube, 기타 링크
+  category: VideoCategory;
+  addedBy: string;
+  note: string;
+  createdAt: string;
+};
+
+export type VideoLibraryStore = {
+  items: VideoLibraryItem[];
+  updatedAt: string;
+};
