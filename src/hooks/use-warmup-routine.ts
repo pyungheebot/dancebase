@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import type { WarmupRoutine, WarmupExercise } from "@/types";
+import { useState, useCallback, useEffect } from "react";
+import type { WarmupRoutine, WarmupExercise, WarmupExerciseType } from "@/types";
 
-const MAX_ROUTINES = 5;
-const MAX_EXERCISES = 15;
+const STORAGE_KEY_PREFIX = "dancebase:warmup-routine:";
+
+// ============================================
+// localStorage 헬퍼
+// ============================================
 
 function getStorageKey(groupId: string): string {
-  return `dancebase:warmup:${groupId}`;
+  return `${STORAGE_KEY_PREFIX}${groupId}`;
 }
 
 function loadRoutines(groupId: string): WarmupRoutine[] {
@@ -31,123 +34,160 @@ function saveRoutines(groupId: string, routines: WarmupRoutine[]): void {
 }
 
 function calcTotalDuration(exercises: WarmupExercise[]): number {
-  return exercises.reduce((sum, ex) => sum + ex.durationSeconds, 0);
+  return exercises.reduce((sum, ex) => sum + ex.duration, 0);
 }
 
-export function useWarmupRoutine(groupId: string) {
-  const [routines, setRoutines] = useState<WarmupRoutine[]>(() =>
-    loadRoutines(groupId)
-  );
+// ============================================
+// 훅
+// ============================================
 
-  const persist = useCallback(
-    (next: WarmupRoutine[]) => {
-      setRoutines(next);
-      saveRoutines(groupId, next);
+export function useWarmupRoutine(groupId: string) {
+  const [routines, setRoutines] = useState<WarmupRoutine[]>([]);
+
+  // 초기 로드
+  useEffect(() => {
+    setRoutines(loadRoutines(groupId));
+  }, [groupId]);
+
+  // 상태 업데이트 + localStorage 동기화
+  const updateRoutines = useCallback(
+    (updater: (prev: WarmupRoutine[]) => WarmupRoutine[]) => {
+      setRoutines((prev) => {
+        const next = updater(prev);
+        saveRoutines(groupId, next);
+        return next;
+      });
     },
     [groupId]
   );
 
-  // 루틴 추가 (최대 5개)
-  const addRoutine = useCallback(
-    (title: string): boolean => {
-      if (routines.length >= MAX_ROUTINES) return false;
+  // 루틴 생성
+  const createRoutine = useCallback(
+    (name: string, createdBy: string) => {
+      const trimmed = name.trim();
+      if (!trimmed) return;
       const newRoutine: WarmupRoutine = {
         id: crypto.randomUUID(),
-        title: title.trim(),
+        name: trimmed,
         exercises: [],
         totalDuration: 0,
+        createdBy: createdBy.trim() || "나",
         createdAt: new Date().toISOString(),
       };
-      persist([...routines, newRoutine]);
-      return true;
+      updateRoutines((prev) => [...prev, newRoutine]);
     },
-    [routines, persist]
+    [updateRoutines]
   );
 
   // 루틴 삭제
   const deleteRoutine = useCallback(
-    (routineId: string): void => {
-      persist(routines.filter((r) => r.id !== routineId));
+    (routineId: string) => {
+      updateRoutines((prev) => prev.filter((r) => r.id !== routineId));
     },
-    [routines, persist]
+    [updateRoutines]
   );
 
-  // 동작 추가 (루틴당 최대 15개)
+  // 운동 추가
   const addExercise = useCallback(
     (
       routineId: string,
-      exercise: Omit<WarmupExercise, "id">
-    ): boolean => {
-      const routine = routines.find((r) => r.id === routineId);
-      if (!routine) return false;
-      if (routine.exercises.length >= MAX_EXERCISES) return false;
-
-      const newExercise: WarmupExercise = {
-        id: crypto.randomUUID(),
-        ...exercise,
-      };
-      const updatedExercises = [...routine.exercises, newExercise];
-      const updated = routines.map((r) =>
-        r.id === routineId
-          ? {
-              ...r,
-              exercises: updatedExercises,
-              totalDuration: calcTotalDuration(updatedExercises),
-            }
-          : r
+      name: string,
+      type: WarmupExerciseType,
+      duration: number,
+      repetitions?: number,
+      description?: string,
+      bodyPart?: string
+    ) => {
+      updateRoutines((prev) =>
+        prev.map((r) => {
+          if (r.id !== routineId) return r;
+          const maxOrder =
+            r.exercises.length > 0
+              ? Math.max(...r.exercises.map((e) => e.order))
+              : 0;
+          const newExercise: WarmupExercise = {
+            id: crypto.randomUUID(),
+            name: name.trim(),
+            type,
+            duration,
+            repetitions,
+            description: description?.trim() || undefined,
+            bodyPart: bodyPart?.trim() || "전신",
+            order: maxOrder + 1,
+          };
+          const updatedExercises = [...r.exercises, newExercise];
+          return {
+            ...r,
+            exercises: updatedExercises,
+            totalDuration: calcTotalDuration(updatedExercises),
+          };
+        })
       );
-      persist(updated);
-      return true;
     },
-    [routines, persist]
+    [updateRoutines]
   );
 
-  // 동작 삭제
+  // 운동 제거
   const removeExercise = useCallback(
-    (routineId: string, exerciseId: string): void => {
-      const updated = routines.map((r) => {
-        if (r.id !== routineId) return r;
-        const exercises = r.exercises.filter((ex) => ex.id !== exerciseId);
-        return { ...r, exercises, totalDuration: calcTotalDuration(exercises) };
-      });
-      persist(updated);
+    (routineId: string, exerciseId: string) => {
+      updateRoutines((prev) =>
+        prev.map((r) => {
+          if (r.id !== routineId) return r;
+          const filtered = r.exercises.filter((e) => e.id !== exerciseId);
+          const reordered = [...filtered]
+            .sort((a, b) => a.order - b.order)
+            .map((e, idx) => ({ ...e, order: idx + 1 }));
+          return {
+            ...r,
+            exercises: reordered,
+            totalDuration: calcTotalDuration(reordered),
+          };
+        })
+      );
     },
-    [routines, persist]
+    [updateRoutines]
   );
 
-  // 동작 순서 변경 (위/아래 이동)
-  const reorderExercises = useCallback(
-    (routineId: string, fromIndex: number, toIndex: number): void => {
-      const routine = routines.find((r) => r.id === routineId);
-      if (!routine) return;
-      const exercises = [...routine.exercises];
-      if (
-        fromIndex < 0 ||
-        fromIndex >= exercises.length ||
-        toIndex < 0 ||
-        toIndex >= exercises.length
-      )
-        return;
-      const [moved] = exercises.splice(fromIndex, 1);
-      exercises.splice(toIndex, 0, moved);
-      const updated = routines.map((r) =>
-        r.id === routineId
-          ? { ...r, exercises, totalDuration: calcTotalDuration(exercises) }
-          : r
+  // 순서 변경
+  const moveExercise = useCallback(
+    (routineId: string, exerciseId: string, direction: "up" | "down") => {
+      updateRoutines((prev) =>
+        prev.map((r) => {
+          if (r.id !== routineId) return r;
+          const sorted = [...r.exercises].sort((a, b) => a.order - b.order);
+          const idx = sorted.findIndex((e) => e.id === exerciseId);
+          if (idx === -1) return r;
+          if (direction === "up" && idx === 0) return r;
+          if (direction === "down" && idx === sorted.length - 1) return r;
+
+          const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+          const newSorted = [...sorted];
+          const tempOrder = newSorted[idx].order;
+          newSorted[idx] = { ...newSorted[idx], order: newSorted[swapIdx].order };
+          newSorted[swapIdx] = { ...newSorted[swapIdx], order: tempOrder };
+
+          return { ...r, exercises: newSorted };
+        })
       );
-      persist(updated);
     },
-    [routines, persist]
+    [updateRoutines]
+  );
+
+  // 통계
+  const totalRoutines = routines.length;
+  const totalExercises = routines.reduce(
+    (sum, r) => sum + r.exercises.length,
+    0
   );
 
   return {
     routines,
-    maxRoutines: MAX_ROUTINES,
-    maxExercises: MAX_EXERCISES,
-    addRoutine,
+    totalRoutines,
+    totalExercises,
+    createRoutine,
     deleteRoutine,
     addExercise,
     removeExercise,
-    reorderExercises,
+    moveExercise,
   };
 }

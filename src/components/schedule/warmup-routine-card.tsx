@@ -26,9 +26,16 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useWarmupRoutine } from "@/hooks/use-warmup-routine";
-import type { WarmupExercise } from "@/types";
+import type { WarmupExercise, WarmupExerciseType } from "@/types";
 
 // ============================================
 // 유틸
@@ -39,6 +46,24 @@ function formatMMSS(totalSeconds: number): string {
   const s = totalSeconds % 60;
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
+
+const EXERCISE_TYPE_LABELS: Record<WarmupExerciseType, string> = {
+  stretch: "스트레칭",
+  cardio: "유산소",
+  strength: "근력",
+  balance: "밸런스",
+  isolation: "아이솔레이션",
+  cooldown: "쿨다운",
+};
+
+const ALL_TYPES: WarmupExerciseType[] = [
+  "stretch",
+  "cardio",
+  "strength",
+  "balance",
+  "isolation",
+  "cooldown",
+];
 
 // ============================================
 // 타이머 로직 훅 (setInterval 기반)
@@ -53,7 +78,6 @@ type TimerState =
 function useRoutineTimer(exercises: WarmupExercise[]) {
   const [state, setState] = useState<TimerState>({ phase: "idle" });
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // setState를 거치지 않고 현재 상태를 즉시 읽기 위한 ref
   const stateRef = useRef<TimerState>({ phase: "idle" });
 
   const setStateSync = useCallback((next: TimerState) => {
@@ -82,7 +106,6 @@ function useRoutineTimer(exercises: WarmupExercise[]) {
             stateRef.current = next;
             return next;
           }
-          // 이 구간 완료 → 다음으로
           const nextIndex = prev.exerciseIndex + 1;
           if (nextIndex >= exercises.length) {
             const finished: TimerState = { phase: "finished" };
@@ -92,7 +115,7 @@ function useRoutineTimer(exercises: WarmupExercise[]) {
           const next: TimerState = {
             phase: "running",
             exerciseIndex: nextIndex,
-            remaining: exercises[nextIndex].durationSeconds,
+            remaining: exercises[nextIndex].duration,
           };
           stateRef.current = next;
           return next;
@@ -102,23 +125,20 @@ function useRoutineTimer(exercises: WarmupExercise[]) {
     [clearTick, exercises]
   );
 
-  // exercises 변경 시 idle 상태로 리셋
   useEffect(() => {
     clearTick();
     setStateSync({ phase: "idle" });
   }, [exercises, clearTick, setStateSync]);
 
-  // 타이머가 finished 되면 interval 정리
   useEffect(() => {
     if (state.phase === "finished") clearTick();
   }, [state.phase, clearTick]);
 
-  // unmount 정리
   useEffect(() => () => clearTick(), [clearTick]);
 
   const start = useCallback(() => {
     if (exercises.length === 0) return;
-    startFrom(0, exercises[0].durationSeconds);
+    startFrom(0, exercises[0].duration);
   }, [exercises, startFrom]);
 
   const pause = useCallback(() => {
@@ -145,7 +165,7 @@ function useRoutineTimer(exercises: WarmupExercise[]) {
       setStateSync({ phase: "finished" });
       return;
     }
-    startFrom(nextIndex, exercises[nextIndex].durationSeconds);
+    startFrom(nextIndex, exercises[nextIndex].duration);
   }, [exercises, clearTick, setStateSync, startFrom]);
 
   const reset = useCallback(() => {
@@ -181,14 +201,13 @@ function TimerPanel({ exercises, onClose }: TimerPanelProps) {
   const remaining =
     (isRunning || isPaused) && "remaining" in state ? state.remaining : 0;
 
-  // 전체 진행률 계산
-  const totalDuration = exercises.reduce((s, e) => s + e.durationSeconds, 0);
+  const totalDuration = exercises.reduce((s, e) => s + e.duration, 0);
   let elapsedSec = 0;
   if ((isRunning || isPaused) && "exerciseIndex" in state) {
     for (let i = 0; i < state.exerciseIndex; i++) {
-      elapsedSec += exercises[i].durationSeconds;
+      elapsedSec += exercises[i].duration;
     }
-    elapsedSec += (exercises[state.exerciseIndex]?.durationSeconds ?? 0) - remaining;
+    elapsedSec += (exercises[state.exerciseIndex]?.duration ?? 0) - remaining;
   } else if (isFinished) {
     elapsedSec = totalDuration;
   }
@@ -196,7 +215,6 @@ function TimerPanel({ exercises, onClose }: TimerPanelProps) {
 
   return (
     <div className="rounded-lg border bg-background p-4 space-y-3">
-      {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-sm font-medium">
           <Timer className="h-4 w-4 text-primary" />
@@ -215,7 +233,6 @@ function TimerPanel({ exercises, onClose }: TimerPanelProps) {
         </Button>
       </div>
 
-      {/* 현재 동작 + 남은 시간 */}
       {isFinished ? (
         <div className="flex flex-col items-center gap-1 py-4 rounded-md bg-green-50 dark:bg-green-950/20">
           <span className="text-2xl">완료!</span>
@@ -249,7 +266,6 @@ function TimerPanel({ exercises, onClose }: TimerPanelProps) {
         </div>
       )}
 
-      {/* 진행 바 */}
       {!isIdle && (
         <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
           <div
@@ -259,7 +275,6 @@ function TimerPanel({ exercises, onClose }: TimerPanelProps) {
         </div>
       )}
 
-      {/* 동작 목록 (진행 상태 표시) */}
       <div className="space-y-1 max-h-40 overflow-y-auto">
         {exercises.map((ex, idx) => {
           const isCurrent =
@@ -284,13 +299,12 @@ function TimerPanel({ exercises, onClose }: TimerPanelProps) {
               <span>
                 {idx + 1}. {ex.name}
               </span>
-              <span className="font-mono">{formatMMSS(ex.durationSeconds)}</span>
+              <span className="font-mono">{formatMMSS(ex.duration)}</span>
             </div>
           );
         })}
       </div>
 
-      {/* 컨트롤 버튼 */}
       <div className="flex gap-1.5">
         {isIdle && (
           <Button
@@ -358,12 +372,20 @@ function TimerPanel({ exercises, onClose }: TimerPanelProps) {
 // ============================================
 
 type AddExerciseFormProps = {
-  onAdd: (exercise: Omit<WarmupExercise, "id">) => void;
+  onAdd: (
+    name: string,
+    type: WarmupExerciseType,
+    duration: number,
+    repetitions?: number,
+    description?: string,
+    bodyPart?: string
+  ) => void;
   onCancel: () => void;
 };
 
 function AddExerciseForm({ onAdd, onCancel }: AddExerciseFormProps) {
   const [name, setName] = useState("");
+  const [type, setType] = useState<WarmupExerciseType>("stretch");
   const [duration, setDuration] = useState("30");
   const [description, setDescription] = useState("");
 
@@ -378,7 +400,7 @@ function AddExerciseForm({ onAdd, onCancel }: AddExerciseFormProps) {
       toast.error("올바른 시간(초)을 입력해주세요.");
       return;
     }
-    onAdd({ name: trimmedName, durationSeconds: sec, description: description.trim() });
+    onAdd(trimmedName, type, sec, undefined, description.trim() || undefined, undefined);
   };
 
   return (
@@ -408,6 +430,18 @@ function AddExerciseForm({ onAdd, onCancel }: AddExerciseFormProps) {
           <span className="text-xs text-muted-foreground shrink-0">초</span>
         </div>
       </div>
+      <Select value={type} onValueChange={(v) => setType(v as WarmupExerciseType)}>
+        <SelectTrigger className="h-7 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {ALL_TYPES.map((t) => (
+            <SelectItem key={t} value={t} className="text-xs">
+              {EXERCISE_TYPE_LABELS[t]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       <Textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
@@ -443,70 +477,84 @@ function AddExerciseForm({ onAdd, onCancel }: AddExerciseFormProps) {
 type RoutineTabPanelProps = {
   routineId: string;
   exercises: WarmupExercise[];
-  onAddExercise: (ex: Omit<WarmupExercise, "id">) => void;
+  onAddExercise: (
+    name: string,
+    type: WarmupExerciseType,
+    duration: number,
+    repetitions?: number,
+    description?: string,
+    bodyPart?: string
+  ) => void;
   onRemoveExercise: (exerciseId: string) => void;
-  onReorder: (fromIndex: number, toIndex: number) => void;
-  maxExercises: number;
+  onMoveExercise: (exerciseId: string, direction: "up" | "down") => void;
 };
 
 function RoutineTabPanel({
   exercises,
   onAddExercise,
   onRemoveExercise,
-  onReorder,
-  maxExercises,
+  onMoveExercise,
 }: RoutineTabPanelProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
 
-  const handleAdd = (ex: Omit<WarmupExercise, "id">) => {
-    onAddExercise(ex);
+  const sortedExercises = [...exercises].sort((a, b) => a.order - b.order);
+
+  const handleAdd = (
+    name: string,
+    type: WarmupExerciseType,
+    duration: number,
+    repetitions?: number,
+    description?: string,
+    bodyPart?: string
+  ) => {
+    onAddExercise(name, type, duration, repetitions, description, bodyPart);
     setShowAddForm(false);
     toast.success("동작이 추가되었습니다.");
   };
 
   return (
     <div className="space-y-3 pt-2">
-      {/* 타이머 패널 */}
       {showTimer && (
-        <TimerPanel exercises={exercises} onClose={() => setShowTimer(false)} />
+        <TimerPanel exercises={sortedExercises} onClose={() => setShowTimer(false)} />
       )}
 
-      {/* 동작 목록 */}
-      {exercises.length === 0 ? (
+      {sortedExercises.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-3">
           아직 동작이 없습니다. 동작을 추가해주세요.
         </p>
       ) : (
         <div className="space-y-1">
-          {exercises.map((ex, idx) => (
+          {sortedExercises.map((ex, idx) => (
             <div
               key={ex.id}
               className="flex items-start gap-2 rounded-md border px-2.5 py-2 bg-background text-xs"
             >
-              {/* 순번 */}
               <span className="text-muted-foreground shrink-0 w-4 text-center mt-0.5">
-                {idx + 1}
+                {ex.order}
               </span>
-              {/* 내용 */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="font-medium">{ex.name}</span>
                   <Badge className="text-[10px] px-1.5 py-0 bg-blue-100 text-blue-700 border-blue-200" variant="outline">
-                    {formatMMSS(ex.durationSeconds)}
+                    {formatMMSS(ex.duration)}
                   </Badge>
+                  {ex.repetitions && (
+                    <Badge className="text-[10px] px-1.5 py-0 bg-gray-100 text-gray-600 border-gray-200" variant="outline">
+                      {ex.repetitions}회
+                    </Badge>
+                  )}
                 </div>
                 {ex.description && (
                   <p className="text-muted-foreground mt-0.5 truncate">{ex.description}</p>
                 )}
               </div>
-              {/* 순서 이동 + 삭제 */}
               <div className="flex flex-col gap-0.5 shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-5 w-5 p-0 text-muted-foreground/50 hover:text-foreground"
-                  onClick={() => onReorder(idx, idx - 1)}
+                  onClick={() => onMoveExercise(ex.id, "up")}
                   disabled={idx === 0}
                 >
                   <ArrowUp className="h-3 w-3" />
@@ -515,8 +563,8 @@ function RoutineTabPanel({
                   variant="ghost"
                   size="sm"
                   className="h-5 w-5 p-0 text-muted-foreground/50 hover:text-foreground"
-                  onClick={() => onReorder(idx, idx + 1)}
-                  disabled={idx === exercises.length - 1}
+                  onClick={() => onMoveExercise(ex.id, "down")}
+                  disabled={idx === sortedExercises.length - 1}
                 >
                   <ArrowDown className="h-3 w-3" />
                 </Button>
@@ -537,7 +585,6 @@ function RoutineTabPanel({
         </div>
       )}
 
-      {/* 동작 추가 폼 */}
       {showAddForm ? (
         <AddExerciseForm
           onAdd={handleAdd}
@@ -549,17 +596,13 @@ function RoutineTabPanel({
           size="sm"
           className="h-7 text-xs w-full gap-1"
           onClick={() => setShowAddForm(true)}
-          disabled={exercises.length >= maxExercises}
         >
           <Plus className="h-3 w-3" />
-          {exercises.length >= maxExercises
-            ? `동작 최대 ${maxExercises}개`
-            : "동작 추가"}
+          동작 추가
         </Button>
       )}
 
-      {/* 루틴 시작 버튼 */}
-      {!showTimer && exercises.length > 0 && (
+      {!showTimer && sortedExercises.length > 0 && (
         <Button
           className="w-full h-8 text-xs gap-1"
           onClick={() => setShowTimer(true)}
@@ -577,15 +620,15 @@ function RoutineTabPanel({
 // ============================================
 
 type AddRoutineFormProps = {
-  onAdd: (title: string) => void;
+  onAdd: (name: string) => void;
   onCancel: () => void;
 };
 
 function AddRoutineForm({ onAdd, onCancel }: AddRoutineFormProps) {
-  const [title, setTitle] = useState("");
+  const [name, setName] = useState("");
 
   const handleSubmit = () => {
-    const trimmed = title.trim();
+    const trimmed = name.trim();
     if (!trimmed) {
       toast.error("루틴 이름을 입력해주세요.");
       return;
@@ -596,8 +639,8 @@ function AddRoutineForm({ onAdd, onCancel }: AddRoutineFormProps) {
   return (
     <div className="flex items-center gap-1.5 pt-1">
       <Input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
         placeholder="루틴 이름 (예: 기본 스트레칭)"
         className="h-7 text-xs flex-1"
         onKeyDown={(e) => {
@@ -610,7 +653,7 @@ function AddRoutineForm({ onAdd, onCancel }: AddRoutineFormProps) {
         size="sm"
         className="h-7 text-xs shrink-0"
         onClick={handleSubmit}
-        disabled={!title.trim()}
+        disabled={!name.trim()}
       >
         추가
       </Button>
@@ -641,16 +684,13 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
 
   const {
     routines,
-    maxRoutines,
-    maxExercises,
-    addRoutine,
+    createRoutine,
     deleteRoutine,
     addExercise,
     removeExercise,
-    reorderExercises,
+    moveExercise,
   } = useWarmupRoutine(groupId);
 
-  // 루틴이 생기면 첫 탭 자동 선택
   useEffect(() => {
     if (routines.length > 0 && !activeTab) {
       setActiveTab(routines[0].id);
@@ -660,28 +700,22 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
     }
   }, [routines, activeTab]);
 
-  const handleAddRoutine = (title: string) => {
-    const ok = addRoutine(title);
-    if (!ok) {
-      toast.error(`루틴은 최대 ${maxRoutines}개까지 만들 수 있습니다.`);
-      return;
-    }
+  const handleAddRoutine = (name: string) => {
+    createRoutine(name, "");
     setShowAddRoutineForm(false);
-    toast.success(`루틴 "${title}"이(가) 추가되었습니다.`);
+    toast.success(`루틴 "${name}"이(가) 추가되었습니다.`);
   };
 
-  const handleDeleteRoutine = (routineId: string, title: string) => {
+  const handleDeleteRoutine = (routineId: string, name: string) => {
     deleteRoutine(routineId);
-    toast.success(`루틴 "${title}"이(가) 삭제되었습니다.`);
+    toast.success(`루틴 "${name}"이(가) 삭제되었습니다.`);
   };
 
-  // 총 소요 시간 (모든 루틴 합산이 아닌, 현재 선택 루틴 기준)
   const activeRoutine = routines.find((r) => r.id === activeTab);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <div className="rounded-lg border bg-card">
-        {/* 카드 헤더 */}
         <CollapsibleTrigger asChild>
           <button className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/30 transition-colors rounded-lg">
             <div className="flex items-center gap-2">
@@ -706,7 +740,6 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
           </button>
         </CollapsibleTrigger>
 
-        {/* 카드 내용 */}
         <CollapsibleContent>
           <div className="px-4 pb-4 space-y-3">
             {routines.length === 0 ? (
@@ -718,7 +751,6 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
                 value={activeTab}
                 onValueChange={setActiveTab}
               >
-                {/* 탭 목록 */}
                 <div className="flex items-start gap-1.5 flex-wrap">
                   <TabsList className="h-auto flex-wrap gap-0.5 bg-muted/50 p-0.5">
                     {routines.map((r) => (
@@ -727,16 +759,14 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
                         value={r.id}
                         className="h-6 text-xs px-2.5 data-[state=active]:bg-background"
                       >
-                        {r.title}
+                        {r.name}
                       </TabsTrigger>
                     ))}
                   </TabsList>
                 </div>
 
-                {/* 탭 내용 */}
                 {routines.map((r) => (
                   <TabsContent key={r.id} value={r.id} className="mt-0">
-                    {/* 루틴 헤더 (삭제 버튼) */}
                     <div className="flex items-center justify-between pt-1 pb-0.5">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs text-muted-foreground">
@@ -745,12 +775,17 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
                         <Badge className="text-[10px] px-1.5 py-0 bg-orange-100 text-orange-700 border-orange-200" variant="outline">
                           {formatMMSS(r.totalDuration)}
                         </Badge>
+                        {r.createdBy && (
+                          <span className="text-[10px] text-muted-foreground/60">
+                            by {r.createdBy}
+                          </span>
+                        )}
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 p-0 text-muted-foreground/50 hover:text-destructive"
-                        onClick={() => handleDeleteRoutine(r.id, r.title)}
+                        onClick={() => handleDeleteRoutine(r.id, r.name)}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -759,17 +794,17 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
                     <RoutineTabPanel
                       routineId={r.id}
                       exercises={r.exercises}
-                      maxExercises={maxExercises}
-                      onAddExercise={(ex) => addExercise(r.id, ex)}
+                      onAddExercise={(name, type, duration, repetitions, description, bodyPart) =>
+                        addExercise(r.id, name, type, duration, repetitions, description, bodyPart)
+                      }
                       onRemoveExercise={(exId) => removeExercise(r.id, exId)}
-                      onReorder={(from, to) => reorderExercises(r.id, from, to)}
+                      onMoveExercise={(exId, direction) => moveExercise(r.id, exId, direction)}
                     />
                   </TabsContent>
                 ))}
               </Tabs>
             )}
 
-            {/* 루틴 추가 */}
             {showAddRoutineForm ? (
               <AddRoutineForm
                 onAdd={handleAddRoutine}
@@ -781,12 +816,9 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
                 size="sm"
                 className="h-7 text-xs w-full gap-1"
                 onClick={() => setShowAddRoutineForm(true)}
-                disabled={routines.length >= maxRoutines}
               >
                 <Plus className="h-3 w-3" />
-                {routines.length >= maxRoutines
-                  ? `루틴 최대 ${maxRoutines}개`
-                  : "루틴 추가"}
+                루틴 추가
               </Button>
             )}
           </div>

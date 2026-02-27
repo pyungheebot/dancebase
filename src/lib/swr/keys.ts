@@ -923,4 +923,24 @@ export const swrKeys = {
   // 연습곡 플레이리스트 카드 (localStorage 기반)
   practicePlaylist: (groupId: string) =>
     `practice-playlist-${groupId}` as const,
+
+  // 워밍업 루틴 (localStorage 기반)
+  warmupRoutine: (groupId: string) =>
+    `warmup-routine-${groupId}` as const,
+
+  // 멤버 출석 보상 (localStorage 기반)
+  attendanceReward: (groupId: string) =>
+    `attendance-reward-${groupId}` as const,
+
+  // 안무 구간 분석 (localStorage 기반)
+  choreoSection: (groupId: string, projectId: string) =>
+    `choreo-section-${groupId}-${projectId}` as const,
+
+  // 그룹 일정 충돌 감지 (localStorage 기반)
+  scheduleConflict: (groupId: string) =>
+    `schedule-conflict-${groupId}` as const,
+
+  // 공연 백스테이지 체크 (localStorage 기반)
+  backstageCheck: (groupId: string, projectId: string) =>
+    `backstage-check-${groupId}-${projectId}` as const,
 };

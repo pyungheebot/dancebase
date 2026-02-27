@@ -4734,20 +4734,7 @@ export type ExpenseSplitSession = {
 // Warmup Routine (워밍업 루틴)
 // ============================================
 
-export type WarmupExercise = {
-  id: string;
-  name: string;            // 동작명
-  durationSeconds: number; // 초 단위
-  description: string;
-};
-
-export type WarmupRoutine = {
-  id: string;
-  title: string;           // "기본 스트레칭", "힙합 워밍업" 등
-  exercises: WarmupExercise[];
-  totalDuration: number;   // 초 단위 합계
-  createdAt: string;
-};
+// WarmupExerciseType, WarmupExercise, WarmupRoutine 타입은 파일 하단(PracticePlaylistData 섹션 뒤)에 정의됨
 
 // ============================================
 // Attendance Streak (출석 스트릭 트래커)
@@ -6860,4 +6847,155 @@ export type PracticePlaylistData = {
   name: string;
   tracks: PracticeTrack[];
   createdAt: string;
+};
+
+// ============================================
+// 워밍업 루틴
+// ============================================
+
+export type WarmupExerciseType =
+  | "stretch"
+  | "cardio"
+  | "strength"
+  | "balance"
+  | "isolation"
+  | "cooldown";
+
+export type WarmupExercise = {
+  id: string;
+  name: string;
+  type: WarmupExerciseType;
+  duration: number; // 초
+  repetitions?: number;
+  description?: string;
+  bodyPart: string;
+  order: number;
+};
+
+export type WarmupRoutine = {
+  id: string;
+  name: string;
+  exercises: WarmupExercise[];
+  totalDuration: number; // 초, 자동계산
+  createdBy: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 멤버 출석 보상
+// ============================================================
+
+export type AttendanceRewardTier =
+  | "bronze"
+  | "silver"
+  | "gold"
+  | "platinum"
+  | "diamond";
+
+export type AttendanceRewardRule = {
+  id: string;
+  tier: AttendanceRewardTier;
+  requiredAttendance: number; // 필요 출석률 (%)
+  rewardName: string;
+  rewardDescription: string;
+  points: number;
+  createdAt: string;
+};
+
+export type MemberRewardRecord = {
+  id: string;
+  memberName: string;
+  tier: AttendanceRewardTier;
+  earnedAt: string;
+  attendanceRate: number; // 출석률 (%)
+  points: number;
+};
+
+// ============================================
+// 안무 구간 분석
+// ============================================
+
+export type ChoreoSectionDifficulty = 1 | 2 | 3 | 4 | 5;
+
+export type ChoreoSectionEntry = {
+  id: string;
+  name: string;
+  startTime: string; // MM:SS
+  endTime: string;   // MM:SS
+  difficulty: ChoreoSectionDifficulty;
+  completionRate: number; // 0~100
+  keyMoves: string[];
+  assignedMembers: string[];
+  notes?: string;
+  order: number;
+  createdAt: string;
+};
+
+// ============================================
+// 그룹 일정 충돌 감지
+// ============================================
+
+export type PersonalScheduleType =
+  | "work"
+  | "school"
+  | "appointment"
+  | "travel"
+  | "family"
+  | "other";
+
+export type PersonalScheduleEntry = {
+  id: string;
+  memberName: string;
+  title: string;
+  type: PersonalScheduleType;
+  date: string; // YYYY-MM-DD (반복 일정일 경우 최초 날짜)
+  startTime: string; // HH:MM
+  endTime: string; // HH:MM
+  recurring: boolean;
+  recurringDay?: number; // 0=일요일 ~ 6=토요일
+  createdAt: string;
+};
+
+export type ScheduleConflictResult = {
+  memberName: string;
+  personalSchedule: PersonalScheduleEntry;
+  conflictDate: string; // YYYY-MM-DD
+  overlapMinutes: number;
+};
+
+// ============================================
+// 공연 백스테이지 체크
+// ============================================
+
+export type BackstageCategory =
+  | "sound"
+  | "lighting"
+  | "costume"
+  | "props"
+  | "safety"
+  | "communication"
+  | "other";
+
+export type BackstageCheckItem = {
+  id: string;
+  category: BackstageCategory;
+  title: string;
+  description?: string;
+  assignedTo?: string;
+  checked: boolean;
+  checkedAt?: string;
+  checkedBy?: string;
+  priority: "high" | "medium" | "low";
+  order: number;
+  createdAt: string;
+};
+
+export type BackstageCheckSession = {
+  id: string;
+  eventName: string;
+  eventDate: string;
+  items: BackstageCheckItem[];
+  startedAt: string;
+  completedAt?: string;
+  notes?: string;
 };
