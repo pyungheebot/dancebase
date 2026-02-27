@@ -33,10 +33,17 @@ export const swrKeys = {
   boardNotices: (groupId: string, projectId?: string | null) =>
     `/groups/${groupId}/board-notices${projectId ? `?project=${projectId}` : ""}` as const,
   boardTrash: (groupId: string) => `/groups/${groupId}/board-trash` as const,
+  postBookmarks: (groupId?: string | null) =>
+    `/post-bookmarks${groupId ? `?group=${groupId}` : ""}` as const,
+  postBookmark: (postId: string) => `/post-bookmarks/${postId}` as const,
 
   // 회비
   finance: (groupId: string, projectId?: string | null) =>
     `/groups/${groupId}/finance${projectId ? `?project=${projectId}` : ""}` as const,
+
+  // 미납 멤버 (독촉 알림용)
+  unpaidMembers: (groupId: string, projectId?: string | null) =>
+    `/groups/${groupId}/unpaid-members${projectId ? `?project=${projectId}` : ""}` as const,
 
   // 프로젝트 비용 분석
   projectCostAnalytics: (groupId: string, projectId: string) =>
@@ -183,4 +190,8 @@ export const swrKeys = {
   // 역할 승격 후보
   rolePromotionCandidates: (groupId: string) =>
     `/groups/${groupId}/role-promotion-candidates` as const,
+
+  // 출석 목표
+  attendanceGoal: (groupId: string) =>
+    `/groups/${groupId}/attendance-goal` as const,
 };

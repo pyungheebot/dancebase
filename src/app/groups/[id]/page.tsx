@@ -8,6 +8,7 @@ import { DashboardContent } from "@/components/dashboard/dashboard-content";
 import { InviteModal } from "@/components/groups/invite-modal";
 import { GroupStatsCards } from "@/components/groups/group-stats-cards";
 import { GroupHealthCard } from "@/components/groups/group-health-card";
+import { RoleOnboardingChecklist } from "@/components/groups/role-onboarding-checklist";
 import { Badge } from "@/components/ui/badge";
 import { LeaderInfo } from "@/components/ui/leader-info";
 
@@ -51,6 +52,17 @@ export default function GroupDetailPage({
           ) : (
             <div className="mb-3" />
           )}
+
+          <RoleOnboardingChecklist
+            groupId={ctx.groupId}
+            role={
+              ctx.permissions.canEdit
+                ? "leader"
+                : ctx.permissions.canManageMembers
+                  ? "sub_leader"
+                  : "member"
+            }
+          />
 
           <GroupStatsCards groupId={ctx.groupId} memberCount={ctx.members.length} />
 

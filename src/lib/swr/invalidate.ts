@@ -37,6 +37,13 @@ export function invalidateFinance(groupId: string, projectId?: string | null) {
   }
 }
 
+export function invalidateUnpaidMembers(groupId: string, projectId?: string | null) {
+  mutate(swrKeys.unpaidMembers(groupId, projectId));
+  if (projectId) {
+    mutate(swrKeys.unpaidMembers(groupId));
+  }
+}
+
 export function invalidateFinanceBudget(entityType: string, entityId: string, yearMonth: string) {
   mutate(swrKeys.financeBudget(entityType, entityId, yearMonth));
 }
@@ -75,6 +82,14 @@ export function invalidateBoardPostAttachments(postId: string) {
 
 export function invalidateBoardPostLikes(postId: string) {
   mutate(swrKeys.boardPostLikes(postId));
+}
+
+export function invalidatePostBookmarks(postId?: string, groupId?: string | null) {
+  mutate(swrKeys.postBookmarks(groupId));
+  mutate(swrKeys.postBookmarks());
+  if (postId) {
+    mutate(swrKeys.postBookmark(postId));
+  }
 }
 
 export function invalidateBoardCategories(groupId: string) {
@@ -199,4 +214,8 @@ export function invalidatePermissionAudits(groupId: string) {
 
 export function invalidateRolePromotionCandidates(groupId: string) {
   mutate(swrKeys.rolePromotionCandidates(groupId));
+}
+
+export function invalidateAttendanceGoal(groupId: string) {
+  mutate(swrKeys.attendanceGoal(groupId));
 }

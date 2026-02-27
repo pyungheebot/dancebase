@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { BoardBookmarkButton } from "@/components/board/board-bookmark-button";
 import { ArrowLeft, Loader2, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -49,15 +50,21 @@ export default function BoardPostPage({
   const handleTogglePin = async () => {
     if (!post) return;
     setPinning(true);
-    const newPinned = !post.is_pinned;
+    const isPinned = post.pinned_at !== null;
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
+    const updateData = isPinned
+      ? { pinned_at: null, pinned_by: null }
+      : { pinned_at: new Date().toISOString(), pinned_by: currentUser?.id ?? null };
     const { error } = await supabase
       .from("board_posts")
-      .update({ is_pinned: newPinned })
+      .update(updateData)
       .eq("id", postId);
     if (error) {
       toast.error("고정 설정에 실패했습니다");
     } else {
-      toast.success(newPinned ? "공지로 고정했습니다" : "고정 해제했습니다");
+      toast.success(isPinned ? "고정을 해제했습니다" : "게시글을 상단에 고정했습니다");
       refetch();
     }
     setPinning(false);
@@ -121,22 +128,32 @@ export default function BoardPostPage({
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
               {post.category}
             </Badge>
-            {post.is_pinned && <Pin className="h-3 w-3 text-primary" />}
+            {post.pinned_at !== null && (
+              <>
+                <Pin className="h-3 w-3 text-primary" />
+                <Badge className="text-[10px] px-1.5 py-0 font-normal bg-primary/15 text-primary border-primary/20 hover:bg-primary/15">
+                  고정된 게시글
+                </Badge>
+              </>
+            )}
           </div>
           <div className="flex items-start justify-between">
             <h1 className="text-base font-semibold">{post.title}</h1>
+            <div className="flex items-center gap-1 shrink-0 ml-2">
+              {/* 북마크 버튼 (모든 유저) */}
+              <BoardBookmarkButton postId={postId} groupId={id} />
             {canEditOrDelete && (
-              <div className="flex items-center gap-1 shrink-0 ml-2">
+              <>
                 {canPin && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-7 w-7 ${post.is_pinned ? "text-primary" : "text-muted-foreground"}`}
+                    className={`h-7 w-7 ${post.pinned_at !== null ? "text-primary" : "text-muted-foreground"}`}
                     onClick={handleTogglePin}
                     disabled={pinning}
-                    aria-label={post.is_pinned ? "고정 해제" : "공지 고정"}
+                    aria-label={post.pinned_at !== null ? "고정 해제" : "상단 고정"}
                   >
-                    {post.is_pinned ? (
+                    {post.pinned_at !== null ? (
                       <Pin className="h-3.5 w-3.5 fill-current" />
                     ) : (
                       <PinOff className="h-3.5 w-3.5" />
@@ -162,8 +179,9 @@ export default function BoardPostPage({
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
-              </div>
+              </>
             )}
+            </div>
           </div>
           <div className="flex items-center gap-2 mt-2">
             <Avatar className="h-6 w-6">

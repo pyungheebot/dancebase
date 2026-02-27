@@ -38,7 +38,7 @@ export function useBoard(groupId: string, projectId?: string | null) {
         )
         .eq("group_id", groupId)
         .is("deleted_at", null)
-        .order("is_pinned", { ascending: false })
+        .order("pinned_at", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false });
 
       if (projectId) {

@@ -454,6 +454,8 @@ export type BoardPost = {
   title: string;
   content: string;
   is_pinned: boolean;
+  pinned_at: string | null;
+  pinned_by: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -520,6 +522,19 @@ export type BoardPostLike = {
   post_id: string;
   user_id: string;
   created_at: string;
+};
+
+export type PostBookmark = {
+  id: string;
+  user_id: string;
+  post_id: string;
+  created_at: string;
+};
+
+export type PostBookmarkWithPost = PostBookmark & {
+  board_posts: Pick<BoardPost, "id" | "group_id" | "project_id" | "title" | "category" | "created_at"> & {
+    groups: { id: string; name: string } | null;
+  };
 };
 
 // ============================================
@@ -775,6 +790,19 @@ export type MeetingMinute = {
   created_by: string;
   created_at: string;
   updated_at: string;
+};
+
+// ============================================
+// Attendance Goal (출석 목표)
+// ============================================
+
+export type AttendanceGoal = {
+  id: string;
+  group_id: string;
+  target_rate: number;
+  period: "monthly" | "quarterly";
+  created_by: string;
+  created_at: string;
 };
 
 // ============================================

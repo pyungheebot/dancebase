@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table";
 import { AttendanceAnalytics } from "@/components/attendance/attendance-analytics";
 import { AttendanceReportSection } from "@/components/attendance/attendance-report-section";
+import { AttendanceGoalCard } from "@/components/attendance/attendance-goal-card";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2 } from "lucide-react";
 import { toast } from "sonner";
@@ -584,6 +585,12 @@ export function AttendanceContent({
       {/* ===== 멤버별 보기 ===== */}
       <TabsContent value="by-member">
         <div className="space-y-4">
+          {/* 출석 목표 카드 */}
+          <AttendanceGoalCard
+            groupId={ctx.groupId}
+            canEdit={ctx.permissions.canEdit}
+          />
+
           {/* 기간 필터 */}
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground shrink-0">기간:</span>

@@ -8,13 +8,18 @@ import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, Heart, Pin, FolderOpen, Search, ChevronLeft, ChevronRight, FileText, SearchX } from "lucide-react";
+import { MessageSquare, Heart, Pin, FolderOpen, Search, ChevronLeft, ChevronRight, FileText, SearchX, Bookmark, BookmarkCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BoardPostForm } from "./board-post-form";
 import { BoardNoticeBanner } from "./board-notice-banner";
 import { EmptyState } from "@/components/shared/empty-state";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
+import { invalidateBoard, invalidateBoardPost } from "@/lib/swr/invalidate";
+import { BoardBookmarkButton } from "./board-bookmark-button";
+import type { BoardPostWithDetails } from "@/types";
 
 /** 검색어 하이라이트 컴포넌트 */
 function HighlightText({ text, keyword }: { text: string; keyword: string }) {
@@ -50,6 +55,8 @@ interface BoardPostListProps {
   activePostId?: string;
   /** 글 작성 권한 여부 (EmptyState CTA 표시 제어) */
   canWrite?: boolean;
+  /** 핀/삭제 등 편집 권한 여부 (리더) */
+  canEdit?: boolean;
 }
 
 export function BoardPostList({
@@ -60,6 +67,7 @@ export function BoardPostList({
   hideHeader,
   activePostId,
   canWrite,
+  canEdit,
 }: BoardPostListProps) {
   const { posts, loading, category, setCategory, search, setSearch, page, setPage, totalPages, refetch } = useBoard(groupId, projectId);
   const { filterCategories } = useBoardCategories(groupId);
@@ -69,6 +77,33 @@ export function BoardPostList({
 
   // 글쓰기 폼 오픈 상태 (EmptyState CTA와 공유)
   const [formOpen, setFormOpen] = useState(false);
+
+  // 핀 토글 중인 postId
+  const [pinningId, setPinningId] = useState<string | null>(null);
+
+  const handleTogglePin = async (e: React.MouseEvent, post: BoardPostWithDetails) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (pinningId) return;
+    setPinningId(post.id);
+    const supabase = createClient();
+    const isPinned = post.pinned_at !== null;
+    const updateData = isPinned
+      ? { pinned_at: null, pinned_by: null }
+      : { pinned_at: new Date().toISOString(), pinned_by: (await supabase.auth.getUser()).data.user?.id ?? null };
+    const { error } = await supabase
+      .from("board_posts")
+      .update(updateData)
+      .eq("id", post.id);
+    if (error) {
+      toast.error("고정 설정에 실패했습니다");
+    } else {
+      toast.success(isPinned ? "고정을 해제했습니다" : "게시글을 상단에 고정했습니다");
+      invalidateBoard(groupId);
+      invalidateBoardPost(post.id);
+    }
+    setPinningId(null);
+  };
 
   // 검색어 debounce
   const [searchInput, setSearchInput] = useState(search);
@@ -176,62 +211,97 @@ export function BoardPostList({
           )
         ) : (
           <div className="rounded-lg border divide-y" role="list" aria-label="게시글 목록">
-            {posts.map((post) => (
-              <Link
-                key={post.id}
-                href={getPostHref(post)}
-                role="listitem"
-                aria-label={`${post.title}${post.is_pinned ? ", 고정 게시글" : ""}${post.comment_count > 0 ? `, 댓글 ${post.comment_count}개` : ""}${post.like_count > 0 ? `, 좋아요 ${post.like_count}개` : ""}`}
-                className={cn(
-                  "flex flex-col px-3 py-1.5 hover:bg-accent transition-colors text-xs gap-0.5",
-                  activePostId === post.id && "bg-accent"
-                )}
-              >
-                {/* 상단 행: 핀 + 카테고리 + 프로젝트 + 제목 + 댓글 수 */}
-                <div className="flex items-center gap-1.5">
-                  {post.is_pinned && <Pin className="h-3 w-3 text-primary shrink-0" aria-hidden="true" />}
-                  <Badge variant="secondary" className="text-[10px] px-1 py-0 font-normal shrink-0">
-                    {post.category}
-                  </Badge>
-                  {isIntegrated && post.project_id && post.projects && (
-                    <span className="flex items-center gap-0.5 text-primary/70 shrink-0">
-                      <FolderOpen className="h-3 w-3" aria-hidden="true" />
-                      <span className="text-[10px] hidden sm:inline">{post.projects.name}</span>
-                    </span>
-                  )}
-                  <span className="font-medium truncate">
-                    <HighlightText text={post.title} keyword={search} />
-                  </span>
-                  {post.comment_count > 0 && (
-                    <span
-                      className="flex items-center gap-0.5 text-muted-foreground shrink-0"
-                      aria-label={`댓글 ${post.comment_count}개`}
-                    >
-                      <MessageSquare className="h-2.5 w-2.5" aria-hidden="true" />
-                      <span aria-hidden="true">{post.comment_count}</span>
-                    </span>
-                  )}
-                  {post.like_count > 0 && (
-                    <span
-                      className="flex items-center gap-0.5 text-rose-400 shrink-0"
-                      aria-label={`좋아요 ${post.like_count}개`}
-                    >
-                      <Heart className="h-2.5 w-2.5 fill-current" aria-hidden="true" />
-                      <span aria-hidden="true">{post.like_count}</span>
-                    </span>
-                  )}
+            {posts.map((post) => {
+              const isPinned = post.pinned_at !== null;
+              return (
+                <div key={post.id} role="listitem" className="relative group/row">
+                  <Link
+                    href={getPostHref(post)}
+                    aria-label={`${post.title}${isPinned ? ", 고정 게시글" : ""}${post.comment_count > 0 ? `, 댓글 ${post.comment_count}개` : ""}${post.like_count > 0 ? `, 좋아요 ${post.like_count}개` : ""}`}
+                    className={cn(
+                      "flex flex-col px-3 py-1.5 hover:bg-accent transition-colors text-xs gap-0.5",
+                      activePostId === post.id && "bg-accent",
+                      isPinned && "bg-primary/5"
+                    )}
+                  >
+                    {/* 상단 행: 핀 + 카테고리 + 프로젝트 + 제목 + 댓글 수 */}
+                    <div className="flex items-center gap-1.5">
+                      {isPinned && <Pin className="h-3 w-3 text-primary shrink-0" aria-hidden="true" />}
+                      <Badge variant="secondary" className="text-[10px] px-1 py-0 font-normal shrink-0">
+                        {post.category}
+                      </Badge>
+                      {isPinned && (
+                        <Badge className="text-[10px] px-1 py-0 font-normal shrink-0 bg-primary/15 text-primary border-primary/20 hover:bg-primary/15">
+                          고정
+                        </Badge>
+                      )}
+                      {isIntegrated && post.project_id && post.projects && (
+                        <span className="flex items-center gap-0.5 text-primary/70 shrink-0">
+                          <FolderOpen className="h-3 w-3" aria-hidden="true" />
+                          <span className="text-[10px] hidden sm:inline">{post.projects.name}</span>
+                        </span>
+                      )}
+                      <span className="font-medium truncate">
+                        <HighlightText text={post.title} keyword={search} />
+                      </span>
+                      {post.comment_count > 0 && (
+                        <span
+                          className="flex items-center gap-0.5 text-muted-foreground shrink-0"
+                          aria-label={`댓글 ${post.comment_count}개`}
+                        >
+                          <MessageSquare className="h-2.5 w-2.5" aria-hidden="true" />
+                          <span aria-hidden="true">{post.comment_count}</span>
+                        </span>
+                      )}
+                      {post.like_count > 0 && (
+                        <span
+                          className="flex items-center gap-0.5 text-rose-400 shrink-0"
+                          aria-label={`좋아요 ${post.like_count}개`}
+                        >
+                          <Heart className="h-2.5 w-2.5 fill-current" aria-hidden="true" />
+                          <span aria-hidden="true">{post.like_count}</span>
+                        </span>
+                      )}
+                    </div>
+                    {/* 하단 행: 작성자 + 날짜 */}
+                    <div className="flex items-center gap-1.5 text-muted-foreground text-[10px]">
+                      <span className="truncate max-w-[8rem]">
+                        {nicknameMap?.[post.author_id] || post.profiles?.name}
+                      </span>
+                      <span className="text-muted-foreground/50 shrink-0">
+                        {format(new Date(post.created_at), "M/d", { locale: ko })}
+                      </span>
+                    </div>
+                  </Link>
+                  {/* 오른쪽 액션 버튼 영역 (hover 시 표시) */}
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                    {/* 북마크 버튼 */}
+                    <BoardBookmarkButton
+                      postId={post.id}
+                      groupId={groupId}
+                      compact
+                    />
+                    {/* 핀 토글 버튼 (리더만 노출) */}
+                    {canEdit && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "h-6 w-6",
+                          isPinned ? "text-primary" : "text-muted-foreground"
+                        )}
+                        onClick={(e) => handleTogglePin(e, post)}
+                        disabled={pinningId === post.id}
+                        aria-label={isPinned ? "고정 해제" : "상단 고정"}
+                        title={isPinned ? "고정 해제" : "상단 고정"}
+                      >
+                        <Pin className={cn("h-3 w-3", isPinned && "fill-current")} aria-hidden="true" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                {/* 하단 행: 작성자 + 날짜 */}
-                <div className="flex items-center gap-1.5 text-muted-foreground text-[10px]">
-                  <span className="truncate max-w-[8rem]">
-                    {nicknameMap?.[post.author_id] || post.profiles?.name}
-                  </span>
-                  <span className="text-muted-foreground/50 shrink-0">
-                    {format(new Date(post.created_at), "M/d", { locale: ko })}
-                  </span>
-                </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

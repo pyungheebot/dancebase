@@ -9,6 +9,7 @@ import { FinanceStats } from "@/components/groups/finance-stats";
 import { FinancePaymentStatus } from "@/components/finance/finance-payment-status";
 import { FinanceBudgetTab } from "@/components/finance/finance-budget-tab";
 import { UnpaidSummary } from "@/components/finance/unpaid-summary";
+import { PaymentReminderSection } from "@/components/finance/payment-reminder-section";
 import { FinanceSplitSection } from "@/components/finance/finance-split-section";
 import { ProjectCostAnalytics } from "@/components/finance/project-cost-analytics";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
@@ -629,6 +630,17 @@ export function FinanceContent({
               members={ctx.members}
               nicknameMap={ctx.nicknameMap}
             />
+
+            {/* 독촉 알림 발송 (canEdit 권한자에게만 표시) */}
+            {ctx.permissions.canEdit && (
+              <div className="mt-4">
+                <PaymentReminderSection
+                  groupId={ctx.groupId}
+                  projectId={ctx.projectId}
+                  groupName={ctx.header.name}
+                />
+              </div>
+            )}
           </TabsContent>
 
           {/* 예산 탭 */}
