@@ -4537,3 +4537,90 @@ export type SessionAutoFeedback = {
   customNote: string;      // 리더 커스텀 메모
   createdAt: string;
 };
+
+// ============================================
+// Rehearsal Planner (공연 리허설 플래너)
+// ============================================
+
+export type RehearsalCheckItem = {
+  id: string;
+  title: string;
+  checked: boolean;
+};
+
+export type RehearsalWeek = {
+  weekNumber: number;     // 1-6 (1이 공연 직전 주)
+  label: string;          // "D-42 ~ D-36"
+  goal: string;           // 주차별 목표
+  checks: RehearsalCheckItem[];
+};
+
+export type RehearsalPlan = {
+  id: string;
+  performanceDate: string; // YYYY-MM-DD
+  title: string;
+  weeks: RehearsalWeek[];
+  createdAt: string;
+};
+
+// ============================================
+// Mood Check-in (기분 체크인)
+// ============================================
+
+export type MoodType = "great" | "good" | "okay" | "bad" | "terrible";
+
+export type MoodEntry = {
+  date: string;       // YYYY-MM-DD
+  mood: MoodType;
+  note?: string;      // 한줄 메모 (선택)
+  createdAt: string;
+};
+
+// ============================================
+// Choreography Notes (안무 노트)
+// ============================================
+
+export type ChoreographySection = {
+  id: string;
+  startTime: string;   // "0:00" 형식
+  endTime: string;     // "1:30" 형식
+  title: string;       // "인트로", "버스1" 등
+  description: string; // 동작 설명
+  formation: string;   // 대형 설명
+  createdAt: string;
+};
+
+export type ChoreographyNote = {
+  id: string;
+  projectId: string;
+  title: string;       // 곡명
+  sections: ChoreographySection[];
+  updatedAt: string;
+};
+
+// ============================================
+// Personality Profile (멤버 성격/역할 프로필)
+// ============================================
+
+/** 댄스 역할 선호도 (성격 프로필 전용, DanceRole과 별개) */
+export type PersonalityDanceRole =
+  | "dancer"
+  | "choreographer"
+  | "director"
+  | "support"
+  | "performer";
+
+/** 성격 특성 점수 (1-5점) */
+export type PersonalityTrait = {
+  trait: "리더십" | "창의성" | "체력" | "표현력" | "협동심";
+  score: number; // 1-5
+};
+
+/** 멤버 성격/역할 프로필 (localStorage 저장) */
+export type PersonalityProfile = {
+  userId: string;
+  preferredRoles: PersonalityDanceRole[];
+  traits: PersonalityTrait[];
+  bio: string; // 한줄 소개 (최대 100자)
+  updatedAt: string;
+};

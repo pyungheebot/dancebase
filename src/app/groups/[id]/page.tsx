@@ -21,6 +21,7 @@ import { PracticeStatsCard } from "@/components/groups/practice-stats-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LeaderInfo } from "@/components/ui/leader-info";
+import { GroupPollsCard } from "@/components/groups/group-polls-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -123,6 +124,11 @@ export default function GroupDetailPage({
           <GroupHealthCard groupId={ctx.groupId} />
 
           <PracticeStatsCard groupId={ctx.groupId} />
+
+          <GroupPollsCard
+            groupId={ctx.groupId}
+            canManage={ctx.permissions.canEdit || ctx.permissions.canManageMembers}
+          />
 
           <GroupLinksSection
             groupId={ctx.groupId}
