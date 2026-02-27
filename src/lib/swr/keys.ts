@@ -515,4 +515,16 @@ export const swrKeys = {
   // 멤버 출석 통계
   memberAttendanceStats: (groupId: string, userId: string) =>
     `/groups/${groupId}/member-attendance-stats/${userId}` as const,
+
+  // 출석 시간대 분석
+  attendanceTimeAnalysis: (groupId: string, period: "last30days" | "all") =>
+    `/groups/${groupId}/attendance-time-analysis?period=${period}` as const,
+
+  // 재정 건강도 예측
+  financeForecast: (groupId: string) =>
+    `/groups/${groupId}/finance-forecast` as const,
+
+  // 그룹 멤버 목록 (역할 배지 할당용)
+  groupMembersForRoleBadge: (groupId: string) =>
+    `/groups/${groupId}/members-for-role-badge` as const,
 };

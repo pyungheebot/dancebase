@@ -552,3 +552,12 @@ export function invalidateBudgetSpendingTracker(groupId: string) {
 export function invalidateMemberAttendanceStats(groupId: string, userId: string) {
   mutate(swrKeys.memberAttendanceStats(groupId, userId));
 }
+
+export function invalidateAttendanceTimeAnalysis(groupId: string) {
+  mutate(swrKeys.attendanceTimeAnalysis(groupId, "last30days"));
+  mutate(swrKeys.attendanceTimeAnalysis(groupId, "all"));
+}
+
+export function invalidateFinanceForecast(groupId: string) {
+  mutate(swrKeys.financeForecast(groupId));
+}

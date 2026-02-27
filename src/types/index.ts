@@ -3464,3 +3464,251 @@ export type MemberAttendanceStatsResult = {
   bestDayOfWeek: number | null;
   groupAverageRate: number;
 };
+
+// ============================================
+// Attendance Time Analysis (출석 시간대 분석)
+// ============================================
+
+export type AttendanceTimeSlot = "morning" | "afternoon" | "evening";
+
+export type AttendanceTimeSlotStat = {
+  slot: AttendanceTimeSlot;
+  label: string;
+  range: string;
+  scheduleCount: number;
+  presentCount: number;
+  totalCount: number;
+  rate: number;
+};
+
+export type AttendanceDayOfWeekStat = {
+  dayIndex: number; // 0=월 ~ 6=일
+  dayLabel: string;
+  scheduleCount: number;
+  presentCount: number;
+  totalCount: number;
+  rate: number;
+};
+
+export type AttendanceTimeSlotDayStat = {
+  slot: AttendanceTimeSlot;
+  dayIndex: number;
+  rate: number;
+  scheduleCount: number;
+};
+
+export type AttendanceTimeAnalysisResult = {
+  timeSlots: AttendanceTimeSlotStat[];
+  daysOfWeek: AttendanceDayOfWeekStat[];
+  slotDayCombinations: AttendanceTimeSlotDayStat[];
+  bestSlot: AttendanceTimeSlot | null;
+  bestDay: number | null;
+  bestCombination: { slot: AttendanceTimeSlot; dayIndex: number } | null;
+  totalSchedules: number;
+  analyzedPeriod: "last30days" | "all";
+};
+
+// ============================================
+// Group Announcements (그룹 공지사항)
+// ============================================
+
+export type GroupAnnouncementPriority = "urgent" | "normal" | "low";
+
+export type GroupAnnouncementItem = {
+  id: string;
+  title: string;
+  content: string;
+  priority: GroupAnnouncementPriority;
+  pinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type GroupAnnouncementInput = {
+  title: string;
+  content: string;
+  priority: GroupAnnouncementPriority;
+  pinned: boolean;
+};
+
+// ============================================
+// Schedule Feedback Item (일정 피드백/후기, localStorage 기반)
+// ============================================
+
+export type ScheduleFeedbackMood = "great" | "good" | "ok" | "bad";
+
+export type ScheduleFeedbackItem = {
+  id: string;
+  scheduleId: string;
+  rating: number; // 1-5 별점
+  content: string; // 후기 텍스트 (선택)
+  mood: ScheduleFeedbackMood;
+  createdAt: string; // ISO 날짜 문자열
+};
+
+export const SCHEDULE_FEEDBACK_MOOD_LABELS: Record<ScheduleFeedbackMood, string> = {
+  great: "최고",
+  good: "좋음",
+  ok: "보통",
+  bad: "별로",
+};
+
+export const SCHEDULE_FEEDBACK_MOOD_EMOJI: Record<ScheduleFeedbackMood, string> = {
+  great: "😄",
+  good: "😊",
+  ok: "😐",
+  bad: "😞",
+};
+
+// ============================================
+// Finance Forecast (재정 건강도 예측)
+// ============================================
+
+/** 재정 건강도 레벨 */
+export type FinanceHealthLevel = "안정" | "주의" | "위험";
+
+/** 월별 수입/지출/순이익 데이터 (실제 + 예측) */
+export type FinanceMonthlyData = {
+  /** YYYY-MM 형식 */
+  month: string;
+  /** 한글 월 레이블 (예: "9월") */
+  label: string;
+  /** 수입 합계 */
+  income: number;
+  /** 지출 합계 */
+  expense: number;
+  /** 순이익 (income - expense) */
+  netProfit: number;
+  /** 예측 데이터 여부 (true면 점선 테두리로 표시) */
+  isForecast: boolean;
+};
+
+/** 재정 건강도 예측 전체 결과 */
+export type FinanceForecastResult = {
+  /** 최근 6개월 실제 데이터 + 예측 3개월 (총 9개월) */
+  monthly: FinanceMonthlyData[];
+  /** 현재 재정 건강도 레벨 */
+  healthLevel: FinanceHealthLevel;
+  /** 건강도 판정 근거 메시지 */
+  healthMessage: string;
+  /** 예측 기간 내 예상 평균 순이익 */
+  forecastAvgNetProfit: number;
+  /** 데이터 존재 여부 */
+  hasData: boolean;
+  loading: boolean;
+  refetch: () => void;
+};
+
+// ============================================
+// Member Role Badge (멤버 역할 배지, localStorage 기반)
+// ============================================
+
+/** 역할 배지 색상 */
+export type RoleBadgeColor =
+  | "purple"
+  | "blue"
+  | "green"
+  | "orange"
+  | "red"
+  | "pink";
+
+/** 역할 배지 단일 정의 */
+export type RoleBadge = {
+  id: string;
+  name: string;
+  color: RoleBadgeColor;
+  icon: string; // 이모지
+  description: string;
+  /** 기본 제공 배지 여부 (기본 배지는 삭제 불가) */
+  isDefault: boolean;
+};
+
+/** 그룹별 역할 배지 데이터 (localStorage 저장 단위) */
+export type RoleBadgesData = {
+  badges: RoleBadge[];
+};
+
+/** 멤버별 배지 할당 데이터 (localStorage 저장 단위) */
+export type MemberBadgeAssignments = {
+  /** userId → badgeId[] 매핑 */
+  assignments: Record<string, string[]>;
+};
+
+/** 기본 제공 역할 배지 목록 */
+export const DEFAULT_ROLE_BADGES: RoleBadge[] = [
+  {
+    id: "default-choreographer",
+    name: "안무가",
+    color: "purple",
+    icon: "💃",
+    description: "안무를 창작하거나 주도하는 멤버",
+    isDefault: true,
+  },
+  {
+    id: "default-dj",
+    name: "DJ",
+    color: "blue",
+    icon: "🎵",
+    description: "음악 선곡 및 믹싱을 담당하는 멤버",
+    isDefault: true,
+  },
+  {
+    id: "default-treasurer",
+    name: "총무",
+    color: "green",
+    icon: "💰",
+    description: "회비 및 재정 관리를 담당하는 멤버",
+    isDefault: true,
+  },
+  {
+    id: "default-photographer",
+    name: "사진/영상",
+    color: "orange",
+    icon: "📷",
+    description: "활동 사진 및 영상 촬영을 담당하는 멤버",
+    isDefault: true,
+  },
+];
+
+/** 역할 배지 색상별 Tailwind 클래스 */
+export const ROLE_BADGE_COLOR_CLASSES: Record<
+  RoleBadgeColor,
+  { bg: string; text: string; border: string; dot: string }
+> = {
+  purple: {
+    bg: "bg-purple-50",
+    text: "text-purple-700",
+    border: "border-purple-200",
+    dot: "bg-purple-500",
+  },
+  blue: {
+    bg: "bg-blue-50",
+    text: "text-blue-700",
+    border: "border-blue-200",
+    dot: "bg-blue-500",
+  },
+  green: {
+    bg: "bg-green-50",
+    text: "text-green-700",
+    border: "border-green-200",
+    dot: "bg-green-500",
+  },
+  orange: {
+    bg: "bg-orange-50",
+    text: "text-orange-700",
+    border: "border-orange-200",
+    dot: "bg-orange-500",
+  },
+  red: {
+    bg: "bg-red-50",
+    text: "text-red-700",
+    border: "border-red-200",
+    dot: "bg-red-500",
+  },
+  pink: {
+    bg: "bg-pink-50",
+    text: "text-pink-700",
+    border: "border-pink-200",
+    dot: "bg-pink-500",
+  },
+};
