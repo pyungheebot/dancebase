@@ -12,6 +12,8 @@ import { Progress } from "@/components/ui/progress";
 import { SongNoteSheet } from "@/components/projects/song-note-sheet";
 import { SongPartAssignment } from "@/components/projects/song-part-assignment";
 import { RunthroughModeDialog } from "@/components/projects/runthrough-mode-dialog";
+import { SongReadinessVotePanel } from "@/components/projects/song-readiness-vote";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Music,
   Play,
@@ -25,6 +27,7 @@ import {
   Circle,
   StickyNote,
   Users,
+  BarChart2,
 } from "lucide-react";
 
 interface SongTrackerSectionProps {
@@ -121,91 +124,118 @@ interface SongItemProps {
   onOpenNotes: (song: ProjectSong) => void;
   onOpenParts: (song: ProjectSong) => void;
   canDelete: boolean;
+  groupId: string;
+  userId: string;
+  userName: string;
 }
 
-function SongItem({ song, onCycleStatus, onDelete, onOpenNotes, onOpenParts, canDelete }: SongItemProps) {
+function SongItem({ song, onCycleStatus, onDelete, onOpenNotes, onOpenParts, canDelete, groupId, userId, userName }: SongItemProps) {
   const config = STATUS_CONFIG[song.status];
+  const [voteOpen, setVoteOpen] = useState(false);
 
   return (
-    <div className="flex items-center gap-2 py-1 px-1 rounded hover:bg-muted/30 group">
-      {/* 상태 뱃지 (클릭 시 순환) */}
-      <button
-        type="button"
-        onClick={() => onCycleStatus(song)}
-        title="클릭하여 상태 변경"
-        className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border font-medium transition-colors shrink-0 ${config.badgeClass}`}
-      >
-        {config.icon}
-        {config.label}
-      </button>
-
-      {/* 곡 제목 */}
-      <span
-        className={`text-xs font-medium min-w-0 truncate ${
-          song.status === "mastered"
-            ? "line-through text-muted-foreground"
-            : "text-foreground"
-        }`}
-      >
-        {song.title}
-      </span>
-
-      {/* 아티스트 */}
-      {song.artist && (
-        <span className="text-[10px] text-muted-foreground shrink-0 truncate max-w-[80px]">
-          {song.artist}
-        </span>
-      )}
-
-      {/* 여백 */}
-      <span className="flex-1" />
-
-      {/* 파트 배정 버튼 */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-        onClick={() => onOpenParts(song)}
-        title="파트 배정"
-      >
-        <Users className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-      </Button>
-
-      {/* 메모 버튼 */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-        onClick={() => onOpenNotes(song)}
-        title="연습 메모"
-      >
-        <StickyNote className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-      </Button>
-
-      {/* YouTube 링크 */}
-      {song.youtube_url && (
-        <a
-          href={song.youtube_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 text-red-500 hover:text-red-600 transition-colors"
-          title="YouTube에서 보기"
-          onClick={(e) => e.stopPropagation()}
+    <div>
+      <div className="flex items-center gap-2 py-1 px-1 rounded hover:bg-muted/30 group">
+        {/* 상태 뱃지 (클릭 시 순환) */}
+        <button
+          type="button"
+          onClick={() => onCycleStatus(song)}
+          title="클릭하여 상태 변경"
+          className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border font-medium transition-colors shrink-0 ${config.badgeClass}`}
         >
-          <Youtube className="h-3.5 w-3.5" />
-        </a>
-      )}
+          {config.icon}
+          {config.label}
+        </button>
 
-      {/* 삭제 버튼 */}
-      {canDelete && (
+        {/* 곡 제목 */}
+        <span
+          className={`text-xs font-medium min-w-0 truncate ${
+            song.status === "mastered"
+              ? "line-through text-muted-foreground"
+              : "text-foreground"
+          }`}
+        >
+          {song.title}
+        </span>
+
+        {/* 아티스트 */}
+        {song.artist && (
+          <span className="text-[10px] text-muted-foreground shrink-0 truncate max-w-[80px]">
+            {song.artist}
+          </span>
+        )}
+
+        {/* 여백 */}
+        <span className="flex-1" />
+
+        {/* 완성도 투표 토글 버튼 */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ${voteOpen ? "opacity-100 text-blue-500" : ""}`}
+          onClick={() => setVoteOpen((v) => !v)}
+          title="완성도 투표"
+        >
+          <BarChart2 className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+        </Button>
+
+        {/* 파트 배정 버튼 */}
         <Button
           variant="ghost"
           size="sm"
           className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-          onClick={() => onDelete(song.id)}
+          onClick={() => onOpenParts(song)}
+          title="파트 배정"
         >
-          <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+          <Users className="h-3 w-3 text-muted-foreground hover:text-foreground" />
         </Button>
+
+        {/* 메모 버튼 */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+          onClick={() => onOpenNotes(song)}
+          title="연습 메모"
+        >
+          <StickyNote className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+        </Button>
+
+        {/* YouTube 링크 */}
+        {song.youtube_url && (
+          <a
+            href={song.youtube_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 text-red-500 hover:text-red-600 transition-colors"
+            title="YouTube에서 보기"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Youtube className="h-3.5 w-3.5" />
+          </a>
+        )}
+
+        {/* 삭제 버튼 */}
+        {canDelete && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+            onClick={() => onDelete(song.id)}
+          >
+            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+          </Button>
+        )}
+      </div>
+
+      {/* 완성도 투표 패널 (토글) */}
+      {voteOpen && (
+        <SongReadinessVotePanel
+          songId={song.id}
+          groupId={groupId}
+          userId={userId}
+          userName={userName}
+        />
       )}
     </div>
   );
@@ -337,6 +367,8 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
     deleteSong,
   } = useProjectSongs(ctx.projectId ?? "");
 
+  const { user, profile } = useAuth();
+
   const [notStartedOpen, setNotStartedOpen] = useState(true);
   const [inProgressOpen, setInProgressOpen] = useState(true);
   const [masteredOpen, setMasteredOpen] = useState(false);
@@ -349,6 +381,9 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
 
   const canManage =
     ctx.permissions.canEdit || ctx.permissions.canManageMembers;
+
+  const currentUserId = user?.id ?? "";
+  const currentUserName = profile?.name ?? "익명";
 
   // projectId가 없으면 렌더 안 함
   if (!ctx.projectId) return null;
@@ -429,6 +464,9 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
                         onOpenNotes={setNoteSong}
                         onOpenParts={setPartSong}
                         canDelete={canManage}
+                        groupId={ctx.groupId}
+                        userId={currentUserId}
+                        userName={currentUserName}
                       />
                     ))}
                   </div>
@@ -455,6 +493,9 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
                         onOpenNotes={setNoteSong}
                         onOpenParts={setPartSong}
                         canDelete={canManage}
+                        groupId={ctx.groupId}
+                        userId={currentUserId}
+                        userName={currentUserName}
                       />
                     ))}
                   </div>
@@ -481,6 +522,9 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
                         onOpenNotes={setNoteSong}
                         onOpenParts={setPartSong}
                         canDelete={canManage}
+                        groupId={ctx.groupId}
+                        userId={currentUserId}
+                        userName={currentUserName}
                       />
                     ))}
                   </div>

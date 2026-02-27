@@ -331,4 +331,8 @@ export const swrKeys = {
   // 연습 통계 (월별 연습 횟수·시간·참석 인원)
   practiceStats: (groupId: string) =>
     `practice-stats-${groupId}` as const,
+
+  // 스마트 리마인더 (멤버별 출석 이탈 위험도)
+  smartReminder: (scheduleId: string, groupId: string) =>
+    `/schedules/${scheduleId}/smart-reminder?group=${groupId}` as const,
 };

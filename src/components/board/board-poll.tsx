@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PollShareCard } from "@/components/board/poll-share-card";
 import { AdoptDecisionButton } from "@/components/board/poll-decision-log";
+import { PollCloseAnnounceDialog } from "@/components/board/poll-close-announce-dialog";
 
 interface BoardPollProps {
   poll: BoardPoll;
@@ -20,6 +21,8 @@ interface BoardPollProps {
   postId?: string;
   /** 현재 로그인 사용자 ID */
   currentUserId?: string;
+  /** 결과 공지 버튼 표시 여부 (리더/작성자) */
+  canAnnounce?: boolean;
 }
 
 export function BoardPollView({
@@ -30,6 +33,7 @@ export function BoardPollView({
   groupId,
   postId,
   currentUserId,
+  canAnnounce,
 }: BoardPollProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -113,6 +117,17 @@ export function BoardPollView({
               options={options.map((o) => ({ text: o.text, voteCount: o.vote_count }))}
               totalVotes={totalVotes}
             />
+            {/* 결과 공지 버튼 — 마감된 투표에서만 표시 */}
+            {isExpired && groupId && postId && (
+              <PollCloseAnnounceDialog
+                poll={poll}
+                options={options}
+                postTitle={question ?? "투표"}
+                postId={postId}
+                groupId={groupId}
+                canAnnounce={canAnnounce ?? false}
+              />
+            )}
             {/* 결정 채택 버튼 — 마감된 투표에서만 표시 */}
             {isExpired && groupId && postId && currentUserId && winningOption && (
               <AdoptDecisionButton

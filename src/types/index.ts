@@ -1545,6 +1545,20 @@ export type RunthroughSession = {
 };
 
 // ============================================
+// Song Readiness Vote (연습 곡별 완성도 투표, localStorage 기반)
+// ============================================
+
+export type SongReadinessVote = "not_ready" | "almost" | "ready";
+
+export type SongReadinessEntry = {
+  songId: string;
+  userId: string;
+  userName: string;
+  vote: SongReadinessVote;
+  votedAt: string;
+};
+
+// ============================================
 // Reward Points Shop (포인트 상점, localStorage 기반)
 // ============================================
 
@@ -1580,3 +1594,17 @@ export const POINT_RULES = {
   post: 5,              // 게시글 작성
   rsvp: 3,              // RSVP 응답
 } as const;
+
+// ============================================
+// Schedule Expense (일정별 비용 정산, localStorage 기반)
+// ============================================
+
+export type ScheduleExpense = {
+  id: string;
+  scheduleId: string;
+  title: string;
+  amount: number;
+  paidBy: string; // 결제자 이름
+  category: string; // venue, drink, transport, food, other
+  createdAt: string;
+};

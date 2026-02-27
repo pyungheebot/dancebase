@@ -2,6 +2,7 @@
 
 import { use, useState } from "react";
 import { useGroupEntity } from "@/hooks/use-entity-data";
+import { useAuth } from "@/hooks/use-auth";
 import { EntityPageLayout } from "@/components/layout/entity-page-layout";
 import { EntityNav } from "@/components/layout/entity-nav";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
@@ -13,6 +14,7 @@ import { GroupRulesBanner } from "@/components/groups/group-rules-banner";
 import { PracticePlaylistSection } from "@/components/groups/practice-playlist-section";
 import { PerformanceRecordSection } from "@/components/groups/performance-record-section";
 import { RoleOnboardingChecklist } from "@/components/groups/role-onboarding-checklist";
+import { MemberOnboardingChecklist } from "@/components/members/member-onboarding-checklist";
 import { MonthlyReportDialog } from "@/components/groups/monthly-report-dialog";
 import { GroupActivityFeed } from "@/components/groups/group-activity-feed";
 import { PracticeStatsCard } from "@/components/groups/practice-stats-card";
@@ -29,6 +31,7 @@ export default function GroupDetailPage({
 }) {
   const { id } = use(params);
   const { ctx, loading } = useGroupEntity(id);
+  const { user } = useAuth();
   const [reportOpen, setReportOpen] = useState(false);
 
   return (
@@ -103,6 +106,17 @@ export default function GroupDetailPage({
                   : "member"
             }
           />
+
+          {user && (() => {
+            const myMember = ctx.members.find((m) => m.userId === user.id);
+            return (
+              <MemberOnboardingChecklist
+                groupId={ctx.groupId}
+                userId={user.id}
+                joinedAt={myMember?.joinedAt ?? null}
+              />
+            );
+          })()}
 
           <GroupStatsCards groupId={ctx.groupId} memberCount={ctx.members.length} />
 

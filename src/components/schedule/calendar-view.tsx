@@ -30,7 +30,9 @@ import { ScheduleRetroSheet } from "./schedule-retro-sheet";
 import { ScheduleLocationShare } from "./schedule-location-share";
 import { ScheduleCarpoolSection } from "./schedule-carpool-section";
 import { ScheduleBroadcastDialog } from "./schedule-broadcast-dialog";
+import { SmartReminderDialog } from "./smart-reminder-dialog";
 import { ScheduleDdayTimeline } from "./schedule-dday-timeline";
+import { ScheduleCostSummary } from "./schedule-cost-summary";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
@@ -181,6 +183,24 @@ function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
         goingCount={rsvp?.going ?? 0}
       />
     </div>
+  );
+}
+
+// RSVP going 수를 기본 참석 인원으로 전달하는 비용 정산 wrapper
+function ScheduleCostSummaryWithRsvp({
+  scheduleId,
+  canEdit,
+}: {
+  scheduleId: string;
+  canEdit: boolean;
+}) {
+  const { rsvp } = useScheduleRsvp(scheduleId);
+  return (
+    <ScheduleCostSummary
+      scheduleId={scheduleId}
+      defaultAttendeeCount={rsvp?.going ?? 0}
+      canEdit={canEdit}
+    />
   );
 }
 
@@ -782,6 +802,14 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                 />
               </div>
 
+              {/* 비용 정산 섹션 */}
+              <div className="border-t pt-3">
+                <ScheduleCostSummaryWithRsvp
+                  scheduleId={detailSchedule.id}
+                  canEdit={canEditRoles ?? canEdit ?? false}
+                />
+              </div>
+
               <div className="flex gap-2 flex-wrap">
                 {canEdit && (
                   <>
@@ -851,6 +879,12 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                     schedule={detailSchedule}
                     groupId={groupId}
                     canBroadcast={true}
+                  />
+                )}
+                {groupId && canEdit && (
+                  <SmartReminderDialog
+                    schedule={detailSchedule}
+                    groupId={groupId}
                   />
                 )}
               </div>
