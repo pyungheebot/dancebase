@@ -35,7 +35,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2 } from "lucide-react";
 import { ScheduleFormFields, type ScheduleFieldValues } from "./schedule-form-fields";
+import type { ScheduleFormFieldErrors } from "./schedule-form-fields";
 import type { Schedule } from "@/types";
+import {
+  validateRequired,
+  validateDateRange,
+  validateTimeRange,
+} from "@/lib/validation";
 
 type RecurrenceType = "daily" | "weekly" | "monthly";
 
@@ -123,6 +129,9 @@ export function ScheduleForm({
   const [fields, setFields] = useState<ScheduleFieldValues>(DEFAULT_FIELDS);
   const [date, setDate] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [titleError, setTitleError] = useState<string | null>(null);
+  const [timeError, setTimeError] = useState<string | null>(null);
+  const [dateRangeError, setDateRangeError] = useState<string | null>(null);
   const supabase = createClient();
 
   // Create mode: recurrence
@@ -191,10 +200,29 @@ export function ScheduleForm({
     setStartDate("");
     setEndDate("");
     setError(null);
+    setTitleError(null);
+    setTimeError(null);
+    setDateRangeError(null);
   };
+
+  const validateScheduleForm = (): boolean => {
+    const newTitleError = validateRequired(fields.title, "제목");
+    const newTimeError = validateTimeRange(fields.startTime, fields.endTime);
+    const newDateRangeError = isRecurring ? validateDateRange(startDate, endDate) : null;
+    setTitleError(newTitleError);
+    setTimeError(newTimeError);
+    setDateRangeError(newDateRangeError);
+    return !newTitleError && !newTimeError && !newDateRangeError;
+  };
+
+  const isScheduleFormValid =
+    !validateRequired(fields.title, "제목") &&
+    !validateTimeRange(fields.startTime, fields.endTime) &&
+    !(isRecurring ? validateDateRange(startDate, endDate) : null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateScheduleForm()) return;
     setError(null);
     setLoading(true);
 
@@ -452,26 +480,40 @@ export function ScheduleForm({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="startDate" className="text-xs">시작일</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="endDate" className="text-xs">종료일</Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required
-              />
+          <div className="space-y-1">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="startDate" className="text-xs">
+                  시작일 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setDateRangeError(validateDateRange(e.target.value, endDate));
+                  }}
+                  required
+                  className={dateRangeError ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="endDate" className="text-xs">
+                  종료일 <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    setDateRangeError(validateDateRange(startDate, e.target.value));
+                  }}
+                  required
+                  className={dateRangeError ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
+              </div>
             </div>
           </div>
         </>
@@ -511,10 +553,32 @@ export function ScheduleForm({
       <form onSubmit={handleSubmit} className="space-y-3">
         <ScheduleFormFields
           values={fields}
-          onChange={(partial) => setFields((prev) => ({ ...prev, ...partial }))}
+          onChange={(partial) => {
+            setFields((prev) => ({ ...prev, ...partial }));
+            // 시간 변경 시 실시간 재검증
+            if ("startTime" in partial || "endTime" in partial) {
+              const newStart = "startTime" in partial ? (partial.startTime ?? fields.startTime) : fields.startTime;
+              const newEnd = "endTime" in partial ? (partial.endTime ?? fields.endTime) : fields.endTime;
+              setTimeError(validateTimeRange(newStart, newEnd));
+            }
+            // 제목 변경 시 실시간 재검증
+            if ("title" in partial) {
+              setTitleError(validateRequired(partial.title ?? "", "제목"));
+            }
+          }}
           dateSection={dateSection}
           prefix={isEdit ? "edit" : ""}
+          errors={{
+            title: titleError ?? undefined,
+            timeRange: timeError ?? undefined,
+          } satisfies ScheduleFormFieldErrors}
+          onBlurTitle={() => setTitleError(validateRequired(fields.title, "제목"))}
+          onBlurTime={() => setTimeError(validateTimeRange(fields.startTime, fields.endTime))}
         />
+
+        {dateRangeError && isRecurring && (
+          <p className="text-xs text-destructive">{dateRangeError}</p>
+        )}
 
         {!isEdit && isRecurring && recurringDates.length > 0 && (
           <p className="text-sm text-muted-foreground">
@@ -551,12 +615,12 @@ export function ScheduleForm({
                 </AlertDialogContent>
               </AlertDialog>
             )}
-            <Button type="submit" className="flex-1 h-8 text-sm" disabled={loading}>
+            <Button type="submit" className="flex-1 h-8 text-sm" disabled={loading || !isScheduleFormValid}>
               {loading ? "저장 중..." : "저장"}
             </Button>
           </div>
         ) : (
-          <Button type="submit" className="w-full h-8 text-sm" disabled={loading}>
+          <Button type="submit" className="w-full h-8 text-sm" disabled={loading || !isScheduleFormValid}>
             {loading ? "생성 중..." : "등록"}
           </Button>
         )}

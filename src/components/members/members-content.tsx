@@ -9,6 +9,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -18,6 +19,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -26,10 +37,11 @@ import {
 } from "@/components/ui/select";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { SubgroupInviteFromParent } from "@/components/subgroups/subgroup-invite-from-parent";
-import { Download, Plus, Search, Tags, Trash2 } from "lucide-react";
+import { ChevronDown, Download, Plus, Search, Tags, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { exportToCsv } from "@/lib/export-csv";
 import { getCategoryColorClasses } from "@/types";
+import { EmptyState } from "@/components/shared/empty-state";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -112,6 +124,21 @@ function GroupMembersContent({
   const [roleFilter, setRoleFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("name");
 
+  // 일괄 선택 상태
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkRemoveOpen, setBulkRemoveOpen] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  const supabase = createClient();
+
+  const canManage = ctx.permissions.canManageMembers;
+
+  // 현재 사용자의 group_member id (자기 자신은 선택 불가)
+  const currentUserMemberId = useMemo(
+    () => ctx.members.find((m) => m.userId === currentUserId)?.id ?? null,
+    [ctx.members, currentUserId]
+  );
+
   const handleExportCsv = () => {
     const headers = ["이름", "역할", "가입일"];
     const rows = ctx.members.map((m) => [
@@ -186,6 +213,74 @@ function GroupMembersContent({
 
   const isGrouped = selectedCategory === "all" && !searchQuery.trim() && roleFilter === "all";
   const myRole = ctx.permissions.canEdit ? "leader" : "member";
+
+  // 선택 가능한 멤버 ids (자기 자신 제외)
+  const selectableIds = useMemo(
+    () => filteredMembers.filter((m) => m.id !== currentUserMemberId).map((m) => m.id),
+    [filteredMembers, currentUserMemberId]
+  );
+
+  const allSelected =
+    selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id));
+  const someSelected = selectedIds.size > 0;
+
+  const handleToggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(selectableIds));
+    }
+  };
+
+  const handleToggleSelect = (memberId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(memberId)) {
+        next.delete(memberId);
+      } else {
+        next.add(memberId);
+      }
+      return next;
+    });
+  };
+
+  const handleBulkRoleChange = async (newRole: "leader" | "sub_leader" | "member") => {
+    if (selectedIds.size === 0) return;
+    setBulkLoading(true);
+    const ids = Array.from(selectedIds);
+    const { error } = await supabase
+      .from("group_members")
+      .update({ role: newRole })
+      .in("id", ids);
+    setBulkLoading(false);
+    if (error) {
+      toast.error("역할 변경에 실패했습니다");
+      return;
+    }
+    const roleLabel = newRole === "leader" ? "그룹장" : newRole === "sub_leader" ? "부그룹장" : "멤버";
+    toast.success(`${ids.length}명의 역할이 ${roleLabel}(으)로 변경되었습니다`);
+    setSelectedIds(new Set());
+    onUpdate();
+  };
+
+  const handleBulkRemoveConfirm = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkLoading(true);
+    const ids = Array.from(selectedIds);
+    const { error } = await supabase
+      .from("group_members")
+      .delete()
+      .in("id", ids);
+    setBulkLoading(false);
+    setBulkRemoveOpen(false);
+    if (error) {
+      toast.error("멤버 제거에 실패했습니다");
+      return;
+    }
+    toast.success(`${ids.length}명이 제거되었습니다`);
+    setSelectedIds(new Set());
+    onUpdate();
+  };
 
   return (
     <>
@@ -286,6 +381,72 @@ function GroupMembersContent({
         </Select>
       </div>
 
+      {/* 일괄 선택 툴바 — canManageMembers일 때만 */}
+      {canManage && filteredMembers.length > 0 && (
+        <div className="flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded border bg-muted/40">
+          <Checkbox
+            checked={allSelected}
+            onCheckedChange={handleToggleSelectAll}
+            className="shrink-0"
+            aria-label="전체 선택"
+          />
+          <span className="text-xs text-muted-foreground flex-1">
+            {someSelected ? `${selectedIds.size}명 선택됨` : "전체 선택"}
+          </span>
+          {someSelected && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-[11px] px-2"
+                  disabled={bulkLoading}
+                >
+                  일괄 작업
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[140px]">
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="text-xs">
+                    역할 변경
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      className="text-xs"
+                      onSelect={() => handleBulkRoleChange("leader")}
+                    >
+                      그룹장
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-xs"
+                      onSelect={() => handleBulkRoleChange("sub_leader")}
+                    >
+                      부그룹장
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-xs"
+                      onSelect={() => handleBulkRoleChange("member")}
+                    >
+                      멤버
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-xs"
+                  variant="destructive"
+                  onSelect={() => setBulkRemoveOpen(true)}
+                >
+                  <Trash2 className="h-3 w-3" />
+                  멤버 제거
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      )}
+
       <MemberList
         members={filteredMembers}
         myRole={myRole}
@@ -294,6 +455,20 @@ function GroupMembersContent({
         categories={categories}
         grouped={isGrouped}
         onUpdate={onUpdate}
+        selectable={canManage}
+        selectedIds={selectedIds}
+        onToggleSelect={handleToggleSelect}
+      />
+
+      <ConfirmDialog
+        open={bulkRemoveOpen}
+        onOpenChange={(open) => {
+          if (!open) setBulkRemoveOpen(false);
+        }}
+        title="멤버 일괄 제거"
+        description={`선택한 ${selectedIds.size}명을 그룹에서 제거하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+        onConfirm={handleBulkRemoveConfirm}
+        destructive
       />
 
       <MemberCategoryManager
@@ -507,13 +682,26 @@ function ProjectMembersContent({
         </Select>
       </div>
 
+      {displayedMembers.length === 0 && ctx.members.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="프로젝트 멤버가 없습니다"
+          description="그룹 멤버를 추가해 프로젝트에 참여시켜보세요."
+          action={
+            ctx.permissions.canEdit && availableMembers.length > 0
+              ? { label: "멤버 추가", onClick: () => setAddOpen(true) }
+              : undefined
+          }
+        />
+      ) : displayedMembers.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="검색 결과가 없습니다"
+          description="검색어나 필터를 변경해보세요."
+        />
+      ) : (
       <div className="rounded-lg border divide-y">
-        {displayedMembers.length === 0 ? (
-          <p className="py-6 text-center text-xs text-muted-foreground">
-            검색 결과가 없습니다
-          </p>
-        ) : (
-          displayedMembers.map((member) => {
+        {displayedMembers.map((member) => {
             const displayName = member.nickname || member.profile.name;
             return (
               <div key={member.id} className="flex items-center justify-between px-3 py-2">
@@ -563,9 +751,9 @@ function ProjectMembersContent({
                 )}
               </div>
             );
-          })
-        )}
+          })}
       </div>
+      )}
 
       <ConfirmDialog
         open={!!removeTargetId}

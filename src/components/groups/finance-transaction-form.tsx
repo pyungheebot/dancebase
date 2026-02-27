@@ -24,6 +24,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { FinanceCategory, FinanceTransaction } from "@/types";
+import {
+  validateRequired,
+  validatePositiveNumber,
+  formatCurrency,
+} from "@/lib/validation";
 
 type MemberOption = {
   id: string;
@@ -67,6 +72,8 @@ export function FinanceTransactionForm({
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [loading, setLoading] = useState(false);
+  const [amountError, setAmountError] = useState<string | null>(null);
+  const [titleError, setTitleError] = useState<string | null>(null);
   const supabase = createClient();
 
   // Edit mode: initialize from data
@@ -93,10 +100,25 @@ export function FinanceTransactionForm({
     setTitle("");
     setDescription("");
     setDate(new Date().toISOString().split("T")[0]);
+    setAmountError(null);
+    setTitleError(null);
   };
+
+  const validateForm = (): boolean => {
+    const newAmountError = validatePositiveNumber(amount);
+    const newTitleError = validateRequired(title, "제목");
+    setAmountError(newAmountError);
+    setTitleError(newTitleError);
+    return !newAmountError && !newTitleError;
+  };
+
+  const isFormValid =
+    !validatePositiveNumber(amount) &&
+    !validateRequired(title, "제목");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setLoading(true);
 
     if (isEdit && initialData) {
@@ -199,27 +221,45 @@ export function FinanceTransactionForm({
         )}
 
         <div className="space-y-1">
-          <Label className="text-xs">금액 (원)</Label>
+          <Label className="text-xs">
+            금액 (원) <span className="text-destructive">*</span>
+          </Label>
           <Input
             type="number"
             min="1"
             placeholder="0"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              setAmountError(validatePositiveNumber(e.target.value));
+            }}
+            onBlur={() => setAmountError(validatePositiveNumber(amount))}
             required
-            className="h-8 text-sm"
+            className={`h-8 text-sm${amountError ? " border-destructive focus-visible:ring-destructive" : ""}`}
           />
+          {amountError && (
+            <p className="text-xs text-destructive">{amountError}</p>
+          )}
         </div>
 
         <div className="space-y-1">
-          <Label className="text-xs">제목</Label>
+          <Label className="text-xs">
+            제목 <span className="text-destructive">*</span>
+          </Label>
           <Input
             placeholder="거래 내용"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setTitleError(validateRequired(e.target.value, "제목"));
+            }}
+            onBlur={() => setTitleError(validateRequired(title, "제목"))}
             required
-            className="h-8 text-sm"
+            className={`h-8 text-sm${titleError ? " border-destructive focus-visible:ring-destructive" : ""}`}
           />
+          {titleError && (
+            <p className="text-xs text-destructive">{titleError}</p>
+          )}
         </div>
 
         <div className="space-y-1">
@@ -244,7 +284,7 @@ export function FinanceTransactionForm({
           />
         </div>
 
-        <Button type="submit" className="w-full h-8 text-sm" disabled={loading}>
+        <Button type="submit" className="w-full h-8 text-sm" disabled={loading || !isFormValid}>
           {loading ? "저장 중..." : isEdit ? "수정" : "저장"}
         </Button>
       </form>

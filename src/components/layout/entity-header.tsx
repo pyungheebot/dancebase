@@ -28,12 +28,13 @@ export function EntityHeader({ ctx, leaderLabel, children }: EntityHeaderProps) 
             {ctx.header.name}
             {ctx.header.badge && (
               isGroup ? (
-                <Badge variant="outline" className="text-[9px] px-1 py-0 font-normal">
+                <Badge variant="outline" className="text-[9px] px-1 py-0 font-normal" aria-label={`유형: ${ctx.header.badge}`}>
                   {ctx.header.badge}
                 </Badge>
               ) : (
                 <Badge
                   className={`text-[9px] px-1 py-0 font-normal border-0 ${STATUS_COLORS[ctx.header.badge] || ""}`}
+                  aria-label={`상태: ${ctx.header.badge}`}
                 >
                   {ctx.header.badge}
                 </Badge>
@@ -44,7 +45,9 @@ export function EntityHeader({ ctx, leaderLabel, children }: EntityHeaderProps) 
             <p className="text-[11px] text-muted-foreground truncate">{ctx.header.description}</p>
           )}
         </div>
-        {children}
+        <div role="toolbar" aria-label="헤더 액션">
+          {children}
+        </div>
       </div>
       {leaderLabel && <LeaderInfo label={leaderLabel} leaderNames={leaderNames} />}
     </>

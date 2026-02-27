@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,12 +29,14 @@ export function ConfirmDialog({
   onConfirm,
   destructive,
 }: ConfirmDialogProps) {
+  const descriptionId = useId();
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent aria-describedby={descriptionId}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
+          <AlertDialogDescription id={descriptionId}>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>취소</AlertDialogCancel>

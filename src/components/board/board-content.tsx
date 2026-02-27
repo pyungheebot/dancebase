@@ -17,6 +17,7 @@ export function BoardContent({ ctx }: BoardContentProps) {
         projectId={ctx.projectId}
         basePath={`${ctx.basePath}/board`}
         nicknameMap={ctx.nicknameMap}
+        canWrite={ctx.permissions.canEdit}
       />
     </>
   );

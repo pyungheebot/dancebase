@@ -8,10 +8,12 @@ import { FinancePermissionManager } from "@/components/groups/finance-permission
 import { FinanceStats } from "@/components/groups/finance-stats";
 import { FinancePaymentStatus } from "@/components/finance/finance-payment-status";
 import { FinanceBudgetTab } from "@/components/finance/finance-budget-tab";
+import { UnpaidSummary } from "@/components/finance/unpaid-summary";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
@@ -20,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pencil, Trash2, Download } from "lucide-react";
+import { Pencil, Trash2, Download, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import type { EntityContext } from "@/types/entity-context";
@@ -92,32 +94,58 @@ export function FinanceContent({
   const currentMonth = format(new Date(), "yyyy-MM");
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
 
+  // 거래 유형 필터: "all" | "income" | "expense"
+  const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
+
+  // 텍스트 검색
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
   const isManager = financeRole === "manager";
   const canManage = isManager || ctx.permissions.canEdit;
 
   // 월 옵션 목록
   const monthOptions = useMemo(() => buildMonthOptions(transactions), [transactions]);
 
-  // 선택된 월에 해당하는 거래만 필터링
-  const filteredTransactions = useMemo(() => {
+  // 월 필터 적용
+  const monthFilteredTransactions = useMemo(() => {
     if (selectedMonth === "all") return transactions;
     return transactions.filter((txn) =>
       txn.transaction_date?.startsWith(selectedMonth)
     );
   }, [transactions, selectedMonth]);
 
-  // 선택된 월의 수입/지출/잔액 계산
+  // 거래 유형 + 검색 필터 조합 적용
+  const filteredTransactions = useMemo(() => {
+    let result = monthFilteredTransactions;
+
+    // 유형 필터
+    if (typeFilter !== "all") {
+      result = result.filter((txn) => txn.type === typeFilter);
+    }
+
+    // 텍스트 검색 (제목 대상)
+    const trimmed = searchQuery.trim().toLowerCase();
+    if (trimmed) {
+      result = result.filter((txn) =>
+        txn.title.toLowerCase().includes(trimmed)
+      );
+    }
+
+    return result;
+  }, [monthFilteredTransactions, typeFilter, searchQuery]);
+
+  // 선택된 월의 수입/지출/잔액 계산 (유형 필터/검색 적용 전 기준)
   const monthlyStats = useMemo(() => {
-    const totalIncome = filteredTransactions
+    const totalIncome = monthFilteredTransactions
       .filter((t) => t.type === "income")
       .reduce((sum, t) => sum + t.amount, 0);
-    const totalExpense = filteredTransactions
+    const totalExpense = monthFilteredTransactions
       .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
     const balance = totalIncome - totalExpense;
 
     const byCategory = categories.map((cat) => {
-      const catTxns = filteredTransactions.filter((t) => t.category_id === cat.id);
+      const catTxns = monthFilteredTransactions.filter((t) => t.category_id === cat.id);
       const income = catTxns
         .filter((t) => t.type === "income")
         .reduce((sum, t) => sum + t.amount, 0);
@@ -127,7 +155,7 @@ export function FinanceContent({
       return { category: cat, income, expense };
     });
 
-    const uncategorized = filteredTransactions.filter((t) => !t.category_id);
+    const uncategorized = monthFilteredTransactions.filter((t) => !t.category_id);
     if (uncategorized.length > 0) {
       byCategory.push({
         category: {
@@ -148,7 +176,7 @@ export function FinanceContent({
     }
 
     return { totalIncome, totalExpense, balance, byCategory };
-  }, [filteredTransactions, categories, ctx.groupId]);
+  }, [monthFilteredTransactions, categories, ctx.groupId]);
 
   // 폼에 전달할 멤버 옵션 (GroupMemberWithProfile → { id, name })
   const memberOptions = useMemo(() => {
@@ -320,6 +348,64 @@ export function FinanceContent({
               </div>
             </div>
 
+            {/* 거래 유형 필터 탭 + 검색바 */}
+            <div className="flex items-center gap-2 mb-2">
+              {/* 유형 필터 버튼 그룹 */}
+              <div className="flex items-center rounded-md border overflow-hidden shrink-0">
+                {(
+                  [
+                    { value: "all", label: "전체" },
+                    { value: "income", label: "수입" },
+                    { value: "expense", label: "지출" },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTypeFilter(opt.value)}
+                    className={`px-2.5 h-6 text-[11px] transition-colors ${
+                      typeFilter === opt.value
+                        ? opt.value === "income"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 font-medium"
+                          : opt.value === "expense"
+                          ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 font-medium"
+                          : "bg-muted text-foreground font-medium"
+                        : "bg-background text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 검색바 */}
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="거래 제목 검색"
+                  className="h-6 pl-6 pr-6 text-[11px]"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label="검색어 지우기"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* 미납 현황 요약 카드 */}
+            <UnpaidSummary
+              transactions={transactions}
+              members={ctx.members}
+              nicknameMap={ctx.nicknameMap}
+              selectedMonth={selectedMonth}
+            />
+
             {/* 월별 요약 카드 (전체가 아닌 경우) */}
             {selectedMonth !== "all" && (
               <div className="grid grid-cols-3 gap-2 mb-3">
@@ -352,7 +438,11 @@ export function FinanceContent({
             {/* 거래 목록 */}
             {filteredTransactions.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-8">
-                {selectedMonth === "all"
+                {searchQuery.trim()
+                  ? `"${searchQuery.trim()}"에 해당하는 거래가 없습니다`
+                  : typeFilter !== "all"
+                  ? `${typeFilter === "income" ? "수입" : "지출"} 거래가 없습니다`
+                  : selectedMonth === "all"
                   ? "거래 내역이 없습니다"
                   : `${formatMonthLabel(selectedMonth)}에 거래 내역이 없습니다`}
               </p>

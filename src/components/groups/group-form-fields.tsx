@@ -17,6 +17,12 @@ import {
 import { X } from "lucide-react";
 import type { GroupType, GroupVisibility, GroupJoinPolicy } from "@/types";
 import { GROUP_TYPES } from "@/types";
+import {
+  validateRequired,
+  validateMinLength,
+  validateMaxLength,
+  validatePositiveNumber,
+} from "@/lib/validation";
 
 const COMMON_GENRES = [
   "힙합", "팝핑", "락킹", "왁킹", "하우스", "크럼프",
@@ -43,12 +49,19 @@ export const DEFAULT_GROUP_FORM_VALUES: GroupFormValues = {
   maxMembers: "",
 };
 
+export type GroupFormFieldErrors = {
+  name?: string;
+  maxMembers?: string;
+};
+
 type GroupFormFieldsProps = {
   values: GroupFormValues;
   onChange: <K extends keyof GroupFormValues>(key: K, value: GroupFormValues[K]) => void;
+  errors?: GroupFormFieldErrors;
+  onBlur?: (field: keyof GroupFormFieldErrors) => void;
 };
 
-export function GroupFormFields({ values, onChange }: GroupFormFieldsProps) {
+export function GroupFormFields({ values, onChange, errors = {}, onBlur }: GroupFormFieldsProps) {
   const [genreInput, setGenreInput] = useState("");
 
   const addGenre = (genre: string) => {
@@ -71,14 +84,22 @@ export function GroupFormFields({ values, onChange }: GroupFormFieldsProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="group-name" className="text-xs">그룹 이름</Label>
+            <Label htmlFor="group-name" className="text-xs">
+              그룹 이름 <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="group-name"
               placeholder="예: 서울 힙합 크루"
               value={values.name}
               onChange={(e) => onChange("name", e.target.value)}
+              onBlur={() => onBlur?.("name")}
               required
+              className={errors.name ? "border-destructive focus-visible:ring-destructive" : ""}
             />
+            {errors.name && (
+              <p className="text-xs text-destructive">{errors.name}</p>
+            )}
+            <p className="text-[10px] text-muted-foreground">2~50자 이내로 입력해주세요</p>
           </div>
           <div className="space-y-1">
             <Label htmlFor="group-description" className="text-xs">설명</Label>
@@ -212,8 +233,13 @@ export function GroupFormFields({ values, onChange }: GroupFormFieldsProps) {
             min="1"
             value={values.maxMembers}
             onChange={(e) => onChange("maxMembers", e.target.value)}
+            onBlur={() => onBlur?.("maxMembers")}
             placeholder="무제한"
+            className={errors.maxMembers ? "border-destructive focus-visible:ring-destructive" : ""}
           />
+          {errors.maxMembers && (
+            <p className="text-xs text-destructive">{errors.maxMembers}</p>
+          )}
           <p className="text-xs text-muted-foreground">비워두면 인원 제한 없음</p>
         </CardContent>
       </Card>

@@ -30,12 +30,20 @@ export type ScheduleFieldValues = {
   endTime: string;
 };
 
+export type ScheduleFormFieldErrors = {
+  title?: string;
+  timeRange?: string;
+};
+
 type ScheduleFormFieldsProps = {
   values: ScheduleFieldValues;
   onChange: (values: Partial<ScheduleFieldValues>) => void;
   /** 날짜/반복 설정 영역 — 등록과 수정이 다르므로 외부에서 주입 */
   dateSection: ReactNode;
   prefix?: string;
+  errors?: ScheduleFormFieldErrors;
+  onBlurTitle?: () => void;
+  onBlurTime?: () => void;
 };
 
 export function ScheduleFormFields({
@@ -43,6 +51,9 @@ export function ScheduleFormFields({
   onChange,
   dateSection,
   prefix = "",
+  errors = {},
+  onBlurTitle,
+  onBlurTime,
 }: ScheduleFormFieldsProps) {
   const p = (id: string) => prefix ? `${prefix}-${id}` : id;
 
@@ -50,14 +61,21 @@ export function ScheduleFormFields({
     <>
       {/* 제목 */}
       <div className="space-y-1">
-        <Label htmlFor={p("title")} className="text-xs">제목</Label>
+        <Label htmlFor={p("title")} className="text-xs">
+          제목 <span className="text-destructive">*</span>
+        </Label>
         <Input
           id={p("title")}
           placeholder="일정 제목"
           value={values.title}
           onChange={(e) => onChange({ title: e.target.value })}
+          onBlur={onBlurTitle}
           required
+          className={errors.title ? "border-destructive focus-visible:ring-destructive" : ""}
         />
+        {errors.title && (
+          <p className="text-xs text-destructive">{errors.title}</p>
+        )}
       </div>
 
       {/* 설명 */}
@@ -164,27 +182,40 @@ export function ScheduleFormFields({
       {dateSection}
 
       {/* 시작/종료 시간 */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <Label htmlFor={p("startTime")} className="text-xs">시작 시간</Label>
-          <Input
-            id={p("startTime")}
-            type="time"
-            value={values.startTime}
-            onChange={(e) => onChange({ startTime: e.target.value })}
-            required
-          />
+      <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label htmlFor={p("startTime")} className="text-xs">
+              시작 시간 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id={p("startTime")}
+              type="time"
+              value={values.startTime}
+              onChange={(e) => onChange({ startTime: e.target.value })}
+              onBlur={onBlurTime}
+              required
+              className={errors.timeRange ? "border-destructive focus-visible:ring-destructive" : ""}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={p("endTime")} className="text-xs">
+              종료 시간 <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id={p("endTime")}
+              type="time"
+              value={values.endTime}
+              onChange={(e) => onChange({ endTime: e.target.value })}
+              onBlur={onBlurTime}
+              required
+              className={errors.timeRange ? "border-destructive focus-visible:ring-destructive" : ""}
+            />
+          </div>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor={p("endTime")} className="text-xs">종료 시간</Label>
-          <Input
-            id={p("endTime")}
-            type="time"
-            value={values.endTime}
-            onChange={(e) => onChange({ endTime: e.target.value })}
-            required
-          />
-        </div>
+        {errors.timeRange && (
+          <p className="text-xs text-destructive">{errors.timeRange}</p>
+        )}
       </div>
     </>
   );

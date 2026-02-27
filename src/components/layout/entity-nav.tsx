@@ -124,7 +124,7 @@ export function EntityNav({ ctx }: EntityNavProps) {
         </div>
       )}
       <div className="relative">
-        <nav className={navClass}>
+        <nav className={navClass} aria-label="그룹 네비게이션">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.path);
@@ -134,8 +134,10 @@ export function EntityNav({ ctx }: EntityNavProps) {
                 key={tab.path}
                 href={basePath + tab.path}
                 className={linkClass(active)}
+                aria-current={active ? "page" : undefined}
+                aria-label={tab.label + (showBadge ? ` (미처리 ${pendingCount > 99 ? "99+" : pendingCount}건)` : "")}
               >
-                <Icon className={iconClass} />
+                <Icon className={iconClass} aria-hidden="true" />
                 {isProject ? (
                   tab.label
                 ) : (
@@ -144,7 +146,10 @@ export function EntityNav({ ctx }: EntityNavProps) {
                   </>
                 )}
                 {showBadge && (
-                  <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none ml-0.5">
+                  <span
+                    className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none ml-0.5"
+                    aria-hidden="true"
+                  >
                     {pendingCount > 99 ? "99+" : pendingCount}
                   </span>
                 )}

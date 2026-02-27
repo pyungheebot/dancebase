@@ -486,14 +486,16 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
             size="icon"
             className="h-6 w-6"
             onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+            aria-label="이전 달"
           >
-            <ChevronLeft className="h-3 w-3" />
+            <ChevronLeft className="h-3 w-3" aria-hidden="true" />
           </Button>
           <Button
             variant="outline"
             size="sm"
             className="h-6 text-[11px] px-2"
             onClick={() => setCurrentMonth(new Date())}
+            aria-label="오늘로 이동"
           >
             오늘
           </Button>
@@ -502,8 +504,9 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
             size="icon"
             className="h-6 w-6"
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+            aria-label="다음 달"
           >
-            <ChevronRight className="h-3 w-3" />
+            <ChevronRight className="h-3 w-3" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -593,8 +596,9 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   size="icon"
                   className="h-7 w-7 shrink-0"
                   onClick={() => handleEditClick(schedule)}
+                  aria-label={`${schedule.title} 일정 수정`}
                 >
-                  <Pencil className="h-3 w-3" />
+                  <Pencil className="h-3 w-3" aria-hidden="true" />
                 </Button>
               )}
             </div>
@@ -694,8 +698,9 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                         setDetailSchedule(null);
                         handleEditClick(target);
                       }}
+                      aria-label={`${detailSchedule?.title} 일정 수정`}
                     >
-                      <Pencil className="h-3 w-3 mr-1" />
+                      <Pencil className="h-3 w-3 mr-1" aria-hidden="true" />
                       수정
                     </Button>
                     <Button
@@ -708,8 +713,9 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                         setDetailSchedule(null);
                         handleDeleteClick(target);
                       }}
+                      aria-label={`${detailSchedule?.title} 일정 삭제`}
                     >
-                      <Trash2 className="h-3 w-3 mr-1" />
+                      <Trash2 className="h-3 w-3 mr-1" aria-hidden="true" />
                       삭제
                     </Button>
                   </>

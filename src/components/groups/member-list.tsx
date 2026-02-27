@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,9 +29,24 @@ type MemberListProps = {
   categories: MemberCategory[];
   grouped?: boolean;
   onUpdate: () => void;
+  // 일괄 선택 관련
+  selectable?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (memberId: string) => void;
 };
 
-export function MemberList({ members, myRole, currentUserId, groupId, categories, grouped = true, onUpdate }: MemberListProps) {
+export function MemberList({
+  members,
+  myRole,
+  currentUserId,
+  groupId,
+  categories,
+  grouped = true,
+  onUpdate,
+  selectable = false,
+  selectedIds = new Set(),
+  onToggleSelect,
+}: MemberListProps) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [editingNickname, setEditingNickname] = useState<string | null>(null);
   const [nicknameValue, setNicknameValue] = useState("");
@@ -106,13 +122,22 @@ export function MemberList({ members, myRole, currentUserId, groupId, categories
     const displayName = getDisplayName(member);
     const category = getCategoryForMember(member);
     const colorClasses = category ? getCategoryColorClasses(category.color || "gray") : null;
+    const isSelected = selectedIds.has(member.id);
 
     return (
       <div
         key={member.id}
-        className="flex items-center justify-between px-2.5 py-1.5 rounded border"
+        className={`flex items-center justify-between px-2.5 py-1.5 rounded border ${isSelected ? "bg-accent/40" : ""}`}
       >
         <div className="flex items-center gap-2">
+          {selectable && (
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelect?.(member.id)}
+              disabled={isMe}
+              className="shrink-0"
+            />
+          )}
           <Avatar className="h-6 w-6">
             <AvatarFallback>
               {displayName?.charAt(0)?.toUpperCase() || "U"}

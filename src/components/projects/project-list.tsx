@@ -16,8 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Loader2, Users, ChevronRight, CalendarRange, MoreVertical, Settings, Trash2, Check } from "lucide-react";
+import { Loader2, Users, ChevronRight, CalendarRange, MoreVertical, Settings, Trash2, Check, FolderOpen, Plus } from "lucide-react";
 import { ProjectForm } from "./project-form";
+import { EmptyState } from "@/components/shared/empty-state";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateProject } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
@@ -187,9 +188,16 @@ export function ProjectList({ groupId }: ProjectListProps) {
 
       {/* 프로젝트 목록 */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-sm text-muted-foreground">프로젝트가 없습니다</p>
-        </div>
+        <EmptyState
+          icon={FolderOpen}
+          title={statusFilter === "전체" ? "프로젝트가 없습니다" : `"${statusFilter}" 상태의 프로젝트가 없습니다`}
+          description={statusFilter === "전체" ? "새 프로젝트를 만들어 팀 활동을 관리해보세요." : "다른 상태 필터를 선택하거나 새 프로젝트를 만들어보세요."}
+          action={
+            canManage && statusFilter === "전체"
+              ? undefined
+              : undefined
+          }
+        />
       ) : (
         <div className="rounded-lg border divide-y">
           {filtered.map((project) => {
