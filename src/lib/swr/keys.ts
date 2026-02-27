@@ -151,4 +151,24 @@ export const swrKeys = {
     `/groups/${groupId}/content-reports` as const,
   contentReportsPendingCount: (groupId: string) =>
     `/groups/${groupId}/content-reports/pending-count` as const,
+
+  // 멤버 역량 맵
+  memberSkills: (groupId: string) =>
+    `/groups/${groupId}/member-skills` as const,
+
+  // 회의록
+  meetingMinutes: (groupId: string, projectId?: string | null) =>
+    `/groups/${groupId}/meeting-minutes${projectId ? `?project=${projectId}` : ""}` as const,
+
+  // 출석 리포트
+  attendanceReport: (groupId: string, projectId: string | null | undefined, period: string) =>
+    `/attendance-report/${groupId}${projectId ? `?project=${projectId}` : ""}&period=${period}` as const,
+
+  // 연락처 재확인
+  contactVerification: (groupId: string) =>
+    `/groups/${groupId}/contact-verification` as const,
+
+  // 권한 감사 로그
+  permissionAudits: (groupId: string) =>
+    `/groups/${groupId}/permission-audits` as const,
 };

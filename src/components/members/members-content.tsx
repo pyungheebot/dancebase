@@ -46,6 +46,9 @@ import { getCategoryColorClasses } from "@/types";
 import { EmptyState } from "@/components/shared/empty-state";
 import { InactiveMembersSection } from "@/components/members/inactive-members-section";
 import { MemberActivityReport } from "@/components/members/member-activity-report";
+import { SkillMatrixSection } from "@/components/members/skill-matrix-section";
+import { ContactVerificationSection } from "@/components/members/contact-verification-section";
+import { ContactVerifyBanner } from "@/components/members/contact-verify-banner";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -497,6 +500,30 @@ function GroupMembersContent({
           groupName={ctx.header.name}
           members={ctx.members}
         />
+      )}
+
+      {/* 멤버 역량 맵 (canEdit 권한인 경우에만 표시) */}
+      {ctx.permissions.canEdit && ctx.members.length > 0 && (
+        <SkillMatrixSection
+          groupId={ctx.groupId}
+          members={ctx.members}
+          canEdit={ctx.permissions.canEdit}
+        />
+      )}
+
+      {/* 연락처 재확인 배너 (미확인 멤버에게만 표시) */}
+      {!ctx.permissions.canEdit && (
+        <div className="mt-4">
+          <ContactVerifyBanner
+            groupId={ctx.groupId}
+            currentUserId={currentUserId}
+          />
+        </div>
+      )}
+
+      {/* 연락처 재확인 관리 섹션 (리더/서브리더 전용) */}
+      {ctx.permissions.canEdit && ctx.members.length > 0 && (
+        <ContactVerificationSection ctx={ctx} />
       )}
     </>
   );

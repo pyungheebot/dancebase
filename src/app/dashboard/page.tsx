@@ -4,7 +4,9 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { GroupCard } from "@/components/groups/group-card";
 import { JoinGroupModal } from "@/components/groups/invite-modal";
 import { OnboardingGuide } from "@/components/dashboard/onboarding-guide";
+import { ContactVerifyBanner } from "@/components/members/contact-verify-banner";
 import { useGroups } from "@/hooks/use-groups";
+import { useAuth } from "@/hooks/use-auth";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useTodaySchedules } from "@/hooks/use-schedule";
 import { useDeadlineProjects } from "@/hooks/use-deadline-projects";
@@ -22,6 +24,7 @@ import { formatDistanceToNow } from "date-fns";
 
 export default function DashboardPage() {
   const { groups, loading } = useGroups();
+  const { user } = useAuth();
   const { schedules: todaySchedules, loading: schedulesLoading } = useTodaySchedules();
   const { notifications, loading: notificationsLoading } = useNotifications(5);
   const { projects: deadlineProjects, loading: deadlineLoading } = useDeadlineProjects();
@@ -32,6 +35,19 @@ export default function DashboardPage() {
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
         {/* 온보딩 시작 가이드 */}
         <OnboardingGuide />
+
+        {/* 연락처 재확인 배너 — 각 그룹별로 미확인 상태인 경우에만 표시 */}
+        {!loading && user && groups.length > 0 && (
+          <div className="space-y-2">
+            {groups.map((group) => (
+              <ContactVerifyBanner
+                key={group.id}
+                groupId={group.id}
+                currentUserId={user.id}
+              />
+            ))}
+          </div>
+        )}
 
         {/* 오늘의 일정 카드 */}
         <section aria-label="오늘의 일정">

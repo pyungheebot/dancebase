@@ -57,6 +57,7 @@ import { createNotification } from "@/lib/notifications";
 import { useAuth } from "@/hooks/use-auth";
 import { ActivityLogSection } from "@/components/settings/activity-log-section";
 import { ReminderSettingsSection } from "@/components/settings/reminder-settings-section";
+import { PermissionAuditSection } from "@/components/settings/permission-audit-section";
 
 type SettingsContentProps = {
   ctx: EntityContext;
@@ -934,6 +935,11 @@ export function SettingsContent({
           {/* 활동 기록 (리더 전용) */}
           {isGroupLeader && (
             <ActivityLogSection entityType="group" entityId={ctx.groupId} />
+          )}
+
+          {/* 권한 감사 로그 (리더 전용) */}
+          {isGroupLeader && (
+            <PermissionAuditSection groupId={ctx.groupId} />
           )}
 
           <Button onClick={handleSave} disabled={saving || !groupForm.name.trim()} className="w-full">

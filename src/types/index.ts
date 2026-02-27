@@ -732,3 +732,68 @@ export type ScheduleTemplate = {
   created_by: string | null;
   created_at: string;
 };
+
+// ============================================
+// Member Skill (멤버 역량 맵)
+// ============================================
+
+export type MemberSkill = {
+  id: string;
+  group_id: string;
+  user_id: string;
+  skill_name: string;
+  skill_level: number;
+  updated_at: string;
+};
+
+// ============================================
+// Contact Verification (연락처 재확인)
+// ============================================
+
+export type ContactVerification = {
+  id: string;
+  group_id: string;
+  user_id: string;
+  verified_at: string | null;
+  requested_at: string;
+};
+
+// ============================================
+// Meeting Minutes (회의록)
+// ============================================
+
+export type MeetingMinute = {
+  id: string;
+  group_id: string;
+  project_id: string | null;
+  title: string;
+  content: string | null;
+  attendees: string[];
+  decisions: string[];
+  action_items: { title: string; owner: string | null; done: boolean }[];
+  meeting_date: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+// ============================================
+// Permission Audit (권한 감사 로그)
+// ============================================
+
+export type PermissionAudit = {
+  id: string;
+  group_id: string;
+  actor_id: string;
+  target_user_id: string;
+  action: "role_change" | "member_add" | "member_remove" | "permission_grant" | "permission_revoke";
+  old_value: string | null;
+  new_value: string | null;
+  description: string | null;
+  created_at: string;
+};
+
+export type PermissionAuditWithProfiles = PermissionAudit & {
+  actor: Pick<Profile, "id" | "name" | "avatar_url"> | null;
+  target: Pick<Profile, "id" | "name" | "avatar_url"> | null;
+};

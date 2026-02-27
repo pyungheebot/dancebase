@@ -177,3 +177,22 @@ export function invalidateBulkRsvp(groupId: string, scheduleIds: string[]) {
   scheduleIds.forEach((id) => mutate(swrKeys.scheduleRsvp(id)));
   invalidateGroupShowRate(groupId);
 }
+
+export function invalidateMemberSkills(groupId: string) {
+  mutate(swrKeys.memberSkills(groupId));
+}
+
+export function invalidateMeetingMinutes(groupId: string, projectId?: string | null) {
+  mutate(swrKeys.meetingMinutes(groupId, projectId));
+  if (projectId) {
+    mutate(swrKeys.meetingMinutes(groupId));
+  }
+}
+
+export function invalidateContactVerification(groupId: string) {
+  mutate(swrKeys.contactVerification(groupId));
+}
+
+export function invalidatePermissionAudits(groupId: string) {
+  mutate(swrKeys.permissionAudits(groupId));
+}
