@@ -483,4 +483,20 @@ export const swrKeys = {
   // 멤버 이탈 위험 감지
   churnRiskDetection: (groupId: string) =>
     `/groups/${groupId}/churn-risk-detection` as const,
+
+  // 게시판 트렌드 분석
+  boardTrendAnalytics: (groupId: string) =>
+    `/groups/${groupId}/board-trend-analytics` as const,
+
+  // 일정 카운트다운 위젯
+  scheduleCountdown: (groupId: string) =>
+    `/groups/${groupId}/schedule-countdown` as const,
+
+  // 멤버 출석 예측 달력
+  attendancePredictionCalendar: (groupId: string, userId: string, month: string) =>
+    `/groups/${groupId}/attendance-prediction-calendar/${userId}/${month}` as const,
+
+  // 그룹 마일스톤 달성 기록
+  groupMilestonesAchievements: (groupId: string) =>
+    `/groups/${groupId}/milestones-achievements` as const,
 };

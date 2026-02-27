@@ -509,3 +509,30 @@ export function invalidateMemberScoreLeaderboard(groupId: string) {
 export function invalidateChurnRiskDetection(groupId: string) {
   mutate(swrKeys.churnRiskDetection(groupId));
 }
+
+export function invalidateBoardTrendAnalytics(groupId: string) {
+  mutate(swrKeys.boardTrendAnalytics(groupId));
+}
+
+export function invalidateScheduleCountdown(groupId: string) {
+  mutate(swrKeys.scheduleCountdown(groupId));
+}
+
+export function invalidateAttendancePredictionCalendar(
+  groupId: string,
+  userId: string
+) {
+  mutate(
+    (key: string) =>
+      typeof key === "string" &&
+      key.startsWith(
+        `/groups/${groupId}/attendance-prediction-calendar/${userId}/`
+      ),
+    undefined,
+    { revalidate: true }
+  );
+}
+
+export function invalidateGroupMilestonesAchievements(groupId: string) {
+  mutate(swrKeys.groupMilestonesAchievements(groupId));
+}

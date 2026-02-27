@@ -3157,3 +3157,109 @@ export type MemberNoteV2 = {
   createdAt: string;
   updatedAt: string;
 };
+
+// ============================================
+// Onboarding Tasks (온보딩 과제, localStorage 기반)
+// ============================================
+
+export type OnboardingTaskItem = {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  completedAt: string | null;
+  order: number;
+};
+
+export type OnboardingTasksData = {
+  tasks: OnboardingTaskItem[];
+  dismissed: boolean;
+  completedAt: string | null;
+};
+
+// ============================================
+// Board Trend Analytics (게시판 트렌드 분석)
+// ============================================
+
+export type BoardTrendWeekData = {
+  weekLabel: string;
+  postCount: number;
+  commentCount: number;
+};
+
+export type BoardTrendTopAuthor = {
+  userId: string;
+  name: string;
+  postCount: number;
+  commentCount: number;
+};
+
+export type BoardTrendPopularPost = {
+  postId: string;
+  title: string;
+  commentCount: number;
+  authorName: string;
+};
+
+export type BoardTrendResult = {
+  weeklyTrend: BoardTrendWeekData[];
+  dayOfWeekPattern: number[]; // index 0=일 ~ 6=토
+  topAuthors: BoardTrendTopAuthor[];
+  popularPosts: BoardTrendPopularPost[];
+  totalPosts: number;
+  totalComments: number;
+  avgCommentsPerPost: number;
+  uniqueAuthors: number;
+};
+
+// ============================================
+// Attendance Prediction Calendar (멤버 출석 예측 달력)
+// ============================================
+
+export type PredictionCalendarDay = {
+  date: string; // YYYY-MM-DD
+  scheduleId: string | null;
+  scheduleTitle: string | null;
+  predictedRate: number | null; // 0~100
+  actualStatus: "present" | "absent" | "late" | null;
+};
+
+export type AttendancePredictionCalendarResult = {
+  days: PredictionCalendarDay[];
+  dayOfWeekRates: number[]; // index 0=일 ~ 6=토
+  overallRate: number;
+  month: string; // YYYY-MM
+};
+
+// ============================================
+// Schedule Countdown (일정 카운트다운)
+// ============================================
+
+export type CountdownSchedule = {
+  id: string;
+  title: string;
+  startsAt: string;
+  location: string | null;
+  daysLeft: number;
+  hoursLeft: number;
+  minutesLeft: number;
+  secondsLeft: number;
+  isUrgent: boolean; // 24시간 이내
+};
+
+// ============================================
+// Group Milestone Achievements (그룹 마일스톤 달성 기록)
+// ============================================
+
+export type GroupMilestoneCategory = "members" | "schedules" | "posts" | "custom";
+
+export type GroupMilestone = {
+  id: string;
+  title: string;
+  category: GroupMilestoneCategory;
+  targetValue: number;
+  currentValue: number;
+  achieved: boolean;
+  achievedAt: string | null;
+  isDefault: boolean;
+};
