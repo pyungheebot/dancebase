@@ -663,4 +663,24 @@ export const swrKeys = {
   // 연습 장소 리뷰
   venueReview: (groupId: string) =>
     `venue-review-${groupId}` as const,
+
+  // 안무 습득 곡선
+  masteryCurve: (groupId: string, userId: string) =>
+    `mastery-curve-${groupId}-${userId}` as const,
+
+  // 공연 준비도 체크리스트
+  performanceReadiness: (groupId: string, projectId: string) =>
+    `performance-readiness-${groupId}-${projectId}` as const,
+
+  // 주간 시간표
+  weeklyTimetable: (groupId: string) =>
+    `weekly-timetable-${groupId}` as const,
+
+  // 예산 시나리오 플래너
+  budgetScenario: (groupId: string) =>
+    `budget-scenario-${groupId}` as const,
+
+  // 세트리스트 관리
+  setlistManagement: (groupId: string, projectId: string) =>
+    `setlist-management-${groupId}-${projectId}` as const,
 };

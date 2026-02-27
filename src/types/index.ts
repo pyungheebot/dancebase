@@ -5266,3 +5266,117 @@ export type VenueReview = {
   cons: string;            // 단점
   createdAt: string;
 };
+
+// ============================================
+// Choreography Mastery Curve (안무 습득 곡선)
+// ============================================
+
+export type MasteryCheckpoint = {
+  date: string;           // YYYY-MM-DD
+  progress: number;       // 0-100
+  note: string;
+};
+
+export type MasteryCurveEntry = {
+  id: string;
+  choreographyName: string;
+  targetDate: string;     // 목표 완성일
+  checkpoints: MasteryCheckpoint[];
+  currentProgress: number;
+  createdAt: string;
+};
+
+// ============================================
+// Performance Readiness Checklist (공연 준비도)
+// ============================================
+
+export type ReadinessCategory = "choreography" | "costume" | "music" | "stage" | "logistics" | "other";
+
+export type ReadinessCheckItem = {
+  id: string;
+  category: ReadinessCategory;
+  title: string;
+  assignee: string;
+  dueDate: string;
+  completed: boolean;
+  completedAt?: string;
+  note: string;
+};
+
+export type ReadinessChecklist = {
+  id: string;
+  eventName: string;
+  eventDate: string;
+  items: ReadinessCheckItem[];
+  createdAt: string;
+};
+
+// ============================================
+// Weekly Timetable (주간 시간표)
+// ============================================
+
+export type TimetableDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export type TimetableSlotType = "practice" | "personal" | "meeting" | "performance" | "rest" | "other";
+
+export type TimetableSlot = {
+  id: string;
+  day: TimetableDay;
+  startTime: string;       // "HH:MM"
+  endTime: string;         // "HH:MM"
+  type: TimetableSlotType;
+  title: string;
+  location: string;
+  color: string;           // hex 색상
+  note: string;
+};
+
+// ============================================
+// Budget Scenario Planner (예산 시나리오)
+// ============================================
+
+export type BudgetScenario = {
+  id: string;
+  name: string;
+  monthlyFee: number;        // 월 회비
+  memberCount: number;        // 예상 멤버 수
+  venueRentPerMonth: number;  // 월 장소 대여비
+  performanceCount: number;   // 월 공연 횟수
+  avgPerformanceIncome: number; // 공연 당 평균 수입
+  otherExpenses: number;      // 기타 월 지출
+  otherIncome: number;        // 기타 월 수입
+  createdAt: string;
+};
+
+export type ScenarioResult = {
+  scenarioId: string;
+  monthlyIncome: number;
+  monthlyExpense: number;
+  monthlyProfit: number;
+  annualProfit: number;
+};
+
+// ============================================
+// Setlist Management (세트리스트 관리, localStorage 기반)
+// ============================================
+
+export type SetlistItemType = "performance" | "mc" | "break" | "costume_change";
+
+export type PerformanceSetlistItem = {
+  id: string;
+  order: number;
+  type: SetlistItemType;
+  title: string;            // 곡명 또는 항목명
+  durationSeconds: number;  // 예상 시간 (초)
+  costumeChange: boolean;
+  performers: string[];     // 참여 멤버명
+  note: string;
+};
+
+export type PerformanceSetlistData = {
+  id: string;
+  eventName: string;
+  eventDate: string;
+  items: PerformanceSetlistItem[];
+  createdAt: string;
+  updatedAt: string;
+};
