@@ -559,4 +559,24 @@ export const swrKeys = {
   // 그룹 건강도 추이 스냅샷 (localStorage 기반)
   groupHealthSnapshot: (groupId: string) =>
     `group-health-snapshot-${groupId}` as const,
+
+  // 멤버 연락 선호도 (localStorage 기반)
+  communicationPreferences: (groupId: string, userId: string) =>
+    `/groups/${groupId}/members/${userId}/comm-prefs` as const,
+
+  // 리더십 후보
+  leadershipCandidates: (groupId: string) =>
+    `/groups/${groupId}/leadership-candidates` as const,
+
+  // 활동 회고 리포트 (localStorage 캐시)
+  activityRetrospective: (groupId: string) =>
+    `/groups/${groupId}/retrospective` as const,
+
+  // 멤버 가용 시간 (localStorage 기반)
+  memberAvailability: (groupId: string, userId: string) =>
+    `/groups/${groupId}/members/${userId}/availability` as const,
+
+  // 프로젝트 마일스톤 트래커 (localStorage 기반)
+  projectMilestones: (groupId: string, projectId: string) =>
+    `/groups/${groupId}/projects/${projectId}/milestones` as const,
 };

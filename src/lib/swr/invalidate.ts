@@ -591,3 +591,23 @@ export function invalidatePersonalAttendanceGoal(groupId: string, userId: string
 export function invalidateScheduleEngagement(scheduleId: string) {
   mutate(swrKeys.scheduleEngagement(scheduleId));
 }
+
+export function invalidateCommunicationPreferences(groupId: string, userId: string) {
+  mutate(swrKeys.communicationPreferences(groupId, userId));
+}
+
+export function invalidateLeadershipCandidates(groupId: string) {
+  mutate(swrKeys.leadershipCandidates(groupId));
+}
+
+export function invalidateActivityRetrospective(groupId: string) {
+  mutate(swrKeys.activityRetrospective(groupId));
+}
+
+export function invalidateMemberAvailability(groupId: string, userId: string) {
+  mutate(swrKeys.memberAvailability(groupId, userId));
+}
+
+export function invalidateProjectMilestones(groupId: string, projectId: string) {
+  mutate(swrKeys.projectMilestones(groupId, projectId));
+}

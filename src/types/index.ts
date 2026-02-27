@@ -4350,3 +4350,87 @@ export type PersonalGoalItem = {
   /** 완료일 (ISO 8601, completed 상태일 때만 존재) */
   completedAt?: string;
 };
+
+// ============================================
+// 연락 선호도
+// ============================================
+
+export type CommPreferredTime = "morning" | "afternoon" | "evening" | "night";
+export type CommChannel = "push" | "message" | "board";
+
+export type CommunicationPreference = {
+  userId: string;
+  preferredTimes: CommPreferredTime[];
+  preferredChannels: CommChannel[];
+  quietHoursStart: string; // HH:MM
+  quietHoursEnd: string;   // HH:MM
+  updatedAt: string;
+};
+
+// ============================================
+// 리더십 후보
+// ============================================
+
+export type LeadershipCandidate = {
+  userId: string;
+  displayName: string;
+  attendanceScore: number;  // 0-100
+  postScore: number;        // 0-100
+  commentScore: number;     // 0-100
+  totalScore: number;       // 0-100 (가중 평균)
+};
+
+// ============================================
+// 멤버 가용 시간 캘린더
+// ============================================
+
+export type DayOfWeek = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+
+export type AvailabilitySlot = {
+  day: DayOfWeek;
+  startTime: string; // HH:MM
+  endTime: string;   // HH:MM
+};
+
+export type MemberAvailability = {
+  userId: string;
+  slots: AvailabilitySlot[];
+  updatedAt: string;
+};
+
+// ============================================
+// Activity Retrospective (활동 회고 리포트)
+// ============================================
+
+export type ActivityRetrospective = {
+  month: string;          // YYYY-MM
+  attendanceRate: number; // 0-100
+  totalSchedules: number;
+  totalPosts: number;
+  totalComments: number;
+  memberGrowth: number;   // 신규 - 탈퇴 멤버
+  totalIncome: number;
+  totalExpense: number;
+  generatedAt: string;
+};
+
+// ============================================
+// Project Milestone Tracker (프로젝트 마일스톤 트래커, localStorage 기반)
+// ============================================
+
+/** 마일스톤 세부 작업 항목 */
+export type MilestoneTask = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
+
+/** 프로젝트 마일스톤 카드 (groupId+projectId 기반 localStorage 저장) */
+export type ProjectMilestoneCard = {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string;       // YYYY-MM-DD
+  tasks: MilestoneTask[];
+  createdAt: string;
+};
