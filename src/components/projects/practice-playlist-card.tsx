@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { usePracticePlaylistCard } from "@/hooks/use-practice-playlist-card";
+import { usePracticePlaylistCardProject } from "@/hooks/use-practice-playlist-card-project";
 import type { PracticeCardTrack } from "@/types";
 
 // ============================================
@@ -331,7 +331,7 @@ export function PracticePlaylistCard({ groupId, projectId }: PracticePlaylistCar
     addTrack,
     removeTrack,
     reorderTracks,
-  } = usePracticePlaylistCard(groupId, projectId);
+  } = usePracticePlaylistCardProject(groupId, projectId);
 
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);

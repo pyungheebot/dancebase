@@ -903,4 +903,24 @@ export const swrKeys = {
   // 공연 리뷰 수집 (localStorage 기반)
   showReview: (groupId: string, projectId: string) =>
     `show-review-${groupId}-${projectId}` as const,
+
+  // 동선 노트 (localStorage 기반)
+  formationNote: (groupId: string, projectId: string) =>
+    `formation-note-${groupId}-${projectId}` as const,
+
+  // 멤버 뱃지 시스템 (localStorage 기반)
+  memberBadge: (groupId: string) =>
+    `member-badge-${groupId}` as const,
+
+  // 비용 영수증 관리 (localStorage 기반)
+  receiptManagement: (groupId: string) =>
+    `receipt-management-${groupId}` as const,
+
+  // 그룹 투표 (localStorage 기반)
+  groupVote: (groupId: string) =>
+    `group-vote-${groupId}` as const,
+
+  // 연습곡 플레이리스트 카드 (localStorage 기반)
+  practicePlaylist: (groupId: string) =>
+    `practice-playlist-${groupId}` as const,
 };

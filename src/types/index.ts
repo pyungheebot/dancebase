@@ -6720,3 +6720,144 @@ export type ShowReviewEntry = {
   improvements: string[];
   createdAt: string;
 };
+
+// ============================================
+// 동선 노트 (Formation Note, localStorage 기반)
+// ============================================
+
+export type FormationNotePosition = {
+  memberName: string;
+  x: number; // 0~100 (%)
+  y: number; // 0~100 (%)
+};
+
+export type FormationSnapshot = {
+  id: string;
+  name: string;       // 예: "인트로 대형"
+  timestamp: string;  // MM:SS 형식
+  positions: FormationNotePosition[];
+  notes?: string;
+  createdAt: string;
+};
+
+export type FormationNoteData = {
+  snapshots: FormationSnapshot[];
+};
+
+// ============================================
+// 멤버 뱃지 시스템 (Member Badge System, localStorage 기반)
+// ============================================
+
+export type BadgeRarity = "common" | "rare" | "epic" | "legendary";
+
+export type BadgeDefinition = {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string;
+  rarity: BadgeRarity;
+  category: string;
+  createdAt: string;
+};
+
+export type MemberBadgeAward = {
+  id: string;
+  badgeId: string;
+  memberName: string;
+  awardedBy: string;
+  reason: string;
+  awardedAt: string;
+};
+
+// ============================================
+// 비용 영수증 관리 (Receipt Management, localStorage 기반)
+// ============================================
+
+export type ReceiptCategory =
+  | "venue"
+  | "costume"
+  | "equipment"
+  | "food"
+  | "transport"
+  | "marketing"
+  | "other";
+
+export type ReceiptStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "reimbursed";
+
+export type ReceiptEntry = {
+  id: string;
+  title: string;
+  amount: number;
+  category: ReceiptCategory;
+  date: string; // YYYY-MM-DD
+  submittedBy: string;
+  status: ReceiptStatus;
+  approvedBy?: string;
+  receiptNumber?: string;
+  vendor?: string;
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================
+// 그룹 투표 (Group Vote, localStorage 기반)
+// ============================================
+
+export type GroupVoteType = "single" | "multiple" | "ranking";
+
+export type GroupVoteStatus = "draft" | "active" | "closed";
+
+export type GroupVoteOption = {
+  id: string;
+  label: string;
+  voteCount: number;
+};
+
+export type GroupVoteBallot = {
+  voterName: string;
+  selectedOptionIds: string[];
+  rankedOptionIds?: string[];
+  votedAt: string;
+};
+
+export type GroupVoteEntry = {
+  id: string;
+  title: string;
+  description: string;
+  type: GroupVoteType;
+  status: GroupVoteStatus;
+  options: GroupVoteOption[];
+  ballots: GroupVoteBallot[];
+  anonymous: boolean;
+  deadline?: string;
+  createdBy: string;
+  createdAt: string;
+};
+
+// ============================================
+// 연습곡 플레이리스트 카드 (localStorage 기반)
+// ============================================
+
+export type PracticeTrack = {
+  id: string;
+  title: string;
+  artist: string;
+  duration: number; // 초 단위
+  bpm?: number;
+  genre?: string;
+  notes?: string;
+  order: number;
+  addedBy: string;
+  createdAt: string;
+};
+
+export type PracticePlaylistData = {
+  id: string;
+  name: string;
+  tracks: PracticeTrack[];
+  createdAt: string;
+};

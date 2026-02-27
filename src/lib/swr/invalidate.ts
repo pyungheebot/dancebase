@@ -126,6 +126,10 @@ export function invalidateConversation(partnerId: string) {
   invalidateConversations();
 }
 
+export function invalidateReceiptManagement(groupId: string) {
+  mutate(swrKeys.receiptManagement(groupId));
+}
+
 export function invalidateProfile(userId: string) {
   mutate(swrKeys.userProfile(userId));
 }
