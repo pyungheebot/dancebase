@@ -743,4 +743,24 @@ export const swrKeys = {
   // 그룹 포토 앨범 (localStorage 기반)
   photoAlbum: (groupId: string) =>
     `photo-album-${groupId}` as const,
+
+  // 기금 모금 추적 (localStorage 기반)
+  fundraisingGoal: (groupId: string) =>
+    `fundraising-goal-${groupId}` as const,
+
+  // 그룹 활동 리포트 (localStorage 기반)
+  activityReport: (groupId: string) =>
+    `activity-report-${groupId}` as const,
+
+  // 댄스 챌린지 (localStorage 기반)
+  danceChallenge: (groupId: string) =>
+    `dance-challenge-${groupId}` as const,
+
+  // 공연 회고 (localStorage 기반)
+  performanceRetro: (groupId: string, projectId: string) =>
+    `performance-retro-${groupId}-${projectId}` as const,
+
+  // 출석 예측 (localStorage 기반)
+  attendanceForecast: (groupId: string) =>
+    `attendance-forecast-${groupId}` as const,
 };

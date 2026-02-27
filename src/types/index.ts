@@ -5752,3 +5752,137 @@ export type PhotoAlbum = {
   photos: PhotoAlbumItem[];
   createdAt: string;
 };
+
+// ============================================
+// Fundraising Goal (기금 모금 추적)
+// ============================================
+
+export type FundraisingContribution = {
+  id: string;
+  donorName: string;
+  amount: number;
+  date: string;
+  note: string;
+};
+
+export type FundraisingMilestone = {
+  percent: number; // 25, 50, 75, 100
+  reachedAt?: string;
+};
+
+export type FundraisingGoal = {
+  id: string;
+  title: string;
+  description: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline: string;
+  contributions: FundraisingContribution[];
+  milestones: FundraisingMilestone[];
+  status: "active" | "completed" | "cancelled";
+  createdAt: string;
+};
+
+// ============================================
+// Group Activity Report (그룹 활동 리포트)
+// ============================================
+
+export type GroupReportPeriod = "monthly" | "quarterly";
+
+export type GroupReportSection = {
+  label: string;
+  value: number;
+  unit: string;
+  change?: number; // 전기 대비 변화율 (%)
+};
+
+export type GroupActivityReport = {
+  id: string;
+  period: GroupReportPeriod;
+  periodLabel: string; // "2026년 2월" 등
+  sections: GroupReportSection[];
+  highlights: string[]; // 주요 성과
+  concerns: string[]; // 개선 필요 사항
+  createdAt: string;
+};
+
+// ============================================
+// Dance Challenge (댄스 챌린지)
+// ============================================
+
+export type ChallengeCategory = "technique" | "freestyle" | "cover" | "flexibility" | "endurance" | "creativity";
+
+export type ChallengeParticipant = {
+  id: string;
+  name: string;
+  progress: number; // 0-100
+  completedAt?: string;
+  note: string;
+};
+
+export type DanceChallenge = {
+  id: string;
+  title: string;
+  description: string;
+  category: ChallengeCategory;
+  startDate: string;
+  endDate: string;
+  targetCount: number; // 목표 횟수
+  participants: ChallengeParticipant[];
+  reward: string; // 보상 설명
+  status: "upcoming" | "active" | "ended";
+  createdAt: string;
+};
+
+// ============================================
+// Attendance Forecast (출석 예측)
+// ============================================
+
+export type AttendancePattern = {
+  dayOfWeek: DayOfWeek;
+  avgRate: number; // 0-100
+  totalSessions: number;
+};
+
+export type AttendanceMemberForecast = {
+  memberId: string;
+  memberName: string;
+  overallRate: number; // 전체 출석률
+  trend: "improving" | "stable" | "declining";
+  patterns: AttendancePattern[];
+  predictedNextRate: number; // 다음 일정 예상 출석률
+};
+
+export type AttendanceForecastData = {
+  groupId: string;
+  forecasts: AttendanceMemberForecast[];
+  bestDay: DayOfWeek;
+  worstDay: DayOfWeek;
+  groupTrend: "improving" | "stable" | "declining";
+  updatedAt: string;
+};
+
+// ============================================
+// Performance Retrospective (공연 회고)
+// ============================================
+
+export type RetroCategory = "keep" | "problem" | "try";
+
+export type RetroItem = {
+  id: string;
+  category: RetroCategory;
+  content: string;
+  authorName: string;
+  votes: number;
+  createdAt: string;
+};
+
+export type PerformanceRetro = {
+  id: string;
+  performanceTitle: string;
+  performanceDate: string;
+  overallRating: number; // 1-5
+  items: RetroItem[];
+  actionItems: string[];
+  createdAt: string;
+};
