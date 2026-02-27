@@ -24,7 +24,7 @@ export function ScheduleChecklistSection({
     loading,
     addItem,
     removeItem,
-    toggleDone,
+    toggleItem,
     doneCount,
     totalCount,
     completionRate,
@@ -32,51 +32,26 @@ export function ScheduleChecklistSection({
 
   const [addOpen, setAddOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [togglingId, setTogglingId] = useState<string | null>(null);
-  const [removingId, setRemovingId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleAdd = async () => {
+  const handleAdd = () => {
     if (!newTitle.trim()) {
       toast.error("항목명을 입력해주세요");
       return;
     }
-
-    setSubmitting(true);
-    try {
-      await addItem(newTitle);
-      toast.success("항목을 추가했습니다");
-      setNewTitle("");
-      inputRef.current?.focus();
-    } catch {
-      toast.error("항목 추가에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    addItem(newTitle);
+    toast.success("항목을 추가했습니다");
+    setNewTitle("");
+    inputRef.current?.focus();
   };
 
-  const handleToggle = async (itemId: string, currentDone: boolean) => {
-    setTogglingId(itemId);
-    try {
-      await toggleDone(itemId, !currentDone);
-    } catch {
-      toast.error("상태 변경에 실패했습니다");
-    } finally {
-      setTogglingId(null);
-    }
+  const handleToggle = (itemId: string) => {
+    toggleItem(itemId);
   };
 
-  const handleRemove = async (itemId: string) => {
-    setRemovingId(itemId);
-    try {
-      await removeItem(itemId);
-      toast.success("항목을 삭제했습니다");
-    } catch {
-      toast.error("항목 삭제에 실패했습니다");
-    } finally {
-      setRemovingId(null);
-    }
+  const handleRemove = (itemId: string) => {
+    removeItem(itemId);
+    toast.success("항목을 삭제했습니다");
   };
 
   const handleOpenAdd = () => {
@@ -156,7 +131,6 @@ export function ScheduleChecklistSection({
               }}
               placeholder="준비물 입력 (예: 공연 의상)"
               className="h-7 text-xs"
-              disabled={submitting}
             />
           </div>
           <div className="flex gap-1.5">
@@ -164,9 +138,9 @@ export function ScheduleChecklistSection({
               size="sm"
               className="h-7 text-xs flex-1"
               onClick={handleAdd}
-              disabled={submitting || !newTitle.trim()}
+              disabled={!newTitle.trim()}
             >
-              {submitting ? "추가 중..." : "추가"}
+              추가
             </Button>
             <Button
               size="sm"
@@ -176,7 +150,6 @@ export function ScheduleChecklistSection({
                 setAddOpen(false);
                 setNewTitle("");
               }}
-              disabled={submitting}
             >
               닫기
             </Button>
@@ -194,27 +167,25 @@ export function ScheduleChecklistSection({
             >
               <Checkbox
                 id={`checklist-${item.id}`}
-                checked={item.is_done}
-                onCheckedChange={() => handleToggle(item.id, item.is_done)}
-                disabled={togglingId === item.id}
+                checked={item.checked}
+                onCheckedChange={() => handleToggle(item.id)}
                 className="h-3.5 w-3.5 shrink-0"
               />
               <label
                 htmlFor={`checklist-${item.id}`}
                 className={`text-xs flex-1 min-w-0 cursor-pointer truncate ${
-                  item.is_done
+                  item.checked
                     ? "line-through text-muted-foreground"
                     : "text-foreground"
                 }`}
               >
-                {item.title}
+                {item.text}
               </label>
               {canEdit && (
                 <button
-                  className="shrink-0 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-40"
+                  className="shrink-0 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
                   onClick={() => handleRemove(item.id)}
-                  disabled={removingId === item.id}
-                  aria-label={`${item.title} 삭제`}
+                  aria-label={`${item.text} 삭제`}
                 >
                   <Trash2 className="h-3 w-3" />
                 </button>

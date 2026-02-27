@@ -474,3 +474,15 @@ export function invalidateGroupActivityReport(groupId: string) {
 export function invalidateMemberBenchmarking(groupId: string, userId: string) {
   mutate(swrKeys.memberBenchmarking(groupId, userId));
 }
+
+export function invalidateSkillSelfEvaluation(groupId: string, userId: string) {
+  mutate(swrKeys.skillSelfEvaluation(groupId, userId));
+}
+
+export function invalidateAttendanceCertificate(groupId: string, userId: string) {
+  mutate(swrKeys.attendanceCertificate(groupId, userId));
+}
+
+export function invalidateGroupPolls(groupId: string) {
+  mutate(swrKeys.groupPolls(groupId));
+}

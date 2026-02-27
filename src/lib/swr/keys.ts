@@ -451,4 +451,15 @@ export const swrKeys = {
   // 멤버 벤치마킹 (개인 성과 카드)
   memberBenchmarking: (groupId: string, userId: string) =>
     `/member-benchmarking/${groupId}/${userId}` as const,
+
+  // 스킬 자가 평가 (localStorage 기반)
+  skillSelfEvaluation: (groupId: string, userId: string) =>
+    `/groups/${groupId}/skill-self-evaluation/${userId}` as const,
+
+  // 출석 인증서
+  attendanceCertificate: (groupId: string, userId: string) =>
+    `/groups/${groupId}/attendance-certificate/${userId}` as const,
+
+  // 그룹 투표/설문
+  groupPolls: (groupId: string) => `/groups/${groupId}/polls` as const,
 };

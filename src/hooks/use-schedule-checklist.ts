@@ -1,104 +1,164 @@
 "use client";
 
-import useSWR from "swr";
-import { createClient } from "@/lib/supabase/client";
-import { swrKeys } from "@/lib/swr/keys";
-import { invalidateScheduleChecklist } from "@/lib/swr/invalidate";
-import type { ScheduleChecklistItem } from "@/types";
+import { useState, useEffect, useCallback } from "react";
+import type { ScheduleCheckItem, ScheduleChecklist } from "@/types";
 
-export function useScheduleChecklist(scheduleId: string | null) {
-  const { data, isLoading, mutate } = useSWR(
-    scheduleId ? swrKeys.scheduleChecklist(scheduleId) : null,
-    async () => {
-      if (!scheduleId) return [];
-      const supabase = createClient();
+const STORAGE_PREFIX = "dancebase:schedule-checklist:";
 
-      const { data: rows, error } = await supabase
-        .from("schedule_checklist_items")
-        .select("*")
-        .eq("schedule_id", scheduleId)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: true });
+const DEFAULT_ITEMS: Omit<ScheduleCheckItem, "id">[] = [
+  { text: "의상 준비", checked: false, order: 0 },
+  { text: "음악 파일 확인", checked: false, order: 1 },
+  { text: "연습 복습", checked: false, order: 2 },
+  { text: "소품 준비", checked: false, order: 3 },
+  { text: "교통 수단 확인", checked: false, order: 4 },
+];
 
-      if (error) throw error;
-      return (rows ?? []) as ScheduleChecklistItem[];
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function loadFromStorage(scheduleId: string): ScheduleChecklist | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(`${STORAGE_PREFIX}${scheduleId}`);
+    if (!raw) return null;
+    return JSON.parse(raw) as ScheduleChecklist;
+  } catch {
+    return null;
+  }
+}
+
+function saveToStorage(checklist: ScheduleChecklist): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(
+      `${STORAGE_PREFIX}${checklist.scheduleId}`,
+      JSON.stringify({ ...checklist, updatedAt: new Date().toISOString() })
+    );
+  } catch {
+    // localStorage 저장 실패 시 무시
+  }
+}
+
+export function useScheduleChecklist(scheduleId: string) {
+  const [items, setItems] = useState<ScheduleCheckItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 초기 로드
+  useEffect(() => {
+    if (!scheduleId) {
+      setLoading(false);
+      return;
     }
+    const stored = loadFromStorage(scheduleId);
+    if (stored) {
+      const sorted = [...stored.items].sort((a, b) => a.order - b.order);
+      setItems(sorted);
+    } else {
+      // 최초 접근 시 기본 항목 자동 생성
+      const defaults: ScheduleCheckItem[] = DEFAULT_ITEMS.map((item) => ({
+        ...item,
+        id: generateId(),
+      }));
+      const checklist: ScheduleChecklist = {
+        scheduleId,
+        items: defaults,
+        updatedAt: new Date().toISOString(),
+      };
+      saveToStorage(checklist);
+      setItems(defaults);
+    }
+    setLoading(false);
+  }, [scheduleId]);
+
+  /** 저장 헬퍼 */
+  const persist = useCallback(
+    (nextItems: ScheduleCheckItem[]) => {
+      const checklist: ScheduleChecklist = {
+        scheduleId,
+        items: nextItems,
+        updatedAt: new Date().toISOString(),
+      };
+      saveToStorage(checklist);
+      setItems([...nextItems].sort((a, b) => a.order - b.order));
+    },
+    [scheduleId]
   );
 
   /** 항목 추가 */
-  const addItem = async (title: string): Promise<void> => {
-    if (!scheduleId) return;
-    const supabase = createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("로그인이 필요합니다");
-
-    const currentItems = data ?? [];
-    const maxOrder = currentItems.reduce(
-      (max, item) => Math.max(max, item.sort_order),
-      -1
-    );
-
-    const { error } = await supabase.from("schedule_checklist_items").insert({
-      schedule_id: scheduleId,
-      title: title.trim(),
-      sort_order: maxOrder + 1,
-      created_by: user.id,
-    });
-
-    if (error) throw error;
-
-    invalidateScheduleChecklist(scheduleId);
-    mutate();
-  };
+  const addItem = useCallback(
+    (text: string): void => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const maxOrder = items.reduce((max, it) => Math.max(max, it.order), -1);
+      const newItem: ScheduleCheckItem = {
+        id: generateId(),
+        text: trimmed,
+        checked: false,
+        order: maxOrder + 1,
+      };
+      persist([...items, newItem]);
+    },
+    [items, persist]
+  );
 
   /** 항목 삭제 */
-  const removeItem = async (itemId: string): Promise<void> => {
-    if (!scheduleId) return;
-    const supabase = createClient();
+  const removeItem = useCallback(
+    (id: string): void => {
+      persist(items.filter((it) => it.id !== id));
+    },
+    [items, persist]
+  );
 
-    const { error } = await supabase
-      .from("schedule_checklist_items")
-      .delete()
-      .eq("id", itemId);
+  /** 체크 토글 */
+  const toggleItem = useCallback(
+    (id: string): void => {
+      persist(
+        items.map((it) =>
+          it.id === id ? { ...it, checked: !it.checked } : it
+        )
+      );
+    },
+    [items, persist]
+  );
 
-    if (error) throw error;
+  /** 순서 변경 (드래그 등 외부에서 reordered 배열 전달) */
+  const reorderItems = useCallback(
+    (reordered: ScheduleCheckItem[]): void => {
+      const withOrder = reordered.map((it, idx) => ({ ...it, order: idx }));
+      persist(withOrder);
+    },
+    [persist]
+  );
 
-    invalidateScheduleChecklist(scheduleId);
-    mutate();
-  };
+  /** 전체 초기화 (항목 모두 삭제) */
+  const clearAll = useCallback((): void => {
+    persist([]);
+  }, [persist]);
 
-  /** 완료 토글 */
-  const toggleDone = async (itemId: string, isDone: boolean): Promise<void> => {
-    if (!scheduleId) return;
-    const supabase = createClient();
+  /** 기본 항목 복원 */
+  const restoreDefaults = useCallback((): void => {
+    const defaults: ScheduleCheckItem[] = DEFAULT_ITEMS.map((item) => ({
+      ...item,
+      id: generateId(),
+    }));
+    persist(defaults);
+  }, [persist]);
 
-    const { error } = await supabase
-      .from("schedule_checklist_items")
-      .update({ is_done: isDone })
-      .eq("id", itemId);
-
-    if (error) throw error;
-
-    invalidateScheduleChecklist(scheduleId);
-    mutate();
-  };
-
-  const items = data ?? [];
-  const doneCount = items.filter((item) => item.is_done).length;
+  const doneCount = items.filter((it) => it.checked).length;
   const totalCount = items.length;
   const completionRate =
     totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
 
   return {
     items,
-    loading: isLoading,
-    refetch: () => mutate(),
+    loading,
     addItem,
     removeItem,
-    toggleDone,
+    toggleItem,
+    reorderItems,
+    clearAll,
+    restoreDefaults,
     doneCount,
     totalCount,
     completionRate,

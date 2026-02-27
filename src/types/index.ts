@@ -2793,3 +2793,132 @@ export type NotificationRule = {
   createdAt: string;
   updatedAt: string;
 };
+
+// ============================================
+// 출석 인증서
+// ============================================
+
+export type AttendanceCertificateData = {
+  memberName: string;
+  groupName: string;
+  periodStart: string;
+  periodEnd: string;
+  totalSchedules: number;
+  attendedCount: number;
+  attendanceRate: number;
+  longestStreak: number;
+  issuedAt: string;
+};
+
+// ============================================
+// Skill Self Evaluation (스킬 자가 평가, localStorage 기반)
+// ============================================
+
+/** 스킬 카테고리 */
+export type SkillCategory =
+  | "physical"
+  | "rhythm"
+  | "expression"
+  | "technique"
+  | "memory"
+  | "teamwork";
+
+/** 스킬 카테고리 한글 레이블 */
+export const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
+  physical: "기초 체력",
+  rhythm: "리듬감",
+  expression: "표현력",
+  technique: "테크닉",
+  memory: "안무 기억력",
+  teamwork: "팀워크",
+};
+
+/** 스킬 카테고리 순서 (레이더 차트 꼭짓점 순서) */
+export const SKILL_CATEGORIES: SkillCategory[] = [
+  "physical",
+  "rhythm",
+  "expression",
+  "technique",
+  "memory",
+  "teamwork",
+];
+
+/** 단일 자가 평가 기록 */
+export type SkillEvaluation = {
+  id: string;
+  scores: Record<SkillCategory, number>; // 1~5
+  totalScore: number;
+  evaluatedAt: string; // ISO
+};
+
+/** 자가 평가 이력 (localStorage 저장 단위) */
+export type SkillEvaluationHistory = {
+  evaluations: SkillEvaluation[];
+};
+
+// ============================================
+// Schedule Checklist (일정 준비 체크리스트, localStorage 기반)
+// ============================================
+
+export type ScheduleCheckItem = {
+  id: string;
+  text: string;
+  checked: boolean;
+  order: number;
+};
+
+export type ScheduleChecklist = {
+  scheduleId: string;
+  items: ScheduleCheckItem[];
+  updatedAt: string;
+};
+
+// ============================================
+// Group Poll (그룹 투표/설문, localStorage 기반)
+// ============================================
+
+export type PollOption = {
+  id: string;
+  text: string;
+  voterIds: string[];
+};
+
+export type GroupPoll = {
+  id: string;
+  groupId: string;
+  title: string;
+  options: PollOption[];
+  type: "single" | "multiple";
+  anonymous: boolean;
+  creatorId: string;
+  creatorName: string;
+  expiresAt: string | null;
+  createdAt: string;
+};
+
+// ============================================
+// Practice Journal (개인 연습 일지, localStorage 기반)
+// ============================================
+
+export type PracticeEntry = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  durationMinutes: number;
+  content: string;
+  selfRating: number; // 1~5
+  memo: string;
+  createdAt: string;
+};
+
+export type PracticeJournalData = {
+  entries: PracticeEntry[];
+  weeklyGoalMinutes: number;
+};
+
+export type PracticeWeeklyStats = {
+  totalMinutes: number;
+  practiceCount: number;
+  averageRating: number;
+  goalMinutes: number;
+  goalProgress: number; // 0~100
+};
