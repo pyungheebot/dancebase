@@ -1,37 +1,35 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import type { TimeCapsuleMessage } from "@/types";
+import useSWR from "swr";
+import { swrKeys } from "@/lib/swr/keys";
+import type { TimeCapsule, TimeCapsuleMessage } from "@/types";
 
 // ============================================
 // 상수
 // ============================================
 
-const STORAGE_KEY_PREFIX = "dancebase:time-capsule:";
-const MAX_CAPSULES = 20;
+const MAX_CAPSULES = 30;
+const LS_KEY = (groupId: string) =>
+  `dancebase:time-capsules:${groupId}`;
 
 // ============================================
 // localStorage 헬퍼
 // ============================================
 
-function getStorageKey(groupId: string): string {
-  return `${STORAGE_KEY_PREFIX}${groupId}`;
-}
-
-function loadFromStorage(groupId: string): TimeCapsuleMessage[] {
+function loadCapsules(groupId: string): TimeCapsule[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as TimeCapsuleMessage[]) : [];
+    const raw = localStorage.getItem(LS_KEY(groupId));
+    return raw ? (JSON.parse(raw) as TimeCapsule[]) : [];
   } catch {
     return [];
   }
 }
 
-function persistToStorage(groupId: string, capsules: TimeCapsuleMessage[]): void {
+function saveCapsules(groupId: string, capsules: TimeCapsule[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(capsules));
+    localStorage.setItem(LS_KEY(groupId), JSON.stringify(capsules));
   } catch {
     // localStorage 접근 실패 시 무시
   }
@@ -47,136 +45,161 @@ function todayString(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
-/** 개봉 가능 여부: openDate <= today */
-function isOpenable(openDate: string): boolean {
-  return openDate <= todayString();
-}
-
 /** 개봉일까지 남은 날 수 (음수면 지난 것) */
 export function calcDaysLeft(openDate: string): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const open = new Date(openDate);
+  const open = new Date(openDate + "T00:00:00");
   open.setHours(0, 0, 0, 0);
   return Math.round((open.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-// ============================================
-// 개봉일 지난 캡슐 자동 동기화
-// ============================================
-
-function syncOpenedStatus(capsules: TimeCapsuleMessage[]): TimeCapsuleMessage[] {
-  return capsules.map((c) => {
-    if (!c.isOpened && isOpenable(c.openDate)) {
-      return { ...c, isOpened: true };
-    }
-    return c;
-  });
+/** 개봉 가능 여부: openDate <= today */
+function isOpenable(openDate: string): boolean {
+  return openDate <= todayString();
 }
 
 // ============================================
 // 훅
 // ============================================
 
-export type UseTimeCapsuleResult = {
-  capsules: TimeCapsuleMessage[];
-  addCapsule: (params: { author: string; message: string; openDate: string }) => boolean;
-  deleteCapsule: (id: string) => void;
-  openCapsule: (id: string) => void;
-  getAvailableCapsules: () => TimeCapsuleMessage[];
-  getPendingCapsules: () => TimeCapsuleMessage[];
-  loading: boolean;
-};
+export function useTimeCapsule(groupId: string) {
+  const { data, mutate } = useSWR(
+    groupId ? swrKeys.timeCapsule(groupId) : null,
+    () => loadCapsules(groupId),
+    { revalidateOnFocus: false }
+  );
 
-export function useTimeCapsule(groupId: string): UseTimeCapsuleResult {
-  const [capsules, setCapsules] = useState<TimeCapsuleMessage[]>(() => {
-    const stored = loadFromStorage(groupId);
-    // 초기 로드 시 개봉일 지난 캡슐 자동 동기화
-    const synced = syncOpenedStatus(stored);
-    if (synced.some((c, i) => c.isOpened !== stored[i]?.isOpened)) {
-      persistToStorage(groupId, synced);
-    }
-    return synced;
-  });
+  const capsules: TimeCapsule[] = data ?? [];
 
-  /** 캡슐 추가. 최대 20개 초과 시 false 반환 */
-  const addCapsule = useCallback(
-    ({
-      author,
-      message,
+  // ── 내부 업데이트 헬퍼 ──────────────────────────────────
+
+  function update(next: TimeCapsule[]): void {
+    saveCapsules(groupId, next);
+    mutate(next, false);
+  }
+
+  // ── 캡슐 생성 ──────────────────────────────────────────
+
+  function createCapsule(title: string, openDate: string): boolean {
+    if (!title.trim()) return false;
+    const stored = loadCapsules(groupId);
+    if (stored.length >= MAX_CAPSULES) return false;
+
+    const newCapsule: TimeCapsule = {
+      id: `tc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      title: title.trim(),
       openDate,
-    }: {
-      author: string;
-      message: string;
-      openDate: string;
-    }): boolean => {
-      let added = false;
-      setCapsules((prev) => {
-        if (prev.length >= MAX_CAPSULES) return prev;
-        const now = new Date().toISOString();
-        const newCapsule: TimeCapsuleMessage = {
-          id: `${groupId}-tc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-          author: author.trim(),
-          message: message.trim(),
-          openDate,
-          createdAt: now,
-          isOpened: isOpenable(openDate),
-        };
-        const next = [...prev, newCapsule];
-        persistToStorage(groupId, next);
-        added = true;
-        return next;
-      });
-      return added;
-    },
-    [groupId]
-  );
+      messages: [],
+      isSealed: false,
+      isOpened: false,
+      createdAt: new Date().toISOString(),
+    };
 
-  /** 캡슐 삭제 */
-  const deleteCapsule = useCallback(
-    (id: string) => {
-      setCapsules((prev) => {
-        const next = prev.filter((c) => c.id !== id);
-        persistToStorage(groupId, next);
-        return next;
-      });
-    },
-    [groupId]
-  );
+    update([...stored, newCapsule]);
+    return true;
+  }
 
-  /** 수동 개봉 (개봉일이 된 캡슐만 허용) */
-  const openCapsule = useCallback(
-    (id: string) => {
-      setCapsules((prev) => {
-        const next = prev.map((c) => {
-          if (c.id !== id) return c;
-          if (!isOpenable(c.openDate)) return c;
-          return { ...c, isOpened: true };
-        });
-        persistToStorage(groupId, next);
-        return next;
-      });
-    },
-    [groupId]
-  );
+  // ── 캡슐 삭제 ──────────────────────────────────────────
 
-  /** 개봉 가능한 캡슐 (openDate <= today, 아직 isOpened=false 포함) */
-  const getAvailableCapsules = useCallback((): TimeCapsuleMessage[] => {
-    return capsules.filter((c) => isOpenable(c.openDate));
-  }, [capsules]);
+  function deleteCapsule(capsuleId: string): void {
+    const stored = loadCapsules(groupId);
+    update(stored.filter((c) => c.id !== capsuleId));
+  }
 
-  /** 아직 대기 중인 캡슐 (openDate > today) */
-  const getPendingCapsules = useCallback((): TimeCapsuleMessage[] => {
-    return capsules.filter((c) => !isOpenable(c.openDate));
-  }, [capsules]);
+  // ── 메시지 추가 ─────────────────────────────────────────
+
+  function addMessage(
+    capsuleId: string,
+    authorName: string,
+    content: string
+  ): boolean {
+    if (!authorName.trim() || !content.trim()) return false;
+    const stored = loadCapsules(groupId);
+    const idx = stored.findIndex((c) => c.id === capsuleId);
+    if (idx === -1) return false;
+    const capsule = stored[idx];
+    if (capsule.isSealed) return false; // 봉인된 캡슐엔 메시지 추가 불가
+
+    const newMsg: TimeCapsuleMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      authorName: authorName.trim(),
+      content: content.trim(),
+      createdAt: new Date().toISOString(),
+    };
+
+    const next = stored.map((c, i) =>
+      i === idx ? { ...c, messages: [...c.messages, newMsg] } : c
+    );
+    update(next);
+    return true;
+  }
+
+  // ── 봉인 ────────────────────────────────────────────────
+
+  function sealCapsule(capsuleId: string): boolean {
+    const stored = loadCapsules(groupId);
+    const idx = stored.findIndex((c) => c.id === capsuleId);
+    if (idx === -1) return false;
+    if (stored[idx].isSealed) return false;
+
+    const next = stored.map((c, i) =>
+      i === idx ? { ...c, isSealed: true } : c
+    );
+    update(next);
+    return true;
+  }
+
+  // ── 개봉 ────────────────────────────────────────────────
+
+  function openCapsule(capsuleId: string): boolean {
+    const stored = loadCapsules(groupId);
+    const idx = stored.findIndex((c) => c.id === capsuleId);
+    if (idx === -1) return false;
+    const capsule = stored[idx];
+    if (!isOpenable(capsule.openDate)) return false; // 개봉일 이후만 가능
+    if (capsule.isOpened) return false;
+
+    const next = stored.map((c, i) =>
+      i === idx ? { ...c, isOpened: true } : c
+    );
+    update(next);
+    return true;
+  }
+
+  // ── 통계 ────────────────────────────────────────────────
+
+  const totalCapsules = capsules.length;
+  const sealedCount = capsules.filter((c) => c.isSealed).length;
+  const openedCount = capsules.filter((c) => c.isOpened).length;
+
+  /** 아직 열리지 않은 캡슐 중 가장 빠른 개봉일 */
+  const nextOpenDate: string | null = (() => {
+    const pending = capsules
+      .filter((c) => !c.isOpened)
+      .map((c) => c.openDate)
+      .sort();
+    return pending[0] ?? null;
+  })();
 
   return {
     capsules,
-    addCapsule,
+    // CRUD
+    createCapsule,
     deleteCapsule,
+    addMessage,
+    sealCapsule,
     openCapsule,
-    getAvailableCapsules,
-    getPendingCapsules,
-    loading: false,
+    // 헬퍼
+    isOpenable,
+    calcDaysLeft,
+    // 통계
+    totalCapsules,
+    sealedCount,
+    openedCount,
+    nextOpenDate,
+    // SWR
+    loading: data === undefined,
+    refetch: () => mutate(),
   };
 }

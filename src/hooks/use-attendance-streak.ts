@@ -1,128 +1,214 @@
 "use client";
 
 import useSWR from "swr";
-import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
-import { subDays, format, parseISO, isValid } from "date-fns";
-import type { AttendanceStreakData } from "@/types";
+import type { MemberStreak, StreakRecord } from "@/types";
 
-export function useAttendanceStreak(groupId: string, userId: string) {
-  const { data, isLoading, mutate } = useSWR(
-    groupId && userId ? swrKeys.attendanceStreak(groupId, userId) : null,
-    async (): Promise<AttendanceStreakData> => {
-      const supabase = createClient();
+// ─── localStorage 헬퍼 ────────────────────────────────────────
 
-      // 최근 90일 범위 계산
-      const today = new Date();
-      const ninetyDaysAgo = subDays(today, 89);
-      const rangeStart = ninetyDaysAgo.toISOString();
+const LS_KEY = (groupId: string) => `dancebase:streaks:${groupId}`;
 
-      // 해당 그룹의 출석 체크 대상 일정 조회 (최근 90일, attendance_method != none)
-      const { data: scheduleRows, error: schedErr } = await supabase
-        .from("schedules")
-        .select("id, starts_at")
-        .eq("group_id", groupId)
-        .neq("attendance_method", "none")
-        .gte("starts_at", rangeStart)
-        .lte("starts_at", today.toISOString())
-        .order("starts_at", { ascending: true });
-
-      if (schedErr) throw schedErr;
-
-      const scheduleIds = (scheduleRows ?? []).map((s: { id: string }) => s.id);
-
-      if (scheduleIds.length === 0) {
-        return {
-          currentStreak: 0,
-          longestStreak: 0,
-          totalPresent: 0,
-          streakDates: [],
-          monthlyGrid: buildEmptyGrid(ninetyDaysAgo, today),
-        };
-      }
-
-      // 해당 유저의 출석 기록 조회
-      const { data: attRows, error: attErr } = await supabase
-        .from("attendance")
-        .select("schedule_id, status")
-        .eq("user_id", userId)
-        .in("schedule_id", scheduleIds);
-
-      if (attErr) throw attErr;
-
-      // schedule_id → status 맵 (present / late = 출석으로 처리)
-      const statusMap = new Map<string, string>();
-      for (const row of attRows ?? []) {
-        statusMap.set(row.schedule_id, row.status);
-      }
-
-      // 일정을 날짜별로 집계 (한 날짜에 여러 일정이 있을 경우 하나라도 출석이면 출석)
-      const dateStatusMap = new Map<string, boolean>();
-      for (const s of scheduleRows ?? []) {
-        const parsed = parseISO(s.starts_at);
-        if (!isValid(parsed)) continue;
-        const dateKey = format(parsed, "yyyy-MM-dd");
-        const status = statusMap.get(s.id);
-        const isPresent = status === "present" || status === "late";
-        // 이미 출석 처리된 날짜면 유지, 아니면 현재 상태로 설정
-        if (!dateStatusMap.has(dateKey) || isPresent) {
-          dateStatusMap.set(dateKey, isPresent);
-        }
-      }
-
-      // 일정이 있는 날짜만 정렬된 배열로 변환
-      const sortedDates = Array.from(dateStatusMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b));
-
-      const totalPresent = sortedDates.filter(([, present]) => present).length;
-
-      // 현재 스트릭: 가장 최근부터 역순으로 연속 출석 날짜 수집
-      const streakDates: string[] = [];
-      let currentStreak = 0;
-      for (let i = sortedDates.length - 1; i >= 0; i--) {
-        const [date, present] = sortedDates[i];
-        if (present) {
-          currentStreak++;
-          streakDates.unshift(date);
-        } else {
-          break;
-        }
-      }
-
-      // 최장 스트릭 계산
-      let longestStreak = 0;
-      let tempStreak = 0;
-      for (const [, present] of sortedDates) {
-        if (present) {
-          tempStreak++;
-          if (tempStreak > longestStreak) longestStreak = tempStreak;
-        } else {
-          tempStreak = 0;
-        }
-      }
-
-      // 90일 그리드: 일정이 있는 날짜만 표시 (없으면 포함하지 않음)
-      const monthlyGrid = sortedDates.map(([date, present]) => ({ date, present }));
-
-      return { currentStreak, longestStreak, totalPresent, streakDates, monthlyGrid };
-    }
-  );
-
-  return {
-    currentStreak: data?.currentStreak ?? 0,
-    longestStreak: data?.longestStreak ?? 0,
-    totalPresent: data?.totalPresent ?? 0,
-    streakDates: data?.streakDates ?? [],
-    monthlyGrid: data?.monthlyGrid ?? [],
-    loading: isLoading,
-    refetch: () => mutate(),
-  };
+function loadMembers(groupId: string): MemberStreak[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(LS_KEY(groupId));
+    if (!raw) return [];
+    return JSON.parse(raw) as MemberStreak[];
+  } catch {
+    return [];
+  }
 }
 
-// 일정이 없을 때 빈 그리드 생성 (일정 있는 날짜만 담으므로 빈 배열 반환)
-function buildEmptyGrid(
-  _from: Date,
-  _to: Date
-): { date: string; present: boolean }[] {
-  return [];
+function saveMembers(groupId: string, members: MemberStreak[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LS_KEY(groupId), JSON.stringify(members));
+  } catch {
+    /* ignore */
+  }
+}
+
+// ─── 스트릭 계산 헬퍼 ────────────────────────────────────────
+
+/** 날짜 문자열을 숫자(yyyymmdd)로 변환해 정렬 비교 */
+function dateNum(d: string): number {
+  return parseInt(d.replace(/-/g, ""), 10);
+}
+
+/** 출석 기록 배열에서 현재 스트릭 / 최장 스트릭을 계산 */
+function calcStreaks(records: StreakRecord[]): {
+  currentStreak: number;
+  longestStreak: number;
+} {
+  if (records.length === 0) return { currentStreak: 0, longestStreak: 0 };
+
+  // 날짜 오름차순 정렬
+  const sorted = [...records].sort((a, b) => dateNum(a.date) - dateNum(b.date));
+
+  // 최장 스트릭: 연속 출석 최대 구간
+  let longestStreak = 0;
+  let tempStreak = 0;
+  for (const rec of sorted) {
+    if (rec.attended) {
+      tempStreak++;
+      if (tempStreak > longestStreak) longestStreak = tempStreak;
+    } else {
+      tempStreak = 0;
+    }
+  }
+
+  // 현재 스트릭: 가장 최근 기록부터 역순으로 연속 출석 계산
+  let currentStreak = 0;
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    if (sorted[i].attended) {
+      currentStreak++;
+    } else {
+      break;
+    }
+  }
+
+  return { currentStreak, longestStreak };
+}
+
+/** MemberStreak 객체의 통계 필드를 재계산하여 반환 */
+function recalc(member: MemberStreak): MemberStreak {
+  const { currentStreak, longestStreak } = calcStreaks(member.records);
+  const totalAttended = member.records.filter((r) => r.attended).length;
+  const totalSessions = member.records.length;
+  return { ...member, currentStreak, longestStreak, totalAttended, totalSessions };
+}
+
+// ─── 훅 ─────────────────────────────────────────────────────
+
+export function useAttendanceStreak(groupId: string) {
+  const { data, mutate } = useSWR(
+    groupId ? swrKeys.attendanceStreakGroup(groupId) : null,
+    () => loadMembers(groupId),
+    { revalidateOnFocus: false }
+  );
+
+  const members: MemberStreak[] = data ?? [];
+
+  // ── 내부 업데이트 헬퍼 ───────────────────────────────────
+
+  function update(next: MemberStreak[]): void {
+    saveMembers(groupId, next);
+    mutate(next, false);
+  }
+
+  // ── 멤버 추가 ────────────────────────────────────────────
+
+  function addMember(name: string): boolean {
+    if (!name.trim()) return false;
+    const stored = loadMembers(groupId);
+    if (stored.some((m) => m.memberName === name.trim())) return false;
+    const newMember: MemberStreak = {
+      id: crypto.randomUUID(),
+      memberName: name.trim(),
+      records: [],
+      currentStreak: 0,
+      longestStreak: 0,
+      totalAttended: 0,
+      totalSessions: 0,
+    };
+    update([...stored, newMember]);
+    return true;
+  }
+
+  // ── 멤버 삭제 ────────────────────────────────────────────
+
+  function deleteMember(memberId: string): boolean {
+    const stored = loadMembers(groupId);
+    const next = stored.filter((m) => m.id !== memberId);
+    if (next.length === stored.length) return false;
+    update(next);
+    return true;
+  }
+
+  // ── 출석 기록 추가/수정 ──────────────────────────────────
+
+  function recordAttendance(
+    memberId: string,
+    date: string,
+    attended: boolean
+  ): boolean {
+    const stored = loadMembers(groupId);
+    const idx = stored.findIndex((m) => m.id === memberId);
+    if (idx === -1) return false;
+
+    const member = stored[idx];
+    const existingIdx = member.records.findIndex((r) => r.date === date);
+
+    let nextRecords: StreakRecord[];
+    if (existingIdx !== -1) {
+      nextRecords = member.records.map((r, i) =>
+        i === existingIdx ? { ...r, attended } : r
+      );
+    } else {
+      nextRecords = [...member.records, { date, attended }];
+    }
+
+    const updated = recalc({ ...member, records: nextRecords });
+    const next = stored.map((m, i) => (i === idx ? updated : m));
+    update(next);
+    return true;
+  }
+
+  // ── 출석 기록 삭제 ───────────────────────────────────────
+
+  function deleteRecord(memberId: string, date: string): boolean {
+    const stored = loadMembers(groupId);
+    const idx = stored.findIndex((m) => m.id === memberId);
+    if (idx === -1) return false;
+
+    const member = stored[idx];
+    const nextRecords = member.records.filter((r) => r.date !== date);
+    if (nextRecords.length === member.records.length) return false;
+
+    const updated = recalc({ ...member, records: nextRecords });
+    const next = stored.map((m, i) => (i === idx ? updated : m));
+    update(next);
+    return true;
+  }
+
+  // ── 통계 ─────────────────────────────────────────────────
+
+  /** 최장 스트릭 보유자 */
+  const bestStreaker: MemberStreak | null =
+    members.length === 0
+      ? null
+      : members.reduce((best, m) =>
+          m.longestStreak > best.longestStreak ? m : best
+        );
+
+  /** 평균 현재 스트릭 */
+  const avgStreak: number =
+    members.length === 0
+      ? 0
+      : Math.round(
+          members.reduce((sum, m) => sum + m.currentStreak, 0) / members.length
+        );
+
+  /** 그룹 전체 출석률 (%) */
+  const groupAttendanceRate: number = (() => {
+    const totalSessions = members.reduce((s, m) => s + m.totalSessions, 0);
+    if (totalSessions === 0) return 0;
+    const totalAttended = members.reduce((s, m) => s + m.totalAttended, 0);
+    return Math.round((totalAttended / totalSessions) * 100);
+  })();
+
+  return {
+    members,
+    // CRUD
+    addMember,
+    deleteMember,
+    recordAttendance,
+    deleteRecord,
+    // 통계
+    bestStreaker,
+    avgStreak,
+    groupAttendanceRate,
+    // SWR
+    refetch: () => mutate(),
+  };
 }

@@ -4801,11 +4801,19 @@ export type KudosMessage = {
 
 export type TimeCapsuleMessage = {
   id: string;
-  author: string;       // 작성자 이름
-  message: string;      // 메시지 내용
-  openDate: string;     // YYYY-MM-DD 개봉일
+  authorName: string;
+  content: string;
   createdAt: string;
-  isOpened: boolean;
+};
+
+export type TimeCapsule = {
+  id: string;
+  title: string;
+  openDate: string; // YYYY-MM-DD (개봉일)
+  messages: TimeCapsuleMessage[];
+  isSealed: boolean; // 봉인 여부
+  isOpened: boolean; // 개봉 여부
+  createdAt: string;
 };
 
 // ============================================
@@ -6002,5 +6010,88 @@ export type RoleRotationConfig = {
   members: string[];
   assignments: RotationAssignment[];
   rotationWeeks: number; // 몇 주마다 교체
+  createdAt: string;
+};
+
+// ============================================
+// Ticket Management (공연 티켓 관리)
+// ============================================
+
+export type TicketTier = "vip" | "general" | "student" | "free";
+
+export type TicketReservation = {
+  id: string;
+  buyerName: string;
+  buyerContact: string;
+  tier: TicketTier;
+  quantity: number;
+  totalPrice: number;
+  isPaid: boolean;
+  reservedAt: string;
+  note: string;
+};
+
+export type TicketConfig = {
+  id: string;
+  eventName: string;
+  eventDate: string;
+  tiers: { tier: TicketTier; price: number; capacity: number }[];
+  reservations: TicketReservation[];
+  createdAt: string;
+};
+
+// ============================================
+// Video Feedback (영상 피드백)
+// ============================================
+
+export type VideoFeedbackTimestamp = {
+  id: string;
+  time: string; // "MM:SS" 형태
+  authorName: string;
+  comment: string;
+  category: "praise" | "correction" | "question" | "idea";
+  createdAt: string;
+};
+
+export type VideoFeedbackItem = {
+  id: string;
+  title: string;
+  videoUrl: string;
+  timestamps: VideoFeedbackTimestamp[];
+  createdAt: string;
+};
+
+// ============================================
+// Attendance Streak (출결 스트릭)
+// ============================================
+
+export type StreakRecord = {
+  date: string; // YYYY-MM-DD
+  attended: boolean;
+};
+
+export type MemberStreak = {
+  id: string;
+  memberName: string;
+  records: StreakRecord[];
+  currentStreak: number;
+  longestStreak: number;
+  totalAttended: number;
+  totalSessions: number;
+};
+
+// ============================================
+// Impression Wall (소감 벽)
+// ============================================
+
+export type ImpressionMood = "happy" | "proud" | "tired" | "excited" | "grateful" | "reflective";
+
+export type ImpressionPost = {
+  id: string;
+  authorName: string;
+  content: string;
+  mood: ImpressionMood;
+  likes: number;
+  eventTitle: string; // 관련 공연/연습명
   createdAt: string;
 };

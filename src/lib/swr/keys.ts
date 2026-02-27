@@ -783,4 +783,24 @@ export const swrKeys = {
   // 역할 로테이션 (localStorage 기반)
   roleRotation: (groupId: string) =>
     `role-rotation-${groupId}` as const,
+
+  // 공연 티켓 관리 (localStorage 기반)
+  ticketManagement: (groupId: string, projectId: string) =>
+    `ticket-management-${groupId}-${projectId}` as const,
+
+  // 영상 피드백 (localStorage 기반)
+  videoFeedback: (groupId: string, projectId: string) =>
+    `video-feedback-${groupId}-${projectId}` as const,
+
+  // 소감 벽 (localStorage 기반)
+  impressionWall: (groupId: string) =>
+    `impression-wall-${groupId}` as const,
+
+  // 타임캡슐 (localStorage 기반)
+  timeCapsule: (groupId: string) =>
+    `time-capsule-${groupId}` as const,
+
+  // 그룹 출결 스트릭 (localStorage 기반)
+  attendanceStreakGroup: (groupId: string) =>
+    `attendance-streak-group-${groupId}` as const,
 };

@@ -1,24 +1,149 @@
 "use client";
 
 import { useState } from "react";
-import { Flame, Trophy, CalendarDays, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import useSWR from "swr";
+import {
+  Flame,
+  Trophy,
+  CalendarDays,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { useAttendanceStreak } from "@/hooks/use-attendance-streak";
-import { format, parseISO } from "date-fns";
+import { createClient } from "@/lib/supabase/client";
+import { swrKeys } from "@/lib/swr/keys";
+import { format, parseISO, subDays, isValid } from "date-fns";
 import { ko } from "date-fns/locale";
+
+// ─── 로컬 타입 ────────────────────────────────────────────────
+
+type StreakData = {
+  currentStreak: number;
+  longestStreak: number;
+  totalPresent: number;
+  monthlyGrid: { date: string; present: boolean }[];
+};
+
+// ─── Supabase 기반 개인 스트릭 fetcher ───────────────────────
+
+async function fetchAttendanceStreak(
+  groupId: string,
+  userId: string
+): Promise<StreakData> {
+  const supabase = createClient();
+  const today = new Date();
+  const ninetyDaysAgo = subDays(today, 89);
+  const rangeStart = ninetyDaysAgo.toISOString();
+
+  const { data: scheduleRows, error: schedErr } = await supabase
+    .from("schedules")
+    .select("id, starts_at")
+    .eq("group_id", groupId)
+    .neq("attendance_method", "none")
+    .gte("starts_at", rangeStart)
+    .lte("starts_at", today.toISOString())
+    .order("starts_at", { ascending: true });
+
+  if (schedErr) throw schedErr;
+
+  const scheduleIds = (scheduleRows ?? []).map((s: { id: string }) => s.id);
+
+  if (scheduleIds.length === 0) {
+    return {
+      currentStreak: 0,
+      longestStreak: 0,
+      totalPresent: 0,
+      monthlyGrid: [],
+    };
+  }
+
+  const { data: attRows, error: attErr } = await supabase
+    .from("attendance")
+    .select("schedule_id, status")
+    .eq("user_id", userId)
+    .in("schedule_id", scheduleIds);
+
+  if (attErr) throw attErr;
+
+  const statusMap = new Map<string, string>();
+  for (const row of attRows ?? []) {
+    statusMap.set(row.schedule_id, row.status);
+  }
+
+  const dateStatusMap = new Map<string, boolean>();
+  for (const s of scheduleRows ?? []) {
+    const parsed = parseISO(s.starts_at);
+    if (!isValid(parsed)) continue;
+    const dateKey = format(parsed, "yyyy-MM-dd");
+    const status = statusMap.get(s.id);
+    const isPresent = status === "present" || status === "late";
+    if (!dateStatusMap.has(dateKey) || isPresent) {
+      dateStatusMap.set(dateKey, isPresent);
+    }
+  }
+
+  const sortedDates = Array.from(dateStatusMap.entries()).sort(([a], [b]) =>
+    a.localeCompare(b)
+  );
+
+  const totalPresent = sortedDates.filter(([, present]) => present).length;
+
+  let currentStreak = 0;
+  for (let i = sortedDates.length - 1; i >= 0; i--) {
+    const [, present] = sortedDates[i];
+    if (present) {
+      currentStreak++;
+    } else {
+      break;
+    }
+  }
+
+  let longestStreak = 0;
+  let tempStreak = 0;
+  for (const [, present] of sortedDates) {
+    if (present) {
+      tempStreak++;
+      if (tempStreak > longestStreak) longestStreak = tempStreak;
+    } else {
+      tempStreak = 0;
+    }
+  }
+
+  const monthlyGrid = sortedDates.map(([date, present]) => ({ date, present }));
+
+  return { currentStreak, longestStreak, totalPresent, monthlyGrid };
+}
+
+// ─── 컴포넌트 ─────────────────────────────────────────────────
 
 type AttendanceStreakCardProps = {
   groupId: string;
   userId: string;
 };
 
-export function AttendanceStreakCard({ groupId, userId }: AttendanceStreakCardProps) {
+export function AttendanceStreakCard({
+  groupId,
+  userId,
+}: AttendanceStreakCardProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { currentStreak, longestStreak, totalPresent, monthlyGrid, loading } =
-    useAttendanceStreak(groupId, userId);
+
+  const { data, isLoading } = useSWR(
+    groupId && userId ? swrKeys.attendanceStreak(groupId, userId) : null,
+    () => fetchAttendanceStreak(groupId, userId)
+  );
+
+  const currentStreak = data?.currentStreak ?? 0;
+  const longestStreak = data?.longestStreak ?? 0;
+  const totalPresent = data?.totalPresent ?? 0;
+  const monthlyGrid = data?.monthlyGrid ?? [];
 
   const isHighStreak = currentStreak >= 10;
   const isMediumStreak = currentStreak >= 5 && currentStreak < 10;
@@ -40,7 +165,9 @@ export function AttendanceStreakCard({ groupId, userId }: AttendanceStreakCardPr
             <div className="flex items-center gap-1.5">
               <Flame
                 className={`h-4 w-4 ${
-                  showFlameAnimation ? "text-amber-500" : "text-muted-foreground"
+                  showFlameAnimation
+                    ? "text-amber-500"
+                    : "text-muted-foreground"
                 }`}
               />
               나의 출석 스트릭
@@ -51,7 +178,7 @@ export function AttendanceStreakCard({ groupId, userId }: AttendanceStreakCardPr
                   }`}
                   variant="outline"
                 >
-                  🔥 {currentStreak}일 연속
+                  {currentStreak}일 연속
                 </Badge>
               )}
             </div>
@@ -73,7 +200,7 @@ export function AttendanceStreakCard({ groupId, userId }: AttendanceStreakCardPr
         </CardHeader>
 
         <CardContent>
-          {loading ? (
+          {isLoading ? (
             <div className="flex justify-center py-4">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
@@ -81,15 +208,18 @@ export function AttendanceStreakCard({ groupId, userId }: AttendanceStreakCardPr
             <>
               {/* 상단 통계 3개 */}
               <div className="grid grid-cols-3 gap-3">
-                {/* 현재 연속 */}
                 <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-background/60">
                   <div className="flex items-center gap-1">
                     <Flame
                       className={`h-3.5 w-3.5 ${
-                        showFlameAnimation ? "text-amber-500" : "text-muted-foreground"
+                        showFlameAnimation
+                          ? "text-amber-500"
+                          : "text-muted-foreground"
                       }`}
                     />
-                    <span className="text-[10px] text-muted-foreground font-medium">현재 연속</span>
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                      현재 연속
+                    </span>
                   </div>
                   <span
                     className={`text-2xl font-bold tabular-nums leading-none ${
@@ -105,11 +235,12 @@ export function AttendanceStreakCard({ groupId, userId }: AttendanceStreakCardPr
                   <span className="text-[10px] text-muted-foreground">일</span>
                 </div>
 
-                {/* 최장 기록 */}
                 <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-background/60">
                   <div className="flex items-center gap-1">
                     <Trophy className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground font-medium">최장 기록</span>
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                      최장 기록
+                    </span>
                   </div>
                   <span className="text-2xl font-bold tabular-nums leading-none text-foreground">
                     {longestStreak}
@@ -117,11 +248,12 @@ export function AttendanceStreakCard({ groupId, userId }: AttendanceStreakCardPr
                   <span className="text-[10px] text-muted-foreground">일</span>
                 </div>
 
-                {/* 총 출석 */}
                 <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-background/60">
                   <div className="flex items-center gap-1">
                     <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-[10px] text-muted-foreground font-medium">총 출석</span>
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                      총 출석
+                    </span>
                   </div>
                   <span
                     className={`text-2xl font-bold tabular-nums leading-none ${
@@ -167,7 +299,10 @@ export function AttendanceStreakCard({ groupId, userId }: AttendanceStreakCardPr
                       최근 90일 내 출석 데이터가 없습니다.
                     </p>
                   ) : (
-                    <div className="grid gap-1" style={{ gridTemplateColumns: "repeat(15, 1fr)" }}>
+                    <div
+                      className="grid gap-1"
+                      style={{ gridTemplateColumns: "repeat(15, 1fr)" }}
+                    >
                       {monthlyGrid.map(({ date, present }) => {
                         const parsed = parseISO(date);
                         const label = format(parsed, "M/d", { locale: ko });
@@ -176,9 +311,7 @@ export function AttendanceStreakCard({ groupId, userId }: AttendanceStreakCardPr
                             key={date}
                             title={`${label} - ${present ? "출석" : "결석"}`}
                             className={`aspect-square rounded-sm cursor-default transition-opacity hover:opacity-80 ${
-                              present
-                                ? "bg-green-500"
-                                : "bg-red-400"
+                              present ? "bg-green-500" : "bg-red-400"
                             }`}
                           />
                         );
