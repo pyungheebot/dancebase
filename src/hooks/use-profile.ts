@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { useAuth } from "@/hooks/use-auth";
 import { filterProfileByPrivacy } from "@/lib/privacy";
-import type { Profile, PublicProfile } from "@/types";
+import type { Profile, PublicProfile, PublicProfileGroup } from "@/types";
 
 export function useUserProfile(userId: string) {
   const { user } = useAuth();
@@ -69,6 +69,62 @@ export function useUserProfile(userId: string) {
             .map((row) => row.groups.name);
         } else {
           filtered.teams = [];
+        }
+
+        // 소속 그룹 조회 (그룹 visibility + member_count 포함)
+        const { data: memberGroupRows } = await supabase
+          .from("group_members")
+          .select("groups!inner(id, name, avatar_url, dance_genre, group_type, visibility)")
+          .eq("user_id", userId);
+
+        if (memberGroupRows && memberGroupRows.length > 0) {
+          const isOwner = user?.id === userId;
+
+          type MemberGroupRow = {
+            groups: {
+              id: string;
+              name: string;
+              avatar_url: string | null;
+              dance_genre: string[];
+              group_type: string;
+              visibility: string;
+            };
+          };
+
+          // visibility 필터링: 본인이면 전체, 아니면 public만
+          const visibleGroups = (memberGroupRows as MemberGroupRow[]).filter((row) => {
+            if (isOwner) return true;
+            return row.groups.visibility === "public";
+          });
+
+          // 각 그룹의 멤버 수 조회
+          const groupIds = visibleGroups.map((row) => row.groups.id);
+          const memberCountMap: Record<string, number> = {};
+
+          if (groupIds.length > 0) {
+            const { data: countRows } = await supabase
+              .from("group_members")
+              .select("group_id")
+              .in("group_id", groupIds);
+
+            if (countRows) {
+              for (const row of countRows) {
+                memberCountMap[row.group_id] = (memberCountMap[row.group_id] ?? 0) + 1;
+              }
+            }
+          }
+
+          filtered.groups = visibleGroups.map((row): PublicProfileGroup => ({
+            id: row.groups.id,
+            name: row.groups.name,
+            avatar_url: row.groups.avatar_url,
+            dance_genre: row.groups.dance_genre ?? [],
+            group_type: row.groups.group_type as PublicProfileGroup["group_type"],
+            visibility: row.groups.visibility as PublicProfileGroup["visibility"],
+            member_count: memberCountMap[row.groups.id] ?? 0,
+          }));
+        } else {
+          filtered.groups = [];
         }
 
         profile = filtered;

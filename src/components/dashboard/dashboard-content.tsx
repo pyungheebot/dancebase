@@ -8,6 +8,7 @@ import { useEntityDashboardSettings } from "@/hooks/use-entity-dashboard-setting
 import { DashboardSettingsDialog } from "@/components/groups/dashboard-settings-dialog";
 import { ScheduleCard, AttendanceCard, PostsCard, FinanceCard } from "@/components/dashboard/dashboard-cards";
 import { SubgroupsCard } from "@/components/dashboard/subgroups-card";
+import { ProjectSummaryCards } from "@/components/dashboard/project-summary-cards";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
@@ -206,6 +207,11 @@ export function DashboardContent({ ctx, financeRole }: DashboardContentProps) {
 
   return (
     <>
+      {/* 프로젝트 요약 카드 (프로젝트 대시보드 전용) */}
+      {!isGroup && (
+        <ProjectSummaryCards ctx={ctx} schedules={schedules} />
+      )}
+
       <div className={`flex justify-end ${isGroup ? "mb-3" : "-mt-2 mb-2"}`}>
         <DashboardSettingsDialog
           allCards={allCards}

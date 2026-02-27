@@ -21,6 +21,8 @@ export type ProjectFormValues = {
   status: string;
   visibility: ProjectVisibility;
   features: ProjectFeature[];
+  start_date: string;
+  end_date: string;
 };
 
 export const DEFAULT_PROJECT_FORM_VALUES: ProjectFormValues = {
@@ -30,6 +32,8 @@ export const DEFAULT_PROJECT_FORM_VALUES: ProjectFormValues = {
   status: "신규",
   visibility: "private",
   features: ["board"],
+  start_date: "",
+  end_date: "",
 };
 
 type ProjectFormFieldsProps = {
@@ -100,6 +104,26 @@ export function ProjectFormFields({
           </Select>
         </div>
       )}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">시작일 (선택)</Label>
+          <Input
+            className="mt-1"
+            type="date"
+            value={values.start_date}
+            onChange={(e) => onChange("start_date", e.target.value)}
+          />
+        </div>
+        <div>
+          <Label className="text-xs">종료일 (선택)</Label>
+          <Input
+            className="mt-1"
+            type="date"
+            value={values.end_date}
+            onChange={(e) => onChange("end_date", e.target.value)}
+          />
+        </div>
+      </div>
       <div>
         <Label className="text-xs">공개 설정</Label>
         <Select

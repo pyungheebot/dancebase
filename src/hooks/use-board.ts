@@ -12,6 +12,7 @@ import type {
   BoardPoll,
   BoardPollOptionWithVotes,
   BoardPostAttachment,
+  BoardPostLike,
   BoardCategoryRow,
 } from "@/types";
 
@@ -29,7 +30,10 @@ export function useBoard(groupId: string, projectId?: string | null) {
 
       let query = supabase
         .from("board_posts")
-        .select("*, profiles(id, name, avatar_url), board_comments(count), projects(id, name)", { count: "exact" })
+        .select(
+          "*, profiles(id, name, avatar_url), board_comments(count), board_post_likes(count), projects(id, name)",
+          { count: "exact" },
+        )
         .eq("group_id", groupId)
         .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false });
@@ -39,11 +43,17 @@ export function useBoard(groupId: string, projectId?: string | null) {
       } else {
         const { data: independentEntities } = await supabase.rpc(
           "get_independent_entity_ids",
-          { p_group_id: groupId, p_feature: "board" }
+          { p_group_id: groupId, p_feature: "board" },
         );
-        const excludeIds = (independentEntities || []).map((e: { entity_id: string }) => e.entity_id);
+        const excludeIds = (independentEntities || []).map(
+          (e: { entity_id: string }) => e.entity_id,
+        );
         if (excludeIds.length > 0) {
-          query = query.not("project_id", "in", `(${excludeIds.join(",")})`);
+          query = query.not(
+            "project_id",
+            "in",
+            `(${excludeIds.join(",")})`,
+          );
         }
       }
 
@@ -52,7 +62,9 @@ export function useBoard(groupId: string, projectId?: string | null) {
       }
 
       if (search.trim()) {
-        query = query.or(`title.ilike.%${search.trim()}%,content.ilike.%${search.trim()}%`);
+        query = query.or(
+          `title.ilike.%${search.trim()}%,content.ilike.%${search.trim()}%`,
+        );
       }
 
       // 페이지네이션
@@ -65,8 +77,12 @@ export function useBoard(groupId: string, projectId?: string | null) {
       if (data) {
         const posts = data.map((post: Record<string, unknown>) => ({
           ...post,
-          comment_count: (post.board_comments as { count: number }[])?.[0]?.count ?? 0,
+          comment_count:
+            (post.board_comments as { count: number }[])?.[0]?.count ?? 0,
+          like_count:
+            (post.board_post_likes as { count: number }[])?.[0]?.count ?? 0,
           board_comments: undefined,
+          board_post_likes: undefined,
         })) as unknown as BoardPostWithDetails[];
         return { posts, totalCount: count ?? 0 };
       }
@@ -131,7 +147,16 @@ export function useBoardPost(postId: string) {
           .maybeSingle(),
       ]);
 
-      const post = (postRes.data as (BoardPost & { profiles: { id: string; name: string; avatar_url: string | null } }) | null) ?? null;
+      const post =
+        (postRes.data as
+          | (BoardPost & {
+              profiles: {
+                id: string;
+                name: string;
+                avatar_url: string | null;
+              };
+            })
+          | null) ?? null;
       const comments = (commentsRes.data as BoardCommentWithProfile[]) ?? [];
       let poll: BoardPoll | null = null;
       let pollOptions: BoardPollOptionWithVotes[] = [];
@@ -143,7 +168,8 @@ export function useBoardPost(postId: string) {
           "get_poll_options_with_votes",
           {
             p_poll_id: pollRes.data.id,
-            p_user_id: user?.id ?? "00000000-0000-0000-0000-000000000000",
+            p_user_id:
+              user?.id ?? "00000000-0000-0000-0000-000000000000",
           },
         );
 
@@ -189,8 +215,43 @@ export function useBoardPostAttachments(postId: string) {
   };
 }
 
+export function useBoardPostLikes(postId: string) {
+  const { data, isLoading, mutate } = useSWR(
+    swrKeys.boardPostLikes(postId),
+    async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const { data: likes, error } = await supabase
+        .from("board_post_likes")
+        .select("*")
+        .eq("post_id", postId);
+
+      if (error) return { likes: [] as BoardPostLike[], likedByMe: false };
+
+      const typedLikes = (likes ?? []) as BoardPostLike[];
+      const likedByMe = user
+        ? typedLikes.some((l) => l.user_id === user.id)
+        : false;
+      return { likes: typedLikes, likedByMe };
+    },
+  );
+
+  return {
+    likeCount: data?.likes.length ?? 0,
+    likedByMe: data?.likedByMe ?? false,
+    loading: isLoading,
+    refetch: () => mutate(),
+    mutate,
+  };
+}
+
 // 기본 카테고리 목록 ("전체" 제외)
-const DEFAULT_WRITE_CATEGORIES = BOARD_CATEGORIES.filter((c) => c !== "전체") as string[];
+const DEFAULT_WRITE_CATEGORIES = BOARD_CATEGORIES.filter(
+  (c) => c !== "전체",
+) as string[];
 
 export function useBoardCategories(groupId: string) {
   const { data, isLoading, mutate } = useSWR(

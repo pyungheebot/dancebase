@@ -7,9 +7,9 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { FollowButton } from "@/components/profile/follow-button";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserProfile } from "@/hooks/use-profile";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   Loader2,
@@ -19,6 +19,7 @@ import {
   Youtube,
   Phone,
   Cake,
+  ChevronRight,
 } from "lucide-react";
 
 export default function UserProfilePage({
@@ -61,9 +62,11 @@ export default function UserProfilePage({
     );
   }
 
+  const groups = profile?.groups ?? [];
+
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto px-6 py-6">
+      <div className="max-w-2xl mx-auto px-6 py-6 space-y-4">
         <Card>
           <CardContent className="pt-4">
             {/* 프로필 헤더 */}
@@ -195,6 +198,65 @@ export default function UserProfilePage({
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* 소속 그룹 섹션 */}
+        <Card>
+          <CardHeader className="px-4 py-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              소속 그룹
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4 pt-0">
+            {groups.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-4">
+                소속 그룹이 없습니다
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {groups.map((group) => (
+                  <Link
+                    key={group.id}
+                    href={`/groups/${group.id}`}
+                    className="flex items-center gap-3 rounded-lg border p-2.5 hover:bg-muted/50 transition-colors"
+                  >
+                    <Avatar className="h-9 w-9 shrink-0">
+                      <AvatarImage src={group.avatar_url ?? undefined} />
+                      <AvatarFallback className="text-xs">
+                        {group.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{group.name}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0"
+                        >
+                          {group.group_type}
+                        </Badge>
+                        {group.dance_genre.slice(0, 2).map((genre) => (
+                          <Badge
+                            key={genre}
+                            variant="secondary"
+                            className="text-[10px] px-1.5 py-0"
+                          >
+                            {genre}
+                          </Badge>
+                        ))}
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                          <Users className="h-3 w-3" />
+                          {group.member_count}명
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </Link>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

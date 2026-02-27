@@ -52,6 +52,8 @@ export function ProjectForm({ groupId, onCreated }: ProjectFormProps) {
       p_type: form.type,
       p_enabled_features: form.features,
       p_visibility: form.visibility,
+      p_start_date: form.start_date || null,
+      p_end_date: form.end_date || null,
     });
 
     if (error) {

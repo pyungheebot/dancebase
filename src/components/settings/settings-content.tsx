@@ -147,6 +147,8 @@ export function SettingsContent({
         status: project.status,
         visibility: project.visibility ?? "private",
         features: (['board', 'schedule', 'attendance', 'finance'] as const).filter(f => ctx.features[f]),
+        start_date: project.start_date ?? "",
+        end_date: project.end_date ?? "",
       });
     }
   }, [isGroup, project]);
@@ -433,6 +435,8 @@ export function SettingsContent({
           type: projectForm.type,
           status: projectForm.status,
           visibility: projectForm.visibility,
+          start_date: projectForm.start_date || null,
+          end_date: projectForm.end_date || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", ctx.projectId);

@@ -60,6 +60,16 @@ export type Profile = {
   updated_at: string;
 };
 
+export type PublicProfileGroup = {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+  dance_genre: string[];
+  group_type: "팀" | "동호회" | "친목" | "기타";
+  visibility: "public" | "unlisted" | "private";
+  member_count: number;
+};
+
 export type PublicProfile = {
   id: string;
   name: string;
@@ -73,6 +83,7 @@ export type PublicProfile = {
   active_region: string | null;
   dance_genre_start_dates: Record<string, string> | null;
   teams: string[] | null;
+  groups: PublicProfileGroup[] | null;
   created_at: string;
 };
 
@@ -320,6 +331,8 @@ export type Project = {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  start_date: string | null;
+  end_date: string | null;
 };
 
 export type ProjectSharedGroup = {
@@ -411,6 +424,7 @@ export type BoardPost = {
 export type BoardPostWithDetails = BoardPost & {
   profiles: Pick<Profile, "id" | "name" | "avatar_url">;
   comment_count: number;
+  like_count: number;
   projects?: Pick<Project, "id" | "name"> | null;
 };
 
@@ -459,6 +473,13 @@ export type BoardPostAttachment = {
   file_name: string;
   file_type: string;
   file_size: number;
+  created_at: string;
+};
+
+export type BoardPostLike = {
+  id: string;
+  post_id: string;
+  user_id: string;
   created_at: string;
 };
 

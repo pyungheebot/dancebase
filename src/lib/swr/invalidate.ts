@@ -54,6 +54,10 @@ export function invalidateBoardPostAttachments(postId: string) {
   mutate(swrKeys.boardPostAttachments(postId));
 }
 
+export function invalidateBoardPostLikes(postId: string) {
+  mutate(swrKeys.boardPostLikes(postId));
+}
+
 export function invalidateBoardCategories(groupId: string) {
   mutate(swrKeys.boardCategories(groupId));
 }

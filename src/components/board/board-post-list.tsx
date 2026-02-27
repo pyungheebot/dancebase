@@ -7,7 +7,7 @@ import { useBoard, useBoardCategories } from "@/hooks/use-board";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, Pin, FolderOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageSquare, Heart, Pin, FolderOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BoardPostForm } from "./board-post-form";
 import { cn } from "@/lib/utils";
@@ -137,6 +137,12 @@ export function BoardPostList({
                   <span className="flex items-center gap-0.5 text-muted-foreground shrink-0">
                     <MessageSquare className="h-2.5 w-2.5" />
                     {post.comment_count}
+                  </span>
+                )}
+                {post.like_count > 0 && (
+                  <span className="flex items-center gap-0.5 text-rose-400 shrink-0">
+                    <Heart className="h-2.5 w-2.5 fill-current" />
+                    {post.like_count}
                   </span>
                 )}
               </div>

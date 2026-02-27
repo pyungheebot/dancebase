@@ -1,4 +1,4 @@
-import type { Profile, PublicProfile, PrivacyField, PrivacySettings, DEFAULT_PRIVACY_SETTINGS } from "@/types";
+import type { Profile, PublicProfile, PrivacyField, PrivacySettings } from "@/types";
 
 type FilterOptions = {
   viewerId: string | null;
@@ -37,7 +37,8 @@ export function filterProfileByPrivacy(
       youtube: profile.youtube,
       active_region: profile.active_region,
       dance_genre_start_dates: profile.dance_genre_start_dates,
-      teams: [],  // hook에서 채움
+      teams: [],   // hook에서 채움
+      groups: [],  // hook에서 채움
       created_at: profile.created_at,
     };
   }
@@ -65,7 +66,8 @@ export function filterProfileByPrivacy(
     youtube: null,
     active_region: null,
     dance_genre_start_dates: null,
-    teams: [],  // hook에서 팀별 개별 공개 설정에 따라 채움
+    teams: [],   // hook에서 팀별 개별 공개 설정에 따라 채움
+    groups: [],  // hook에서 그룹 visibility에 따라 채움
     created_at: profile.created_at,
   };
 

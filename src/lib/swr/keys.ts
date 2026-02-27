@@ -27,6 +27,7 @@ export const swrKeys = {
     `/groups/${groupId}/board?project=${projectId ?? ""}&category=${category}&search=${search}&page=${page}` as const,
   boardPost: (postId: string) => `/board-posts/${postId}` as const,
   boardPostAttachments: (postId: string) => `/board-posts/${postId}/attachments` as const,
+  boardPostLikes: (postId: string) => `/board-posts/${postId}/likes` as const,
   boardCategories: (groupId: string) => `/groups/${groupId}/board-categories` as const,
 
   // 회비
