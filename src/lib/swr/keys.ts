@@ -527,4 +527,12 @@ export const swrKeys = {
   // 그룹 멤버 목록 (역할 배지 할당용)
   groupMembersForRoleBadge: (groupId: string) =>
     `/groups/${groupId}/members-for-role-badge` as const,
+
+  // 일정별 참석 요약
+  scheduleAttendanceSummary: (scheduleId: string) =>
+    `/schedules/${scheduleId}/attendance-summary` as const,
+
+  // 짝꿍 매칭용 멤버 목록
+  partnerMatchingMembers: (groupId: string) =>
+    `/groups/${groupId}/partner-matching-members` as const,
 };

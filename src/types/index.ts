@@ -3670,6 +3670,28 @@ export const DEFAULT_ROLE_BADGES: RoleBadge[] = [
   },
 ];
 
+// ============================================
+// Skill Evolution Tracker (스킬 성장 타임라인, localStorage 기반)
+// ============================================
+
+/** 스킬 성장 타임라인 - 월별 스냅샷 단일 항목 */
+export type SkillMonthlySnapshot = {
+  /** "YYYY-MM" 형식 (예: "2026-02") */
+  month: string;
+  /** 카테고리별 점수 (1~5) */
+  scores: Record<SkillCategory, number>;
+  /** 6개 평균 점수 (소수점 2자리) */
+  avgScore: number;
+  /** 기록 시각 (ISO 8601) */
+  recordedAt: string;
+};
+
+/** 스킬 성장 타임라인 전체 저장 단위 */
+export type SkillEvolutionData = {
+  /** 최신순 정렬된 월별 스냅샷 목록 (최대 12개) */
+  snapshots: SkillMonthlySnapshot[];
+};
+
 /** 역할 배지 색상별 Tailwind 클래스 */
 export const ROLE_BADGE_COLOR_CLASSES: Record<
   RoleBadgeColor,
@@ -3711,4 +3733,173 @@ export const ROLE_BADGE_COLOR_CLASSES: Record<
     border: "border-pink-200",
     dot: "bg-pink-500",
   },
+};
+
+// ============================================
+// Decision Log (그룹 의사결정 로그, localStorage 기반)
+// ============================================
+
+/** 의사결정 영향도 */
+export type DecisionImpact = "high" | "medium" | "low";
+
+/** 의사결정 카테고리 */
+export type DecisionCategory =
+  | "규칙 변경"
+  | "멤버 관리"
+  | "재무"
+  | "일정"
+  | "기타";
+
+export const DECISION_CATEGORIES: DecisionCategory[] = [
+  "규칙 변경",
+  "멤버 관리",
+  "재무",
+  "일정",
+  "기타",
+];
+
+/** 의사결정 로그 단일 항목 */
+export type DecisionLogItem = {
+  id: string;
+  /** 그룹 ID */
+  groupId: string;
+  /** 의사결정 제목 */
+  title: string;
+  /** 카테고리 */
+  category: DecisionCategory;
+  /** 상세 설명 */
+  description: string;
+  /** 결정자 이름 */
+  decidedBy: string;
+  /** 결정 일시 (ISO 8601) */
+  decidedAt: string;
+  /** 영향도 */
+  impact: DecisionImpact;
+};
+
+// ============================================
+// Schedule Attendance Summary (일정별 참석 요약)
+// ============================================
+
+/** 출석 상태 (attendance 테이블 status 값) */
+export type AttendanceRecordStatus = "present" | "absent" | "late";
+
+/** 멤버 출석 상태 단일 항목 (미응답 포함) */
+export type ScheduleAttendanceMember = {
+  userId: string;
+  name: string;
+  status: AttendanceRecordStatus | "no_response";
+};
+
+/** 일정별 참석 요약 결과 */
+export type ScheduleAttendanceSummaryResult = {
+  scheduleId: string;
+  scheduleTitle: string;
+  startsAt: string;
+  totalMembers: number;
+  presentCount: number;
+  absentCount: number;
+  lateCount: number;
+  noResponseCount: number;
+  /** 출석률 = (참석 + 지각) / 전체 멤버 수 × 100 (0~100) */
+  attendanceRate: number;
+  members: ScheduleAttendanceMember[];
+  loading: boolean;
+  refetch: () => void;
+};
+
+// ============================================
+// Engagement Campaign (참여도 목표 캠페인, localStorage 기반)
+// ============================================
+
+/** 캠페인 목표 유형 */
+export type EngagementGoalType = "attendance" | "posts" | "comments";
+
+/** 캠페인 상태 */
+export type EngagementCampaignStatus = "active" | "completed" | "expired";
+
+/** 캠페인 메모 단일 항목 */
+export type EngagementCampaignMemo = {
+  id: string;
+  content: string;
+  createdAt: string;
+};
+
+/** 참여도 목표 캠페인 단일 항목 */
+export type EngagementCampaign = {
+  id: string;
+  /** 그룹 ID */
+  groupId: string;
+  /** 대상 멤버 이름 */
+  targetMemberName: string;
+  /** 목표 유형 */
+  goalType: EngagementGoalType;
+  /** 목표값 (횟수) */
+  goalValue: number;
+  /** 현재 진행값 (수동 입력) */
+  currentValue: number;
+  /** 시작일 (YYYY-MM-DD) */
+  startDate: string;
+  /** 종료일 (YYYY-MM-DD) */
+  endDate: string;
+  /** 캠페인 상태 */
+  status: EngagementCampaignStatus;
+  /** 메모 이력 */
+  memos: EngagementCampaignMemo[];
+  /** 생성 일시 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 목표 유형 한글 레이블 */
+export const ENGAGEMENT_GOAL_TYPE_LABELS: Record<EngagementGoalType, string> = {
+  attendance: "출석 N회 이상",
+  posts: "게시글 N개 작성",
+  comments: "댓글 N개 작성",
+};
+
+/** 목표 유형 단위 레이블 */
+export const ENGAGEMENT_GOAL_TYPE_UNITS: Record<EngagementGoalType, string> = {
+  attendance: "회",
+  posts: "개",
+  comments: "개",
+};
+
+/** 캠페인 상태 한글 레이블 */
+export const ENGAGEMENT_CAMPAIGN_STATUS_LABELS: Record<EngagementCampaignStatus, string> = {
+  active: "진행 중",
+  completed: "완료",
+  expired: "만료",
+};
+
+/** 최대 캠페인 수 */
+export const ENGAGEMENT_CAMPAIGN_MAX = 10;
+
+// ============================================
+// Partner Matching (랜덤 짝꿍 매칭, localStorage 기반)
+// ============================================
+
+/** 짝꿍 쌍 단일 항목 (2인 또는 3인) */
+export type PartnerPair = {
+  /** 멤버 user_id 배열 (2명 또는 홀수일 때 마지막 조는 3명) */
+  memberIds: string[];
+  /** 멤버 이름 배열 (memberIds와 동일 순서) */
+  memberNames: string[];
+};
+
+/** 매칭 이력 단일 항목 */
+export type PartnerMatchingRecord = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 매칭 쌍 목록 */
+  pairs: PartnerPair[];
+  /** 매칭 실행 일시 (ISO 8601) */
+  matchedAt: string;
+  /** 라벨 (예: "3월 4주차 연습") */
+  label: string;
+};
+
+/** localStorage 저장 단위 */
+export type PartnerMatchingData = {
+  /** 최근 5회 이력 (최신순) */
+  records: PartnerMatchingRecord[];
 };

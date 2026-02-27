@@ -561,3 +561,7 @@ export function invalidateAttendanceTimeAnalysis(groupId: string) {
 export function invalidateFinanceForecast(groupId: string) {
   mutate(swrKeys.financeForecast(groupId));
 }
+
+export function invalidateScheduleAttendanceSummary(scheduleId: string) {
+  mutate(swrKeys.scheduleAttendanceSummary(scheduleId));
+}
