@@ -723,4 +723,24 @@ export const swrKeys = {
   // 연습 루틴 빌더 (localStorage 기반)
   routineBuilder: (groupId: string) =>
     `routine-builder-${groupId}` as const,
+
+  // 멤버 건강 추적 (localStorage 기반)
+  healthTracking: (groupId: string, userId: string) =>
+    `health-tracking-${groupId}-${userId}` as const,
+
+  // 댄스 배틀 스코어보드 (localStorage 기반)
+  battleScoreboard: (groupId: string) =>
+    `battle-scoreboard-${groupId}` as const,
+
+  // 리허설 진행 기록 (localStorage 기반)
+  rehearsalLog: (groupId: string, projectId: string) =>
+    `rehearsal-log-${groupId}-${projectId}` as const,
+
+  // 이벤트 스폰서 관리 (localStorage 기반)
+  eventSponsorship: (groupId: string) =>
+    `event-sponsorship-${groupId}` as const,
+
+  // 그룹 포토 앨범 (localStorage 기반)
+  photoAlbum: (groupId: string) =>
+    `photo-album-${groupId}` as const,
 };

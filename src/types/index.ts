@@ -5636,3 +5636,119 @@ export type PracticeRoutine = {
   createdAt: string;
   lastUsedAt?: string;
 };
+
+// ============================================
+// Health Tracking (멤버 건강 추적)
+// ============================================
+
+export type BodyPart = "neck" | "shoulder" | "back" | "waist" | "hip" | "knee" | "ankle" | "wrist" | "elbow" | "other";
+export type InjurySeverity = "mild" | "moderate" | "severe";
+export type InjuryStatus = "active" | "recovering" | "healed";
+
+export type InjuryRecord = {
+  id: string;
+  bodyPart: BodyPart;
+  severity: InjurySeverity;
+  status: InjuryStatus;
+  description: string;
+  occurredAt: string;
+  healedAt?: string;
+  note: string;
+  createdAt: string;
+};
+
+// ============================================
+// Rehearsal Log (리허설 진행 기록)
+// ============================================
+
+export type RehearsalIssue = {
+  id: string;
+  description: string;
+  resolved: boolean;
+};
+
+export type RehearsalLogEntry = {
+  id: string;
+  date: string;
+  rehearsalNumber: number;   // 1차, 2차...
+  songsRehearsed: string[];  // 연습한 곡 목록
+  completionRate: number;    // 0-100 전체 완성도
+  issues: RehearsalIssue[];
+  nextGoals: string[];       // 다음 목표
+  attendeeCount: number;
+  note: string;
+  createdAt: string;
+};
+
+// ============================================
+// Dance Battle Scoreboard (댄스 배틀)
+// ============================================
+
+export type BattleType = "solo" | "team";
+export type BattleResult = "win" | "lose" | "draw";
+
+export type BattleMatch = {
+  id: string;
+  date: string;
+  type: BattleType;
+  participant1: string;   // 이름 또는 팀명
+  participant2: string;
+  winner: string | null;  // null이면 무승부
+  score1?: number;
+  score2?: number;
+  style: string;          // "프리스타일", "힙합" 등
+  note: string;
+  createdAt: string;
+};
+
+export type BattleStats = {
+  name: string;
+  wins: number;
+  losses: number;
+  draws: number;
+  winRate: number;
+};
+
+// ============================================
+// Event Sponsorship (이벤트 스폰서 관리)
+// ============================================
+
+export type SponsorType = "financial" | "venue" | "equipment" | "media" | "other";
+export type SponsorStatus = "prospect" | "negotiating" | "confirmed" | "completed";
+
+export type SponsorEntry = {
+  id: string;
+  name: string;
+  type: SponsorType;
+  status: SponsorStatus;
+  contactName: string;
+  contactInfo: string;
+  supportAmount: number;
+  supportDescription: string;
+  eventName: string;
+  note: string;
+  createdAt: string;
+};
+
+// ============================================
+// Photo Album (포토 앨범)
+// ============================================
+
+export type PhotoAlbumItem = {
+  id: string;
+  title: string;
+  imageUrl: string;        // 외부 링크 또는 빈 문자열
+  description: string;
+  tags: string[];
+  takenAt: string;         // YYYY-MM-DD
+  uploadedBy: string;
+  createdAt: string;
+};
+
+export type PhotoAlbum = {
+  id: string;
+  name: string;            // "2024년 정기공연", "연습 스냅" 등
+  coverUrl: string;
+  photos: PhotoAlbumItem[];
+  createdAt: string;
+};
