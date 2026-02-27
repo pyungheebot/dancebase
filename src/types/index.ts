@@ -4880,3 +4880,136 @@ export type VideoLibraryStore = {
   items: VideoLibraryItem[];
   updatedAt: string;
 };
+
+// ============================================
+// Choreography Difficulty Rating (안무 난도 평가)
+// ============================================
+
+export type DifficultyCategory = "speed" | "complexity" | "stamina" | "expression" | "sync";
+
+export type DifficultyRating = {
+  category: DifficultyCategory;
+  score: number; // 1-5
+};
+
+export type ChoreographyDifficultyEntry = {
+  id: string;
+  projectId: string;
+  songTitle: string;
+  ratings: DifficultyRating[];
+  averageScore: number;
+  ratedBy: string;
+  comment: string;
+  createdAt: string;
+};
+
+// ============================================
+// Collaboration Effectiveness (동료 협력도 평가)
+// ============================================
+
+export type CollabDimension = "communication" | "punctuality" | "contribution" | "attitude" | "skillSharing";
+
+export type CollabEvaluation = {
+  id: string;
+  evaluatorId: string;
+  targetId: string;
+  targetName: string;
+  scores: Record<CollabDimension, number>; // 1-5
+  comment: string;
+  isAnonymous: boolean;
+  createdAt: string;
+};
+
+export type CollabSummary = {
+  targetId: string;
+  targetName: string;
+  averageScores: Record<CollabDimension, number>;
+  overallScore: number;
+  evaluationCount: number;
+};
+
+// ============================================
+// Practice Intensity Tracker (연습 강도 추적)
+// ============================================
+
+export type IntensityLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+
+export type PracticeIntensityEntry = {
+  id: string;
+  date: string;           // YYYY-MM-DD
+  intensity: IntensityLevel;
+  durationMinutes: number;
+  bodyParts: string[];    // "다리", "팔", "코어" 등
+  note: string;
+  createdAt: string;
+};
+
+export type WeeklyIntensitySummary = {
+  weekStart: string;
+  avgIntensity: number;
+  totalMinutes: number;
+  sessionCount: number;
+};
+
+// ============================================
+// Team Activity Anomaly Detection (팀 활동 이상 탐지)
+// ============================================
+
+export type AnomalyLevel = "info" | "warning" | "critical";
+export type AnomalyMetricType = "attendance" | "posts" | "members" | "finance";
+
+export type ActivityAnomaly = {
+  id: string;
+  metricType: AnomalyMetricType;
+  level: AnomalyLevel;
+  title: string;
+  description: string;
+  currentValue: number;
+  expectedValue: number;
+  deviationPercent: number;
+  detectedAt: string;
+};
+
+export type AnomalyDetectionResult = {
+  anomalies: ActivityAnomaly[];
+  lastCheckedAt: string;
+  healthScore: number; // 0-100
+};
+
+// ============================================
+// Dance Style Compatibility (댄스 스타일 호환성)
+// ============================================
+
+export type DanceStyleDimension = "rhythm" | "flexibility" | "power" | "groove" | "precision";
+
+export type DanceStyleProfile = {
+  userId: string;
+  userName: string;
+  scores: Record<DanceStyleDimension, number>; // 각 1-5
+  preferredStyle: string;   // "힙합", "팝핀" 등
+  updatedAt: string;
+};
+
+export type StyleCompatibilityResult = {
+  partnerId: string;
+  partnerName: string;
+  compatibilityScore: number; // 0-100
+  complementaryAreas: DanceStyleDimension[];  // 서로 보완하는 영역
+  similarAreas: DanceStyleDimension[];        // 유사한 영역
+};
+
+export const DANCE_STYLE_DIMENSION_LABELS: Record<DanceStyleDimension, string> = {
+  rhythm:      "리듬감",
+  flexibility: "유연성",
+  power:       "파워",
+  groove:      "그루브",
+  precision:   "정확성",
+};
+
+export const DANCE_STYLE_DIMENSIONS: DanceStyleDimension[] = [
+  "rhythm",
+  "flexibility",
+  "power",
+  "groove",
+  "precision",
+];

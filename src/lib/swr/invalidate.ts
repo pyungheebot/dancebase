@@ -635,3 +635,7 @@ export function invalidateSessionAutoFeedback(groupId: string) {
 export function invalidateGroupActivityHeatmap(groupId: string) {
   mutate(swrKeys.groupActivityHeatmap(groupId));
 }
+
+export function invalidateAnomalyDetection(groupId: string) {
+  mutate(swrKeys.anomalyDetection(groupId));
+}

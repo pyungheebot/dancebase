@@ -603,4 +603,24 @@ export const swrKeys = {
   // 그룹 활동 히트맵 (요일/시간대별 출석률)
   groupActivityHeatmap: (groupId: string) =>
     `/groups/${groupId}/activity-heatmap` as const,
+
+  // 안무 난도 평가
+  choreographyDifficulty: (groupId: string, projectId: string) =>
+    `choreo-difficulty-${groupId}-${projectId}` as const,
+
+  // 동료 협력도 평가
+  collaborationEffectiveness: (groupId: string) =>
+    `collab-effectiveness-${groupId}` as const,
+
+  // 연습 강도 추적
+  practiceIntensity: (groupId: string, userId: string) =>
+    `practice-intensity-${groupId}-${userId}` as const,
+
+  // 팀 활동 이상 탐지
+  anomalyDetection: (groupId: string) =>
+    `/groups/${groupId}/anomaly-detection` as const,
+
+  // 댄스 스타일 호환성
+  danceStyleCompatibility: (groupId: string) =>
+    `dance-style-compatibility-${groupId}` as const,
 };
