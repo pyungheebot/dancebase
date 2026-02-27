@@ -30,6 +30,8 @@ export const swrKeys = {
   boardPostAttachments: (postId: string) => `/board-posts/${postId}/attachments` as const,
   boardPostLikes: (postId: string) => `/board-posts/${postId}/likes` as const,
   boardCategories: (groupId: string) => `/groups/${groupId}/board-categories` as const,
+  boardNotices: (groupId: string, projectId?: string | null) =>
+    `/groups/${groupId}/board-notices${projectId ? `?project=${projectId}` : ""}` as const,
 
   // 회비
   finance: (groupId: string, projectId?: string | null) =>
@@ -90,4 +92,15 @@ export const swrKeys = {
   // 멤버 뱃지 통계
   memberBadgeStats: (groupId: string, userId: string) =>
     `/member-badge-stats/${groupId}/${userId}` as const,
+
+  // 그룹 통계 요약
+  groupStats: (groupId: string) => `/groups/${groupId}/stats` as const,
+
+  // 비활성 멤버 참여도
+  memberEngagement: (groupId: string) =>
+    `/member-engagement/${groupId}` as const,
+
+  // 장소 자동완성 (기존 일정에서 추출)
+  locationSuggestions: (groupId: string) =>
+    `/groups/${groupId}/location-suggestions` as const,
 };

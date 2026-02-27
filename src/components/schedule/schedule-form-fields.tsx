@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AddressSearch } from "./address-search";
+import { LocationCombobox } from "./location-combobox";
 import type { AttendanceMethod } from "@/types";
 import type { ReactNode } from "react";
 
@@ -40,6 +41,8 @@ type ScheduleFormFieldsProps = {
   onChange: (values: Partial<ScheduleFieldValues>) => void;
   /** 날짜/반복 설정 영역 — 등록과 수정이 다르므로 외부에서 주입 */
   dateSection: ReactNode;
+  /** 장소 자동완성을 위한 그룹 ID */
+  groupId: string;
   prefix?: string;
   errors?: ScheduleFormFieldErrors;
   onBlurTitle?: () => void;
@@ -50,6 +53,7 @@ export function ScheduleFormFields({
   values,
   onChange,
   dateSection,
+  groupId,
   prefix = "",
   errors = {},
   onBlurTitle,
@@ -92,11 +96,11 @@ export function ScheduleFormFields({
       {/* 장소 이름 */}
       <div className="space-y-1">
         <Label htmlFor={p("location")} className="text-xs">장소 이름</Label>
-        <Input
+        <LocationCombobox
           id={p("location")}
-          placeholder="장소 이름 (선택사항)"
+          groupId={groupId}
           value={values.location}
-          onChange={(e) => onChange({ location: e.target.value })}
+          onChange={(val) => onChange({ location: val })}
         />
       </div>
 

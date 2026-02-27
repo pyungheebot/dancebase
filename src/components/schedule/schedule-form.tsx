@@ -586,6 +586,7 @@ export function ScheduleForm({
             }
           }}
           dateSection={dateSection}
+          groupId={groupId}
           prefix={isEdit ? "edit" : ""}
           errors={{
             title: titleError ?? undefined,

@@ -38,10 +38,12 @@ import {
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { SubgroupInviteFromParent } from "@/components/subgroups/subgroup-invite-from-parent";
 import { ChevronDown, Download, Plus, Search, Tags, Trash2, Users } from "lucide-react";
+import { InviteGroupMembersDialog } from "@/components/members/invite-group-members-dialog";
 import { toast } from "sonner";
 import { exportToCsv } from "@/lib/export-csv";
 import { getCategoryColorClasses } from "@/types";
 import { EmptyState } from "@/components/shared/empty-state";
+import { InactiveMembersSection } from "@/components/members/inactive-members-section";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -479,6 +481,9 @@ function GroupMembersContent({
         onOpenChange={setCategoryManagerOpen}
         onUpdate={onUpdate}
       />
+
+      {/* 비활성 멤버 섹션 (리더 전용, 비활성 멤버가 없으면 숨김) */}
+      <InactiveMembersSection ctx={ctx} />
     </>
   );
 }
@@ -609,6 +614,14 @@ function ProjectMembersContent({
               <Download className="h-3 w-3 mr-1" />
               CSV 내보내기
             </Button>
+          )}
+          {ctx.permissions.canManageMembers && ctx.projectId && availableMembers.length > 0 && (
+            <InviteGroupMembersDialog
+              projectId={ctx.projectId}
+              projectMemberIds={new Set(ctx.members.map((m) => m.userId))}
+              groupMembers={parentMembers}
+              onInvited={onUpdate}
+            />
           )}
           {ctx.permissions.canEdit && availableMembers.length > 0 && (
           <Dialog open={addOpen} onOpenChange={setAddOpen}>

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { MessageSquare, Heart, Pin, FolderOpen, Search, ChevronLeft, ChevronRight, FileText, SearchX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BoardPostForm } from "./board-post-form";
+import { BoardNoticeBanner } from "./board-notice-banner";
 import { EmptyState } from "@/components/shared/empty-state";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -129,6 +130,14 @@ export function BoardPostList({
           </Button>
         ))}
       </div>
+
+      {/* 공지사항 배너 */}
+      <BoardNoticeBanner
+        groupId={groupId}
+        projectId={projectId}
+        basePath={basePath}
+        nicknameMap={nicknameMap}
+      />
 
       {/* 글 목록 — 한줄 컴팩트 */}
       <div aria-live="polite" aria-atomic="false">
