@@ -407,3 +407,23 @@ export function invalidateGroupActivityTrends(groupId: string) {
 export function invalidateMemberActivityDistribution(groupId: string) {
   mutate(swrKeys.memberActivityDistribution(groupId));
 }
+
+export function invalidateAttendanceStreakLeaderboard(groupId: string) {
+  mutate(swrKeys.attendanceStreakLeaderboard(groupId));
+}
+
+export function invalidateAvailabilityForecast(groupId: string) {
+  mutate(swrKeys.availabilityForecast(groupId));
+}
+
+export function invalidateMemberHealthScore(groupId: string) {
+  mutate(swrKeys.memberHealthScore(groupId));
+}
+
+export function invalidateAttendanceTeamBalance(groupId: string) {
+  mutate(swrKeys.attendanceTeamBalance(groupId));
+}
+
+export function invalidateGenreRoleRecommendation(groupId: string) {
+  mutate(swrKeys.genreRoleRecommendation(groupId));
+}

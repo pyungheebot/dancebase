@@ -395,4 +395,24 @@ export const swrKeys = {
   // 멤버 활동 분포도 (최근 30일 활동 점수 기반)
   memberActivityDistribution: (groupId: string) =>
     `/groups/${groupId}/member-activity-distribution` as const,
+
+  // 출석 스트릭 리더보드
+  attendanceStreakLeaderboard: (groupId: string) =>
+    `attendance-streak-leaderboard-${groupId}` as const,
+
+  // 스케줄 가용성 예측 (요일+시간대별 출석 확률)
+  availabilityForecast: (groupId: string) =>
+    `availability-forecast-${groupId}` as const,
+
+  // 멤버 건강도 점수 대시보드
+  memberHealthScore: (groupId: string) =>
+    `/groups/${groupId}/member-health-score` as const,
+
+  // 출석 팀 밸런서 (출석 패턴 기반 팀 자동 구성)
+  attendanceTeamBalance: (groupId: string) =>
+    `attendance-team-balance-${groupId}` as const,
+
+  // 장르 역할 추천 (알고리즘 원시 데이터)
+  genreRoleRecommendation: (groupId: string) =>
+    `/groups/${groupId}/genre-role-recommendation` as const,
 };

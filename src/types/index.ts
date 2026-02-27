@@ -2015,3 +2015,244 @@ export type GroupActivityTrendsResult = {
   monthly: MonthlyActivityTrend[];
   change: ActivityTrendChange;
 };
+
+// ============================================
+// Attendance Streak Leaderboard
+// ============================================
+
+/** 스트릭 배지 등급 */
+export type StreakBadgeTier = "FIRE" | "STAR" | "DIAMOND" | "CROWN";
+
+/** 리더보드 단일 멤버 항목 */
+export type AttendanceStreakEntry = {
+  userId: string;
+  name: string;
+  /** 현재 연속 출석 횟수 */
+  currentStreak: number;
+  /** 역대 최장 연속 출석 횟수 */
+  longestStreak: number;
+  /** 배지 등급 (기준 미달이면 null) */
+  badge: StreakBadgeTier | null;
+  /** 리더보드 순위 (1-based) */
+  rank: number;
+};
+
+/** useAttendanceStreakLeaderboard 훅 반환 타입 */
+export type AttendanceStreakLeaderboardResult = {
+  /** 스트릭 내림차순 정렬된 멤버 목록 */
+  entries: AttendanceStreakEntry[];
+  /** 그룹 전체 평균 현재 스트릭 */
+  averageStreak: number;
+  /** 최고 스트릭 보유자 (1위) */
+  topEntry: AttendanceStreakEntry | null;
+};
+
+// ============================================
+// Member Health Score (멤버 건강도 대시보드)
+// ============================================
+
+/** 건강도 등급 */
+export type MemberHealthGrade = "excellent" | "good" | "warning" | "danger";
+
+/** 멤버별 위험 신호 유형 */
+export type MemberHealthRiskType =
+  | "attendance_drop"   // 출석률 30% 이상 급락
+  | "inactive_14days"   // 14일 이상 미활동
+  | "rsvp_no_response"; // RSVP 무응답 3회 연속
+
+/** 멤버별 위험 신호 항목 */
+export type MemberHealthRisk = {
+  type: MemberHealthRiskType;
+  label: string;
+};
+
+/** 멤버별 5가지 건강도 지표 점수 (각 0~20점) */
+export type MemberHealthMetrics = {
+  /** 출석률 점수 (0~20) */
+  attendance: number;
+  /** RSVP 응답률 점수 (0~20) */
+  rsvp: number;
+  /** 게시판 참여도 점수 (0~20) */
+  board: number;
+  /** 가입 기간 대비 활동량 점수 (0~20) */
+  longevity: number;
+  /** 최근 활동 빈도 점수 (0~20) */
+  recentActivity: number;
+};
+
+/** 멤버 건강도 결과 항목 */
+export type MemberHealthScoreItem = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  /** 총 건강도 점수 (0~100) */
+  totalScore: number;
+  /** 건강도 등급 */
+  grade: MemberHealthGrade;
+  /** 지표별 점수 */
+  metrics: MemberHealthMetrics;
+  /** 감지된 위험 신호 목록 */
+  risks: MemberHealthRisk[];
+};
+
+/** useMemberHealthScore 훅 반환 타입 */
+export type MemberHealthScoreResult = {
+  members: MemberHealthScoreItem[];
+  /** 전체 평균 건강도 점수 */
+  averageScore: number;
+  /** 위험 신호가 있는 멤버 수 */
+  atRiskCount: number;
+  /** 데이터 유무 */
+  hasData: boolean;
+};
+
+// ============================================
+// 스케줄 가용성 예측 (Availability Forecast)
+// ============================================
+
+/** 시간대 슬롯 */
+export type TimeSlot = "morning" | "afternoon" | "evening" | "night";
+
+/** 시간대 레이블 및 범위 정보 */
+export type TimeSlotInfo = {
+  key: TimeSlot;
+  label: string;
+  range: string;
+  /** 시작 시(0-23) */
+  startHour: number;
+  /** 종료 시(0-23, exclusive) */
+  endHour: number;
+};
+
+export const TIME_SLOTS: TimeSlotInfo[] = [
+  { key: "morning",   label: "오전", range: "06-12", startHour: 6,  endHour: 12 },
+  { key: "afternoon", label: "오후", range: "12-18", startHour: 12, endHour: 18 },
+  { key: "evening",   label: "저녁", range: "18-22", startHour: 18, endHour: 22 },
+  { key: "night",     label: "야간", range: "22-06", startHour: 22, endHour: 6  },
+];
+
+/** 요일 레이블 (0=일, 1=월, ... 6=토) */
+export const DAY_OF_WEEK_LABELS: string[] = ["일", "월", "화", "수", "목", "금", "토"];
+
+/** 멤버별 요일+시간대 조합 예상 출석 확률 */
+export type MemberForecast = {
+  userId: string;
+  name: string;
+  /** 예상 출석 확률 0-100 */
+  probability: number;
+  /** 해당 조합의 표본 수 (신뢰도 기준) */
+  sampleCount: number;
+};
+
+/** useAvailabilityForecast 훅 반환 타입 */
+export type AvailabilityForecastResult = {
+  /** 특정 요일+시간대 조합의 멤버별 예상 출석 확률 반환 */
+  getForecast: (dayOfWeek: number, timeSlot: TimeSlot) => MemberForecast[];
+  /** 데이터 존재 여부 */
+  hasData: boolean;
+  loading: boolean;
+  refetch: () => void;
+};
+
+// ============================================
+// Genre Role Recommendation (장르 역할 추천, localStorage 기반)
+// ============================================
+
+/** 프로젝트 내 댄서 역할 유형 */
+export type DanceRole =
+  | "메인 댄서"
+  | "서포트 댄서"
+  | "리드"
+  | "트레이니"
+  | "코레오그래퍼";
+
+/** 역할 추천 이유 */
+export type RoleRecommendationReason =
+  | "출석률 높음"
+  | "활동량 높음"
+  | "신규 멤버"
+  | "피어 피드백 높음"
+  | "장기 활동";
+
+/** 단일 역할 추천 결과 */
+export type RoleRecommendation = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  /** 알고리즘 추천 역할 */
+  recommendedRole: DanceRole;
+  /** 사용자가 변경한 역할 (없으면 recommendedRole 사용) */
+  overriddenRole: DanceRole | null;
+  /** 추천 이유 목록 */
+  reasons: RoleRecommendationReason[];
+  /** 출석률 (0~100, %) */
+  attendanceRate: number;
+  /** 활동 점수 (게시글 + 댓글) */
+  activityScore: number;
+  /** 가입 일수 */
+  memberDays: number;
+};
+
+/** localStorage에 저장되는 역할 추천 상태 */
+export type RoleRecommendationState = {
+  /** userId → 최종 적용 역할 매핑 */
+  assignments: Record<string, DanceRole>;
+  /** 마지막 저장 시각 (ISO 문자열) */
+  savedAt: string | null;
+};
+
+// ============================================
+// Attendance Team Balancer (출석 팀 밸런서)
+// ============================================
+
+/** 팀 색상 설정 */
+export type TeamBalancerColor = {
+  key: string;
+  label: string;
+  bg: string;
+  text: string;
+  border: string;
+  badge: string;
+};
+
+/** 팀 밸런서 팀 색상 목록 */
+export const TEAM_BALANCER_COLORS: TeamBalancerColor[] = [
+  { key: "blue",   label: "파랑", bg: "bg-blue-50",   text: "text-blue-700",   border: "border-blue-200",   badge: "bg-blue-100 text-blue-700" },
+  { key: "green",  label: "초록", bg: "bg-green-50",  text: "text-green-700",  border: "border-green-200",  badge: "bg-green-100 text-green-700" },
+  { key: "orange", label: "주황", bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200", badge: "bg-orange-100 text-orange-700" },
+  { key: "purple", label: "보라", bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200", badge: "bg-purple-100 text-purple-700" },
+];
+
+/** 팀 밸런서 단일 멤버 항목 */
+export type TeamBalancerMember = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  /** 최근 2개월 출석률 (0~100, %) */
+  attendanceRate: number;
+};
+
+/** 팀 밸런서 단일 팀 결과 */
+export type BalancedTeam = {
+  /** 팀 인덱스 (0-based) */
+  index: number;
+  /** 팀 이름 (팀 A, 팀 B, ...) */
+  name: string;
+  /** 팀 색상 키 */
+  colorKey: string;
+  /** 팀원 목록 */
+  members: TeamBalancerMember[];
+  /** 팀 평균 출석률 (0~100, %) */
+  avgAttendanceRate: number;
+};
+
+/** useAttendanceTeamBalance 훅 반환 타입 */
+export type AttendanceTeamBalanceResult = {
+  teams: BalancedTeam[];
+  /** 팀 간 출석률 최대 편차 */
+  rateDeviation: number;
+  /** 데이터 존재 여부 */
+  hasData: boolean;
+  loading: boolean;
+  refetch: () => void;
+};
