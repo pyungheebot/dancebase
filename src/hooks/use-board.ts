@@ -14,6 +14,8 @@ import type {
   BoardPostAttachment,
   BoardPostLike,
   BoardCategoryRow,
+  Profile,
+  Project,
 } from "@/types";
 
 const PAGE_SIZE = 10;
@@ -35,6 +37,7 @@ export function useBoard(groupId: string, projectId?: string | null) {
           { count: "exact" },
         )
         .eq("group_id", groupId)
+        .is("deleted_at", null)
         .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false });
 
@@ -285,6 +288,36 @@ export function useBoardCategories(groupId: string) {
     categories: dbCategories,
     writeCategories,
     filterCategories,
+    loading: isLoading,
+    refetch: () => mutate(),
+  };
+}
+
+// 휴지통: 삭제된 게시글 목록 (리더 전용)
+export type BoardTrashPost = BoardPost & {
+  profiles: Pick<Profile, "id" | "name" | "avatar_url">;
+  projects?: Pick<Project, "id" | "name"> | null;
+};
+
+export function useBoardTrash(groupId: string) {
+  const { data, isLoading, mutate } = useSWR(
+    swrKeys.boardTrash(groupId),
+    async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("board_posts")
+        .select("*, profiles(id, name, avatar_url), projects(id, name)")
+        .eq("group_id", groupId)
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
+
+      if (error) return [] as BoardTrashPost[];
+      return (data ?? []) as unknown as BoardTrashPost[];
+    },
+  );
+
+  return {
+    posts: data ?? [],
     loading: isLoading,
     refetch: () => mutate(),
   };

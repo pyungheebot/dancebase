@@ -50,6 +50,10 @@ export function invalidateBoard(groupId: string) {
   );
 }
 
+export function invalidateBoardTrash(groupId: string) {
+  mutate(swrKeys.boardTrash(groupId));
+}
+
 export function invalidateBoardPost(postId: string) {
   mutate(swrKeys.boardPost(postId));
 }

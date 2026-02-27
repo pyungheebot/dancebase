@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
@@ -25,8 +26,59 @@ export function useNotifications(limit = 10) {
 
       return (data as Notification[]) ?? [];
     },
-    { refreshInterval: 60000 }
+    // 폴링 주기 60초 → 120초 (Realtime이 주 업데이트 채널)
+    { refreshInterval: 120000 }
   );
+
+  // Realtime 구독 채널 참조 (cleanup용)
+  const channelRef = useRef<ReturnType<
+    ReturnType<typeof createClient>["channel"]
+  > | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
+
+    // async/await로 유저 확인 후 구독 (then 콜백 타입 추론 우회)
+    void (async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+
+      // 로그인 안 된 경우 구독하지 않음
+      if (!user || !active) return;
+
+      // 이미 구독 중이면 중복 구독 방지
+      if (channelRef.current) return;
+
+      const channel = supabase
+        .channel("notifications-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            // 새 알림 수신 시 SWR 캐시 즉시 갱신
+            invalidateNotifications();
+          }
+        )
+        .subscribe();
+
+      channelRef.current = channel;
+    })();
+
+    return () => {
+      // 컴포넌트 언마운트 시 구독 해제 (메모리 누수 방지)
+      active = false;
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, []);
 
   const markAsRead = async (notificationId: string) => {
     const supabase = createClient();
@@ -85,6 +137,7 @@ export function useUnreadNotificationCount() {
 
       return count ?? 0;
     },
+    // 폴링 주기 유지 (unread count는 Realtime invalidateNotifications()에서도 갱신됨)
     { refreshInterval: 30000 }
   );
 

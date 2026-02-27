@@ -65,12 +65,16 @@ export default function BoardPostPage({
 
   const handleDelete = async () => {
     setDeleting(true);
-    const { error } = await supabase.from("board_posts").delete().eq("id", postId);
+    const { error } = await supabase
+      .from("board_posts")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", postId);
     if (error) {
       toast.error("게시글 삭제에 실패했습니다");
       setDeleting(false);
       return;
     }
+    toast.success("게시글이 휴지통으로 이동했습니다");
     const backPath = post?.project_id
       ? `/groups/${id}/projects/${post.project_id}/board`
       : `/groups/${id}/board`;
@@ -236,7 +240,7 @@ export default function BoardPostPage({
           open={showDeleteConfirm}
           onOpenChange={setShowDeleteConfirm}
           title="게시글 삭제"
-          description="정말 이 게시글을 삭제하시겠습니까? 댓글과 투표도 함께 삭제됩니다."
+          description="게시글을 휴지통으로 이동합니다. 리더는 휴지통에서 복구하거나 영구 삭제할 수 있습니다."
           onConfirm={handleDelete}
           destructive
         />

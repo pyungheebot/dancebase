@@ -6,6 +6,7 @@ import { Loader2, CalendarDays } from "lucide-react";
 import { CalendarView } from "@/components/schedule/calendar-view";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { ScheduleTemplateList } from "@/components/schedule/schedule-template-list";
+import { OptimalTimeHint } from "@/components/schedule/optimal-time-hint";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { EmptyState } from "@/components/shared/empty-state";
 import type { EntityContext } from "@/types/entity-context";
@@ -91,6 +92,12 @@ export function ScheduleContent({
           )}
         </div>
       </div>
+
+      {ctx.permissions.canEdit && (
+        <div className="mb-3">
+          <OptimalTimeHint groupId={ctx.groupId} projectId={ctx.projectId} />
+        </div>
+      )}
 
       {schedules.length === 0 ? (
         <EmptyState

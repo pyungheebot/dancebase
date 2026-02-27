@@ -431,6 +431,7 @@ export type BoardPost = {
   is_pinned: boolean;
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 };
 
 export type BoardPostWithDetails = BoardPost & {
@@ -649,6 +650,17 @@ export const REMINDER_SETTING_KEY = "attendance_reminder";
 export const DEFAULT_REMINDER_SETTING: ReminderSettingValue = {
   enabled: false,
   offsets: [60],
+};
+
+// 회비 납부 기한 설정 타입
+export type FinanceDueDateSettingValue = {
+  day: number; // 매월 N일 (1~28)
+};
+
+export const FINANCE_DUE_DATE_SETTING_KEY = "finance_due_date";
+
+export const DEFAULT_FINANCE_DUE_DATE_SETTING: FinanceDueDateSettingValue = {
+  day: 0, // 0이면 미설정
 };
 
 export type Conversation = {

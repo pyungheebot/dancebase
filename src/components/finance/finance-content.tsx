@@ -22,9 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pencil, Trash2, Download, Search, X } from "lucide-react";
+import { Pencil, Trash2, Download, Search, X, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useEntitySettings } from "@/hooks/use-entity-settings";
 import type { EntityContext } from "@/types/entity-context";
 import type {
   FinanceRole,
@@ -32,6 +33,11 @@ import type {
   FinanceTransactionWithDetails,
   FinanceCategory,
   GroupMemberWithProfile,
+  FinanceDueDateSettingValue,
+} from "@/types";
+import {
+  FINANCE_DUE_DATE_SETTING_KEY,
+  DEFAULT_FINANCE_DUE_DATE_SETTING,
 } from "@/types";
 
 type FinanceContentProps = {
@@ -89,6 +95,30 @@ export function FinanceContent({
   const supabase = createClient();
   const [editingTxn, setEditingTxn] = useState<FinanceTransaction | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  // 납부 기한 설정 훅 (entity_settings 재사용)
+  const entityType = ctx.projectId ? "project" : "group";
+  const entityId = ctx.projectId ?? ctx.groupId;
+  const {
+    value: dueDateSetting,
+    save: saveDueDate,
+  } = useEntitySettings<FinanceDueDateSettingValue>(
+    { entityType, entityId, key: FINANCE_DUE_DATE_SETTING_KEY },
+    DEFAULT_FINANCE_DUE_DATE_SETTING
+  );
+
+  // 납부 기한 변경 핸들러
+  const handleDueDateChange = async (dayStr: string) => {
+    const day = parseInt(dayStr, 10);
+    const { error } = await saveDueDate({ day });
+    if (error) {
+      toast.error("납부 기한 저장에 실패했습니다");
+    } else {
+      toast.success(
+        day === 0 ? "납부 기한이 해제되었습니다" : `납부 기한이 매월 ${day}일로 설정되었습니다`
+      );
+    }
+  };
 
   // 월 필터: 기본값은 현재 월
   const currentMonth = format(new Date(), "yyyy-MM");
@@ -346,6 +376,39 @@ export function FinanceContent({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* 납부 기한 설정 영역 (관리자만 설정, 전체 멤버에게 표시) */}
+            <div className="flex items-center gap-2 mb-2">
+              <CalendarClock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <span className="text-[11px] text-muted-foreground shrink-0">납부 기한</span>
+              {canManage ? (
+                <Select
+                  value={String(dueDateSetting.day)}
+                  onValueChange={handleDueDateChange}
+                >
+                  <SelectTrigger className="h-6 w-32 text-[11px]">
+                    <SelectValue placeholder="기한 없음" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">기한 없음</SelectItem>
+                    {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
+                      <SelectItem key={day} value={String(day)}>
+                        매월 {day}일까지
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : dueDateSetting.day > 0 ? (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-1.5 py-0 h-5 bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/40 gap-1"
+                >
+                  매월 {dueDateSetting.day}일까지
+                </Badge>
+              ) : (
+                <span className="text-[11px] text-muted-foreground/60">미설정</span>
+              )}
             </div>
 
             {/* 거래 유형 필터 탭 + 검색바 */}

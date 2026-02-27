@@ -3,6 +3,7 @@
 import { AppLayout } from "@/components/layout/app-layout";
 import { GroupCard } from "@/components/groups/group-card";
 import { JoinGroupModal } from "@/components/groups/invite-modal";
+import { OnboardingGuide } from "@/components/dashboard/onboarding-guide";
 import { useGroups } from "@/hooks/use-groups";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useTodaySchedules } from "@/hooks/use-schedule";
@@ -29,6 +30,9 @@ export default function DashboardPage() {
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+        {/* 온보딩 시작 가이드 */}
+        <OnboardingGuide />
+
         {/* 오늘의 일정 카드 */}
         <section aria-label="오늘의 일정">
           <Card>

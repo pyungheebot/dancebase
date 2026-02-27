@@ -32,6 +32,7 @@ export const swrKeys = {
   boardCategories: (groupId: string) => `/groups/${groupId}/board-categories` as const,
   boardNotices: (groupId: string, projectId?: string | null) =>
     `/groups/${groupId}/board-notices${projectId ? `?project=${projectId}` : ""}` as const,
+  boardTrash: (groupId: string) => `/groups/${groupId}/board-trash` as const,
 
   // 회비
   finance: (groupId: string, projectId?: string | null) =>
@@ -114,4 +115,12 @@ export const swrKeys = {
   // 멤버 활동 타임라인
   memberActivityTimeline: (userId: string) =>
     `/member-activity-timeline/${userId}` as const,
+
+  // 온보딩 상태
+  onboardingStatus: (userId: string) =>
+    `/onboarding-status/${userId}` as const,
+
+  // 최적 일정 시간대 추천
+  optimalScheduleTime: (groupId: string, projectId?: string | null) =>
+    `/optimal-schedule-time/${groupId}${projectId ? `?project=${projectId}` : ""}` as const,
 };
