@@ -435,4 +435,12 @@ export const swrKeys = {
   // 주간 챌린지 보드
   weeklyChallengeBoard: (groupId: string) =>
     `weekly-challenge-board-${groupId}` as const,
+
+  // 멤버 활동 시간대 히트맵
+  activityTimeHeatmap: (groupId: string) =>
+    `activity-time-heatmap-${groupId}` as const,
+
+  // 그룹 활동 보고서 (주간/월간)
+  groupActivityReport: (groupId: string, period: "week" | "month") =>
+    `/groups/${groupId}/activity-report?period=${period}` as const,
 };

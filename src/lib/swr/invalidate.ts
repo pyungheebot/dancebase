@@ -451,3 +451,12 @@ export function invalidateGroupHealthTrends(groupId: string) {
 export function invalidateWeeklyChallengeBoard(groupId: string) {
   mutate(swrKeys.weeklyChallengeBoard(groupId));
 }
+
+export function invalidateActivityTimeHeatmap(groupId: string) {
+  mutate(swrKeys.activityTimeHeatmap(groupId));
+}
+
+export function invalidateGroupActivityReport(groupId: string) {
+  mutate(swrKeys.groupActivityReport(groupId, "week"));
+  mutate(swrKeys.groupActivityReport(groupId, "month"));
+}

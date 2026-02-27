@@ -2472,3 +2472,126 @@ export type WeeklyChallengeBoardResult = {
   loading: boolean;
   refetch: () => void;
 };
+
+// ============================================
+// Activity Time Heatmap (멤버 활동 시간대 히트맵)
+// ============================================
+
+/** 히트맵 단일 셀: 요일 x 시간대 조합의 활동 데이터 */
+export type ActivityTimeCell = {
+  /** 요일 (0=일, 1=월, ... 6=토) */
+  dayOfWeek: number;
+  /** 시간대 슬롯 */
+  timeSlot: TimeSlot;
+  /** 활동 건수 (출석 + 게시글 + 댓글) */
+  count: number;
+  /** 강도 레벨 0-4 */
+  intensity: 0 | 1 | 2 | 3 | 4;
+};
+
+/** 히트맵 전체 결과 */
+export type ActivityTimeHeatmapResult = {
+  /** 28칸 셀 데이터 (7요일 x 4시간대) */
+  cells: ActivityTimeCell[];
+  /** 가장 활발한 시간대 */
+  busiestSlot: { dayOfWeek: number; timeSlot: TimeSlot } | null;
+  /** 가장 조용한 시간대 (활동이 있는 셀 중 최솟값) */
+  quietestSlot: { dayOfWeek: number; timeSlot: TimeSlot } | null;
+  /** 데이터 존재 여부 */
+  hasData: boolean;
+  loading: boolean;
+  refetch: () => void;
+};
+
+// ============================================
+// Project Resource Library (프로젝트 리소스 라이브러리)
+// ============================================
+
+/** 리소스 유형 */
+export type ResourceType = "music" | "video" | "image" | "document";
+
+/** 프로젝트 리소스 */
+export type ProjectResource = {
+  id: string;
+  title: string;
+  type: ResourceType;
+  url: string;
+  description?: string;
+  tags: string[];
+  projectId?: string;
+  createdAt: string;
+};
+
+// ============================================
+// Board Emoji Reactions (게시글 이모지 반응)
+// ============================================
+
+export const BOARD_REACTION_EMOJIS = ["👍", "❤️", "😂", "👏", "🔥", "😢"] as const;
+
+export type BoardReactionEmoji = (typeof BOARD_REACTION_EMOJIS)[number];
+
+export type BoardReactionEntry = {
+  emoji: BoardReactionEmoji;
+  userIds: string[];
+};
+
+export type BoardReactionsData = BoardReactionEntry[];
+
+// ============================================
+// Group Activity Report (그룹 활동 보고서)
+// ============================================
+
+export type ActivityReportPeriod = "week" | "month";
+
+export type ActivityReportMetric = {
+  /** 지표 값 */
+  value: number;
+  /** 표시용 레이블 */
+  label: string;
+};
+
+export type ActivityReportInsight = {
+  /** 인사이트 메시지 */
+  message: string;
+  /** 인사이트 유형 (positive: 긍정, neutral: 중립) */
+  type: "positive" | "neutral";
+};
+
+export type GroupActivityReportData = {
+  period: ActivityReportPeriod;
+  /** 기간 내 일정 수 */
+  scheduleCount: ActivityReportMetric;
+  /** 출석률 (0~100 %) */
+  attendanceRate: ActivityReportMetric;
+  /** 게시글 수 */
+  postCount: ActivityReportMetric;
+  /** 댓글 수 */
+  commentCount: ActivityReportMetric;
+  /** RSVP 응답률 (0~100 %) */
+  rsvpRate: ActivityReportMetric;
+  /** 신규 멤버 수 */
+  newMemberCount: ActivityReportMetric;
+  /** 유니크 활동 멤버 수 */
+  activeMemberCount: ActivityReportMetric;
+  /** 자동 생성 인사이트 목록 */
+  insights: ActivityReportInsight[];
+};
+
+// ============================================
+// Project Milestone (프로젝트 마일스톤, localStorage 기반)
+// ============================================
+
+/** 프로젝트 마일스톤 단일 항목 */
+export type ProjectMilestone = {
+  id: string;
+  projectId: string;
+  title: string;
+  description?: string;
+  /** 목표 날짜 (YYYY-MM-DD) */
+  targetDate: string;
+  /** 완료 시각 (ISO 8601), null이면 미완료 */
+  completedAt: string | null;
+  /** 정렬 순서 (낮을수록 앞) */
+  sortOrder: number;
+  createdAt: string;
+};
