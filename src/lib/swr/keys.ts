@@ -623,4 +623,24 @@ export const swrKeys = {
   // 댄스 스타일 호환성
   danceStyleCompatibility: (groupId: string) =>
     `dance-style-compatibility-${groupId}` as const,
+
+  // 댄스 레벨 인증
+  danceCertification: (groupId: string) =>
+    `dance-certification-${groupId}` as const,
+
+  // 연습 일지
+  practiceJournal: (groupId: string, userId: string) =>
+    `practice-journal-${groupId}-${userId}` as const,
+
+  // 코스튬/의상 관리
+  costumeManagement: (groupId: string, projectId: string) =>
+    `costume-management-${groupId}-${projectId}` as const,
+
+  // 감사 편지
+  thankYouLetters: (groupId: string) =>
+    `thank-you-letters-${groupId}` as const,
+
+  // 음악 템포 매칭
+  musicTempo: (groupId: string, projectId: string) =>
+    `music-tempo-${groupId}-${projectId}` as const,
 };

@@ -5013,3 +5013,114 @@ export const DANCE_STYLE_DIMENSIONS: DanceStyleDimension[] = [
   "groove",
   "precision",
 ];
+
+// ============================================
+// Dance Certification System (댄스 레벨 인증)
+// ============================================
+
+export type DanceCertLevel = "beginner" | "elementary" | "intermediate" | "advanced" | "master";
+
+export type DanceCertification = {
+  id: string;
+  memberId: string;
+  memberName: string;
+  genre: string;           // "힙합", "팝핀", "왁킹" 등
+  level: DanceCertLevel;
+  certifiedBy: string;     // 인증자 이름
+  certifiedAt: string;
+  note: string;
+  expiresAt?: string;      // 유효기간 (선택, YYYY-MM-DD)
+};
+
+// ============================================
+// Practice Journal (연습 일지)
+// ============================================
+
+export type JournalCondition = "excellent" | "good" | "normal" | "tired" | "bad";
+
+export type PracticeJournalEntry = {
+  id: string;
+  date: string;          // YYYY-MM-DD
+  title: string;         // 제목 (최대 50자)
+  learned: string;       // 배운 점
+  improvement: string;   // 개선할 점
+  feeling: string;       // 느낀 점
+  condition: JournalCondition;
+  tags: string[];        // "힙합", "스트레칭" 등
+  createdAt: string;
+};
+
+
+// ============================================
+// Costume Management (코스튬/의상 관리)
+// ============================================
+
+export type CostumeStatus = "planned" | "ordered" | "arrived" | "distributed" | "returned";
+
+export type CostumeItem = {
+  id: string;
+  name: string;          // "검은 탑", "빨간 스커트" 등
+  category: string;      // "상의", "하의", "신발", "악세서리"
+  color: string;         // 색상명
+  totalQuantity: number;
+  availableQuantity: number;
+  status: CostumeStatus;
+  note: string;
+  createdAt: string;
+};
+
+export type CostumeAssignment = {
+  costumeId: string;
+  memberId: string;
+  memberName: string;
+  size: string;          // "S", "M", "L" 등
+  returned: boolean;
+};
+
+export type CostumeStore = {
+  items: CostumeItem[];
+  assignments: CostumeAssignment[];
+  updatedAt: string;
+};
+
+// ============================================
+// Thank You Letter (감사 편지)
+// ============================================
+
+export type ThankYouCategory = "teamwork" | "teaching" | "encouragement" | "effort" | "general";
+
+export type ThankYouLetter = {
+  id: string;
+  fromId: string;
+  fromName: string;
+  toId: string;
+  toName: string;
+  message: string;        // 최대 200자
+  category: ThankYouCategory;
+  isPublic: boolean;      // 그룹 내 공개 여부
+  emoji: string;          // "💖", "🌟", "🙏" 등
+  createdAt: string;
+};
+
+// ============================================
+// Music Tempo Matching (음악 템포 매칭)
+// ============================================
+
+export type TempoCategory = "very_slow" | "slow" | "moderate" | "fast" | "very_fast";
+
+export type MusicTempoEntry = {
+  id: string;
+  songTitle: string;
+  artist: string;
+  bpm: number;            // 40-240
+  tempoCategory: TempoCategory;
+  sections: TempoSection[];
+  note: string;
+  createdAt: string;
+};
+
+export type TempoSection = {
+  label: string;         // "인트로", "버스", "코러스" 등
+  bpm: number;
+  startTime: string;     // "0:00" 형식
+};

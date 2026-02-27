@@ -639,3 +639,15 @@ export function invalidateGroupActivityHeatmap(groupId: string) {
 export function invalidateAnomalyDetection(groupId: string) {
   mutate(swrKeys.anomalyDetection(groupId));
 }
+
+export function invalidateDanceCertification(groupId: string) {
+  mutate(swrKeys.danceCertification(groupId));
+}
+
+export function invalidateCostumeManagement(groupId: string, projectId: string) {
+  mutate(swrKeys.costumeManagement(groupId, projectId));
+}
+
+export function invalidateThankYouLetters(groupId: string) {
+  mutate(swrKeys.thankYouLetters(groupId));
+}
