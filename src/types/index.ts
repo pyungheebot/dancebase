@@ -3903,3 +3903,152 @@ export type PartnerMatchingData = {
   /** 최근 5회 이력 (최신순) */
   records: PartnerMatchingRecord[];
 };
+
+// ============================================
+// Group Challenge
+// ============================================
+
+/** 챌린지 유형: 개인 / 팀 */
+export type GroupChallengeType = "individual" | "team";
+
+/** 챌린지 상태: 예정 / 진행 중 / 완료 */
+export type GroupChallengeStatus = "upcoming" | "active" | "completed";
+
+/** 그룹 챌린지 단일 항목 */
+export type GroupChallengeItem = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 챌린지 제목 */
+  title: string;
+  /** 챌린지 설명 */
+  description: string;
+  /** 챌린지 유형 */
+  type: GroupChallengeType;
+  /** 기간 (일수, startDate ~ endDate 자동 계산) */
+  duration: number;
+  /** 시작일 (YYYY-MM-DD) */
+  startDate: string;
+  /** 종료일 (YYYY-MM-DD) */
+  endDate: string;
+  /** 목표 설명 */
+  goal: string;
+  /** 참가자 이름 목록 */
+  participants: string[];
+  /** 상태 (startDate/endDate 기준으로 자동 계산) */
+  status: GroupChallengeStatus;
+  /** 생성 일시 (ISO 8601) */
+  createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type GroupChallengeData = {
+  /** 챌린지 목록 (최대 20개) */
+  challenges: GroupChallengeItem[];
+};
+
+// ============================================
+// Member Interaction Score (멤버 상호작용 분석)
+// ============================================
+
+/** 점수 구성 요소 (각 항목 원점수) */
+export type MemberInteractionBreakdown = {
+  /** 게시글 수 (원점수) */
+  postCount: number;
+  /** 댓글 수 (원점수) */
+  commentCount: number;
+  /** 출석 횟수 (원점수) */
+  attendanceCount: number;
+  /** RSVP 횟수 (원점수) */
+  rsvpCount: number;
+  /** 게시글 가중 점수 (postCount * 15) */
+  postScore: number;
+  /** 댓글 가중 점수 (commentCount * 5) */
+  commentScore: number;
+  /** 출석 가중 점수 (attendanceCount * 10) */
+  attendanceScore: number;
+  /** RSVP 가중 점수 (rsvpCount * 3) */
+  rsvpScore: number;
+};
+
+/** 멤버별 상호작용 점수 항목 */
+export type MemberInteractionScoreItem = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  totalScore: number;
+  rank: number;
+  breakdown: MemberInteractionBreakdown;
+};
+
+/** 활동 수준 배지 */
+export type InteractionActivityLevel = "active" | "normal" | "low";
+
+/** useMemberInteractionScore 반환 타입 */
+export type MemberInteractionScoreResult = {
+  members: MemberInteractionScoreItem[];
+  averageScore: number;
+  activityLevel: InteractionActivityLevel;
+  hasData: boolean;
+};
+
+// ============================================
+// Group Memory Album (그룹 추억 타임라인)
+// ============================================
+
+export type MemoryCategory = "공연" | "연습" | "모임" | "축하" | "대회" | "기타";
+
+export type GroupMemoryItem = {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  category: MemoryCategory;
+  emoji: string;
+  createdAt: string;
+};
+
+// ============================================
+// Learning Path (멤버 학습 경로)
+// ============================================
+
+export type LearningLevel = "beginner" | "intermediate" | "advanced";
+
+export type LearningStep = {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  completedAt: string | null;
+};
+
+export type LearningPathItem = {
+  id: string;
+  title: string;
+  level: LearningLevel;
+  steps: LearningStep[];
+  createdAt: string;
+};
+
+// ============================================
+// Group Performance Report (그룹 성과 요약)
+// ============================================
+
+export type ReportMetricItem = {
+  current: number;
+  previous: number;
+  changeRate: number;
+};
+
+export type GroupPerformanceReport = {
+  period: string;
+  attendanceRate: ReportMetricItem;
+  attendanceCount: ReportMetricItem;
+  postCount: ReportMetricItem;
+  commentCount: ReportMetricItem;
+  memberCount: ReportMetricItem;
+  newMemberCount: ReportMetricItem;
+  scheduleCount: ReportMetricItem;
+  totalIncome: ReportMetricItem;
+  totalExpense: ReportMetricItem;
+  netIncome: ReportMetricItem;
+};

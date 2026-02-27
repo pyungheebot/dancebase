@@ -565,3 +565,11 @@ export function invalidateFinanceForecast(groupId: string) {
 export function invalidateScheduleAttendanceSummary(scheduleId: string) {
   mutate(swrKeys.scheduleAttendanceSummary(scheduleId));
 }
+
+export function invalidateMemberInteractionScore(groupId: string) {
+  mutate(swrKeys.memberInteractionScore(groupId));
+}
+
+export function invalidateGroupPerformanceReport(groupId: string) {
+  mutate(swrKeys.groupPerformanceReport(groupId));
+}

@@ -535,4 +535,12 @@ export const swrKeys = {
   // 짝꿍 매칭용 멤버 목록
   partnerMatchingMembers: (groupId: string) =>
     `/groups/${groupId}/partner-matching-members` as const,
+
+  // 멤버 상호작용 분석 (최근 30일)
+  memberInteractionScore: (groupId: string) =>
+    `/groups/${groupId}/member-interaction-score` as const,
+
+  // 그룹 성과 요약 리포트
+  groupPerformanceReport: (groupId: string) =>
+    `/groups/${groupId}/performance-report` as const,
 };
