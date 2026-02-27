@@ -13,6 +13,29 @@ import { BoardPostForm } from "./board-post-form";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
+/** 검색어 하이라이트 컴포넌트 */
+function HighlightText({ text, keyword }: { text: string; keyword: string }) {
+  const trimmed = keyword.trim();
+  if (!trimmed) return <>{text}</>;
+
+  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === trimmed.toLowerCase() ? (
+          <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 text-inherit rounded-[2px] px-px">
+            {part}
+          </mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+
 interface BoardPostListProps {
   groupId: string;
   projectId?: string | null;
@@ -107,7 +130,16 @@ export function BoardPostList({
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-xs text-muted-foreground">게시글이 없습니다</p>
+          {search.trim() ? (
+            <>
+              <p className="text-xs font-medium text-muted-foreground">검색 결과 없음</p>
+              <p className="text-[11px] text-muted-foreground/70 mt-1">
+                &quot;{search.trim()}&quot;에 해당하는 게시글이 없습니다
+              </p>
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground">게시글이 없습니다</p>
+          )}
         </div>
       ) : (
         <div className="rounded-lg border divide-y">
@@ -132,7 +164,9 @@ export function BoardPostList({
                     <span className="text-[10px] hidden sm:inline">{post.projects.name}</span>
                   </span>
                 )}
-                <span className="font-medium truncate">{post.title}</span>
+                <span className="font-medium truncate">
+                  <HighlightText text={post.title} keyword={search} />
+                </span>
                 {post.comment_count > 0 && (
                   <span className="flex items-center gap-0.5 text-muted-foreground shrink-0">
                     <MessageSquare className="h-2.5 w-2.5" />

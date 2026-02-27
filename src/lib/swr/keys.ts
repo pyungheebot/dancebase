@@ -48,6 +48,9 @@ export const swrKeys = {
   // 마감 임박 프로젝트 (대시보드용)
   deadlineProjects: () => "/deadline-projects" as const,
 
+  // 예정 결제 (대시보드용)
+  upcomingPayments: () => "/upcoming-payments" as const,
+
   // 메시지
   conversations: () => "/conversations" as const,
   conversation: (partnerId: string) => `/conversations/${partnerId}` as const,
@@ -68,8 +71,14 @@ export const swrKeys = {
   // 가입 신청
   pendingJoinRequestCount: (groupId: string) =>
     `/groups/${groupId}/join-requests/pending-count` as const,
+  joinRequests: (groupId: string, status?: string) =>
+    `/groups/${groupId}/join-requests${status ? `?status=${status}` : ""}` as const,
 
   // 활동 감사 로그
   activityLogs: (entityType: string, entityId: string) =>
     `/activity-logs/${entityType}/${entityId}` as const,
+
+  // 엔티티 설정
+  entitySettings: (entityType: string, entityId: string, key: string) =>
+    `/entity-settings/${entityType}/${entityId}/${key}` as const,
 };

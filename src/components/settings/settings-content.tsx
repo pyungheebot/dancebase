@@ -56,6 +56,7 @@ import { invalidateBoardCategories, invalidateGroup } from "@/lib/swr/invalidate
 import { createNotification } from "@/lib/notifications";
 import { useAuth } from "@/hooks/use-auth";
 import { ActivityLogSection } from "@/components/settings/activity-log-section";
+import { ReminderSettingsSection } from "@/components/settings/reminder-settings-section";
 
 type SettingsContentProps = {
   ctx: EntityContext;
@@ -925,6 +926,11 @@ export function SettingsContent({
             </Card>
           )}
 
+          {/* 알림 설정 (리더 전용) */}
+          {isGroupLeader && (
+            <ReminderSettingsSection entityType="group" entityId={ctx.groupId} />
+          )}
+
           {/* 활동 기록 (리더 전용) */}
           {isGroupLeader && (
             <ActivityLogSection entityType="group" entityId={ctx.groupId} />
@@ -1149,6 +1155,11 @@ export function SettingsContent({
                 })()}
               </CardContent>
             </Card>
+          )}
+
+          {/* 알림 설정 (리더 전용, 프로젝트) */}
+          {ctx.permissions.canEdit && ctx.projectId && (
+            <ReminderSettingsSection entityType="project" entityId={ctx.projectId} />
           )}
 
           <Button

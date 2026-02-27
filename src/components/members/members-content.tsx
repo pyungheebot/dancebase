@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MemberList } from "@/components/groups/member-list";
 import { InviteModal } from "@/components/groups/invite-modal";
@@ -9,6 +9,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { SubgroupInviteFromParent } from "@/components/subgroups/subgroup-invite-from-parent";
-import { Download, Plus, Tags, Trash2 } from "lucide-react";
+import { Download, Plus, Search, Tags, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { exportToCsv } from "@/lib/export-csv";
 import { getCategoryColorClasses } from "@/types";
@@ -107,6 +108,9 @@ function GroupMembersContent({
 }) {
   const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("name");
 
   const handleExportCsv = () => {
     const headers = ["이름", "역할", "가입일"];
@@ -137,16 +141,50 @@ function GroupMembersContent({
     },
   }));
 
-  const filteredMembers =
-    selectedCategory === "all"
-      ? allMembersForList
-      : selectedCategory === "none"
-        ? allMembersForList.filter(
-            (m) => !m.category_id || !categories.some((c) => c.id === m.category_id)
-          )
-        : allMembersForList.filter((m) => m.category_id === selectedCategory);
+  const filteredMembers = useMemo(() => {
+    let result = allMembersForList;
 
-  const isGrouped = selectedCategory === "all";
+    // 카테고리 필터
+    if (selectedCategory !== "all") {
+      result =
+        selectedCategory === "none"
+          ? result.filter(
+              (m) => !m.category_id || !categories.some((c) => c.id === m.category_id)
+            )
+          : result.filter((m) => m.category_id === selectedCategory);
+    }
+
+    // 검색어 필터
+    const query = searchQuery.trim().toLowerCase();
+    if (query) {
+      result = result.filter((m) => {
+        const displayName = (m.nickname || m.profiles.name || "").toLowerCase();
+        return displayName.includes(query);
+      });
+    }
+
+    // 역할 필터
+    if (roleFilter !== "all") {
+      result = result.filter((m) => m.role === roleFilter);
+    }
+
+    // 정렬
+    result = [...result].sort((a, b) => {
+      if (sortOrder === "name") {
+        const nameA = (a.nickname || a.profiles.name || "").toLowerCase();
+        const nameB = (b.nickname || b.profiles.name || "").toLowerCase();
+        return nameA.localeCompare(nameB, "ko");
+      }
+      if (sortOrder === "joined") {
+        return (a.joined_at || "").localeCompare(b.joined_at || "");
+      }
+      return 0;
+    });
+
+    return result;
+  }, [allMembersForList, selectedCategory, categories, searchQuery, roleFilter, sortOrder]);
+
+  const isGrouped = selectedCategory === "all" && !searchQuery.trim() && roleFilter === "all";
   const myRole = ctx.permissions.canEdit ? "leader" : "member";
 
   return (
@@ -215,6 +253,39 @@ function GroupMembersContent({
         )}
       </div>
 
+      {/* 검색 / 역할 필터 / 정렬 툴바 */}
+      <div className="flex items-center gap-1.5 mb-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="멤버 검색"
+            className="h-7 pl-6 text-xs"
+          />
+        </div>
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-24 h-7 text-xs shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체</SelectItem>
+            <SelectItem value="leader">리더</SelectItem>
+            <SelectItem value="sub_leader">서브리더</SelectItem>
+            <SelectItem value="member">멤버</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sortOrder} onValueChange={setSortOrder}>
+          <SelectTrigger className="w-24 h-7 text-xs shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">이름순</SelectItem>
+            <SelectItem value="joined">가입일순</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <MemberList
         members={filteredMembers}
         myRole={myRole}
@@ -256,6 +327,9 @@ function ProjectMembersContent({
   const [selectedUserId, setSelectedUserId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState("name");
   const supabase = createClient();
 
   const handleExportCsv = () => {
@@ -312,6 +386,39 @@ function ProjectMembersContent({
     onUpdate();
   };
 
+  const displayedMembers = useMemo(() => {
+    let result = [...ctx.members];
+
+    // 검색어 필터
+    const query = searchQuery.trim().toLowerCase();
+    if (query) {
+      result = result.filter((m) => {
+        const displayName = (m.nickname || m.profile.name || "").toLowerCase();
+        return displayName.includes(query);
+      });
+    }
+
+    // 역할 필터
+    if (roleFilter !== "all") {
+      result = result.filter((m) => m.role === roleFilter);
+    }
+
+    // 정렬
+    result = result.sort((a, b) => {
+      if (sortOrder === "name") {
+        const nameA = (a.nickname || a.profile.name || "").toLowerCase();
+        const nameB = (b.nickname || b.profile.name || "").toLowerCase();
+        return nameA.localeCompare(nameB, "ko");
+      }
+      if (sortOrder === "joined") {
+        return (a.joinedAt || "").localeCompare(b.joinedAt || "");
+      }
+      return 0;
+    });
+
+    return result;
+  }, [ctx.members, searchQuery, roleFilter, sortOrder]);
+
   return (
     <>
       <div className="flex items-center justify-between mb-2">
@@ -367,58 +474,97 @@ function ProjectMembersContent({
         </div>
       </div>
 
+      {/* 검색 / 역할 필터 / 정렬 툴바 */}
+      <div className="flex items-center gap-1.5 mb-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="멤버 검색"
+            className="h-7 pl-6 text-xs"
+          />
+        </div>
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-24 h-7 text-xs shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체</SelectItem>
+            <SelectItem value="leader">리더</SelectItem>
+            <SelectItem value="sub_leader">서브리더</SelectItem>
+            <SelectItem value="member">멤버</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sortOrder} onValueChange={setSortOrder}>
+          <SelectTrigger className="w-24 h-7 text-xs shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">이름순</SelectItem>
+            <SelectItem value="joined">가입일순</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="rounded-lg border divide-y">
-        {ctx.members.map((member) => {
-          const displayName = member.nickname || member.profile.name;
-          return (
-            <div key={member.id} className="flex items-center justify-between px-3 py-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback className="text-xs">
-                    {displayName?.charAt(0)?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <UserPopoverMenu
-                  userId={member.userId}
-                  displayName={displayName}
-                  groupId={ctx.groupId}
-                  className="text-sm truncate hover:underline text-left"
-                >
-                  {displayName}
-                </UserPopoverMenu>
-                {member.role === "leader" && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    프로젝트장
-                  </Badge>
+        {displayedMembers.length === 0 ? (
+          <p className="py-6 text-center text-xs text-muted-foreground">
+            검색 결과가 없습니다
+          </p>
+        ) : (
+          displayedMembers.map((member) => {
+            const displayName = member.nickname || member.profile.name;
+            return (
+              <div key={member.id} className="flex items-center justify-between px-3 py-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="text-xs">
+                      {displayName?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <UserPopoverMenu
+                    userId={member.userId}
+                    displayName={displayName}
+                    groupId={ctx.groupId}
+                    className="text-sm truncate hover:underline text-left"
+                  >
+                    {displayName}
+                  </UserPopoverMenu>
+                  {member.role === "leader" && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      프로젝트장
+                    </Badge>
+                  )}
+                </div>
+                {ctx.permissions.canEdit && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Select
+                      value={member.role}
+                      onValueChange={(val) => handleRoleChange(member.id, val)}
+                    >
+                      <SelectTrigger className="h-6 w-20 text-[11px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="leader">리더</SelectItem>
+                        <SelectItem value="member">멤버</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      onClick={() => setRemoveTargetId(member.userId)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 )}
               </div>
-              {ctx.permissions.canEdit && (
-                <div className="flex items-center gap-1 shrink-0">
-                  <Select
-                    value={member.role}
-                    onValueChange={(val) => handleRoleChange(member.id, val)}
-                  >
-                    <SelectTrigger className="h-6 w-20 text-[11px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="leader">리더</SelectItem>
-                      <SelectItem value="member">멤버</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                    onClick={() => setRemoveTargetId(member.userId)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       <ConfirmDialog

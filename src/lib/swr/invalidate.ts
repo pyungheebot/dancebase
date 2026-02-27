@@ -118,6 +118,18 @@ export function invalidatePendingJoinRequestCount(groupId: string) {
   mutate(swrKeys.pendingJoinRequestCount(groupId));
 }
 
+export function invalidateJoinRequests(groupId: string) {
+  mutate(
+    (key: string) => typeof key === "string" && key.startsWith(`/groups/${groupId}/join-requests`),
+    undefined,
+    { revalidate: true }
+  );
+}
+
 export function invalidateActivityLogs(entityType: string, entityId: string) {
   mutate(swrKeys.activityLogs(entityType, entityId));
+}
+
+export function invalidateEntitySettings(entityType: string, entityId: string, key: string) {
+  mutate(swrKeys.entitySettings(entityType, entityId, key));
 }

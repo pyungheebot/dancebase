@@ -624,6 +624,32 @@ export type MessageWithProfile = Message & {
   sender: Pick<Profile, "id" | "name" | "avatar_url">;
 };
 
+// ============================================
+// Entity Settings
+// ============================================
+
+export type EntitySettingRow = {
+  id: string;
+  entity_type: string;
+  entity_id: string;
+  key: string;
+  value: Record<string, unknown>;
+  updated_at: string;
+};
+
+// 출석 리마인더 설정 타입
+export type ReminderSettingValue = {
+  enabled: boolean;
+  offsets: number[]; // 분 단위 (60=1시간 전, 180=3시간 전, 1440=하루 전)
+};
+
+export const REMINDER_SETTING_KEY = "attendance_reminder";
+
+export const DEFAULT_REMINDER_SETTING: ReminderSettingValue = {
+  enabled: false,
+  offsets: [60],
+};
+
 export type Conversation = {
   partner_id: string;
   partner_name: string;

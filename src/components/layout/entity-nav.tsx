@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Network,
   ChevronRight,
+  UserPlus,
 } from "lucide-react";
 
 type EntityNavProps = {
@@ -41,6 +42,7 @@ const ALL_TABS: TabDef[] = [
   { key: "attendance", feature: "attendance", label: "출석", icon: ClipboardCheck, path: "/attendance" },
   { key: "members", feature: "members", label: "멤버", icon: Users, path: "/members" },
   { key: "finances", feature: "finance", label: "회비", icon: Wallet, path: "/finances" },
+  { key: "join-requests", feature: "joinRequests", label: "가입 신청", icon: UserPlus, path: "/join-requests", groupOnly: true },
   { key: "settings", feature: "settings", label: "설정", icon: Settings, path: "/settings" },
 ];
 
@@ -69,6 +71,12 @@ export function EntityNav({ ctx }: EntityNavProps) {
 
     // 설정: canManageSettings 권한 필요 (리더만 접근 가능, 일반 멤버·서브리더 숨김)
     if (tab.key === "settings" && !permissions.canManageSettings) return false;
+
+    // 가입 신청: 리더만 접근 가능
+    if (tab.key === "join-requests" && !permissions.canManageSettings) return false;
+
+    // 가입 신청: join_policy가 approval인 경우에만 표시
+    if (tab.key === "join-requests" && ctx.raw.group?.join_policy !== "approval") return false;
 
     return true;
   });
@@ -120,7 +128,7 @@ export function EntityNav({ ctx }: EntityNavProps) {
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.path);
-            const showBadge = tab.key === "settings" && isGroupLeader && pendingCount > 0;
+            const showBadge = tab.key === "join-requests" && isGroupLeader && pendingCount > 0;
             return (
               <Link
                 key={tab.path}
