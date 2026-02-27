@@ -51,7 +51,6 @@ export default function NewGroupPage() {
       );
 
       if (rpcError) {
-        console.error("RPC 오류:", rpcError);
         setError(`그룹 생성 실패: ${rpcError.message} (${rpcError.code})`);
         return;
       }
@@ -63,7 +62,6 @@ export default function NewGroupPage() {
 
       router.push(`/groups/${groupId}`);
     } catch (err) {
-      console.error("예외 발생:", err);
       const message = err instanceof Error ? err.message : JSON.stringify(err);
       setError(`오류: ${message}`);
     } finally {

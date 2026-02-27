@@ -44,6 +44,49 @@ export function useSchedules(groupId: string, projectId?: string | null) {
   };
 }
 
+export function useTodaySchedules() {
+  const { data, isLoading, mutate } = useSWR(
+    swrKeys.todaySchedules(),
+    async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return [] as Schedule[];
+
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
+
+      // 사용자가 속한 그룹의 오늘 일정 조회
+      const { data: memberGroups } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .eq("user_id", user.id);
+
+      if (!memberGroups || memberGroups.length === 0) return [] as Schedule[];
+
+      const groupIds = memberGroups.map((m: { group_id: string }) => m.group_id);
+
+      const { data } = await supabase
+        .from("schedules")
+        .select("*")
+        .in("group_id", groupIds)
+        .gte("starts_at", startOfDay)
+        .lt("starts_at", endOfDay)
+        .order("starts_at", { ascending: true });
+
+      return (data ?? []) as Schedule[];
+    }
+  );
+
+  return {
+    schedules: data ?? [],
+    loading: isLoading,
+    refetch: () => mutate(),
+  };
+}
+
 export function useAttendance(scheduleId: string) {
   const fetcher = async () => {
     const supabase = createClient();

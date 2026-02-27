@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -17,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, X, Plus, Globe, Lock, Users } from "lucide-react";
+import { Loader2, X, Plus, Globe, Lock, Users, Camera } from "lucide-react";
+import { toast } from "sonner";
 import type { PrivacySettings, PrivacyField, PrivacyLevel } from "@/types";
 import { DEFAULT_PRIVACY_SETTINGS } from "@/types";
 
@@ -79,7 +81,7 @@ function FieldLabel({
 }
 
 export default function ProfilePage() {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [name, setName] = useState("");
   const [genreInput, setGenreInput] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
@@ -95,6 +97,9 @@ export default function ProfilePage() {
   const [myTeams, setMyTeams] = useState<{ id: string; name: string }[]>([]);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -162,6 +167,59 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("파일 크기는 2MB 이하여야 합니다");
+      return;
+    }
+
+    // 미리보기
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreview(objectUrl);
+
+    setAvatarUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const filePath = `${user.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) {
+        toast.error("사진 업로드에 실패했습니다");
+        setAvatarPreview(null);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl + `?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) {
+        toast.error("프로필 사진 저장에 실패했습니다");
+        return;
+      }
+
+      setAvatarPreview(publicUrl);
+      await refreshProfile();
+      toast.success("프로필 사진이 변경되었습니다");
+    } finally {
+      setAvatarUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -215,6 +273,41 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent className="px-3 pb-3">
             <form onSubmit={handleSubmit} className="space-y-3">
+              {/* 아바타 업로드 */}
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={avatarPreview ?? profile?.avatar_url ?? undefined} />
+                    <AvatarFallback className="text-lg">
+                      {profile?.name?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {avatarUploading ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Camera className="h-3 w-3" />
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">프로필 사진</p>
+                  <p className="text-xs text-muted-foreground">JPG, PNG, GIF (최대 2MB)</p>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="email">이메일</Label>
                 <Input id="email" value={user?.email || ""} disabled />

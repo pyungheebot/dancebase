@@ -5,20 +5,32 @@ import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOf
 import { ko } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar } from "lucide-react";
 import { ScheduleForm } from "./schedule-form";
 import type { Schedule } from "@/types";
+import Link from "next/link";
+
+const MAX_VISIBLE_EVENTS = 2;
 
 type CalendarViewProps = {
   schedules: Schedule[];
   onSelectSchedule?: (schedule: Schedule) => void;
   canEdit?: boolean;
   onScheduleUpdated?: () => void;
+  attendancePath?: string;
 };
 
-export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated }: CalendarViewProps) {
+export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
+  const [detailSchedule, setDetailSchedule] = useState<Schedule | null>(null);
+  const [overflowDay, setOverflowDay] = useState<Date | null>(null);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -75,6 +87,8 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
           const daySchedules = getSchedulesForDay(day);
           const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
           const isToday = isSameDay(day, new Date());
+          const visibleSchedules = daySchedules.slice(0, MAX_VISIBLE_EVENTS);
+          const hiddenCount = daySchedules.length - MAX_VISIBLE_EVENTS;
 
           return (
             <div
@@ -87,10 +101,10 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                 {format(day, "d")}
               </span>
               <div className="mt-0.5 space-y-px">
-                {daySchedules.map((schedule) => (
+                {visibleSchedules.map((schedule) => (
                   <button
                     key={schedule.id}
-                    onClick={() => onSelectSchedule?.(schedule)}
+                    onClick={() => setDetailSchedule(schedule)}
                     className="w-full text-left"
                   >
                     <Badge
@@ -101,6 +115,16 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                     </Badge>
                   </button>
                 ))}
+                {hiddenCount > 0 && (
+                  <button
+                    onClick={() => setOverflowDay(day)}
+                    className="w-full text-left"
+                  >
+                    <span className="text-[9px] text-muted-foreground hover:text-foreground px-1">
+                      +{hiddenCount}개 더보기
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -164,6 +188,99 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
           }}
         />
       )}
+
+      {/* 일정 상세 모달 */}
+      <Dialog open={!!detailSchedule} onOpenChange={(open) => { if (!open) setDetailSchedule(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">{detailSchedule?.title}</DialogTitle>
+          </DialogHeader>
+          {detailSchedule && (
+            <div className="space-y-3">
+              <div className="space-y-1.5 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 shrink-0" />
+                  <span>
+                    {format(new Date(detailSchedule.starts_at), "yyyy년 M월 d일 (EEE) HH:mm", { locale: ko })}
+                    {" ~ "}
+                    {format(new Date(detailSchedule.ends_at), "HH:mm")}
+                  </span>
+                </div>
+                {detailSchedule.location && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span>{detailSchedule.location}</span>
+                  </div>
+                )}
+                {detailSchedule.description && (
+                  <p className="text-xs whitespace-pre-wrap pt-1">{detailSchedule.description}</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {canEdit && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      setEditSchedule(detailSchedule);
+                      setDetailSchedule(null);
+                    }}
+                  >
+                    <Pencil className="h-3 w-3 mr-1" />
+                    수정
+                  </Button>
+                )}
+                {attendancePath && (
+                  <Button asChild size="sm" className="h-7 text-xs">
+                    <Link href={`${attendancePath}?schedule=${detailSchedule.id}`}>
+                      출석 관리
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 날짜별 일정 더보기 모달 */}
+      <Dialog open={!!overflowDay} onOpenChange={(open) => { if (!open) setOverflowDay(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              {overflowDay && format(overflowDay, "M월 d일 (EEE) 일정", { locale: ko })}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            {overflowDay &&
+              getSchedulesForDay(overflowDay).map((schedule) => (
+                <button
+                  key={schedule.id}
+                  className="w-full text-left rounded border px-2.5 py-1.5 hover:bg-muted/50 transition-colors"
+                  onClick={() => {
+                    setOverflowDay(null);
+                    setDetailSchedule(schedule);
+                  }}
+                >
+                  <p className="text-xs font-medium">{schedule.title}</p>
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                    <span className="flex items-center gap-0.5">
+                      <Clock className="h-2.5 w-2.5" />
+                      {format(new Date(schedule.starts_at), "HH:mm")}
+                    </span>
+                    {schedule.location && (
+                      <span className="flex items-center gap-0.5">
+                        <MapPin className="h-2.5 w-2.5" />
+                        {schedule.location}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -39,7 +39,9 @@ export default function ExplorePage() {
   const [publicProjects, setPublicProjects] = useState<PublicProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
+  const [debouncedProjectSearchQuery, setDebouncedProjectSearchQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [joining, setJoining] = useState<string | null>(null);
   const [requestedGroups, setRequestedGroups] = useState<Set<string>>(new Set());
@@ -62,11 +64,26 @@ export default function ExplorePage() {
     fetchMyRequests();
   }, [supabase]);
 
+  // 검색어 debounce (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedProjectSearchQuery(projectSearchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [projectSearchQuery]);
+
   const fetchPublicGroups = useCallback(async () => {
     setLoading(true);
 
     const { data } = await supabase.rpc("get_public_groups", {
-      p_search: searchQuery || null,
+      p_search: debouncedSearchQuery || null,
       p_genre: selectedGenre || null,
     });
 
@@ -75,7 +92,7 @@ export default function ExplorePage() {
     }
 
     setLoading(false);
-  }, [supabase, searchQuery, selectedGenre]);
+  }, [supabase, debouncedSearchQuery, selectedGenre]);
 
   useEffect(() => {
     if (tab === "groups") fetchPublicGroups();
@@ -84,11 +101,11 @@ export default function ExplorePage() {
   const fetchPublicProjects = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.rpc("get_public_projects", {
-      p_search: projectSearchQuery || null,
+      p_search: debouncedProjectSearchQuery || null,
     });
     if (data) setPublicProjects(data as PublicProject[]);
     setLoading(false);
-  }, [supabase, projectSearchQuery]);
+  }, [supabase, debouncedProjectSearchQuery]);
 
   useEffect(() => {
     if (tab === "projects") fetchPublicProjects();

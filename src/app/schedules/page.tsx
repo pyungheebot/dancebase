@@ -118,33 +118,46 @@ export default function AllSchedulesPage() {
       .order("starts_at", { ascending: true });
 
     if (data) {
-      // 그룹별 멤버 수 캐싱
-      const memberCounts: Record<string, number> = {};
-      const withCounts = await Promise.all(
-        (data as (ScheduleWithDetails & { attendance: { status: string }[] })[]).map(
-          async (s) => {
-            const groupId = s.project_id
-              ? `project:${s.project_id}`
-              : `group:${s.group_id}`;
-            if (!(groupId in memberCounts)) {
-              if (s.project_id) {
-                const { count } = await supabase
-                  .from("project_members")
-                  .select("*", { count: "exact", head: true })
-                  .eq("project_id", s.project_id);
-                memberCounts[groupId] = count ?? 0;
-              } else {
-                const { count } = await supabase
-                  .from("group_members")
-                  .select("*", { count: "exact", head: true })
-                  .eq("group_id", s.group_id);
-                memberCounts[groupId] = count ?? 0;
-              }
-            }
-            return { ...s, member_count: memberCounts[groupId] };
+      const scheduleData = data as (ScheduleWithDetails & { attendance: { status: string }[] })[];
+
+      // 고유한 group_id, project_id 수집
+      const groupIds = [...new Set(scheduleData.filter((s) => !s.project_id).map((s) => s.group_id))];
+      const projectIds = [...new Set(scheduleData.filter((s) => !!s.project_id).map((s) => s.project_id as string))];
+
+      // 그룹/프로젝트 멤버 수 한 번에 조회
+      const groupMemberCounts: Record<string, number> = {};
+      const projectMemberCounts: Record<string, number> = {};
+
+      if (groupIds.length > 0) {
+        const { data: groupMembers } = await supabase
+          .from("group_members")
+          .select("group_id")
+          .in("group_id", groupIds);
+        if (groupMembers) {
+          for (const row of groupMembers) {
+            groupMemberCounts[row.group_id] = (groupMemberCounts[row.group_id] ?? 0) + 1;
           }
-        )
-      );
+        }
+      }
+
+      if (projectIds.length > 0) {
+        const { data: projectMembers } = await supabase
+          .from("project_members")
+          .select("project_id")
+          .in("project_id", projectIds);
+        if (projectMembers) {
+          for (const row of projectMembers) {
+            projectMemberCounts[row.project_id] = (projectMemberCounts[row.project_id] ?? 0) + 1;
+          }
+        }
+      }
+
+      const withCounts = scheduleData.map((s) => ({
+        ...s,
+        member_count: s.project_id
+          ? (projectMemberCounts[s.project_id] ?? 0)
+          : (groupMemberCounts[s.group_id] ?? 0),
+      }));
       setSchedules(withCounts);
     }
     setLoading(false);

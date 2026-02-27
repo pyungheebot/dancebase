@@ -56,6 +56,7 @@ export function FinanceContent({
   const canManage = isManager || ctx.permissions.canEdit;
 
   const handleDelete = async (txnId: string) => {
+    if (!window.confirm("이 거래를 삭제하시겠습니까?")) return;
     const { error } = await supabase
       .from("finance_transactions")
       .delete()

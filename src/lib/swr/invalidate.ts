@@ -88,3 +88,8 @@ export function invalidateFollowList(userId: string) {
 export function invalidateDashboardSettings(entityId: string, memberTable: string) {
   mutate(swrKeys.dashboardSettings(entityId, memberTable));
 }
+
+export function invalidateNotifications() {
+  mutate(swrKeys.notifications());
+  mutate(swrKeys.unreadNotificationCount());
+}

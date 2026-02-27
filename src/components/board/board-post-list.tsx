@@ -7,9 +7,11 @@ import { useBoard } from "@/hooks/use-board";
 import { BOARD_CATEGORIES } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, MessageSquare, Pin, FolderOpen } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, MessageSquare, Pin, FolderOpen, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { BoardPostForm } from "./board-post-form";
 import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
 
 interface BoardPostListProps {
   groupId: string;
@@ -30,7 +32,21 @@ export function BoardPostList({
   hideHeader,
   activePostId,
 }: BoardPostListProps) {
-  const { posts, loading, category, setCategory, refetch } = useBoard(groupId, projectId);
+  const { posts, loading, category, setCategory, search, setSearch, page, setPage, totalPages, refetch } = useBoard(groupId, projectId);
+
+  // 검색어 debounce
+  const [searchInput, setSearchInput] = useState(search);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setSearch(value);
+    }, 300);
+  };
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
 
   // 통합 게시판 여부 (그룹 게시판에서 프로젝트 글도 보여줄 때)
   const isIntegrated = !projectId;
@@ -45,14 +61,6 @@ export function BoardPostList({
   // "전체"를 제외하고 필터용 카테고리만 표시
   const filterCategories = BOARD_CATEGORIES.filter((c) => c !== "전체");
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
     <div>
       {!hideHeader && (
@@ -61,6 +69,17 @@ export function BoardPostList({
           <BoardPostForm groupId={groupId} projectId={projectId} onCreated={refetch} />
         </div>
       )}
+
+      {/* 검색창 */}
+      <div className="relative mb-2">
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+        <Input
+          placeholder="제목 또는 내용 검색"
+          value={searchInput}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="pl-6 h-7 text-xs"
+        />
+      </div>
 
       {/* 카테고리 필터 */}
       <div className="flex flex-wrap gap-1 mb-2">
@@ -86,7 +105,11 @@ export function BoardPostList({
       </div>
 
       {/* 글 목록 — 한줄 컴팩트 */}
-      {posts.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : posts.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-xs text-muted-foreground">게시글이 없습니다</p>
         </div>
@@ -126,6 +149,33 @@ export function BoardPostList({
               </span>
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-3">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page <= 1 || loading}
+          >
+            <ChevronLeft className="h-3 w-3" />
+          </Button>
+          <span className="text-[11px] text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages || loading}
+          >
+            <ChevronRight className="h-3 w-3" />
+          </Button>
         </div>
       )}
     </div>

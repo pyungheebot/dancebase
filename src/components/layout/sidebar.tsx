@@ -37,6 +37,7 @@ import {
   Hash,
   Share2,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useMemo } from "react";
 
 type GroupTreeNode = {
@@ -274,9 +275,12 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
         <Popover>
           <PopoverTrigger asChild>
             <button className="flex items-center gap-2 w-full rounded-sm px-1.5 py-1 hover:bg-sidebar-accent transition-colors text-left">
-              <div className="flex items-center justify-center h-5 w-5 rounded-sm bg-gradient-to-br from-orange-400 to-pink-500 text-white text-[10px] font-bold shrink-0">
-                {profile?.name?.charAt(0)?.toUpperCase() || "G"}
-              </div>
+              <Avatar className="h-5 w-5 shrink-0">
+                <AvatarImage src={profile?.avatar_url ?? undefined} />
+                <AvatarFallback className="text-[10px] bg-gradient-to-br from-orange-400 to-pink-500 text-white font-bold rounded-sm">
+                  {profile?.name?.charAt(0)?.toUpperCase() || "G"}
+                </AvatarFallback>
+              </Avatar>
               <span className="text-sm font-medium truncate flex-1">
                 {profile?.name || "Groop"}
               </span>

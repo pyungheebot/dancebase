@@ -30,11 +30,33 @@ export default function ConversationPage({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 주기적으로 새 메시지 확인
+  // Supabase Realtime subscription으로 새 메시지 실시간 수신
   useEffect(() => {
-    const interval = setInterval(refetch, 10000);
-    return () => clearInterval(interval);
-  }, [refetch]);
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`messages:${userId}:${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        (payload: { new: Record<string, unknown> }) => {
+          // 현재 대화 상대에게서 온 메시지일 때만 refetch
+          if (payload.new && payload.new.sender_id === userId) {
+            refetch();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, userId, supabase, refetch]);
 
   const handleSend = async () => {
     if (!content.trim() || sending || !user) return;

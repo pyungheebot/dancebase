@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { Plus, Tags, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { getCategoryColorClasses } from "@/types";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
@@ -231,11 +232,16 @@ function ProjectMembersContent({
 
   const handleRemoveMember = async (userId: string) => {
     if (!ctx.projectId) return;
-    await supabase
+    if (!window.confirm("이 멤버를 제거하시겠습니까?")) return;
+    const { error } = await supabase
       .from("project_members")
       .delete()
       .eq("project_id", ctx.projectId)
       .eq("user_id", userId);
+    if (error) {
+      toast.error("멤버 제거에 실패했습니다");
+      return;
+    }
     onUpdate();
   };
 

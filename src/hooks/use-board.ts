@@ -12,17 +12,21 @@ import type {
   BoardPollOptionWithVotes,
 } from "@/types";
 
+const PAGE_SIZE = 10;
+
 export function useBoard(groupId: string, projectId?: string | null) {
   const [category, setCategory] = useState<string>("전체");
+  const [search, setSearch] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
 
   const { data, isLoading, mutate } = useSWR(
-    swrKeys.board(groupId, projectId, category),
+    swrKeys.board(groupId, projectId, category, search, page),
     async () => {
       const supabase = createClient();
 
       let query = supabase
         .from("board_posts")
-        .select("*, profiles(id, name, avatar_url), board_comments(count), projects(id, name)")
+        .select("*, profiles(id, name, avatar_url), board_comments(count), projects(id, name)", { count: "exact" })
         .eq("group_id", groupId)
         .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false });
@@ -44,26 +48,55 @@ export function useBoard(groupId: string, projectId?: string | null) {
         query = query.eq("category", category);
       }
 
-      const { data } = await query;
+      if (search.trim()) {
+        query = query.or(`title.ilike.%${search.trim()}%,content.ilike.%${search.trim()}%`);
+      }
+
+      // 페이지네이션
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      query = query.range(from, to);
+
+      const { data, count } = await query;
 
       if (data) {
-        return data.map((post: Record<string, unknown>) => ({
+        const posts = data.map((post: Record<string, unknown>) => ({
           ...post,
           comment_count: (post.board_comments as { count: number }[])?.[0]?.count ?? 0,
           board_comments: undefined,
         })) as unknown as BoardPostWithDetails[];
+        return { posts, totalCount: count ?? 0 };
       }
 
-      return [] as BoardPostWithDetails[];
+      return { posts: [] as BoardPostWithDetails[], totalCount: 0 };
     },
     { keepPreviousData: true },
   );
 
+  const totalCount = data?.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  const handleSetCategory = (cat: string) => {
+    setCategory(cat);
+    setPage(1);
+  };
+
+  const handleSetSearch = (s: string) => {
+    setSearch(s);
+    setPage(1);
+  };
+
   return {
-    posts: data ?? [],
+    posts: data?.posts ?? [],
     loading: isLoading,
     category,
-    setCategory,
+    setCategory: handleSetCategory,
+    search,
+    setSearch: handleSetSearch,
+    page,
+    setPage,
+    totalPages,
+    totalCount,
     refetch: () => mutate(),
   };
 }

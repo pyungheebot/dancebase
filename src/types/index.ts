@@ -458,6 +458,29 @@ export type JoinRequestWithProfile = JoinRequest & {
 };
 
 // ============================================
+// Notification (알림)
+// ============================================
+
+export type NotificationType =
+  | "new_post"
+  | "new_comment"
+  | "attendance"
+  | "join_request"
+  | "join_approved"
+  | "join_rejected";
+
+export type Notification = {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  link: string | null;
+  is_read: boolean;
+  created_at: string;
+};
+
+// ============================================
 // Message (쪽지)
 // ============================================
 

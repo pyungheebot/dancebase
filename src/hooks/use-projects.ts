@@ -30,8 +30,9 @@ export function useProjects(groupId: string) {
       supabase.from("entity_permissions").select("permission").eq("entity_type", "group").eq("entity_id", groupId).eq("user_id", user.id).eq("permission", "project_manage"),
     ]);
 
-    if (projectsRes.error) console.error("[useProjects] RPC error:", projectsRes.error);
-    if (membershipRes.error) console.error("[useProjects] membership error:", membershipRes.error);
+    if (projectsRes.error || membershipRes.error) {
+      return { projects: [], canManage: false };
+    }
 
     const projects = (projectsRes.data ?? []) as (Project & { member_count: number; is_shared: boolean })[];
 

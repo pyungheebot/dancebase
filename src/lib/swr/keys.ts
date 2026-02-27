@@ -21,13 +21,20 @@ export const swrKeys = {
   attendance: (scheduleId: string) => `/schedules/${scheduleId}/attendance` as const,
 
   // 게시판
-  board: (groupId: string, projectId: string | null | undefined, category: string) =>
-    `/groups/${groupId}/board?project=${projectId ?? ""}&category=${category}` as const,
+  board: (groupId: string, projectId: string | null | undefined, category: string, search: string, page: number) =>
+    `/groups/${groupId}/board?project=${projectId ?? ""}&category=${category}&search=${search}&page=${page}` as const,
   boardPost: (postId: string) => `/board-posts/${postId}` as const,
 
   // 회비
   finance: (groupId: string, projectId?: string | null) =>
     `/groups/${groupId}/finance${projectId ? `?project=${projectId}` : ""}` as const,
+
+  // 알림
+  notifications: () => "/notifications" as const,
+  unreadNotificationCount: () => "/notifications/unread-count" as const,
+
+  // 오늘의 일정 (대시보드용)
+  todaySchedules: () => "/today-schedules" as const,
 
   // 메시지
   conversations: () => "/conversations" as const,

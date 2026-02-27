@@ -92,7 +92,12 @@ export function AuthForm() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-xs text-muted-foreground">비밀번호</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-xs text-muted-foreground">비밀번호</Label>
+              <Link href="/reset-password" className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
+                비밀번호를 잊으셨나요?
+              </Link>
+            </div>
             <Input
               id="password"
               type="password"

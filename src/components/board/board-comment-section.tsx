@@ -9,7 +9,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil, Check, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 interface BoardCommentSectionProps {
@@ -30,6 +31,9 @@ export function BoardCommentSection({
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
   const supabase = createClient();
 
   // 현재 유저 확인
@@ -72,6 +76,31 @@ export function BoardCommentSection({
     onUpdate();
   };
 
+  const handleEditStart = (comment: BoardCommentWithProfile) => {
+    setEditingId(comment.id);
+    setEditingContent(comment.content);
+  };
+
+  const handleEditCancel = () => {
+    setEditingId(null);
+    setEditingContent("");
+  };
+
+  const handleEditSave = async (commentId: string) => {
+    if (!editingContent.trim() || editSaving) return;
+    setEditSaving(true);
+    const { error } = await supabase
+      .from("board_comments")
+      .update({ content: editingContent.trim() })
+      .eq("id", commentId);
+    if (error) { toast.error("댓글 수정에 실패했습니다"); setEditSaving(false); return; }
+    toast.success("댓글이 수정되었습니다");
+    setEditingId(null);
+    setEditingContent("");
+    setEditSaving(false);
+    onUpdate();
+  };
+
   return (
     <div className="space-y-2">
       <h3 className="text-[11px] font-medium">댓글 ({comments.length})</h3>
@@ -98,19 +127,62 @@ export function BoardCommentSection({
                   <span className="text-[11px] text-muted-foreground">
                     {format(new Date(comment.created_at), "M/d HH:mm", { locale: ko })}
                   </span>
-                  {currentUserId === comment.author_id && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-5 w-5 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDelete(comment.id)}
-                      aria-label="댓글 삭제"
-                    >
-                      <Trash2 className="h-2.5 w-2.5" />
-                    </Button>
+                  {currentUserId === comment.author_id && editingId !== comment.id && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-muted-foreground hover:text-foreground"
+                        onClick={() => handleEditStart(comment)}
+                        aria-label="댓글 수정"
+                      >
+                        <Pencil className="h-2.5 w-2.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDelete(comment.id)}
+                        aria-label="댓글 삭제"
+                      >
+                        <Trash2 className="h-2.5 w-2.5" />
+                      </Button>
+                    </>
                   )}
                 </div>
-                <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                {editingId === comment.id ? (
+                  <div className="mt-1 space-y-1">
+                    <Textarea
+                      value={editingContent}
+                      onChange={(e) => setEditingContent(e.target.value)}
+                      className="text-sm min-h-[60px] resize-none"
+                      autoFocus
+                    />
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        className="h-6 text-[11px] px-2"
+                        onClick={() => handleEditSave(comment.id)}
+                        disabled={!editingContent.trim() || editSaving}
+                      >
+                        <Check className="h-2.5 w-2.5 mr-1" />
+                        저장
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 text-[11px] px-2"
+                        onClick={handleEditCancel}
+                        disabled={editSaving}
+                      >
+                        <X className="h-2.5 w-2.5 mr-1" />
+                        취소
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                )}
               </div>
             </div>
           ))}

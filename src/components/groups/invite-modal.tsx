@@ -102,7 +102,19 @@ export function JoinGroupModal({ trigger }: JoinGroupModalProps) {
       }
 
       if (group.join_policy === "approval") {
-        // 승인제: 안내 메시지 표시 (TODO: 가입 신청 테이블 구현 후 연동)
+        const { error: joinReqError } = await supabase.from("join_requests").insert({
+          group_id: group.id,
+          user_id: user.id,
+          status: "pending",
+        });
+        if (joinReqError) {
+          if (joinReqError.code === "23505") {
+            setError("이미 가입 신청한 그룹입니다");
+          } else {
+            setError("가입 신청에 실패했습니다");
+          }
+          return;
+        }
         setMessage("가입 신청이 접수되었습니다. 그룹장의 승인을 기다려주세요.");
         return;
       }

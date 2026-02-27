@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { Loader2, MapPin, Clock, Pencil } from "lucide-react";
+import { toast } from "sonner";
 import type { EntityContext } from "@/types/entity-context";
 import type {
   Schedule,
@@ -61,6 +62,7 @@ export function AttendanceContent({
   );
   const [attendance, setAttendance] = useState<AttendanceWithProfile[]>([]);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const [editOpen, setEditOpen] = useState(false);
   const supabase = createClient();
@@ -124,6 +126,46 @@ export function AttendanceContent({
   useEffect(() => {
     fetchAttendance();
   }, [fetchAttendance]);
+
+  const handleBulkStatus = useCallback(async (status: "present" | "absent" | "undecided") => {
+    if (!selectedScheduleId) return;
+    setBulkUpdating(true);
+    try {
+      const userIds = membersForTable.map((m) => m.user_id);
+
+      if (status === "undecided") {
+        // 전체 미정: 출석 레코드 삭제
+        const { error } = await supabase
+          .from("attendance")
+          .delete()
+          .eq("schedule_id", selectedScheduleId)
+          .in("user_id", userIds);
+        if (error) { toast.error("일괄 처리에 실패했습니다"); return; }
+      } else {
+        // 기존 레코드 업데이트 (upsert)
+        const now = new Date().toISOString();
+        const upsertData = userIds.map((userId) => ({
+          schedule_id: selectedScheduleId,
+          user_id: userId,
+          status,
+          checked_at: now,
+        }));
+        const { error } = await supabase
+          .from("attendance")
+          .upsert(upsertData, { onConflict: "schedule_id,user_id" });
+        if (error) { toast.error("일괄 처리에 실패했습니다"); return; }
+      }
+
+      toast.success(
+        status === "present" ? "전체 출석 처리되었습니다" :
+        status === "absent" ? "전체 결석 처리되었습니다" :
+        "전체 미정 처리되었습니다"
+      );
+      await fetchAttendance();
+    } finally {
+      setBulkUpdating(false);
+    }
+  }, [selectedScheduleId, membersForTable, supabase, fetchAttendance]);
 
   const selectedSchedule = schedules.find((s) => s.id === selectedScheduleId);
 
@@ -223,6 +265,40 @@ export function AttendanceContent({
                 categories={categories}
                 categoryColorMap={categoryColorMap}
               />
+
+              {ctx.permissions.canEdit && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground mr-1">일괄 처리:</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    disabled={bulkUpdating || loadingAttendance}
+                    onClick={() => handleBulkStatus("present")}
+                  >
+                    {bulkUpdating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                    전체 출석
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    disabled={bulkUpdating || loadingAttendance}
+                    onClick={() => handleBulkStatus("absent")}
+                  >
+                    전체 결석
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    disabled={bulkUpdating || loadingAttendance}
+                    onClick={() => handleBulkStatus("undecided")}
+                  >
+                    전체 미정
+                  </Button>
+                </div>
+              )}
 
               {loadingAttendance ? (
                 <div className="flex justify-center py-8">
