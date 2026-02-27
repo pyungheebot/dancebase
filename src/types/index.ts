@@ -4201,3 +4201,152 @@ export type PersonalAttendanceGoalData = {
   /** 목표 달성을 위해 하루에 필요한 평균 출석 페이스 (남은 일수 기준, null이면 계산 불가) */
   dailyPaceNeeded: number | null;
 };
+
+// ============================================
+// Schedule Supply Item (일정 준비물 목록, localStorage 기반)
+// ============================================
+
+/** 일정 준비물 단일 항목 */
+export type ScheduleSupplyItem = {
+  id: string;
+  scheduleId: string;
+  name: string;
+  checked: boolean;
+  /** 담당자명 (선택) */
+  assignee?: string;
+  createdAt: string;
+};
+
+/** localStorage에 저장되는 일정별 준비물 목록 (groupId 단위로 저장) */
+export type ScheduleSupplyList = {
+  groupId: string;
+  items: ScheduleSupplyItem[];
+  updatedAt: string;
+};
+
+// ============================================
+// Member Activity Export (멤버 활동 내보내기)
+// ============================================
+
+/** 내보내기 기간 선택 옵션 */
+export type MemberActivityExportPeriod = "all" | "last30" | "last90";
+
+/** 내보내기 항목 선택 */
+export type MemberActivityExportItems = {
+  attendance: boolean;
+  posts: boolean;
+  comments: boolean;
+};
+
+/** 출석 기록 행 */
+export type MemberAttendanceExportRow = {
+  date: string;
+  scheduleName: string;
+  status: string;
+};
+
+/** 게시글 행 */
+export type MemberPostExportRow = {
+  date: string;
+  title: string;
+};
+
+/** 댓글 행 */
+export type MemberCommentExportRow = {
+  date: string;
+  postTitle: string;
+};
+
+/** 내보내기 전체 데이터 */
+export type MemberActivityExportData = {
+  attendance: MemberAttendanceExportRow[];
+  posts: MemberPostExportRow[];
+  comments: MemberCommentExportRow[];
+};
+
+// ============================================
+// 일정 참여도 통계
+// ============================================
+
+/** RSVP 응답 상태별 인원 수 */
+export type ScheduleEngagementRsvpCounts = {
+  /** "going" 응답 수 */
+  going: number;
+  /** "maybe" 응답 수 */
+  maybe: number;
+  /** "not_going" 응답 수 */
+  not_going: number;
+  /** 미응답 수 (전체 멤버 - 응답자) */
+  no_response: number;
+  /** 전체 멤버 수 */
+  total: number;
+};
+
+/** RSVP + 출석 종합 통계 결과 */
+export type ScheduleEngagementResult = {
+  /** RSVP 응답별 인원 */
+  rsvp: ScheduleEngagementRsvpCounts;
+  /** 실제 출석 인원 (status = "present") */
+  actual_attended: number;
+  /** going 응답 중 실제 출석 비율 (0~100, going이 0이면 null) */
+  rsvp_accuracy: number | null;
+  /** 전체 멤버 대비 실제 출석률 (0~100, total이 0이면 null) */
+  attendance_rate: number | null;
+};
+
+// ============================================
+// Group Health Snapshot (그룹 건강도 추이 - localStorage 기반)
+// ============================================
+
+/** 월별 그룹 건강도 스냅샷 단일 항목 */
+export type GroupHealthSnapshot = {
+  /** 연월 (YYYY-MM) */
+  month: string;
+  /** 출석률 (0~100) */
+  attendanceRate: number;
+  /** 전체 멤버 수 */
+  memberCount: number;
+  /** 이번 달 게시글 수 */
+  postCount: number;
+  /** 활동 멤버 비율 (0~100): 이번 달 활동한 멤버 / 전체 멤버 */
+  activeRate: number;
+};
+
+/** useGroupHealthSnapshot 훅 반환 타입 */
+export type GroupHealthSnapshotResult = {
+  /** 최근 6개월 스냅샷 배열 (오래된 순) */
+  snapshots: GroupHealthSnapshot[];
+  /** 현재 달 스냅샷 (없으면 null) */
+  current: GroupHealthSnapshot | null;
+  /** 전월 스냅샷 (없으면 null) */
+  previous: GroupHealthSnapshot | null;
+  loading: boolean;
+  refetch: () => void;
+};
+
+// ============================================
+// 개인 목표 관리 (Personal Goals)
+// ============================================
+
+/** 개인 목표 상태 */
+export type PersonalGoalStatus = "active" | "completed" | "abandoned";
+
+/** localStorage에 저장되는 개인 목표 항목 */
+export type PersonalGoalItem = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 목표 제목 */
+  title: string;
+  /** 목표 설명 (선택) */
+  description: string;
+  /** 목표 날짜 (YYYY-MM-DD) */
+  targetDate: string;
+  /** 진행률 (0~100) */
+  progress: number;
+  /** 상태 */
+  status: PersonalGoalStatus;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 완료일 (ISO 8601, completed 상태일 때만 존재) */
+  completedAt?: string;
+};

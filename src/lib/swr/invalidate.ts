@@ -587,3 +587,7 @@ export function invalidateGroupPerformanceReport(groupId: string) {
 export function invalidatePersonalAttendanceGoal(groupId: string, userId: string) {
   mutate(swrKeys.personalAttendanceGoal(groupId, userId));
 }
+
+export function invalidateScheduleEngagement(scheduleId: string) {
+  mutate(swrKeys.scheduleEngagement(scheduleId));
+}

@@ -551,4 +551,12 @@ export const swrKeys = {
   // 그룹 성과 요약 리포트
   groupPerformanceReport: (groupId: string) =>
     `/groups/${groupId}/performance-report` as const,
+
+  // 일정 참여도 통계 (RSVP + 출석 종합)
+  scheduleEngagement: (scheduleId: string) =>
+    `/schedules/${scheduleId}/engagement` as const,
+
+  // 그룹 건강도 추이 스냅샷 (localStorage 기반)
+  groupHealthSnapshot: (groupId: string) =>
+    `group-health-snapshot-${groupId}` as const,
 };
