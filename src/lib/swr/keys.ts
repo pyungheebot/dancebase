@@ -763,4 +763,24 @@ export const swrKeys = {
   // 출석 예측 (localStorage 기반)
   attendanceForecast: (groupId: string) =>
     `attendance-forecast-${groupId}` as const,
+
+  // 피어 점수 (localStorage 기반)
+  peerScoring: (groupId: string) =>
+    `peer-scoring-${groupId}` as const,
+
+  // 성장 궤적 (localStorage 기반)
+  growthTrajectory: (groupId: string) =>
+    `growth-trajectory-${groupId}` as const,
+
+  // 문화 맞춤도 (localStorage 기반)
+  cultureAlignment: (groupId: string) =>
+    `culture-alignment-${groupId}` as const,
+
+  // 음악 큐시트 (localStorage 기반)
+  musicCuesheet: (groupId: string, projectId: string) =>
+    `music-cuesheet-${groupId}-${projectId}` as const,
+
+  // 역할 로테이션 (localStorage 기반)
+  roleRotation: (groupId: string) =>
+    `role-rotation-${groupId}` as const,
 };

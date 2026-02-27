@@ -5886,3 +5886,121 @@ export type PerformanceRetro = {
   actionItems: string[];
   createdAt: string;
 };
+
+// ============================================
+// Peer Scoring (피어 점수)
+// ============================================
+
+export type PeerScoreDimension = "timing" | "expression" | "energy" | "technique" | "teamwork";
+
+export type PeerScoreEntry = {
+  id: string;
+  targetName: string;
+  scorerName: string;
+  dimension: PeerScoreDimension;
+  score: number; // 1-5
+  comment: string;
+  sessionDate: string;
+  createdAt: string;
+};
+
+export type PeerScoreSummary = {
+  targetName: string;
+  avgScore: number;
+  dimensionAvgs: Record<PeerScoreDimension, number>;
+  totalRatings: number;
+};
+
+// ============================================
+// Culture Alignment (문화 맞춤도)
+// ============================================
+
+export type CultureDimension = "teamwork" | "creativity" | "discipline" | "fun" | "growth";
+
+export type CultureProfile = {
+  id: string;
+  memberName: string;
+  scores: Record<CultureDimension, number>; // 각 1-10
+  updatedAt: string;
+};
+
+export type GroupCultureConfig = {
+  idealScores: Record<CultureDimension, number>; // 그룹 이상적 가치
+  profiles: CultureProfile[];
+  createdAt: string;
+};
+
+// ============================================
+// Growth Trajectory (성장 궤적)
+// ============================================
+
+export type GrowthDimension = "skill" | "attendance" | "leadership" | "creativity" | "collaboration";
+
+export type GrowthDataPoint = {
+  month: string; // YYYY-MM
+  scores: Record<GrowthDimension, number>; // 각 0-100
+};
+
+export type GrowthTrajectory = {
+  id: string;
+  memberName: string;
+  dataPoints: GrowthDataPoint[];
+  goal: number; // 목표 종합 점수
+  trend: "rising" | "steady" | "declining";
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ============================================
+// Music Cuesheet (음악 큐시트)
+// ============================================
+
+export type CueAction = "play" | "fade_in" | "fade_out" | "stop" | "transition";
+
+export type CueEntry = {
+  id: string;
+  order: number;
+  songTitle: string;
+  artist: string;
+  startTime: string; // "MM:SS" 형태
+  duration: string; // "MM:SS" 형태
+  action: CueAction;
+  note: string;
+  volume: number; // 0-100
+};
+
+export type MusicCuesheet = {
+  id: string;
+  title: string; // "정기공연 큐시트" 등
+  entries: CueEntry[];
+  totalDuration: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ============================================
+// Role Rotation (역할 로테이션)
+// ============================================
+
+export type RotationRole = {
+  id: string;
+  name: string; // "리더", "음향 담당" 등
+  icon: string; // 이모지
+  description: string;
+};
+
+export type RotationAssignment = {
+  id: string;
+  roleId: string;
+  memberName: string;
+  weekStart: string; // YYYY-MM-DD (해당 주 월요일)
+  completed: boolean;
+};
+
+export type RoleRotationConfig = {
+  roles: RotationRole[];
+  members: string[];
+  assignments: RotationAssignment[];
+  rotationWeeks: number; // 몇 주마다 교체
+  createdAt: string;
+};
