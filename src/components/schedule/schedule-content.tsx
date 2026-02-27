@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Loader2, CalendarDays, CalendarCheck, Copy, CalendarSearch, ClipboardCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarView } from "@/components/schedule/calendar-view";
+import { ScheduleYearlyCalendar } from "@/components/schedule/schedule-yearly-calendar";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { ScheduleTemplateList } from "@/components/schedule/schedule-template-list";
 import { OptimalTimeHint } from "@/components/schedule/optimal-time-hint";
@@ -157,28 +159,45 @@ export function ScheduleContent({
         </div>
       )}
 
-      {schedules.length === 0 ? (
-        <EmptyState
-          icon={CalendarDays}
-          title="등록된 일정이 없습니다"
-          description="첫 번째 일정을 추가하고 팀원들과 일정을 공유해보세요."
-          action={
-            ctx.permissions.canEdit
-              ? { label: "일정 추가", onClick: () => setFormOpen(true) }
-              : undefined
-          }
-        />
-      ) : (
-        <CalendarView
-          schedules={schedules}
-          onSelectSchedule={(schedule) =>
-            router.push(`${ctx.basePath}/attendance?schedule=${schedule.id}`)
-          }
-          canEdit={ctx.permissions.canEdit}
-          onScheduleUpdated={refetch}
-          groupId={ctx.groupId}
-        />
-      )}
+      <Tabs defaultValue="monthly" className="w-full">
+        <TabsList className="h-7 mb-3">
+          <TabsTrigger value="monthly" className="text-xs h-6 px-2.5">
+            월별
+          </TabsTrigger>
+          <TabsTrigger value="yearly" className="text-xs h-6 px-2.5">
+            연간
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="monthly">
+          {schedules.length === 0 ? (
+            <EmptyState
+              icon={CalendarDays}
+              title="등록된 일정이 없습니다"
+              description="첫 번째 일정을 추가하고 팀원들과 일정을 공유해보세요."
+              action={
+                ctx.permissions.canEdit
+                  ? { label: "일정 추가", onClick: () => setFormOpen(true) }
+                  : undefined
+              }
+            />
+          ) : (
+            <CalendarView
+              schedules={schedules}
+              onSelectSchedule={(schedule) =>
+                router.push(`${ctx.basePath}/attendance?schedule=${schedule.id}`)
+              }
+              canEdit={ctx.permissions.canEdit}
+              onScheduleUpdated={refetch}
+              groupId={ctx.groupId}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="yearly">
+          <ScheduleYearlyCalendar groupId={ctx.groupId} />
+        </TabsContent>
+      </Tabs>
 
       {/* 일괄 RSVP 다이얼로그 */}
       <BulkRsvpDialog

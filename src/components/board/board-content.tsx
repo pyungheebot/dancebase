@@ -4,6 +4,7 @@ import { BoardPostList } from "@/components/board/board-post-list";
 import { BoardTrash } from "@/components/board/board-trash";
 import { ContentModerationPanel } from "@/components/board/content-moderation-panel";
 import { BookmarkedPostsSheet } from "@/components/board/bookmarked-posts-sheet";
+import { PollDecisionLog } from "@/components/board/poll-decision-log";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import type { EntityContext } from "@/types/entity-context";
 
@@ -18,6 +19,7 @@ export function BoardContent({ ctx }: BoardContentProps) {
     <>
       <IndependentToggle ctx={ctx} feature="board" featureLabel="게시판" />
       <div className="flex justify-end gap-1.5 mb-2">
+        <PollDecisionLog groupId={ctx.groupId} basePath={`${ctx.basePath}/board`} />
         <BookmarkedPostsSheet groupId={ctx.groupId} />
         {isLeader && (
           <>

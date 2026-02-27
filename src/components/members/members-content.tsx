@@ -55,6 +55,7 @@ import { ContactVerificationSection } from "@/components/members/contact-verific
 import { ContactVerifyBanner } from "@/components/members/contact-verify-banner";
 import { RolePromotionSection } from "@/components/members/role-promotion-section";
 import { MemberRiskAlert } from "@/components/members/member-risk-alert";
+import { MentorMenteeSection } from "@/components/members/mentor-mentee-section";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -574,6 +575,15 @@ function GroupMembersContent({
           groupId={ctx.groupId}
           members={ctx.members}
           canEdit={ctx.permissions.canEdit}
+        />
+      )}
+
+      {/* 멘토-멘티 매칭 (canEdit 권한인 경우에만 관리 가능, 멤버가 있을 때만 표시) */}
+      {ctx.members.length > 0 && (
+        <MentorMenteeSection
+          groupId={ctx.groupId}
+          members={ctx.members}
+          canManage={ctx.permissions.canEdit}
         />
       )}
 

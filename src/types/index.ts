@@ -1191,6 +1191,73 @@ export type ScheduleChecklistItem = {
 };
 
 // ============================================
+// Schedule Setlist (연습 세트리스트 플래너, localStorage 기반)
+// ============================================
+
+export type SetlistItem = {
+  /** 곡 ID (project_songs.id) */
+  songId: string;
+  songTitle: string;
+  artist: string | null;
+  orderIndex: number;
+  /** 예상 연습 시간 (분) */
+  plannedMinutes: number;
+};
+
+// ============================================
+// Poll Decision (투표 기반 의사결정 히스토리, localStorage 기반)
+// ============================================
+
+export type PollDecision = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 투표 ID (board_polls.id) */
+  pollId: string;
+  /** 게시글 ID (board_posts.id) */
+  postId: string;
+  /** 투표 질문 (게시글 제목) */
+  question: string;
+  /** 최다 득표 옵션 텍스트 */
+  winningOption: string;
+  /** 결정 요약 메모 */
+  decisionSummary: string;
+  /** 채택 일시 (ISO 8601) */
+  decidedAt: string;
+  /** 채택자 사용자 ID */
+  decidedBy: string;
+};
+
+// ============================================
+// Practice Plan (맞춤 연습 플랜, localStorage 기반)
+// ============================================
+
+export type PracticePlan = {
+  id: string;
+  userId: string;
+  content: string;
+  focusAreas: string[];
+  createdAt: string;
+  createdBy: string;
+};
+
+// ============================================
+// Mentor-Mentee Match (멘토-멘티 매칭, localStorage 기반)
+// ============================================
+
+export type MentorMenteeStatus = "active" | "completed";
+
+export type MentorMenteeMatch = {
+  id: string;
+  mentorId: string;
+  mentorName: string;
+  menteeId: string;
+  menteeName: string;
+  skillTag: string;
+  status: MentorMenteeStatus;
+  createdAt: string;
+};
+
+// ============================================
 // Birthday Calendar (생일 달력)
 // ============================================
 

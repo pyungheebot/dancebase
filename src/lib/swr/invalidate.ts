@@ -313,3 +313,7 @@ export function invalidateScheduleChecklist(scheduleId: string) {
 export function invalidatePostReadStatus(postId: string) {
   mutate(swrKeys.postReadStatus(postId));
 }
+
+export function invalidateYearlySchedules(groupId: string, year: number) {
+  mutate(swrKeys.yearlySchedules(groupId, year));
+}

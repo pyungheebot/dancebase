@@ -27,6 +27,7 @@ import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { BoardBookmarkButton } from "@/components/board/board-bookmark-button";
 import { BoardPostRevisionsSheet } from "@/components/board/board-post-revisions-sheet";
+import { PollDecisionLog } from "@/components/board/poll-decision-log";
 import { ArrowLeft, Loader2, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -231,7 +232,15 @@ export default function BoardPostPage({
         {/* 투표 */}
         {poll && (
           <div className="mt-4 space-y-3">
-            <BoardPollView poll={poll} options={pollOptions} onUpdate={refetch} question={post.title} />
+            <BoardPollView
+              poll={poll}
+              options={pollOptions}
+              onUpdate={refetch}
+              question={post.title}
+              groupId={id}
+              postId={postId}
+              currentUserId={user?.id}
+            />
             <PollStatisticsCard postId={postId} groupId={id} />
           </div>
         )}

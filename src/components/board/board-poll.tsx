@@ -6,6 +6,7 @@ import type { BoardPoll, BoardPollOptionWithVotes } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PollShareCard } from "@/components/board/poll-share-card";
+import { AdoptDecisionButton } from "@/components/board/poll-decision-log";
 
 interface BoardPollProps {
   poll: BoardPoll;
@@ -13,9 +14,23 @@ interface BoardPollProps {
   onUpdate: () => void;
   /** 투표 질문 (게시글 제목 등 외부에서 전달). 없으면 "투표"로 표시 */
   question?: string;
+  /** 결정 채택 버튼 표시를 위한 그룹 ID */
+  groupId?: string;
+  /** 결정 채택 버튼 표시를 위한 게시글 ID */
+  postId?: string;
+  /** 현재 로그인 사용자 ID */
+  currentUserId?: string;
 }
 
-export function BoardPollView({ poll, options, onUpdate, question }: BoardPollProps) {
+export function BoardPollView({
+  poll,
+  options,
+  onUpdate,
+  question,
+  groupId,
+  postId,
+  currentUserId,
+}: BoardPollProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const supabase = createClient();
@@ -23,6 +38,12 @@ export function BoardPollView({ poll, options, onUpdate, question }: BoardPollPr
   const totalVotes = options.reduce((sum, o) => sum + o.vote_count, 0);
   const hasVoted = options.some((o) => o.voted_by_me);
   const isExpired = poll.ends_at ? new Date(poll.ends_at) < new Date() : false;
+
+  // 최다 득표 옵션 (결정 채택 시 사용)
+  const winningOption = options.reduce(
+    (best, opt) => (opt.vote_count > (best?.vote_count ?? -1) ? opt : best),
+    options[0]
+  );
 
   const handleToggle = (optionId: string) => {
     if (poll.allow_multiple) {
@@ -92,6 +113,18 @@ export function BoardPollView({ poll, options, onUpdate, question }: BoardPollPr
               options={options.map((o) => ({ text: o.text, voteCount: o.vote_count }))}
               totalVotes={totalVotes}
             />
+            {/* 결정 채택 버튼 — 마감된 투표에서만 표시 */}
+            {isExpired && groupId && postId && currentUserId && winningOption && (
+              <AdoptDecisionButton
+                groupId={groupId}
+                pollId={poll.id}
+                postId={postId}
+                question={question ?? "투표"}
+                winningOption={winningOption.text}
+                decidedBy={currentUserId}
+                isExpired={isExpired}
+              />
+            )}
             {hasVoted && !isExpired && (
               <Button variant="ghost" size="sm" className="h-6 text-[11px]" onClick={handleUnvote}>
                 투표 취소

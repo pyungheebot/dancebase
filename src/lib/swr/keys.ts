@@ -276,4 +276,8 @@ export const swrKeys = {
 
   // 게시글 읽음 현황
   postReadStatus: (postId: string) => `post-read-status-${postId}` as const,
+
+  // 연간 일정 히트맵
+  yearlySchedules: (groupId: string, year: number) =>
+    `/groups/${groupId}/yearly-schedules?year=${year}` as const,
 };

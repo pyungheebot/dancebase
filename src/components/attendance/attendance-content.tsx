@@ -35,10 +35,12 @@ import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { ScheduleCheckinSection } from "@/components/schedule/schedule-checkin-section";
 import { ScheduleFeedbackDialog } from "@/components/schedule/schedule-feedback-dialog";
 import { ScheduleFeedbackSummary } from "@/components/schedule/schedule-feedback-summary";
+import { ScheduleSetlistSection } from "@/components/schedule/schedule-setlist-section";
 import { PracticeTimer } from "@/components/schedule/practice-timer";
 import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows, Star } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useProjectSongs } from "@/hooks/use-project-songs";
 import type { EntityContext } from "@/types/entity-context";
 import type {
   Schedule,
@@ -118,6 +120,9 @@ export function AttendanceContent({
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("this_month");
   const [memberStats, setMemberStats] = useState<MemberAttendanceStat[]>([]);
   const [loadingMemberStats, setLoadingMemberStats] = useState(false);
+
+  // 세트리스트 - 프로젝트에 속한 경우에만 곡 목록 로드
+  const { songs: projectSongs } = useProjectSongs(ctx.projectId ?? "");
 
   const supabase = createClient();
 
@@ -484,6 +489,17 @@ export function AttendanceContent({
                 </div>
               ) : (
                 <>
+                  {/* 세트리스트 플래너 (프로젝트 연결된 일정에만 표시) */}
+                  {ctx.projectId && (
+                    <div className="rounded-lg border p-3 space-y-2">
+                      <ScheduleSetlistSection
+                        schedule={selectedSchedule}
+                        projectSongs={projectSongs}
+                        canEdit={ctx.permissions.canEdit}
+                      />
+                    </div>
+                  )}
+
                   {/* QR 체크인 섹션 */}
                   <ScheduleCheckinSection
                     scheduleId={selectedScheduleId}

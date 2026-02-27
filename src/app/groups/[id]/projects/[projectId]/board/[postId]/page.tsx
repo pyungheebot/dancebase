@@ -27,6 +27,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { BoardPostRevisionsSheet } from "@/components/board/board-post-revisions-sheet";
 import { ArrowLeft, Loader2, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { PollStatisticsCard } from "@/components/board/poll-statistics-card";
 
 export default function ProjectBoardPostPage({
   params,
@@ -201,8 +202,17 @@ export default function ProjectBoardPostPage({
         <BoardPostAttachments postId={postId} />
 
         {poll && (
-          <div className="mt-4">
-            <BoardPollView poll={poll} options={pollOptions} onUpdate={refetch} question={post.title} />
+          <div className="mt-4 space-y-3">
+            <BoardPollView
+              poll={poll}
+              options={pollOptions}
+              onUpdate={refetch}
+              question={post.title}
+              groupId={id}
+              postId={postId}
+              currentUserId={user?.id}
+            />
+            <PollStatisticsCard postId={postId} groupId={id} />
           </div>
         )}
 
