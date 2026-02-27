@@ -5050,6 +5050,34 @@ export type PracticeJournalEntry = {
   createdAt: string;
 };
 
+// ============================================
+// Equipment Inventory (장비 인벤토리 관리)
+// ============================================
+
+export type EquipmentCondition = "excellent" | "good" | "fair" | "poor" | "broken";
+
+export type EquipmentItem = {
+  id: string;
+  name: string;
+  category: string;       // "음향", "조명", "무대", "연습용품", "기타"
+  quantity: number;
+  condition: EquipmentCondition;
+  location: string;       // 보관 장소
+  lastCheckedAt: string;
+  note: string;
+  createdAt: string;
+};
+
+export type EquipmentCheckout = {
+  id: string;
+  equipmentId: string;
+  borrowerName: string;
+  borrowedAt: string;
+  expectedReturn: string; // YYYY-MM-DD
+  returnedAt?: string;
+  note: string;
+};
+
 
 // ============================================
 // Costume Management (코스튬/의상 관리)
@@ -5123,4 +5151,118 @@ export type TempoSection = {
   label: string;         // "인트로", "버스", "코러스" 등
   bpm: number;
   startTime: string;     // "0:00" 형식
+};
+
+// ============================================
+// Performance Revenue Split (공연 수익 분배)
+// ============================================
+
+export type RevenueSplitMethod = "equal" | "weighted";
+
+export type RevenueEntry = {
+  id: string;
+  eventName: string;
+  eventDate: string;        // YYYY-MM-DD
+  totalAmount: number;
+  splitMethod: RevenueSplitMethod;
+  participants: RevenueParticipant[];
+  deductions: number;       // 공제액 (교통비, 장비대여 등)
+  note: string;
+  settled: boolean;
+  createdAt: string;
+};
+
+export type RevenueParticipant = {
+  memberId: string;
+  memberName: string;
+  weight: number;           // equal일 때 1, weighted일 때 가중치
+  amount: number;           // 계산된 분배 금액
+  paid: boolean;            // 지급 완료 여부
+};
+
+// ============================================
+// Choreography Version Control (안무 버전 관리)
+// ============================================
+
+export type ChoreoVersionStatus = "draft" | "review" | "approved" | "archived";
+
+export type ChoreoVersion = {
+  id: string;
+  versionNumber: number;   // 1, 2, 3...
+  label: string;           // "초안", "수정본", "최종본" 등
+  status: ChoreoVersionStatus;
+  description: string;     // 이 버전의 주요 변경사항
+  sections: ChoreoSectionNote[];
+  createdBy: string;
+  createdAt: string;
+};
+
+export type ChoreoSectionNote = {
+  sectionName: string;     // "인트로", "1절", "브릿지" 등
+  content: string;         // 해당 구간 설명/노트
+  changed: boolean;        // 이전 버전에서 변경됨 표시
+};
+
+export type ChoreoVersionStore = {
+  songTitle: string;
+  versions: ChoreoVersion[];
+  currentVersionId: string | null;
+  updatedAt: string;
+};
+
+// ============================================
+// Digital Waiver Management (디지털 동의서 관리)
+// ============================================
+
+export type WaiverType = "safety" | "activity" | "photo" | "liability" | "custom";
+
+export type WaiverTemplate = {
+  id: string;
+  title: string;
+  type: WaiverType;
+  content: string;         // 동의서 본문 (최대 2000자)
+  required: boolean;       // 필수 동의 여부
+  expiresInDays?: number;  // 유효기간 (일 단위, 선택)
+  createdAt: string;
+};
+
+export type WaiverSignature = {
+  id: string;
+  waiverId: string;
+  memberId: string;
+  memberName: string;
+  signedAt: string;
+  expiresAt?: string;      // 만료일
+};
+
+export type WaiverStore = {
+  templates: WaiverTemplate[];
+  signatures: WaiverSignature[];
+  updatedAt: string;
+};
+
+// ============================================
+// Venue Review (연습 장소 리뷰)
+// ============================================
+
+export type VenueFeature = "mirror" | "sound" | "parking" | "aircon" | "floor" | "shower" | "wifi" | "storage";
+
+export type VenueEntry = {
+  id: string;
+  name: string;
+  address: string;
+  hourlyRate: number;      // 시간당 대여비
+  features: VenueFeature[];
+  note: string;
+  createdAt: string;
+};
+
+export type VenueReview = {
+  id: string;
+  venueId: string;
+  reviewerName: string;
+  rating: number;          // 1-5
+  pros: string;            // 장점
+  cons: string;            // 단점
+  createdAt: string;
 };

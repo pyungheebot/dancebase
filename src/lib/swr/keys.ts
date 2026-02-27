@@ -643,4 +643,24 @@ export const swrKeys = {
   // 음악 템포 매칭
   musicTempo: (groupId: string, projectId: string) =>
     `music-tempo-${groupId}-${projectId}` as const,
+
+  // 공연 수익 분배
+  performanceRevenue: (groupId: string) =>
+    `performance-revenue-${groupId}` as const,
+
+  // 장비 인벤토리
+  equipmentInventory: (groupId: string) =>
+    `equipment-inventory-${groupId}` as const,
+
+  // 안무 버전 관리
+  choreographyVersion: (groupId: string, projectId: string) =>
+    `choreo-version-${groupId}-${projectId}` as const,
+
+  // 디지털 동의서 관리
+  waiverManagement: (groupId: string) =>
+    `waiver-management-${groupId}` as const,
+
+  // 연습 장소 리뷰
+  venueReview: (groupId: string) =>
+    `venue-review-${groupId}` as const,
 };

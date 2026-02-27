@@ -651,3 +651,7 @@ export function invalidateCostumeManagement(groupId: string, projectId: string) 
 export function invalidateThankYouLetters(groupId: string) {
   mutate(swrKeys.thankYouLetters(groupId));
 }
+
+export function invalidatePerformanceRevenue(groupId: string) {
+  mutate(swrKeys.performanceRevenue(groupId));
+}
