@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { useBoard } from "@/hooks/use-board";
-import { BOARD_CATEGORIES } from "@/types";
+import { useBoard, useBoardCategories } from "@/hooks/use-board";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +32,7 @@ export function BoardPostList({
   activePostId,
 }: BoardPostListProps) {
   const { posts, loading, category, setCategory, search, setSearch, page, setPage, totalPages, refetch } = useBoard(groupId, projectId);
+  const { filterCategories } = useBoardCategories(groupId);
 
   // 검색어 debounce
   const [searchInput, setSearchInput] = useState(search);
@@ -58,9 +58,6 @@ export function BoardPostList({
     return `${basePath}/${post.id}`;
   };
 
-  // "전체"를 제외하고 필터용 카테고리만 표시
-  const filterCategories = BOARD_CATEGORIES.filter((c) => c !== "전체");
-
   return (
     <div>
       {!hideHeader && (
@@ -83,14 +80,6 @@ export function BoardPostList({
 
       {/* 카테고리 필터 */}
       <div className="flex flex-wrap gap-1 mb-2">
-        <Button
-          variant={category === "전체" ? "default" : "outline"}
-          size="sm"
-          className="h-5 text-[10px] px-1.5"
-          onClick={() => setCategory("전체")}
-        >
-          전체
-        </Button>
         {filterCategories.map((cat) => (
           <Button
             key={cat}

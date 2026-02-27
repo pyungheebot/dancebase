@@ -27,7 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
-import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays } from "lucide-react";
+import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download } from "lucide-react";
 import { toast } from "sonner";
 import type { EntityContext } from "@/types/entity-context";
 import type {
@@ -312,6 +312,38 @@ export function AttendanceContent({
     }
   }, [selectedScheduleId, membersForTable, supabase, fetchAttendance]);
 
+  const handleDownloadMemberStatsCsv = () => {
+    const dateStr = format(new Date(), "yyyy-MM");
+    const filename = `출석현황_${dateStr}.csv`;
+
+    const headers = ["멤버이름", "출석", "지각", "조퇴", "결석", "전체", "출석률(%)"];
+    const rows = memberStats.map((stat) => [
+      stat.name,
+      String(stat.present),
+      String(stat.late),
+      String(stat.earlyLeave),
+      String(stat.absent),
+      String(stat.total),
+      String(stat.rate),
+    ]);
+
+    const csvContent =
+      "\uFEFF" +
+      [headers, ...rows]
+        .map((row) =>
+          row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+        )
+        .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const selectedSchedule = schedules.find((s) => s.id === selectedScheduleId);
 
   if (schedules.length === 0 && !schedulesLoading) {
@@ -524,6 +556,16 @@ export function AttendanceContent({
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />
               ) : null}
               조회
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs gap-1"
+              onClick={handleDownloadMemberStatsCsv}
+              disabled={memberStats.length === 0 || loadingMemberStats}
+            >
+              <Download className="h-3 w-3" />
+              CSV 다운로드
             </Button>
           </div>
 

@@ -17,7 +17,7 @@ export type EntityMember = {
   id: string;
   entityId: string;
   userId: string;
-  role: "leader" | "member";
+  role: "leader" | "sub_leader" | "member";
   nickname: string | null;
   categoryId?: string | null;
   joinedAt: string;

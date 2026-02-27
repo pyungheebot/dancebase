@@ -10,6 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 import type { FinanceTransactionWithDetails } from "@/types";
 import type { EntityMember } from "@/types/entity-context";
 
@@ -95,6 +97,33 @@ export function FinancePaymentStatus({ transactions, members, nicknameMap }: Pro
     0
   );
 
+  const handleDownloadCsv = () => {
+    const filename = `납부현황_${selectedMonth}.csv`;
+    const headers = ["멤버이름", "납부금액", "납부횟수", "상태"];
+    const rows = memberPayments.map((member) => [
+      member.name,
+      String(member.totalAmount),
+      String(member.count),
+      member.hasPaid ? "납부" : "미납",
+    ]);
+
+    const csvContent =
+      "\uFEFF" +
+      [headers, ...rows]
+        .map((row) =>
+          row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+        )
+        .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-3">
       {/* 월 선택 + 요약 */}
@@ -109,18 +138,30 @@ export function FinancePaymentStatus({ transactions, members, nicknameMap }: Pro
             </span>
           )}
         </div>
-        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="h-6 w-28 text-[11px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {monthOptions.map((ym) => (
-              <SelectItem key={ym} value={ym}>
-                {formatMonthLabel(ym)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-6 text-[11px] px-2 gap-1"
+            onClick={handleDownloadCsv}
+            disabled={memberPayments.length === 0}
+          >
+            <Download className="h-3 w-3" />
+            CSV 다운로드
+          </Button>
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="h-6 w-28 text-[11px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {monthOptions.map((ym) => (
+                <SelectItem key={ym} value={ym}>
+                  {formatMonthLabel(ym)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* 멤버 납부 현황 테이블 */}

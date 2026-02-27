@@ -22,7 +22,7 @@ import { getCategoryColorClasses } from "@/types";
 
 type MemberListProps = {
   members: GroupMemberWithProfile[];
-  myRole: "leader" | "member" | null;
+  myRole: "leader" | "sub_leader" | "member" | null;
   currentUserId: string;
   groupId: string;
   categories: MemberCategory[];
@@ -37,6 +37,12 @@ export function MemberList({ members, myRole, currentUserId, groupId, categories
   const [removeMemberId, setRemoveMemberId] = useState<string | null>(null);
   const supabase = createClient();
 
+  const ROLE_LABELS: Record<string, string> = {
+    leader: "그룹장",
+    sub_leader: "부그룹장",
+    member: "멤버",
+  };
+
   const handleRoleChange = async (memberId: string, newRole: string) => {
     setUpdating(memberId);
     const { error } = await supabase
@@ -44,6 +50,7 @@ export function MemberList({ members, myRole, currentUserId, groupId, categories
       .update({ role: newRole })
       .eq("id", memberId);
     if (error) { toast.error("역할 변경에 실패했습니다"); setUpdating(null); return; }
+    toast.success(`역할이 ${ROLE_LABELS[newRole] ?? newRole}(으)로 변경되었습니다`);
     onUpdate();
     setUpdating(null);
   };
@@ -212,11 +219,12 @@ export function MemberList({ members, myRole, currentUserId, groupId, categories
                 onValueChange={(value) => handleRoleChange(member.id, value)}
                 disabled={updating === member.id}
               >
-                <SelectTrigger className="w-20 h-7 text-xs">
+                <SelectTrigger className="w-24 h-7 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="leader">그룹장</SelectItem>
+                  <SelectItem value="sub_leader">부그룹장</SelectItem>
                   <SelectItem value="member">멤버</SelectItem>
                 </SelectContent>
               </Select>
@@ -229,9 +237,30 @@ export function MemberList({ members, myRole, currentUserId, groupId, categories
                 <UserMinus className="h-3.5 w-3.5 text-destructive" />
               </Button>
             </>
+          ) : myRole === "sub_leader" && member.role === "member" ? (
+            <>
+              <Badge variant="secondary">멤버</Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setRemoveMemberId(member.id)}
+                aria-label="멤버 제거"
+              >
+                <UserMinus className="h-3.5 w-3.5 text-destructive" />
+              </Button>
+            </>
           ) : (
-            <Badge variant={member.role === "leader" ? "default" : "secondary"}>
-              {member.role === "leader" ? "그룹장" : "멤버"}
+            <Badge
+              variant={
+                member.role === "leader"
+                  ? "default"
+                  : member.role === "sub_leader"
+                  ? "outline"
+                  : "secondary"
+              }
+              className={member.role === "sub_leader" ? "border-blue-300 text-blue-700 bg-blue-50 text-[10px] px-1.5 py-0" : ""}
+            >
+              {member.role === "leader" ? "그룹장" : member.role === "sub_leader" ? "부그룹장" : "멤버"}
             </Badge>
           )}
         </div>

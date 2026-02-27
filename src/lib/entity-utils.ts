@@ -78,7 +78,7 @@ type BuildEntityContextParams = {
   // 그룹 전용
   group?: Group | null;
   groupMembers?: GroupMemberWithProfile[];
-  myRole?: "leader" | "member" | null;
+  myRole?: "leader" | "sub_leader" | "member" | null;
   ancestors?: { id: string; name: string; depth: number }[];
   categories?: MemberCategory[];
   categoryMap?: Record<string, string>;
@@ -152,12 +152,15 @@ export function buildEntityContext(params: BuildEntityContextParams): EntityCont
     ? myRole === "leader"
     : myProjectRole === "leader" || myRole === "leader";
 
+  // 부그룹장(sub_leader)은 멤버 관리 권한 보유
+  const isSubLeader = isGroup ? myRole === "sub_leader" : myRole === "sub_leader";
+
   const hasPermission = (perm: string) =>
     userPermissions.some((p) => p.permission === perm);
 
   const permissions: EntityPermissions = {
     canEdit,
-    canManageMembers: canEdit,
+    canManageMembers: canEdit || isSubLeader || hasPermission("member_manage"),
     canManageFinance: financeRole === "manager" || canEdit,
     canViewFinance: !!financeRole || canEdit,
     canManageSettings: canEdit,

@@ -10,7 +10,7 @@ import { buildEntityContext } from "@/lib/entity-utils";
 import type { EntityContext } from "@/types/entity-context";
 import type { FinanceRole } from "@/types";
 
-function useEntityMeta(entityType: "group" | "project", entityId: string, groupId: string, myRole: "leader" | "member" | null) {
+function useEntityMeta(entityType: "group" | "project", entityId: string, groupId: string, myRole: "leader" | "sub_leader" | "member" | null) {
   const { data, isLoading } = useSWR(
     entityId ? `entity-meta/${entityType}/${entityId}` : null,
     async () => {

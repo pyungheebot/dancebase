@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Download } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import type { EntityContext } from "@/types/entity-context";
@@ -158,6 +158,46 @@ export function FinanceContent({
     }));
   }, [groupMembers, ctx.nicknameMap]);
 
+  const handleDownloadCsv = () => {
+    const label = selectedMonth === "all" ? "전체" : selectedMonth;
+    const filename = `회비내역_${label}.csv`;
+
+    const headers = ["날짜", "유형", "카테고리", "금액", "설명", "납부자"];
+    const rows = filteredTransactions.map((txn) => {
+      const typeLabel = txn.type === "income" ? "수입" : "지출";
+      const category = txn.finance_categories?.name ?? "";
+      const payer = txn.paid_by_profile
+        ? ctx.nicknameMap[txn.paid_by_profile.id] || txn.paid_by_profile.name
+        : txn.profiles
+        ? ctx.nicknameMap[txn.created_by ?? ""] || txn.profiles.name
+        : "";
+      return [
+        txn.transaction_date ?? "",
+        typeLabel,
+        category,
+        String(txn.amount),
+        txn.title,
+        payer,
+      ];
+    });
+
+    const csvContent =
+      "\uFEFF" +
+      [headers, ...rows]
+        .map((row) =>
+          row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+        )
+        .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDeleteConfirm = async () => {
     if (!deleteTargetId) return;
     const { error } = await supabase
@@ -246,22 +286,34 @@ export function FinanceContent({
 
           {/* 거래 내역 탭 */}
           <TabsContent value="transactions" className="mt-0">
-            {/* 헤더: 제목 + 월 필터 드롭다운 */}
+            {/* 헤더: 제목 + 월 필터 드롭다운 + CSV 다운로드 */}
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-xs font-medium text-muted-foreground">거래 내역</h2>
-              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="h-6 w-28 text-[11px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  {monthOptions.map((ym) => (
-                    <SelectItem key={ym} value={ym}>
-                      {formatMonthLabel(ym)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-[11px] px-2 gap-1"
+                  onClick={handleDownloadCsv}
+                  disabled={filteredTransactions.length === 0}
+                >
+                  <Download className="h-3 w-3" />
+                  CSV 다운로드
+                </Button>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="h-6 w-28 text-[11px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    {monthOptions.map((ym) => (
+                      <SelectItem key={ym} value={ym}>
+                        {formatMonthLabel(ym)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* 월별 요약 카드 (전체가 아닌 경우) */}

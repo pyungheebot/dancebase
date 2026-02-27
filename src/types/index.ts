@@ -119,7 +119,7 @@ export type GroupMember = {
   id: string;
   group_id: string;
   user_id: string;
-  role: "leader" | "member";
+  role: "leader" | "sub_leader" | "member";
   joined_at: string;
   nickname?: string | null;
   category_id?: string | null;
@@ -249,7 +249,7 @@ export type AttendanceWithProfile = Attendance & {
 
 export type GroupWithMemberCount = Group & {
   member_count: number;
-  my_role?: "leader" | "member";
+  my_role?: "leader" | "sub_leader" | "member";
 };
 
 // ============================================
@@ -385,6 +385,15 @@ export const BOARD_CATEGORIES = [
 ] as const;
 
 export type BoardCategory = (typeof BOARD_CATEGORIES)[number];
+
+// 그룹별 커스텀 게시판 카테고리 (DB 테이블)
+export type BoardCategoryRow = {
+  id: string;
+  group_id: string;
+  name: string;
+  sort_order: number;
+  created_at: string;
+};
 
 export type BoardPost = {
   id: string;

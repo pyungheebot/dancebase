@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { ArrowLeft, Loader2, Pin, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProjectBoardPostPage({
@@ -40,9 +40,28 @@ export default function ProjectBoardPostPage({
   const [editOpen, setEditOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [pinning, setPinning] = useState(false);
 
   const canEditOrDelete =
     post && user && (post.author_id === user.id || myRole === "leader");
+  const canPin = post && user && myRole === "leader";
+
+  const handleTogglePin = async () => {
+    if (!post) return;
+    setPinning(true);
+    const newPinned = !post.is_pinned;
+    const { error } = await supabase
+      .from("board_posts")
+      .update({ is_pinned: newPinned })
+      .eq("id", postId);
+    if (error) {
+      toast.error("고정 설정에 실패했습니다");
+    } else {
+      toast.success(newPinned ? "공지로 고정했습니다" : "고정 해제했습니다");
+      refetch();
+    }
+    setPinning(false);
+  };
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -96,6 +115,22 @@ export default function ProjectBoardPostPage({
             <h1 className="text-base font-semibold">{post.title}</h1>
             {canEditOrDelete && (
               <div className="flex items-center gap-1 shrink-0 ml-2">
+                {canPin && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`h-7 w-7 ${post.is_pinned ? "text-primary" : "text-muted-foreground"}`}
+                    onClick={handleTogglePin}
+                    disabled={pinning}
+                    aria-label={post.is_pinned ? "고정 해제" : "공지 고정"}
+                  >
+                    {post.is_pinned ? (
+                      <Pin className="h-3.5 w-3.5 fill-current" />
+                    ) : (
+                      <PinOff className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { BOARD_CATEGORIES } from "@/types";
+import { useBoardCategories } from "@/hooks/use-board";
 import type { BoardPost } from "@/types";
 import { invalidateBoardPostAttachments } from "@/lib/swr/invalidate";
 import { formatFileSize } from "@/lib/utils";
@@ -59,6 +59,8 @@ export function BoardPostForm({
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
+  const { writeCategories } = useBoardCategories(groupId);
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("미분류");
@@ -83,12 +85,16 @@ export function BoardPostForm({
     if (open && mode === "create") {
       setTitle("");
       setContent("");
-      setCategory("미분류");
+      // writeCategories에 "미분류"가 있으면 기본값, 없으면 첫 번째 카테고리
+      const defaultCat = writeCategories.includes("미분류")
+        ? "미분류"
+        : (writeCategories[0] ?? "미분류");
+      setCategory(defaultCat);
       setPollOptions([""]);
       setAllowMultiple(false);
       setPendingFiles([]);
     }
-  }, [open, mode, initialData]);
+  }, [open, mode, initialData, writeCategories]);
 
   // 다이얼로그 닫힐 때 미리보기 URL 정리
   useEffect(() => {
@@ -100,7 +106,6 @@ export function BoardPostForm({
   }, [open]);
 
   const isVote = category === "투표";
-  const writeCategories = BOARD_CATEGORIES.filter((c) => c !== "전체");
 
   const handleAddOption = () => setPollOptions([...pollOptions, ""]);
   const handleRemoveOption = (idx: number) =>

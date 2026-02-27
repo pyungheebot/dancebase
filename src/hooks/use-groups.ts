@@ -42,7 +42,7 @@ export function useGroupDetail(groupId: string) {
         return {
           group: null as Group | null,
           members: [] as GroupMemberWithProfile[],
-          myRole: null as "leader" | "member" | null,
+          myRole: null as "leader" | "sub_leader" | "member" | null,
           nicknameMap: {} as Record<string, string>,
           categories: [] as MemberCategory[],
           categoryMap: {} as Record<string, string>,
@@ -61,7 +61,7 @@ export function useGroupDetail(groupId: string) {
       const membersData = (membersRes.data as GroupMemberWithProfile[] | null) ?? [];
 
       const me = membersData.find((m) => m.user_id === user.id);
-      const myRole = (me?.role as "leader" | "member" | null) ?? null;
+      const myRole = (me?.role as "leader" | "sub_leader" | "member" | null) ?? null;
 
       const catLookup = Object.fromEntries(categoriesData.map((c) => [c.id, c.name]));
       const catColorLookup = Object.fromEntries(categoriesData.map((c) => [c.id, c.color || "gray"]));

@@ -54,6 +54,10 @@ export function invalidateBoardPostAttachments(postId: string) {
   mutate(swrKeys.boardPostAttachments(postId));
 }
 
+export function invalidateBoardCategories(groupId: string) {
+  mutate(swrKeys.boardCategories(groupId));
+}
+
 export function invalidateSchedules(groupId: string, projectId?: string | null) {
   mutate(swrKeys.schedules(groupId, projectId));
   // 그룹 전체 일정도 무효화

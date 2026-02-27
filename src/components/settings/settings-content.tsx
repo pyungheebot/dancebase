@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   AlertDialog,
@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle, UserPlus } from "lucide-react";
+import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle, UserPlus, Camera, LayoutList, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { EntityContext } from "@/types/entity-context";
 import type {
@@ -37,6 +37,7 @@ import type {
   Project,
   FinanceRole,
   JoinRequestWithProfile,
+  BoardCategoryRow,
 } from "@/types";
 import {
   GroupFormFields,
@@ -50,6 +51,8 @@ import {
 } from "@/components/projects/project-form-fields";
 import { useSharedGroups } from "@/hooks/use-projects";
 import { useGroups } from "@/hooks/use-groups";
+import { useBoardCategories } from "@/hooks/use-board";
+import { invalidateBoardCategories } from "@/lib/swr/invalidate";
 
 type SettingsContentProps = {
   ctx: EntityContext;
@@ -71,6 +74,11 @@ export function SettingsContent({
   // 공통 state
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // 그룹 아바타 state
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
 
   // 그룹 폼 state
   const [groupForm, setGroupForm] = useState<GroupFormValues>(DEFAULT_GROUP_FORM_VALUES);
@@ -98,6 +106,13 @@ export function SettingsContent({
   // 공유 그룹 관리 (프로젝트 전용)
   const sharedGroupsHook = useSharedGroups(ctx.projectId ?? "");
   const { groups: allGroups } = useGroups();
+
+  // 게시판 카테고리 관리 (그룹 전용)
+  const { categories: boardCategoryList, refetch: refetchBoardCategories } = useBoardCategories(ctx.groupId);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<BoardCategoryRow | null>(null);
 
   // 그룹 초기화
   useEffect(() => {
@@ -150,6 +165,106 @@ export function SettingsContent({
     };
     fetchJoinRequests();
   }, [supabase, ctx.groupId, isGroup, ctx.permissions.canEdit]);
+
+  // ============================================
+  // 게시판 카테고리 핸들러
+  // ============================================
+
+  const handleAddCategory = async () => {
+    const name = newCategoryName.trim();
+    if (!name) return;
+    setAddingCategory(true);
+    const { error } = await supabase.from("board_categories").insert({
+      group_id: ctx.groupId,
+      name,
+      sort_order: boardCategoryList.length,
+    });
+    if (error) {
+      if (error.code === "23505") {
+        toast.error("이미 존재하는 카테고리 이름입니다");
+      } else {
+        toast.error("카테고리 추가에 실패했습니다");
+      }
+    } else {
+      toast.success(`"${name}" 카테고리가 추가되었습니다`);
+      setNewCategoryName("");
+      invalidateBoardCategories(ctx.groupId);
+      refetchBoardCategories();
+    }
+    setAddingCategory(false);
+  };
+
+  const handleDeleteCategory = async (category: BoardCategoryRow) => {
+    setDeletingCategoryId(category.id);
+    const { error } = await supabase
+      .from("board_categories")
+      .delete()
+      .eq("id", category.id);
+    if (error) {
+      toast.error("카테고리 삭제에 실패했습니다");
+    } else {
+      toast.success(`"${category.name}" 카테고리가 삭제되었습니다`);
+      invalidateBoardCategories(ctx.groupId);
+      refetchBoardCategories();
+    }
+    setDeletingCategoryId(null);
+    setCategoryToDelete(null);
+  };
+
+  // ============================================
+  // 그룹 아바타 핸들러
+  // ============================================
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("파일 크기는 2MB 이하여야 합니다");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreview(objectUrl);
+
+    setAvatarUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const filePath = `group-${ctx.groupId}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) {
+        toast.error("이미지 업로드에 실패했습니다");
+        setAvatarPreview(null);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl + `?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from("groups")
+        .update({ avatar_url: publicUrl })
+        .eq("id", ctx.groupId);
+
+      if (updateError) {
+        toast.error("그룹 이미지 저장에 실패했습니다");
+        return;
+      }
+
+      setAvatarPreview(publicUrl);
+      toast.success("그룹 이미지가 변경되었습니다");
+    } finally {
+      setAvatarUploading(false);
+      if (avatarFileInputRef.current) avatarFileInputRef.current.value = "";
+    }
+  };
 
   // ============================================
   // 그룹 핸들러
@@ -472,6 +587,52 @@ export function SettingsContent({
         /* 그룹 설정 */
         /* ============================================ */
         <div className="space-y-4 max-w-2xl">
+          {/* 그룹 이미지 업로드 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xs font-semibold">그룹 이미지</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Avatar className="h-16 w-16 rounded-sm">
+                    <AvatarImage
+                      src={avatarPreview ?? group?.avatar_url ?? undefined}
+                      alt={group?.name}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="rounded-sm text-lg">
+                      {group?.name?.charAt(0)?.toUpperCase() || "G"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    type="button"
+                    onClick={() => avatarFileInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {avatarUploading ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Camera className="h-3 w-3" />
+                    )}
+                  </button>
+                  <input
+                    ref={avatarFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">그룹 대표 이미지</p>
+                  <p className="text-xs text-muted-foreground">JPG, PNG, GIF (최대 2MB)</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <GroupFormFields values={groupForm} onChange={handleGroupFieldChange} />
 
           {/* 초대 코드 (설정 전용) */}
@@ -568,6 +729,81 @@ export function SettingsContent({
             </Card>
           )}
 
+          {/* 게시판 카테고리 관리 (리더 전용) */}
+          {isGroupLeader && features.board && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xs font-semibold flex items-center gap-1.5">
+                  <LayoutList className="h-3.5 w-3.5" />
+                  게시판 카테고리
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-[11px] text-muted-foreground">
+                  카테고리가 없으면 기본 카테고리(공지사항, 잡담, 정보 등)를 사용합니다.
+                </p>
+
+                {/* 카테고리 목록 */}
+                {boardCategoryList.length > 0 ? (
+                  <div className="space-y-1">
+                    {boardCategoryList.map((cat) => (
+                      <div
+                        key={cat.id}
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-md border bg-muted/30"
+                      >
+                        <span className="text-xs font-medium">{cat.name}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          disabled={deletingCategoryId === cat.id}
+                          onClick={() => setCategoryToDelete(cat)}
+                          aria-label="카테고리 삭제"
+                        >
+                          {deletingCategoryId === cat.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground py-2 text-center">
+                    커스텀 카테고리가 없습니다
+                  </p>
+                )}
+
+                {/* 카테고리 추가 */}
+                <div className="flex gap-1.5">
+                  <Input
+                    placeholder="새 카테고리 이름"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    className="h-7 text-xs flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !addingCategory) handleAddCategory();
+                    }}
+                    maxLength={20}
+                  />
+                  <Button
+                    size="sm"
+                    className="h-7 text-xs px-2.5"
+                    onClick={handleAddCategory}
+                    disabled={addingCategory || !newCategoryName.trim()}
+                  >
+                    {addingCategory ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Plus className="h-3 w-3" />
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Button onClick={handleSave} disabled={saving || !groupForm.name.trim()} className="w-full">
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -656,6 +892,16 @@ export function SettingsContent({
               </div>
             )}
           </div>
+
+          {/* 카테고리 삭제 확인 다이얼로그 */}
+          <ConfirmDialog
+            open={!!categoryToDelete}
+            onOpenChange={(open) => { if (!open) setCategoryToDelete(null); }}
+            title="카테고리 삭제"
+            description={`"${categoryToDelete?.name}" 카테고리를 삭제하시겠습니까? 기존 게시글의 카테고리 값은 유지됩니다.`}
+            onConfirm={() => { if (categoryToDelete) handleDeleteCategory(categoryToDelete); }}
+            destructive
+          />
 
           {/* 그룹 탈퇴 확인 다이얼로그 */}
           <ConfirmDialog

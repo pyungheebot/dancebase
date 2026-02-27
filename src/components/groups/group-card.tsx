@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users } from "lucide-react";
 import type { Group } from "@/types";
 
@@ -13,9 +14,12 @@ export function GroupCard({ group }: GroupCardProps) {
   return (
     <Link href={`/groups/${group.id}`}>
       <div className="flex items-center gap-3 rounded-sm px-3 py-2.5 hover:bg-accent transition-colors cursor-pointer">
-        <div className="flex items-center justify-center h-8 w-8 rounded-sm bg-muted text-muted-foreground text-xs font-medium shrink-0">
-          {group.name.charAt(0)}
-        </div>
+        <Avatar className="h-8 w-8 rounded-sm shrink-0">
+          <AvatarImage src={group.avatar_url ?? undefined} alt={group.name} className="object-cover" />
+          <AvatarFallback className="rounded-sm bg-muted text-muted-foreground text-xs font-medium">
+            {group.name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium truncate">{group.name}</span>

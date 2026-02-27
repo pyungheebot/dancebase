@@ -4,6 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { BOARD_CATEGORIES } from "@/types";
 import type {
   BoardPostWithDetails,
   BoardPost,
@@ -11,6 +12,7 @@ import type {
   BoardPoll,
   BoardPollOptionWithVotes,
   BoardPostAttachment,
+  BoardCategoryRow,
 } from "@/types";
 
 const PAGE_SIZE = 10;
@@ -182,6 +184,46 @@ export function useBoardPostAttachments(postId: string) {
 
   return {
     attachments: data ?? [],
+    loading: isLoading,
+    refetch: () => mutate(),
+  };
+}
+
+// 기본 카테고리 목록 ("전체" 제외)
+const DEFAULT_WRITE_CATEGORIES = BOARD_CATEGORIES.filter((c) => c !== "전체") as string[];
+
+export function useBoardCategories(groupId: string) {
+  const { data, isLoading, mutate } = useSWR(
+    swrKeys.boardCategories(groupId),
+    async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("board_categories")
+        .select("*")
+        .eq("group_id", groupId)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      if (error) return [] as BoardCategoryRow[];
+      return (data ?? []) as BoardCategoryRow[];
+    },
+  );
+
+  const dbCategories = data ?? [];
+
+  // DB 카테고리가 있으면 DB 사용, 없으면 기본값 fallback
+  const writeCategories: string[] =
+    dbCategories.length > 0
+      ? dbCategories.map((c) => c.name)
+      : DEFAULT_WRITE_CATEGORIES;
+
+  // 필터용 (전체 포함)
+  const filterCategories: string[] = ["전체", ...writeCategories];
+
+  return {
+    categories: dbCategories,
+    writeCategories,
+    filterCategories,
     loading: isLoading,
     refetch: () => mutate(),
   };
