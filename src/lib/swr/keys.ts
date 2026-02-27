@@ -237,4 +237,11 @@ export const swrKeys = {
 
   // 일정 역할 배정
   scheduleRoles: (scheduleId: string) => `/schedules/${scheduleId}/roles` as const,
+
+  // 일정 날씨 예보
+  scheduleWeather: (scheduleId: string) => `schedule-weather-${scheduleId}` as const,
+
+  // 출석 면제 목록
+  attendanceExcuses: (scheduleId: string) =>
+    `/schedules/${scheduleId}/attendance-excuses` as const,
 };

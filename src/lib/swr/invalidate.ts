@@ -272,3 +272,8 @@ export function invalidateScheduleRoles(scheduleId: string) {
 export function invalidateMemberRisk(groupId: string) {
   mutate(swrKeys.memberRisk(groupId));
 }
+
+export function invalidateAttendanceExcuses(scheduleId: string) {
+  mutate(swrKeys.attendanceExcuses(scheduleId));
+  mutate(swrKeys.attendance(scheduleId));
+}

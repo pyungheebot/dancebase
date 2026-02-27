@@ -242,6 +242,8 @@ export type Schedule = {
 
 export type AttendanceStatus = "present" | "absent" | "late" | "early_leave";
 
+export type ExcuseStatus = "pending" | "approved" | "rejected";
+
 export type Attendance = {
   id: string;
   schedule_id: string;
@@ -253,6 +255,8 @@ export type Attendance = {
   checked_out_at: string | null;
   check_out_latitude: number | null;
   check_out_longitude: number | null;
+  excuse_reason: string | null;
+  excuse_status: ExcuseStatus | null;
 };
 
 export type AttendanceWithProfile = Attendance & {
@@ -792,6 +796,39 @@ export type FinanceAutoReminderLastSentValue = {
 
 export const FINANCE_AUTO_REMINDER_LAST_SENT_KEY = "finance_auto_reminder_last_sent";
 
+// ============================================
+// Group Links (그룹 링크 모음)
+// ============================================
+
+export type GroupLink = {
+  id: string;
+  url: string;
+  title: string;
+  icon: string; // 이모지
+  order: number;
+};
+
+export type GroupLinksSettingValue = {
+  links: GroupLink[];
+};
+
+export const GROUP_LINKS_SETTING_KEY = "group_links";
+
+export const DEFAULT_GROUP_LINKS_SETTING: GroupLinksSettingValue = {
+  links: [],
+};
+
+export const GROUP_LINK_ICONS: { emoji: string; label: string }[] = [
+  { emoji: "📹", label: "영상" },
+  { emoji: "📱", label: "SNS" },
+  { emoji: "📋", label: "폼" },
+  { emoji: "🔗", label: "일반" },
+  { emoji: "🎵", label: "음악" },
+  { emoji: "📍", label: "장소" },
+  { emoji: "💰", label: "결제" },
+  { emoji: "📝", label: "문서" },
+];
+
 export type Conversation = {
   partner_id: string;
   partner_name: string;
@@ -941,6 +978,21 @@ export type ScheduleCheckinCode = {
 };
 
 // ============================================
+// Project Notice (프로젝트 공지 피드, localStorage 기반)
+// ============================================
+
+export type ProjectNoticeImportance = "normal" | "urgent";
+
+export type ProjectNotice = {
+  id: string;
+  title: string;
+  content: string;
+  importance: ProjectNoticeImportance;
+  createdBy: string;
+  createdAt: string;
+};
+
+// ============================================
 // Schedule Role (일정 역할 배정)
 // ============================================
 
@@ -955,4 +1007,18 @@ export type ScheduleRole = {
 
 export type ScheduleRoleWithProfile = ScheduleRole & {
   profiles: Pick<Profile, "id" | "name" | "avatar_url">;
+};
+
+// ============================================
+// Schedule Weather (일정 날씨 예보)
+// ============================================
+
+export type ScheduleWeather = {
+  date: string;
+  tempMax: number;
+  tempMin: number;
+  precipitationProbability: number;
+  weatherCode: number;
+  emoji: string;
+  description: string;
 };

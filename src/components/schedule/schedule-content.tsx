@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, CalendarDays, CalendarCheck, Copy } from "lucide-react";
+import { Loader2, CalendarDays, CalendarCheck, Copy, CalendarSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarView } from "@/components/schedule/calendar-view";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
@@ -10,6 +10,7 @@ import { ScheduleTemplateList } from "@/components/schedule/schedule-template-li
 import { OptimalTimeHint } from "@/components/schedule/optimal-time-hint";
 import { BulkRsvpDialog } from "@/components/schedule/bulk-rsvp-dialog";
 import { ScheduleCopyDialog } from "@/components/schedule/schedule-copy-dialog";
+import { AvailabilityPollDialog } from "@/components/schedule/availability-poll-dialog";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { EmptyState } from "@/components/shared/empty-state";
 import type { EntityContext } from "@/types/entity-context";
@@ -33,6 +34,7 @@ export function ScheduleContent({
   const [templateSheetOpen, setTemplateSheetOpen] = useState(false);
   const [bulkRsvpOpen, setBulkRsvpOpen] = useState(false);
   const [copyOpen, setCopyOpen] = useState(false);
+  const [availabilityPollOpen, setAvailabilityPollOpen] = useState(false);
   const [templatePrefill, setTemplatePrefill] = useState<Partial<{
     title: string;
     description: string;
@@ -71,6 +73,15 @@ export function ScheduleContent({
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xs font-medium">일정</h2>
         <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs gap-1"
+            onClick={() => setAvailabilityPollOpen(true)}
+          >
+            <CalendarSearch className="h-3 w-3" />
+            가용 시간
+          </Button>
           {schedules.length > 0 && (
             <Button
               variant="outline"
@@ -168,6 +179,14 @@ export function ScheduleContent({
           onCopied={refetch}
         />
       )}
+
+      {/* 가용 시간 투표 다이얼로그 */}
+      <AvailabilityPollDialog
+        open={availabilityPollOpen}
+        onOpenChange={setAvailabilityPollOpen}
+        groupId={ctx.groupId}
+        canEdit={ctx.permissions.canEdit}
+      />
     </section>
   );
 }

@@ -25,6 +25,7 @@ import { ScheduleForm } from "./schedule-form";
 import { AttendancePredictionBadge, AttendancePredictionCard } from "./attendance-prediction-card";
 import { ScheduleWaitlistSection } from "./schedule-waitlist-section";
 import { ScheduleRolesSection } from "./schedule-roles-section";
+import { ScheduleWeatherBadge } from "./schedule-weather-badge";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
@@ -720,6 +721,8 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                     <span>{detailSchedule.location}</span>
                   </div>
                 )}
+                {/* 날씨 예보 배지 */}
+                <ScheduleWeatherBadge schedule={detailSchedule} />
                 {detailSchedule.description && (
                   <p className="text-xs whitespace-pre-wrap pt-1">{detailSchedule.description}</p>
                 )}

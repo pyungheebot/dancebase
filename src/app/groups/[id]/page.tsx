@@ -8,6 +8,7 @@ import { DashboardContent } from "@/components/dashboard/dashboard-content";
 import { InviteModal } from "@/components/groups/invite-modal";
 import { GroupStatsCards } from "@/components/groups/group-stats-cards";
 import { GroupHealthCard } from "@/components/groups/group-health-card";
+import { GroupLinksSection } from "@/components/groups/group-links-section";
 import { RoleOnboardingChecklist } from "@/components/groups/role-onboarding-checklist";
 import { Badge } from "@/components/ui/badge";
 import { LeaderInfo } from "@/components/ui/leader-info";
@@ -67,6 +68,11 @@ export default function GroupDetailPage({
           <GroupStatsCards groupId={ctx.groupId} memberCount={ctx.members.length} />
 
           <GroupHealthCard groupId={ctx.groupId} />
+
+          <GroupLinksSection
+            groupId={ctx.groupId}
+            canEdit={ctx.permissions.canEdit || ctx.permissions.canManageMembers}
+          />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

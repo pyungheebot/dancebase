@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { MapPin, Loader2, Info, LogOut } from "lucide-react";
+import { MapPin, Loader2, Info, LogOut, FileText } from "lucide-react";
 import { toast } from "sonner";
 import {
   calculateDistance,
@@ -27,10 +27,13 @@ import {
   determineAttendanceStatus,
   ATTENDANCE_RADIUS_METERS,
 } from "@/lib/geo";
-import type { AttendanceStatus, GroupMemberWithProfile, Schedule } from "@/types";
+import type { AttendanceStatus, ExcuseStatus, GroupMemberWithProfile, Schedule } from "@/types";
 import { getCategoryColorClasses } from "@/types";
+import { AttendanceExcuseBadge } from "@/components/attendance/attendance-excuse-badge";
+import { AttendanceExcuseDialog } from "@/components/attendance/attendance-excuse-dialog";
 
 type AttendanceRecord = {
+  id?: string;
   user_id: string;
   status: AttendanceStatus;
   checked_at?: string;
@@ -39,6 +42,8 @@ type AttendanceRecord = {
   checked_out_at?: string | null;
   check_out_latitude?: number | null;
   check_out_longitude?: number | null;
+  excuse_reason?: string | null;
+  excuse_status?: ExcuseStatus | null;
   profiles: { name: string; dance_genre: string[] };
 };
 
@@ -81,6 +86,7 @@ export function AttendanceTable({
 }: AttendanceTableProps) {
   const [updating, setUpdating] = useState<string | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const [excuseDialogOpen, setExcuseDialogOpen] = useState(false);
   const supabase = createClient();
 
   const getAttendance = (userId: string) =>
@@ -297,6 +303,17 @@ export function AttendanceTable({
                 <UserPopoverMenu userId={member.user_id} displayName={member.nickname || member.profiles.name} groupId={groupId} className="text-xs font-medium hover:underline text-left">{member.nickname || member.profiles.name}</UserPopoverMenu>
               </div>
               <div className="flex items-center gap-1.5">
+                {/* 면제 뱃지 (리더: 클릭 시 승인/거절 가능) */}
+                {record?.excuse_status && record.id && (
+                  <AttendanceExcuseBadge
+                    attendanceId={record.id}
+                    scheduleId={schedule.id}
+                    excuseStatus={record.excuse_status}
+                    excuseReason={record.excuse_reason ?? null}
+                    isLeader
+                    onUpdated={onUpdate}
+                  />
+                )}
                 {hasCheckInfo && (
                   <Popover>
                     <PopoverTrigger asChild>
@@ -384,6 +401,16 @@ export function AttendanceTable({
                 <UserPopoverMenu userId={member.user_id} displayName={member.nickname || member.profiles.name} groupId={groupId} className="text-xs font-medium hover:underline text-left">{member.nickname || member.profiles.name}</UserPopoverMenu>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  {/* 면제 상태 뱃지 (멤버 본인 읽기 전용) */}
+                  {record?.excuse_status && record.id && (
+                    <AttendanceExcuseBadge
+                      attendanceId={record.id}
+                      scheduleId={schedule.id}
+                      excuseStatus={record.excuse_status}
+                      excuseReason={record.excuse_reason ?? null}
+                      isLeader={false}
+                    />
+                  )}
                   {alreadyChecked ? (
                     <>
                       <Badge variant={statusColors[record!.status]}>
@@ -410,19 +437,31 @@ export function AttendanceTable({
                       )}
                     </>
                   ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleLocationCheck}
-                      disabled={updating === currentUserId}
-                    >
-                      {updating === currentUserId ? (
-                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                      ) : (
-                        <MapPin className="h-3 w-3 mr-1" />
-                      )}
-                      출석 체크
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleLocationCheck}
+                        disabled={updating === currentUserId}
+                      >
+                        {updating === currentUserId ? (
+                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        ) : (
+                          <MapPin className="h-3 w-3 mr-1" />
+                        )}
+                        출석 체크
+                      </Button>
+                      {/* 결석 사유 제출 버튼 */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs px-1.5"
+                        onClick={() => setExcuseDialogOpen(true)}
+                        title="결석 사유 제출"
+                      >
+                        <FileText className="h-3 w-3" />
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -452,6 +491,16 @@ export function AttendanceTable({
                 <UserPopoverMenu userId={member.user_id} displayName={member.nickname || member.profiles.name} groupId={groupId} className="text-xs font-medium hover:underline text-left">{member.nickname || member.profiles.name}</UserPopoverMenu>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  {/* 면제 상태 뱃지 (멤버 본인 읽기 전용) */}
+                  {record?.excuse_status && record.id && (
+                    <AttendanceExcuseBadge
+                      attendanceId={record.id}
+                      scheduleId={schedule.id}
+                      excuseStatus={record.excuse_status}
+                      excuseReason={record.excuse_reason ?? null}
+                      isLeader={false}
+                    />
+                  )}
                   {adminNeedsCheckout && (
                     <Button
                       size="sm"
@@ -487,6 +536,16 @@ export function AttendanceTable({
                       <SelectItem value="absent">결석</SelectItem>
                     </SelectContent>
                   </Select>
+                  {/* 결석 사유 제출 버튼 */}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs px-1.5"
+                    onClick={() => setExcuseDialogOpen(true)}
+                    title="결석 사유 제출"
+                  >
+                    <FileText className="h-3 w-3" />
+                  </Button>
                 </div>
               </div>
             );
@@ -507,12 +566,32 @@ export function AttendanceTable({
               </Avatar>
               <UserPopoverMenu userId={member.user_id} displayName={member.nickname || member.profiles.name} groupId={groupId} className="text-xs font-medium hover:underline text-left">{member.nickname || member.profiles.name}</UserPopoverMenu>
             </div>
-            <Badge variant={statusColors[record?.status || "absent"]}>
-              {statusLabels[record?.status || "absent"]}
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              {record?.excuse_status && record.id && (
+                <AttendanceExcuseBadge
+                  attendanceId={record.id}
+                  scheduleId={schedule.id}
+                  excuseStatus={record.excuse_status}
+                  excuseReason={record.excuse_reason ?? null}
+                  isLeader={false}
+                />
+              )}
+              <Badge variant={statusColors[record?.status || "absent"]}>
+                {statusLabels[record?.status || "absent"]}
+              </Badge>
+            </div>
           </div>
         );
       })}
+
+      {/* 면제 신청 Dialog (멤버 본인) */}
+      <AttendanceExcuseDialog
+        scheduleId={schedule.id}
+        userId={currentUserId}
+        open={excuseDialogOpen}
+        onOpenChange={setExcuseDialogOpen}
+        onSubmitted={onUpdate}
+      />
     </div>
   );
 }
