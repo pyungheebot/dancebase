@@ -59,6 +59,7 @@ import { MemberRiskAlert } from "@/components/members/member-risk-alert";
 import { MentorMenteeSection } from "@/components/members/mentor-mentee-section";
 import { MyFeedbackSheet } from "@/components/members/peer-feedback-dialog";
 import { RewardPointsShop } from "@/components/members/reward-points-shop";
+import { DynamicTeamManager } from "@/components/members/dynamic-team-manager";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -358,6 +359,10 @@ function GroupMembersContent({
           currentUserId={currentUserId}
           members={ctx.members}
           canEdit={ctx.permissions.canEdit}
+        />
+        <DynamicTeamManager
+          groupId={ctx.groupId}
+          members={ctx.members}
         />
         {ctx.permissions.canManageMembers && (
           <Button

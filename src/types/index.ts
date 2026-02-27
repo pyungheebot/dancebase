@@ -3378,3 +3378,89 @@ export type ScheduleRecurrenceRule = {
   endCount: number | null;
   createdAt: string;
 };
+
+// ============================================
+// Budget Spending Tracker (예산 지출 추적)
+// ============================================
+
+export type BudgetAlertLevel = "safe" | "caution" | "warning" | "exceeded";
+
+export type MonthlyBudgetStatus = {
+  month: string;
+  budget: number;
+  spent: number;
+  spentRate: number;
+  alertLevel: BudgetAlertLevel;
+};
+
+export type BudgetSpendingResult = {
+  currentMonth: MonthlyBudgetStatus;
+  recentMonths: MonthlyBudgetStatus[];
+  hasBudget: boolean;
+};
+
+// ============================================
+// Schedule Conflict (일정 충돌 감지)
+// ============================================
+
+export type ConflictType = "time_overlap" | "same_day" | "same_location";
+
+export type ScheduleConflict = {
+  id: string;
+  scheduleA: { id: string; title: string; startsAt: string; endsAt: string; location: string | null };
+  scheduleB: { id: string; title: string; startsAt: string; endsAt: string; location: string | null };
+  conflictTypes: ConflictType[];
+};
+
+// ============================================
+// Dynamic Teams (동적 팀/소그룹 관리, localStorage 기반)
+// ============================================
+
+export type TeamColor = "red" | "blue" | "green" | "purple" | "orange" | "cyan";
+
+export type DynamicTeam = {
+  id: string;
+  name: string;
+  color: TeamColor;
+  memberIds: string[];
+  createdAt: string;
+};
+
+export type DynamicTeamsData = {
+  teams: DynamicTeam[];
+};
+
+// ============================================
+// Event Gallery (그룹 이벤트 갤러리, localStorage 기반)
+// ============================================
+
+export type EventTag = "performance" | "competition" | "workshop" | "other";
+
+export type GroupEvent = {
+  id: string;
+  groupId: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  location: string;
+  description: string;
+  tag: EventTag;
+  participantCount: number;
+  createdAt: string;
+};
+
+// ============================================
+// Member Attendance Stats (멤버 출석 통계)
+// ============================================
+
+export type MemberAttendanceStatsResult = {
+  overallRate: number;
+  presentCount: number;
+  absentCount: number;
+  lateCount: number;
+  totalSchedules: number;
+  weeklyRates: { week: string; rate: number }[];
+  currentStreak: number;
+  longestStreak: number;
+  bestDayOfWeek: number | null;
+  groupAverageRate: number;
+};

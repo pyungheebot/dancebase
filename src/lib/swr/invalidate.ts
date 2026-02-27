@@ -540,3 +540,15 @@ export function invalidateGroupMilestonesAchievements(groupId: string) {
 export function invalidateCustomReport(groupId: string, reportId: string) {
   mutate(swrKeys.customReport(groupId, reportId));
 }
+
+export function invalidateScheduleConflictDetector(groupId: string) {
+  mutate(swrKeys.scheduleConflictDetector(groupId));
+}
+
+export function invalidateBudgetSpendingTracker(groupId: string) {
+  mutate(swrKeys.budgetSpendingTracker(groupId));
+}
+
+export function invalidateMemberAttendanceStats(groupId: string, userId: string) {
+  mutate(swrKeys.memberAttendanceStats(groupId, userId));
+}

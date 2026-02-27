@@ -503,4 +503,16 @@ export const swrKeys = {
   // 커스텀 리포트 빌더
   customReport: (groupId: string, reportId: string) =>
     `/groups/${groupId}/custom-report/${reportId}` as const,
+
+  // 일정 충돌 감지
+  scheduleConflictDetector: (groupId: string) =>
+    `/groups/${groupId}/schedule-conflict-detector` as const,
+
+  // 예산 지출 추적
+  budgetSpendingTracker: (groupId: string) =>
+    `/groups/${groupId}/budget-spending-tracker` as const,
+
+  // 멤버 출석 통계
+  memberAttendanceStats: (groupId: string, userId: string) =>
+    `/groups/${groupId}/member-attendance-stats/${userId}` as const,
 };
