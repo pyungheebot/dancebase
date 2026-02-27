@@ -6,10 +6,12 @@ import { JoinGroupModal } from "@/components/groups/invite-modal";
 import { useGroups } from "@/hooks/use-groups";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useTodaySchedules } from "@/hooks/use-schedule";
+import { useDeadlineProjects } from "@/hooks/use-deadline-projects";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Calendar, Bell } from "lucide-react";
+import { Plus, Calendar, Bell, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -19,6 +21,7 @@ export default function DashboardPage() {
   const { groups, loading } = useGroups();
   const { schedules: todaySchedules, loading: schedulesLoading } = useTodaySchedules();
   const { notifications, loading: notificationsLoading } = useNotifications(5);
+  const { projects: deadlineProjects, loading: deadlineLoading } = useDeadlineProjects();
 
   return (
     <AppLayout>
@@ -59,6 +62,60 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* 마감 임박 프로젝트 카드 - 데이터가 있을 때만 표시 */}
+        {(deadlineLoading || deadlineProjects.length > 0) && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+                <AlertCircle className="h-4 w-4 text-orange-500" />
+                마감 임박 프로젝트
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {deadlineLoading ? (
+                <div className="space-y-2 py-1">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-4/5" />
+                </div>
+              ) : (
+                <ul className="space-y-2">
+                  {deadlineProjects.map((project) => {
+                    const ddayLabel =
+                      project.diff_days === 0 ? "D-day" : `D-${project.diff_days}`;
+                    const ddayColor =
+                      project.diff_days === 0
+                        ? "bg-red-100 text-red-700"
+                        : project.diff_days <= 3
+                        ? "bg-orange-100 text-orange-700"
+                        : "bg-blue-100 text-blue-700";
+
+                    return (
+                      <li key={project.id}>
+                        <Link
+                          href={`/groups/${project.group_id}/projects/${project.id}`}
+                          className="flex items-center justify-between gap-2 rounded-md hover:bg-accent transition-colors px-1 py-0.5"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium truncate">{project.name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {project.group_name}
+                            </p>
+                          </div>
+                          <Badge
+                            className={`text-[10px] px-1.5 py-0 font-normal border-0 shrink-0 ${ddayColor}`}
+                          >
+                            {ddayLabel}
+                          </Badge>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* 최근 알림 카드 */}
         <Card>

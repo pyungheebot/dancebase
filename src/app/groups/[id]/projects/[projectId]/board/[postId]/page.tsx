@@ -188,6 +188,8 @@ export default function ProjectBoardPostPage({
 
         <BoardCommentSection
           postId={postId}
+          postAuthorId={post.author_id}
+          postLink={`/groups/${id}/projects/${projectId}/board/${postId}`}
           comments={comments}
           onUpdate={refetch}
           nicknameMap={nicknameMap}

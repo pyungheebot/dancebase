@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2, Send } from "lucide-react";
+import { ArrowLeft, Loader2, Send, CheckCheck } from "lucide-react";
 
 export default function ConversationPage({
   params,
@@ -123,17 +123,29 @@ export default function ConversationPage({
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                  <p
-                    className={`text-[10px] mt-1 ${
-                      isMine
-                        ? "text-primary-foreground/70"
-                        : "text-muted-foreground"
+                  <div
+                    className={`flex items-center gap-1 mt-1 ${
+                      isMine ? "justify-end" : "justify-start"
                     }`}
                   >
-                    {format(new Date(msg.created_at), "M/d HH:mm", {
-                      locale: ko,
-                    })}
-                  </p>
+                    <p
+                      className={`text-[10px] ${
+                        isMine
+                          ? "text-primary-foreground/70"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {format(new Date(msg.created_at), "M/d HH:mm", {
+                        locale: ko,
+                      })}
+                    </p>
+                    {isMine && msg.read_at && (
+                      <span className="flex items-center gap-0.5 text-[10px] text-primary-foreground/70">
+                        <CheckCheck className="h-3 w-3" />
+                        읽음
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );

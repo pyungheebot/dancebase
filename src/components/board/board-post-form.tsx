@@ -6,6 +6,7 @@ import { useBoardCategories } from "@/hooks/use-board";
 import type { BoardPost } from "@/types";
 import { invalidateBoardPostAttachments } from "@/lib/swr/invalidate";
 import { formatFileSize } from "@/lib/utils";
+import { createNotification } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Paperclip, X, FileText, Image } from "lucide-react";
+import { Plus, Trash2, Paperclip, X, FileText, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface BoardPostFormProps {
@@ -69,6 +70,8 @@ export function BoardPostForm({
   // 투표
   const [pollOptions, setPollOptions] = useState<string[]>([""]);
   const [allowMultiple, setAllowMultiple] = useState(false);
+  const [pollEndsAt, setPollEndsAt] = useState<string | null>(null);
+  const [customEndsAt, setCustomEndsAt] = useState("");
 
   // 첨부파일
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
@@ -92,6 +95,8 @@ export function BoardPostForm({
       setCategory(defaultCat);
       setPollOptions([""]);
       setAllowMultiple(false);
+      setPollEndsAt(null);
+      setCustomEndsAt("");
       setPendingFiles([]);
     }
   }, [open, mode, initialData, writeCategories]);
@@ -112,6 +117,31 @@ export function BoardPostForm({
     setPollOptions(pollOptions.filter((_, i) => i !== idx));
   const handleOptionChange = (idx: number, val: string) =>
     setPollOptions(pollOptions.map((o, i) => (i === idx ? val : o)));
+
+  const handlePollPreset = (days: number | null) => {
+    if (days === null) {
+      setPollEndsAt(null);
+      setCustomEndsAt("");
+    } else {
+      const d = new Date();
+      d.setDate(d.getDate() + days);
+      // datetime-local 형식: YYYY-MM-DDTHH:mm
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+      setCustomEndsAt(local);
+      setPollEndsAt(d.toISOString());
+    }
+  };
+
+  const handleCustomEndsAtChange = (val: string) => {
+    setCustomEndsAt(val);
+    if (val) {
+      setPollEndsAt(new Date(val).toISOString());
+    } else {
+      setPollEndsAt(null);
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -261,6 +291,7 @@ export function BoardPostForm({
           .insert({
             post_id: post.id,
             allow_multiple: allowMultiple,
+            ends_at: pollEndsAt ?? null,
           })
           .select("id")
           .single();
@@ -280,11 +311,43 @@ export function BoardPostForm({
     // 파일 업로드
     await uploadFiles(post.id);
 
+    // 공지사항 카테고리 게시글 작성 시 그룹 멤버 전체에게 알림
+    if (category === "공지사항") {
+      const { data: members } = await supabase
+        .from("group_members")
+        .select("user_id")
+        .eq("group_id", groupId);
+
+      if (members && members.length > 0) {
+        const authorName =
+          (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
+        const postPath = projectId
+          ? `/groups/${groupId}/projects/${projectId}/board/${post.id}`
+          : `/groups/${groupId}/board/${post.id}`;
+
+        // 본인 제외 멤버에게 알림
+        const otherMembers = members.filter((m: { user_id: string }) => m.user_id !== user.id);
+        await Promise.all(
+          otherMembers.map((m: { user_id: string }) =>
+            createNotification({
+              userId: m.user_id,
+              type: "new_post",
+              title: "새 공지",
+              message: `${authorName}님이 공지사항을 작성했습니다: ${title.trim()}`,
+              link: postPath,
+            })
+          )
+        );
+      }
+    }
+
     setTitle("");
     setContent("");
     setCategory("미분류");
     setPollOptions([""]);
     setAllowMultiple(false);
+    setPollEndsAt(null);
+    setCustomEndsAt("");
     setPendingFiles([]);
     setSubmitting(false);
     setOpen(false);
@@ -374,6 +437,56 @@ export function BoardPostForm({
               <Plus className="h-3 w-3 mr-1" />
               옵션 추가
             </Button>
+
+            {/* 마감일 설정 */}
+            <div className="pt-1 space-y-1.5">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3 text-muted-foreground" />
+                <Label className="text-[11px] text-muted-foreground">마감일</Label>
+              </div>
+              <div className="flex gap-1 flex-wrap">
+                {[
+                  { label: "1일", days: 1 },
+                  { label: "3일", days: 3 },
+                  { label: "7일", days: 7 },
+                ].map(({ label, days }) => {
+                  const isActive = (() => {
+                    if (!pollEndsAt || !customEndsAt) return false;
+                    const d = new Date();
+                    d.setDate(d.getDate() + days);
+                    const diff = Math.abs(new Date(pollEndsAt).getTime() - d.getTime());
+                    return diff < 60 * 1000;
+                  })();
+                  return (
+                    <Button
+                      key={days}
+                      type="button"
+                      variant={isActive ? "default" : "outline"}
+                      size="sm"
+                      className="h-6 text-[11px] px-2"
+                      onClick={() => handlePollPreset(days)}
+                    >
+                      {label}
+                    </Button>
+                  );
+                })}
+                <Button
+                  type="button"
+                  variant={!pollEndsAt ? "default" : "outline"}
+                  size="sm"
+                  className="h-6 text-[11px] px-2"
+                  onClick={() => handlePollPreset(null)}
+                >
+                  마감 없음
+                </Button>
+              </div>
+              <Input
+                type="datetime-local"
+                className="h-7 text-xs"
+                value={customEndsAt}
+                onChange={(e) => handleCustomEndsAtChange(e.target.value)}
+              />
+            </div>
           </div>
         )}
 

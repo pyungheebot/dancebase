@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Users, CheckCircle, Clock } from "lucide-react";
+import { createNotification } from "@/lib/notifications";
 
 type GroupInfo = {
   id: string;
@@ -56,6 +57,27 @@ export function JoinClient({ group, inviteCode }: JoinClientProps) {
             toast.error("가입 신청에 실패했습니다");
           }
           return;
+        }
+
+        // 그룹 리더에게 가입 신청 알림
+        const { data: leaderData } = await supabase
+          .from("group_members")
+          .select("user_id")
+          .eq("group_id", group.id)
+          .eq("role", "leader")
+          .limit(1)
+          .single();
+
+        if (leaderData && leaderData.user_id !== user.id) {
+          const applicantName =
+            (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
+          await createNotification({
+            userId: leaderData.user_id,
+            type: "join_request",
+            title: "가입 신청",
+            message: `${applicantName}님이 ${group.name} 가입을 신청했습니다`,
+            link: `/groups/${group.id}/settings`,
+          });
         }
 
         setDoneType("pending");

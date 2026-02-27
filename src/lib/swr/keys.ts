@@ -41,6 +41,9 @@ export const swrKeys = {
   // 오늘의 일정 (대시보드용)
   todaySchedules: () => "/today-schedules" as const,
 
+  // 마감 임박 프로젝트 (대시보드용)
+  deadlineProjects: () => "/deadline-projects" as const,
+
   // 메시지
   conversations: () => "/conversations" as const,
   conversation: (partnerId: string) => `/conversations/${partnerId}` as const,

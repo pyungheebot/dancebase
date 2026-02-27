@@ -199,6 +199,8 @@ export default function BoardPostPage({
         {/* 댓글 */}
         <BoardCommentSection
           postId={postId}
+          postAuthorId={post.author_id}
+          postLink={`/groups/${id}/board/${postId}`}
           comments={comments}
           onUpdate={refetch}
           nicknameMap={nicknameMap}

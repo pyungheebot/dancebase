@@ -12,9 +12,12 @@ import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { Trash2, Pencil, Check, X, CornerDownRight } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { createNotification } from "@/lib/notifications";
 
 interface BoardCommentSectionProps {
   postId: string;
+  postAuthorId?: string;
+  postLink?: string;
   comments: BoardCommentWithProfile[];
   onUpdate: () => void;
   nicknameMap?: Record<string, string>;
@@ -168,6 +171,8 @@ function CommentItem({
 
 export function BoardCommentSection({
   postId,
+  postAuthorId,
+  postLink,
   comments,
   onUpdate,
   nicknameMap,
@@ -229,6 +234,19 @@ export function BoardCommentSection({
       if (parentId) setReplySubmitting(false);
       else setSubmitting(false);
       return;
+    }
+
+    // 게시글 작성자에게 알림 (본인 댓글이면 스킵)
+    if (postAuthorId && postAuthorId !== user.id) {
+      const commenterName =
+        (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
+      await createNotification({
+        userId: postAuthorId,
+        type: "new_comment",
+        title: "새 댓글",
+        message: `${commenterName}님이 댓글을 달았습니다`,
+        link: postLink,
+      });
     }
 
     if (parentId) {

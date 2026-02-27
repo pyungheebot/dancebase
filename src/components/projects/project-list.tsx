@@ -2,13 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useProjects } from "@/hooks/use-projects";
 import { PROJECT_STATUSES } from "@/types";
 import type { ProjectStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, ChevronRight, CalendarRange } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Loader2, Users, ChevronRight, CalendarRange, MoreVertical, Settings, Trash2, Check } from "lucide-react";
 import { ProjectForm } from "./project-form";
+import { createClient } from "@/lib/supabase/client";
+import { invalidateProject } from "@/lib/swr/invalidate";
+import { toast } from "sonner";
 
 const STATUS_COLORS: Record<ProjectStatus, string> = {
   "신규": "bg-blue-100 text-blue-700",
@@ -87,11 +99,51 @@ function getDdayLabel(startDate: string | null, endDate: string | null): { label
 export function ProjectList({ groupId }: ProjectListProps) {
   const { projects, canManage, loading, refetch } = useProjects(groupId);
   const [statusFilter, setStatusFilter] = useState<string>("전체");
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   const filtered =
     statusFilter === "전체"
       ? projects
       : projects.filter((p) => p.status === statusFilter);
+
+  async function handleStatusChange(projectId: string, newStatus: ProjectStatus) {
+    setUpdatingStatusId(projectId);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("projects")
+      .update({ status: newStatus })
+      .eq("id", projectId);
+    setUpdatingStatusId(null);
+    if (error) {
+      toast.error("상태 변경에 실패했습니다.");
+      return;
+    }
+    toast.success(`상태가 "${newStatus}"(으)로 변경되었습니다.`);
+    invalidateProject(projectId, groupId);
+    refetch();
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("projects")
+      .delete()
+      .eq("id", deleteTarget.id);
+    setIsDeleting(false);
+    setDeleteTarget(null);
+    if (error) {
+      toast.error("프로젝트 삭제에 실패했습니다.");
+      return;
+    }
+    toast.success("프로젝트가 삭제되었습니다.");
+    invalidateProject(deleteTarget.id, groupId);
+    refetch();
+  }
 
   if (loading) {
     return (
@@ -143,22 +195,62 @@ export function ProjectList({ groupId }: ProjectListProps) {
           {filtered.map((project) => {
             const ddayInfo = getDdayLabel(project.start_date, project.end_date);
             const hasDateInfo = project.start_date || project.end_date;
+            const isUpdating = updatingStatusId === project.id;
 
             return (
-              <Link
+              <div
                 key={project.id}
-                href={`/groups/${project.group_id}/projects/${project.id}`}
-                className="flex items-center justify-between px-3 py-2.5 hover:bg-accent transition-colors"
+                className="flex items-center justify-between px-3 py-2.5 hover:bg-accent transition-colors group"
               >
-                <div className="min-w-0 flex-1">
+                <Link
+                  href={`/groups/${project.group_id}/projects/${project.id}`}
+                  className="min-w-0 flex-1"
+                >
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-sm font-medium truncate">{project.name}</span>
                     <Badge className={`text-[10px] px-1.5 py-0 font-normal border-0 ${TYPE_COLORS[project.type] || TYPE_COLORS["기타"]}`}>
                       {project.type}
                     </Badge>
-                    <Badge className={`text-[10px] px-1.5 py-0 font-normal border-0 ${STATUS_COLORS[project.status]}`}>
-                      {project.status}
-                    </Badge>
+                    {/* 상태 배지: canManage면 드롭다운, 아니면 읽기 전용 */}
+                    {canManage ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
+                          <Badge
+                            className={`text-[10px] px-1.5 py-0 font-normal border-0 cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[project.status]} ${isUpdating ? "opacity-50" : ""}`}
+                          >
+                            {isUpdating ? (
+                              <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                            ) : (
+                              project.status
+                            )}
+                          </Badge>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-28">
+                          {PROJECT_STATUSES.map((s) => (
+                            <DropdownMenuItem
+                              key={s}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (s !== project.status) {
+                                  handleStatusChange(project.id, s);
+                                }
+                              }}
+                              className="text-xs gap-2"
+                            >
+                              <span className={`inline-block w-2 h-2 rounded-full ${STATUS_COLORS[s].split(" ")[0]}`} />
+                              {s}
+                              {s === project.status && (
+                                <Check className="h-3 w-3 ml-auto text-muted-foreground" />
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Badge className={`text-[10px] px-1.5 py-0 font-normal border-0 ${STATUS_COLORS[project.status]}`}>
+                        {project.status}
+                      </Badge>
+                    )}
                     {project.is_shared && (
                       <Badge className="text-[10px] px-1.5 py-0 font-normal border-0 bg-indigo-100 text-indigo-700">
                         공유
@@ -188,17 +280,76 @@ export function ProjectList({ groupId }: ProjectListProps) {
                       {project.description}
                     </p>
                   )}
+                </Link>
+
+                <div className="flex items-center gap-1 shrink-0 ml-2">
+                  {/* 멤버 수 + 화살표 (Link로 이동) */}
+                  <Link
+                    href={`/groups/${project.group_id}/projects/${project.id}`}
+                    className="flex items-center gap-1 text-xs text-muted-foreground"
+                  >
+                    <Users className="h-3 w-3" />
+                    {project.member_count}
+                  </Link>
+
+                  {/* MoreVertical 메뉴 (canManage일 때만) */}
+                  {canManage ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => e.preventDefault()}
+                        >
+                          <MoreVertical className="h-3.5 w-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-28">
+                        <DropdownMenuItem
+                          className="text-xs gap-2"
+                          onClick={() =>
+                            router.push(
+                              `/groups/${project.group_id}/projects/${project.id}/settings`
+                            )
+                          }
+                        >
+                          <Settings className="h-3.5 w-3.5" />
+                          설정
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-xs gap-2 text-destructive focus:text-destructive"
+                          onClick={() =>
+                            setDeleteTarget({ id: project.id, name: project.name })
+                          }
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          삭제
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0 text-xs text-muted-foreground ml-2">
-                  <Users className="h-3 w-3" />
-                  {project.member_count}
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </div>
-              </Link>
+              </div>
             );
           })}
         </div>
       )}
+
+      {/* 삭제 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        title="프로젝트 삭제"
+        description={`"${deleteTarget?.name}" 프로젝트를 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.`}
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }

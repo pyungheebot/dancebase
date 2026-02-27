@@ -53,6 +53,7 @@ import { useSharedGroups } from "@/hooks/use-projects";
 import { useGroups } from "@/hooks/use-groups";
 import { useBoardCategories } from "@/hooks/use-board";
 import { invalidateBoardCategories } from "@/lib/swr/invalidate";
+import { createNotification } from "@/lib/notifications";
 
 type SettingsContentProps = {
   ctx: EntityContext;
@@ -295,6 +296,16 @@ export function SettingsContent({
       .eq("id", request.id);
     setJoinRequests((prev) => prev.filter((r) => r.id !== request.id));
     toast.success(`${request.profiles.name}님을 승인했습니다.`);
+
+    // 신청자에게 승인 알림
+    await createNotification({
+      userId: request.user_id,
+      type: "join_approved",
+      title: "가입 승인",
+      message: `${group?.name ?? "그룹"} 가입이 승인되었습니다`,
+      link: `/groups/${request.group_id}`,
+    });
+
     setProcessingRequest(null);
   };
 
@@ -307,6 +318,15 @@ export function SettingsContent({
       .eq("id", request.id);
     setJoinRequests((prev) => prev.filter((r) => r.id !== request.id));
     toast.success(`${request.profiles.name}님의 신청을 거부했습니다.`);
+
+    // 신청자에게 거부 알림
+    await createNotification({
+      userId: request.user_id,
+      type: "join_rejected",
+      title: "가입 거부",
+      message: `${group?.name ?? "그룹"} 가입 신청이 거부되었습니다`,
+    });
+
     setProcessingRequest(null);
   };
 

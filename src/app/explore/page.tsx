@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Search, Loader2, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import type { Group } from "@/types";
+import { createNotification } from "@/lib/notifications";
 
 type PublicGroup = Group & { member_count: number };
 type PublicProject = {
@@ -152,6 +153,27 @@ export default function ExplorePage() {
       } else {
         setRequestedGroups((prev) => new Set([...prev, group.id]));
         toast.success("가입 신청이 접수되었습니다. 그룹장의 승인을 기다려주세요.");
+
+        // 그룹 리더에게 가입 신청 알림
+        const { data: leaderData } = await supabase
+          .from("group_members")
+          .select("user_id")
+          .eq("group_id", group.id)
+          .eq("role", "leader")
+          .limit(1)
+          .single();
+
+        if (leaderData && leaderData.user_id !== user.id) {
+          const applicantName =
+            (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
+          await createNotification({
+            userId: leaderData.user_id,
+            type: "join_request",
+            title: "가입 신청",
+            message: `${applicantName}님이 ${group.name} 가입을 신청했습니다`,
+            link: `/groups/${group.id}/settings`,
+          });
+        }
       }
     } else {
       router.push("/dashboard?join=true");
