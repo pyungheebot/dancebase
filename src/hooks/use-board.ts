@@ -10,6 +10,7 @@ import type {
   BoardCommentWithProfile,
   BoardPoll,
   BoardPollOptionWithVotes,
+  BoardPostAttachment,
 } from "@/types";
 
 const PAGE_SIZE = 10;
@@ -158,6 +159,29 @@ export function useBoardPost(postId: string) {
     comments: data?.comments ?? [],
     poll: data?.poll ?? null,
     pollOptions: data?.pollOptions ?? [],
+    loading: isLoading,
+    refetch: () => mutate(),
+  };
+}
+
+export function useBoardPostAttachments(postId: string) {
+  const { data, isLoading, mutate } = useSWR(
+    swrKeys.boardPostAttachments(postId),
+    async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("board_post_attachments")
+        .select("*")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: true });
+
+      if (error) return [] as BoardPostAttachment[];
+      return (data ?? []) as BoardPostAttachment[];
+    },
+  );
+
+  return {
+    attachments: data ?? [],
     loading: isLoading,
     refetch: () => mutate(),
   };

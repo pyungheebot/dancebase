@@ -7,6 +7,7 @@ export const swrKeys = {
   // 하위그룹
   subgroups: (groupId: string) => `/groups/${groupId}/subgroups` as const,
   groupAncestors: (groupId: string) => `/groups/${groupId}/ancestors` as const,
+  parentGroupMembers: (parentGroupId: string) => `/groups/${parentGroupId}/members` as const,
 
   // 프로젝트
   myProjects: () => "/my-projects" as const,
@@ -25,6 +26,7 @@ export const swrKeys = {
   board: (groupId: string, projectId: string | null | undefined, category: string, search: string, page: number) =>
     `/groups/${groupId}/board?project=${projectId ?? ""}&category=${category}&search=${search}&page=${page}` as const,
   boardPost: (postId: string) => `/board-posts/${postId}` as const,
+  boardPostAttachments: (postId: string) => `/board-posts/${postId}/attachments` as const,
 
   // 회비
   finance: (groupId: string, projectId?: string | null) =>
@@ -53,4 +55,8 @@ export const swrKeys = {
   // 대시보드 설정
   dashboardSettings: (entityId: string, memberTable: string) =>
     `/dashboard-settings/${memberTable}/${entityId}` as const,
+
+  // 가입 신청
+  pendingJoinRequestCount: (groupId: string) =>
+    `/groups/${groupId}/join-requests/pending-count` as const,
 };

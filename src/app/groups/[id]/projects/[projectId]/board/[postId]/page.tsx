@@ -8,6 +8,7 @@ import { ko } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/client";
 import { AppLayout } from "@/components/layout/app-layout";
 import { BoardPostContent } from "@/components/board/board-post-content";
+import { BoardPostAttachments } from "@/components/board/board-post-attachments";
 import { BoardCommentSection } from "@/components/board/board-comment-section";
 import { BoardPollView } from "@/components/board/board-poll";
 import { BoardPostList } from "@/components/board/board-post-list";
@@ -138,6 +139,9 @@ export default function ProjectBoardPostPage({
         </div>
 
         <BoardPostContent content={post.content} />
+
+        {/* 첨부파일 */}
+        <BoardPostAttachments postId={postId} />
 
         {poll && (
           <div className="mt-4">

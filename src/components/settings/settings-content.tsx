@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle } from "lucide-react";
+import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import type { EntityContext } from "@/types/entity-context";
 import type {
@@ -377,52 +377,61 @@ export function SettingsContent({
 
   return (
     <>
-      {/* 가입 신청 관리 (그룹 전용) */}
-      {features.joinRequests && joinRequests.length > 0 && (
+      {/* 가입 신청 관리 (그룹 전용, join_policy가 approval인 경우 항상 표시) */}
+      {features.joinRequests && group?.join_policy === "approval" && (
         <Card className="mb-3 max-w-2xl">
           <CardHeader>
-            <CardTitle className="text-xs font-semibold">가입 신청 ({joinRequests.length})</CardTitle>
+            <CardTitle className="text-xs font-semibold">
+              가입 신청 ({joinRequests.length})
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {joinRequests.map((req) => (
-              <div key={req.id} className="flex items-center justify-between p-2 rounded-lg border">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-xs">
-                      {req.profiles.name?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">{req.profiles.name}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {new Date(req.requested_at).toLocaleDateString("ko-KR")}
-                    </p>
+            {joinRequests.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 gap-2 text-muted-foreground">
+                <UserPlus className="h-8 w-8 opacity-30" />
+                <p className="text-xs">현재 대기 중인 가입 신청이 없습니다</p>
+              </div>
+            ) : (
+              joinRequests.map((req) => (
+                <div key={req.id} className="flex items-center justify-between p-2 rounded-lg border">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="text-xs">
+                        {req.profiles.name?.charAt(0)?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{req.profiles.name}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {new Date(req.requested_at).toLocaleDateString("ko-KR")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs"
+                      disabled={processingRequest === req.id}
+                      onClick={() => handleApproveRequest(req)}
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      승인
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs text-destructive"
+                      disabled={processingRequest === req.id}
+                      onClick={() => handleRejectRequest(req)}
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      거부
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs"
-                    disabled={processingRequest === req.id}
-                    onClick={() => handleApproveRequest(req)}
-                  >
-                    <Check className="h-3 w-3 mr-1" />
-                    승인
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs text-destructive"
-                    disabled={processingRequest === req.id}
-                    onClick={() => handleRejectRequest(req)}
-                  >
-                    <X className="h-3 w-3 mr-1" />
-                    거부
-                  </Button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       )}

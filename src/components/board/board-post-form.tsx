@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { BOARD_CATEGORIES } from "@/types";
 import type { BoardPost } from "@/types";
+import { invalidateBoardPostAttachments } from "@/lib/swr/invalidate";
+import { formatFileSize } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Paperclip, X, FileText, Image } from "lucide-react";
 import { toast } from "sonner";
 
 interface BoardPostFormProps {
@@ -34,6 +36,14 @@ interface BoardPostFormProps {
   initialData?: BoardPost;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+}
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILES = 5;
+
+interface PendingFile {
+  file: File;
+  previewUrl: string | null;
 }
 
 export function BoardPostForm({
@@ -58,6 +68,10 @@ export function BoardPostForm({
   const [pollOptions, setPollOptions] = useState<string[]>([""]);
   const [allowMultiple, setAllowMultiple] = useState(false);
 
+  // 첨부파일
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const supabase = createClient();
 
   useEffect(() => {
@@ -72,8 +86,18 @@ export function BoardPostForm({
       setCategory("미분류");
       setPollOptions([""]);
       setAllowMultiple(false);
+      setPendingFiles([]);
     }
   }, [open, mode, initialData]);
+
+  // 다이얼로그 닫힐 때 미리보기 URL 정리
+  useEffect(() => {
+    if (!open) {
+      pendingFiles.forEach((pf) => {
+        if (pf.previewUrl) URL.revokeObjectURL(pf.previewUrl);
+      });
+    }
+  }, [open]);
 
   const isVote = category === "투표";
   const writeCategories = BOARD_CATEGORIES.filter((c) => c !== "전체");
@@ -83,6 +107,85 @@ export function BoardPostForm({
     setPollOptions(pollOptions.filter((_, i) => i !== idx));
   const handleOptionChange = (idx: number, val: string) =>
     setPollOptions(pollOptions.map((o, i) => (i === idx ? val : o)));
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+
+    const remaining = MAX_FILES - pendingFiles.length;
+    if (remaining <= 0) {
+      toast.error(`파일은 최대 ${MAX_FILES}개까지 첨부할 수 있습니다`);
+      return;
+    }
+
+    const toAdd = files.slice(0, remaining);
+    const oversized = toAdd.filter((f) => f.size > MAX_FILE_SIZE);
+    if (oversized.length > 0) {
+      toast.error(`10MB를 초과하는 파일은 첨부할 수 없습니다: ${oversized.map((f) => f.name).join(", ")}`);
+    }
+
+    const valid = toAdd.filter((f) => f.size <= MAX_FILE_SIZE);
+    const newPending: PendingFile[] = valid.map((file) => ({
+      file,
+      previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+    }));
+
+    setPendingFiles((prev) => [...prev, ...newPending]);
+
+    // input 초기화 (같은 파일 재선택 허용)
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleRemoveFile = (idx: number) => {
+    setPendingFiles((prev) => {
+      const removed = prev[idx];
+      if (removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const uploadFiles = async (postId: string): Promise<void> => {
+    if (pendingFiles.length === 0) return;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    for (const pf of pendingFiles) {
+      const ext = pf.file.name.split(".").pop() ?? "bin";
+      const path = `${user.id}/${postId}/${Date.now()}_${pf.file.name}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("board-attachments")
+        .upload(path, pf.file, { upsert: false });
+
+      if (uploadError || !uploadData) {
+        toast.error(`파일 업로드 실패: ${pf.file.name}`);
+        continue;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("board-attachments")
+        .getPublicUrl(uploadData.path);
+
+      const { error: insertError } = await supabase
+        .from("board_post_attachments")
+        .insert({
+          post_id: postId,
+          file_url: urlData.publicUrl,
+          file_name: pf.file.name,
+          file_type: pf.file.type || `application/${ext}`,
+          file_size: pf.file.size,
+        });
+
+      if (insertError) {
+        toast.error(`첨부파일 저장 실패: ${pf.file.name}`);
+      }
+    }
+
+    invalidateBoardPostAttachments(postId);
+  };
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
@@ -103,6 +206,11 @@ export function BoardPostForm({
         toast.error("글 수정에 실패했습니다");
         setSubmitting(false);
         return;
+      }
+
+      // 수정 모드에서도 새 파일 업로드 가능
+      if (pendingFiles.length > 0) {
+        await uploadFiles(initialData.id);
       }
 
       setSubmitting(false);
@@ -164,11 +272,15 @@ export function BoardPostForm({
       }
     }
 
+    // 파일 업로드
+    await uploadFiles(post.id);
+
     setTitle("");
     setContent("");
     setCategory("미분류");
     setPollOptions([""]);
     setAllowMultiple(false);
+    setPendingFiles([]);
     setSubmitting(false);
     setOpen(false);
     onCreated();
@@ -259,6 +371,73 @@ export function BoardPostForm({
             </Button>
           </div>
         )}
+
+        {/* 파일 첨부 영역 */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">첨부파일</Label>
+            <span className="text-[10px] text-muted-foreground">
+              {pendingFiles.length}/{MAX_FILES} · 최대 10MB
+            </span>
+          </div>
+
+          {/* 선택된 파일 목록 */}
+          {pendingFiles.length > 0 && (
+            <div className="space-y-1.5">
+              {pendingFiles.map((pf, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 rounded-md border px-2.5 py-1.5 bg-muted/40"
+                >
+                  {pf.previewUrl ? (
+                    <img
+                      src={pf.previewUrl}
+                      alt={pf.file.name}
+                      className="h-8 w-8 rounded object-cover shrink-0 border"
+                    />
+                  ) : (
+                    <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs truncate font-medium">{pf.file.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{formatFileSize(pf.file.size)}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 shrink-0"
+                    onClick={() => handleRemoveFile(idx)}
+                    aria-label="파일 제거"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 파일 선택 버튼 */}
+          {pendingFiles.length < MAX_FILES && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs w-full"
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Paperclip className="h-3 w-3 mr-1" />
+              파일 선택
+            </Button>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={handleFileSelect}
+            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
+          />
+        </div>
 
         <Button
           className="w-full"

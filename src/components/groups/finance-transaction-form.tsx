@@ -22,12 +22,19 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import type { FinanceCategory, FinanceTransaction } from "@/types";
+
+type MemberOption = {
+  id: string;
+  name: string;
+};
 
 type Props = {
   groupId: string;
   projectId?: string | null;
   categories: FinanceCategory[];
+  members?: MemberOption[];
   onSuccess: () => void;
   mode?: "create" | "edit";
   initialData?: FinanceTransaction;
@@ -39,6 +46,7 @@ export function FinanceTransactionForm({
   groupId,
   projectId,
   categories,
+  members,
   onSuccess,
   mode = "create",
   initialData,
@@ -53,6 +61,7 @@ export function FinanceTransactionForm({
 
   const [type, setType] = useState<"income" | "expense">("income");
   const [categoryId, setCategoryId] = useState("");
+  const [paidBy, setPaidBy] = useState<string>("");
   const [amount, setAmount] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -65,6 +74,7 @@ export function FinanceTransactionForm({
     if (open && isEdit && initialData) {
       setType(initialData.type);
       setCategoryId(initialData.category_id || "");
+      setPaidBy(initialData.paid_by || "");
       setAmount(initialData.amount.toString());
       setTitle(initialData.title);
       setDescription(initialData.description || "");
@@ -78,6 +88,7 @@ export function FinanceTransactionForm({
   const reset = () => {
     setType("income");
     setCategoryId("");
+    setPaidBy("");
     setAmount("");
     setTitle("");
     setDescription("");
@@ -94,6 +105,7 @@ export function FinanceTransactionForm({
         .update({
           type,
           category_id: categoryId || null,
+          paid_by: (type === "income" && paidBy && paidBy !== "none") ? paidBy : null,
           amount: parseInt(amount),
           title,
           description: description || null,
@@ -105,6 +117,8 @@ export function FinanceTransactionForm({
       if (!error) {
         setOpen(false);
         onSuccess();
+      } else {
+        toast.error("거래 수정에 실패했습니다");
       }
     } else {
       const {
@@ -116,6 +130,7 @@ export function FinanceTransactionForm({
         project_id: projectId || null,
         category_id: categoryId || null,
         type,
+        paid_by: (type === "income" && paidBy && paidBy !== "none") ? paidBy : null,
         amount: parseInt(amount),
         title,
         description: description || null,
@@ -128,6 +143,8 @@ export function FinanceTransactionForm({
         reset();
         setOpen(false);
         onSuccess();
+      } else {
+        toast.error("거래 추가에 실패했습니다");
       }
     }
   };
@@ -160,6 +177,26 @@ export function FinanceTransactionForm({
             </SelectContent>
           </Select>
         </div>
+
+        {/* 납부자 선택: 수입 거래이고 멤버 목록이 있을 때만 표시 */}
+        {type === "income" && members && members.length > 0 && (
+          <div className="space-y-1">
+            <Label className="text-xs">납부자 (선택)</Label>
+            <Select value={paidBy} onValueChange={setPaidBy}>
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue placeholder="납부자 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">선택 안함</SelectItem>
+                {members.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="space-y-1">
           <Label className="text-xs">금액 (원)</Label>

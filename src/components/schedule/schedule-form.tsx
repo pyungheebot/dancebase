@@ -72,6 +72,22 @@ function toLocalTime(iso: string) {
   return format(new Date(iso), "HH:mm");
 }
 
+/**
+ * 날짜 문자열(yyyy-MM-dd)과 시간 문자열(HH:mm)을 조합하여 ISO 8601 문자열로 변환합니다.
+ * 브라우저 로컬 타임존 offset을 명시적으로 붙여 서버/클라이언트 타임존 불일치 문제를 방지합니다.
+ * 예) "2026-02-27" + "14:30" + KST → "2026-02-27T14:30:00+09:00" → UTC 변환 시 "2026-02-27T05:30:00.000Z"
+ */
+function toISOWithLocalOffset(dateStr: string, timeStr: string): string {
+  const offsetMs = new Date().getTimezoneOffset() * -1 * 60 * 1000;
+  const absMin = Math.abs(new Date().getTimezoneOffset());
+  const sign = offsetMs >= 0 ? "+" : "-";
+  const hh = String(Math.floor(absMin / 60)).padStart(2, "0");
+  const mm = String(absMin % 60).padStart(2, "0");
+  return new Date(`${dateStr}T${timeStr}:00${sign}${hh}:${mm}`).toISOString();
+}
+
+type RecurrenceScope = "this" | "this_and_future" | "all";
+
 type ScheduleFormProps = {
   groupId: string;
   projectId?: string | null;
@@ -80,6 +96,10 @@ type ScheduleFormProps = {
   schedule?: Schedule;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  // 반복 일정 수정 범위 (edit 모드에서만 사용)
+  editScope?: RecurrenceScope;
+  // 폼 내부 삭제 버튼 숨기기 (외부에서 삭제 처리할 때)
+  hideDeleteButton?: boolean;
 };
 
 export function ScheduleForm({
@@ -90,6 +110,8 @@ export function ScheduleForm({
   schedule,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
+  editScope = "this",
+  hideDeleteButton = false,
 }: ScheduleFormProps) {
   const isEdit = mode === "edit";
 
@@ -184,25 +206,89 @@ export function ScheduleForm({
       }
 
       if (isEdit && schedule) {
-        const { error } = await supabase
-          .from("schedules")
-          .update({
-            title: fields.title,
-            description: fields.description || null,
-            location: fields.location || null,
-            address: fields.address || null,
-            latitude: fields.latitude,
-            longitude: fields.longitude,
-            attendance_method: fields.attendanceMethod,
-            starts_at: new Date(`${date}T${fields.startTime}`).toISOString(),
-            ends_at: new Date(`${date}T${fields.endTime}`).toISOString(),
-            late_threshold: fields.lateThresholdTime ? new Date(`${date}T${fields.lateThresholdTime}`).toISOString() : null,
-            attendance_deadline: fields.attendanceDeadlineTime ? new Date(`${date}T${fields.attendanceDeadlineTime}`).toISOString() : null,
-            require_checkout: fields.attendanceMethod !== "none" ? fields.requireCheckout : false,
-          })
-          .eq("id", schedule.id);
+        if (editScope === "this" || !schedule.recurrence_id) {
+          // 이 일정만 수정 (단일 update)
+          const { error } = await supabase
+            .from("schedules")
+            .update({
+              title: fields.title,
+              description: fields.description || null,
+              location: fields.location || null,
+              address: fields.address || null,
+              latitude: fields.latitude,
+              longitude: fields.longitude,
+              attendance_method: fields.attendanceMethod,
+              starts_at: toISOWithLocalOffset(date, fields.startTime),
+              ends_at: toISOWithLocalOffset(date, fields.endTime),
+              late_threshold: fields.lateThresholdTime ? toISOWithLocalOffset(date, fields.lateThresholdTime) : null,
+              attendance_deadline: fields.attendanceDeadlineTime ? toISOWithLocalOffset(date, fields.attendanceDeadlineTime) : null,
+              require_checkout: fields.attendanceMethod !== "none" ? fields.requireCheckout : false,
+            })
+            .eq("id", schedule.id);
 
-        if (error) throw error;
+          if (error) throw error;
+        } else if (editScope === "this_and_future") {
+          // 이후 모든 일정 수정: 시간/장소/설명만 일괄 update (날짜는 유지)
+          // starts_at, ends_at의 날짜 부분은 유지하고 시간만 변경
+          // 각 행별로 날짜를 추출해서 새 시간으로 교체
+          const { data: targets, error: fetchError } = await supabase
+            .from("schedules")
+            .select("id, starts_at, ends_at, late_threshold, attendance_deadline")
+            .eq("recurrence_id", schedule.recurrence_id)
+            .gte("starts_at", schedule.starts_at);
+          if (fetchError) throw fetchError;
+
+          for (const target of targets ?? []) {
+            const targetDate = format(new Date(target.starts_at), "yyyy-MM-dd");
+            const { error: updateError } = await supabase
+              .from("schedules")
+              .update({
+                title: fields.title,
+                description: fields.description || null,
+                location: fields.location || null,
+                address: fields.address || null,
+                latitude: fields.latitude,
+                longitude: fields.longitude,
+                attendance_method: fields.attendanceMethod,
+                starts_at: toISOWithLocalOffset(targetDate, fields.startTime),
+                ends_at: toISOWithLocalOffset(targetDate, fields.endTime),
+                late_threshold: fields.lateThresholdTime ? toISOWithLocalOffset(targetDate, fields.lateThresholdTime) : null,
+                attendance_deadline: fields.attendanceDeadlineTime ? toISOWithLocalOffset(targetDate, fields.attendanceDeadlineTime) : null,
+                require_checkout: fields.attendanceMethod !== "none" ? fields.requireCheckout : false,
+              })
+              .eq("id", target.id);
+            if (updateError) throw updateError;
+          }
+        } else {
+          // 전체 시리즈 수정: 시간/장소/설명만 일괄 update (날짜는 유지)
+          const { data: targets, error: fetchError } = await supabase
+            .from("schedules")
+            .select("id, starts_at")
+            .eq("recurrence_id", schedule.recurrence_id);
+          if (fetchError) throw fetchError;
+
+          for (const target of targets ?? []) {
+            const targetDate = format(new Date(target.starts_at), "yyyy-MM-dd");
+            const { error: updateError } = await supabase
+              .from("schedules")
+              .update({
+                title: fields.title,
+                description: fields.description || null,
+                location: fields.location || null,
+                address: fields.address || null,
+                latitude: fields.latitude,
+                longitude: fields.longitude,
+                attendance_method: fields.attendanceMethod,
+                starts_at: toISOWithLocalOffset(targetDate, fields.startTime),
+                ends_at: toISOWithLocalOffset(targetDate, fields.endTime),
+                late_threshold: fields.lateThresholdTime ? toISOWithLocalOffset(targetDate, fields.lateThresholdTime) : null,
+                attendance_deadline: fields.attendanceDeadlineTime ? toISOWithLocalOffset(targetDate, fields.attendanceDeadlineTime) : null,
+                require_checkout: fields.attendanceMethod !== "none" ? fields.requireCheckout : false,
+              })
+              .eq("id", target.id);
+            if (updateError) throw updateError;
+          }
+        }
       } else {
         const {
           data: { user },
@@ -225,10 +311,10 @@ export function ScheduleForm({
 
         const buildRow = (dateStr: string) => ({
           ...common,
-          starts_at: new Date(`${dateStr}T${fields.startTime}`).toISOString(),
-          ends_at: new Date(`${dateStr}T${fields.endTime}`).toISOString(),
-          late_threshold: fields.lateThresholdTime ? new Date(`${dateStr}T${fields.lateThresholdTime}`).toISOString() : null,
-          attendance_deadline: fields.attendanceDeadlineTime ? new Date(`${dateStr}T${fields.attendanceDeadlineTime}`).toISOString() : null,
+          starts_at: toISOWithLocalOffset(dateStr, fields.startTime),
+          ends_at: toISOWithLocalOffset(dateStr, fields.endTime),
+          late_threshold: fields.lateThresholdTime ? toISOWithLocalOffset(dateStr, fields.lateThresholdTime) : null,
+          attendance_deadline: fields.attendanceDeadlineTime ? toISOWithLocalOffset(dateStr, fields.attendanceDeadlineTime) : null,
           require_checkout: fields.attendanceMethod !== "none" ? fields.requireCheckout : false,
         });
 
@@ -239,11 +325,19 @@ export function ScheduleForm({
             return;
           }
 
-          const rows = recurringDates.map((d) => buildRow(format(d, "yyyy-MM-dd")));
+          // 같은 시리즈 전체에 동일한 recurrence_id 부여
+          const seriesId = crypto.randomUUID();
+          const rows = recurringDates.map((d) => ({
+            ...buildRow(format(d, "yyyy-MM-dd")),
+            recurrence_id: seriesId,
+          }));
           const { error } = await supabase.from("schedules").insert(rows);
           if (error) throw error;
         } else {
-          const { error } = await supabase.from("schedules").insert(buildRow(date));
+          const { error } = await supabase.from("schedules").insert({
+            ...buildRow(date),
+            recurrence_id: null,
+          });
           if (error) throw error;
         }
       }
@@ -396,10 +490,23 @@ export function ScheduleForm({
     </>
   );
 
+  const editScopeLabel: Record<RecurrenceScope, string> = {
+    this: "이 일정만",
+    this_and_future: "이후 모든 일정",
+    all: "전체 시리즈",
+  };
+
   const dialogContent = (
     <DialogContent className="max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>{isEdit ? "일정 수정" : "새 일정 등록"}</DialogTitle>
+        <DialogTitle>
+          {isEdit ? "일정 수정" : "새 일정 등록"}
+          {isEdit && schedule?.recurrence_id && (
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              ({editScopeLabel[editScope]})
+            </span>
+          )}
+        </DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-3">
         <ScheduleFormFields
@@ -422,26 +529,28 @@ export function ScheduleForm({
 
         {isEdit ? (
           <div className="flex gap-2">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button type="button" variant="destructive" size="sm" className="h-8 text-sm" disabled={loading}>
-                  <Trash2 className="h-3 w-3 mr-1" />
-                  삭제
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>일정 삭제</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    이 일정과 관련된 출석 기록이 모두 삭제됩니다. 정말 삭제하시겠습니까?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>삭제</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {!hideDeleteButton && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="destructive" size="sm" className="h-8 text-sm" disabled={loading}>
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    삭제
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>일정 삭제</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      이 일정과 관련된 출석 기록이 모두 삭제됩니다. 정말 삭제하시겠습니까?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>취소</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete}>삭제</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <Button type="submit" className="flex-1 h-8 text-sm" disabled={loading}>
               {loading ? "저장 중..." : "저장"}
             </Button>

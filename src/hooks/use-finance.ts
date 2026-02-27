@@ -68,7 +68,7 @@ export function useFinance(groupId: string, projectId?: string | null) {
           .order("name"),
         supabase
           .from("finance_transactions")
-          .select("*, profiles(id, name, avatar_url), finance_categories(id, name)")
+          .select("*, profiles!finance_transactions_created_by_fkey(id, name, avatar_url), paid_by_profile:profiles!finance_transactions_paid_by_fkey(id, name, avatar_url), finance_categories(id, name)")
           .eq("group_id", groupId)
           .eq("project_id", projectId)
           .order("transaction_date", { ascending: false })
@@ -97,7 +97,7 @@ export function useFinance(groupId: string, projectId?: string | null) {
 
       let txnQuery = supabase
         .from("finance_transactions")
-        .select("*, profiles(id, name, avatar_url), finance_categories(id, name), projects(id, name)")
+        .select("*, profiles!finance_transactions_created_by_fkey(id, name, avatar_url), paid_by_profile:profiles!finance_transactions_paid_by_fkey(id, name, avatar_url), finance_categories(id, name), projects(id, name)")
         .eq("group_id", groupId)
         .order("transaction_date", { ascending: false })
         .order("created_at", { ascending: false });

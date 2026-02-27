@@ -11,7 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar, Trash2, RefreshCw } from "lucide-react";
 import { ScheduleForm } from "./schedule-form";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +30,9 @@ import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
 
 const MAX_VISIBLE_EVENTS = 2;
+
+// 반복 일정 수정/삭제 범위 타입
+type RecurrenceScope = "this" | "this_and_future" | "all";
 
 type CalendarViewProps = {
   schedules: Schedule[];
@@ -168,11 +180,143 @@ function ScheduleBadge({ schedule, onClick }: { schedule: Schedule; onClick: () 
   );
 }
 
+// 반복 일정 삭제 다이얼로그
+function RecurrenceDeleteDialog({
+  open,
+  onOpenChange,
+  onSelect,
+  loading,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (scope: RecurrenceScope) => void;
+  loading: boolean;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>반복 일정 삭제</AlertDialogTitle>
+          <AlertDialogDescription>
+            삭제할 범위를 선택해주세요.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="flex flex-col gap-2 py-2">
+          <Button
+            variant="outline"
+            className="justify-start h-auto py-2.5 px-3"
+            disabled={loading}
+            onClick={() => onSelect("this")}
+          >
+            <div className="text-left">
+              <p className="text-sm font-medium">이 일정만</p>
+              <p className="text-xs text-muted-foreground mt-0.5">선택한 일정 1개만 삭제합니다</p>
+            </div>
+          </Button>
+          <Button
+            variant="outline"
+            className="justify-start h-auto py-2.5 px-3"
+            disabled={loading}
+            onClick={() => onSelect("this_and_future")}
+          >
+            <div className="text-left">
+              <p className="text-sm font-medium">이후 모든 일정</p>
+              <p className="text-xs text-muted-foreground mt-0.5">이 일정과 이후 날짜의 시리즈를 모두 삭제합니다</p>
+            </div>
+          </Button>
+          <Button
+            variant="destructive"
+            className="justify-start h-auto py-2.5 px-3"
+            disabled={loading}
+            onClick={() => onSelect("all")}
+          >
+            <div className="text-left">
+              <p className="text-sm font-medium">전체 시리즈</p>
+              <p className="text-xs text-destructive-foreground/80 mt-0.5">같은 반복 일정 전체를 삭제합니다</p>
+            </div>
+          </Button>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={loading}>취소</AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+// 반복 일정 수정 범위 선택 다이얼로그
+function RecurrenceEditDialog({
+  open,
+  onOpenChange,
+  onSelect,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (scope: RecurrenceScope) => void;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>반복 일정 수정</AlertDialogTitle>
+          <AlertDialogDescription>
+            수정할 범위를 선택해주세요.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="flex flex-col gap-2 py-2">
+          <Button
+            variant="outline"
+            className="justify-start h-auto py-2.5 px-3"
+            onClick={() => onSelect("this")}
+          >
+            <div className="text-left">
+              <p className="text-sm font-medium">이 일정만</p>
+              <p className="text-xs text-muted-foreground mt-0.5">선택한 일정 1개만 수정합니다</p>
+            </div>
+          </Button>
+          <Button
+            variant="outline"
+            className="justify-start h-auto py-2.5 px-3"
+            onClick={() => onSelect("this_and_future")}
+          >
+            <div className="text-left">
+              <p className="text-sm font-medium">이후 모든 일정</p>
+              <p className="text-xs text-muted-foreground mt-0.5">이 일정과 이후 날짜의 시리즈를 모두 수정합니다 (날짜 제외)</p>
+            </div>
+          </Button>
+          <Button
+            variant="outline"
+            className="justify-start h-auto py-2.5 px-3"
+            onClick={() => onSelect("all")}
+          >
+            <div className="text-left">
+              <p className="text-sm font-medium">전체 시리즈</p>
+              <p className="text-xs text-muted-foreground mt-0.5">같은 반복 일정 전체를 수정합니다 (날짜 제외)</p>
+            </div>
+          </Button>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel>취소</AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
+  // 시리즈 수정 시 적용 범위 (null이면 단일 수정 모드)
+  const [editScope, setEditScope] = useState<RecurrenceScope | null>(null);
   const [detailSchedule, setDetailSchedule] = useState<Schedule | null>(null);
   const [overflowDay, setOverflowDay] = useState<Date | null>(null);
+
+  // 반복 일정 수정/삭제 다이얼로그 상태
+  const [recurrenceEditDialogOpen, setRecurrenceEditDialogOpen] = useState(false);
+  const [recurrenceDeleteDialogOpen, setRecurrenceDeleteDialogOpen] = useState(false);
+  const [pendingEditSchedule, setPendingEditSchedule] = useState<Schedule | null>(null);
+  const [pendingDeleteSchedule, setPendingDeleteSchedule] = useState<Schedule | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -184,6 +328,135 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
     schedules.filter((s) => isSameDay(new Date(s.starts_at), day));
 
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
+
+  // 수정 버튼 클릭
+  const handleEditClick = (schedule: Schedule) => {
+    if (schedule.recurrence_id) {
+      // 반복 일정이면 범위 선택 다이얼로그 표시
+      setPendingEditSchedule(schedule);
+      setRecurrenceEditDialogOpen(true);
+    } else {
+      // 단일 일정이면 바로 수정 폼 열기
+      setEditScope("this");
+      setEditSchedule(schedule);
+    }
+  };
+
+  // 반복 수정 범위 선택 후
+  const handleRecurrenceEditSelect = (scope: RecurrenceScope) => {
+    setRecurrenceEditDialogOpen(false);
+    if (!pendingEditSchedule) return;
+    setEditScope(scope);
+    setEditSchedule(pendingEditSchedule);
+    setPendingEditSchedule(null);
+  };
+
+  // 삭제 버튼 클릭
+  const handleDeleteClick = (schedule: Schedule) => {
+    if (schedule.recurrence_id) {
+      // 반복 일정이면 범위 선택 다이얼로그 표시
+      setPendingDeleteSchedule(schedule);
+      setRecurrenceDeleteDialogOpen(true);
+    } else {
+      // 단일 일정이면 바로 삭제
+      handleDeleteConfirm(schedule, "this");
+    }
+  };
+
+  // 삭제 실행
+  const handleDeleteConfirm = async (schedule: Schedule, scope: RecurrenceScope) => {
+    setDeleteLoading(true);
+    setRecurrenceDeleteDialogOpen(false);
+    const supabase = createClient();
+
+    try {
+      if (scope === "this") {
+        // 이 일정만 삭제
+        const { error: attendanceError } = await supabase
+          .from("attendance")
+          .delete()
+          .eq("schedule_id", schedule.id);
+        if (attendanceError) throw attendanceError;
+
+        const { error } = await supabase
+          .from("schedules")
+          .delete()
+          .eq("id", schedule.id);
+        if (error) throw error;
+
+        toast.success("일정을 삭제했습니다");
+      } else if (scope === "this_and_future") {
+        // 이후 모든 일정 삭제 (같은 recurrence_id + starts_at >= 현재 일정 날짜)
+        if (!schedule.recurrence_id) throw new Error("recurrence_id 없음");
+
+        // 영향받는 schedule id 목록 먼저 조회
+        const { data: targetSchedules, error: fetchError } = await supabase
+          .from("schedules")
+          .select("id")
+          .eq("recurrence_id", schedule.recurrence_id)
+          .gte("starts_at", schedule.starts_at);
+        if (fetchError) throw fetchError;
+
+        const targetIds = (targetSchedules ?? []).map((s: { id: string }) => s.id);
+        if (targetIds.length > 0) {
+          const { error: attendanceError } = await supabase
+            .from("attendance")
+            .delete()
+            .in("schedule_id", targetIds);
+          if (attendanceError) throw attendanceError;
+
+          const { error } = await supabase
+            .from("schedules")
+            .delete()
+            .in("id", targetIds);
+          if (error) throw error;
+        }
+
+        toast.success(`${targetIds.length}개의 일정을 삭제했습니다`);
+      } else {
+        // 전체 시리즈 삭제
+        if (!schedule.recurrence_id) throw new Error("recurrence_id 없음");
+
+        const { data: targetSchedules, error: fetchError } = await supabase
+          .from("schedules")
+          .select("id")
+          .eq("recurrence_id", schedule.recurrence_id);
+        if (fetchError) throw fetchError;
+
+        const targetIds = (targetSchedules ?? []).map((s: { id: string }) => s.id);
+        if (targetIds.length > 0) {
+          const { error: attendanceError } = await supabase
+            .from("attendance")
+            .delete()
+            .in("schedule_id", targetIds);
+          if (attendanceError) throw attendanceError;
+
+          const { error } = await supabase
+            .from("schedules")
+            .delete()
+            .in("id", targetIds);
+          if (error) throw error;
+        }
+
+        toast.success(`시리즈 전체 ${targetIds.length}개의 일정을 삭제했습니다`);
+      }
+
+      setDetailSchedule(null);
+      setPendingDeleteSchedule(null);
+      onScheduleUpdated?.();
+    } catch {
+      toast.error("일정 삭제에 실패했습니다");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // ScheduleForm에서 시리즈 수정 완료 콜백
+  const handleEditCreated = () => {
+    setEditSchedule(null);
+    setEditScope(null);
+    onScheduleUpdated?.();
+  };
 
   return (
     <div className="space-y-3">
@@ -279,7 +552,12 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                 className="flex-1 text-left rounded border px-2.5 py-1.5 hover:bg-muted/50 transition-colors"
                 onClick={() => onSelectSchedule?.(schedule)}
               >
-                <p className="text-xs font-medium">{schedule.title}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-medium">{schedule.title}</p>
+                  {schedule.recurrence_id && (
+                    <RefreshCw className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                  )}
+                </div>
                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
                   <span className="flex items-center gap-0.5">
                     <Clock className="h-2.5 w-2.5" />
@@ -298,7 +576,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 shrink-0"
-                  onClick={() => setEditSchedule(schedule)}
+                  onClick={() => handleEditClick(schedule)}
                 >
                   <Pencil className="h-3 w-3" />
                 </Button>
@@ -310,25 +588,55 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
         )}
       </div>
 
+      {/* 수정 폼 (단일 or 시리즈 - 범위는 editScope로 전달) */}
       {editSchedule && canEdit && (
         <ScheduleForm
           mode="edit"
           groupId={editSchedule.group_id}
           schedule={editSchedule}
+          editScope={editScope ?? "this"}
+          hideDeleteButton={!!editSchedule.recurrence_id}
           open={!!editSchedule}
-          onOpenChange={(open) => { if (!open) setEditSchedule(null); }}
-          onCreated={() => {
-            setEditSchedule(null);
-            onScheduleUpdated?.();
-          }}
+          onOpenChange={(open) => { if (!open) { setEditSchedule(null); setEditScope(null); } }}
+          onCreated={handleEditCreated}
         />
       )}
+
+      {/* 반복 일정 수정 범위 선택 다이얼로그 */}
+      <RecurrenceEditDialog
+        open={recurrenceEditDialogOpen}
+        onOpenChange={(open) => {
+          setRecurrenceEditDialogOpen(open);
+          if (!open) setPendingEditSchedule(null);
+        }}
+        onSelect={handleRecurrenceEditSelect}
+      />
+
+      {/* 반복 일정 삭제 범위 선택 다이얼로그 */}
+      <RecurrenceDeleteDialog
+        open={recurrenceDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setRecurrenceDeleteDialogOpen(open);
+          if (!open) setPendingDeleteSchedule(null);
+        }}
+        onSelect={(scope) => {
+          if (pendingDeleteSchedule) {
+            handleDeleteConfirm(pendingDeleteSchedule, scope);
+          }
+        }}
+        loading={deleteLoading}
+      />
 
       {/* 일정 상세 모달 */}
       <Dialog open={!!detailSchedule} onOpenChange={(open) => { if (!open) setDetailSchedule(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-sm">{detailSchedule?.title}</DialogTitle>
+            <DialogTitle className="text-sm flex items-center gap-1.5">
+              {detailSchedule?.title}
+              {detailSchedule?.recurrence_id && (
+                <RefreshCw className="h-3 w-3 text-muted-foreground" />
+              )}
+            </DialogTitle>
           </DialogHeader>
           {detailSchedule && (
             <div className="space-y-3">
@@ -359,18 +667,36 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
 
               <div className="flex gap-2">
                 {canEdit && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={() => {
-                      setEditSchedule(detailSchedule);
-                      setDetailSchedule(null);
-                    }}
-                  >
-                    <Pencil className="h-3 w-3 mr-1" />
-                    수정
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={deleteLoading}
+                      onClick={() => {
+                        const target = detailSchedule;
+                        setDetailSchedule(null);
+                        handleEditClick(target);
+                      }}
+                    >
+                      <Pencil className="h-3 w-3 mr-1" />
+                      수정
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={deleteLoading}
+                      onClick={() => {
+                        const target = detailSchedule;
+                        setDetailSchedule(null);
+                        handleDeleteClick(target);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      삭제
+                    </Button>
+                  </>
                 )}
                 {attendancePath && (
                   <Button asChild size="sm" className="h-7 text-xs">
@@ -404,7 +730,12 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                     setDetailSchedule(schedule);
                   }}
                 >
-                  <p className="text-xs font-medium">{schedule.title}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-medium">{schedule.title}</p>
+                    {schedule.recurrence_id && (
+                      <RefreshCw className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
                     <span className="flex items-center gap-0.5">
                       <Clock className="h-2.5 w-2.5" />

@@ -225,6 +225,7 @@ export type Schedule = {
   late_threshold: string | null;
   attendance_deadline: string | null;
   require_checkout: boolean;
+  recurrence_id: string | null;
 };
 
 export type AttendanceStatus = "present" | "absent" | "late" | "early_leave";
@@ -275,11 +276,13 @@ export type FinanceTransaction = {
   description: string | null;
   transaction_date: string;
   created_by: string | null;
+  paid_by: string | null;
   created_at: string;
 };
 
 export type FinanceTransactionWithDetails = FinanceTransaction & {
   profiles: Pick<Profile, "id" | "name" | "avatar_url"> | null;
+  paid_by_profile: Pick<Profile, "id" | "name" | "avatar_url"> | null;
   finance_categories: Pick<FinanceCategory, "id" | "name"> | null;
   projects?: Pick<Project, "id" | "name"> | null;
 };
@@ -437,6 +440,16 @@ export type BoardPollVote = {
 export type BoardPollOptionWithVotes = BoardPollOption & {
   vote_count: number;
   voted_by_me: boolean;
+};
+
+export type BoardPostAttachment = {
+  id: string;
+  post_id: string;
+  file_url: string;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  created_at: string;
 };
 
 // ============================================

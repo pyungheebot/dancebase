@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
+import { SubgroupInviteFromParent } from "@/components/subgroups/subgroup-invite-from-parent";
 import { Plus, Tags, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { getCategoryColorClasses } from "@/types";
@@ -138,6 +139,14 @@ function GroupMembersContent({
             <Tags className="h-3 w-3 mr-0.5" />
             카테고리
           </Button>
+          {ctx.parentGroupId && (
+            <SubgroupInviteFromParent
+              subgroupId={ctx.groupId}
+              parentGroupId={ctx.parentGroupId}
+              currentMemberIds={new Set(ctx.members.map((m) => m.userId))}
+              onInvited={onUpdate}
+            />
+          )}
           {inviteCode && <InviteModal inviteCode={inviteCode} />}
         </div>
       )}

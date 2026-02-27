@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { EntityContext, FeatureFlags } from "@/types/entity-context";
+import { usePendingJoinRequestCount } from "@/hooks/use-join-requests";
 import {
   LayoutDashboard,
   MessageSquare,
@@ -48,6 +49,13 @@ export function EntityNav({ ctx }: EntityNavProps) {
   const { basePath, breadcrumbs, entityType, features, permissions } = ctx;
 
   const isProject = entityType === "project";
+  const isGroupLeader = !isProject && permissions.canEdit;
+
+  // 리더인 그룹에서만 pending 가입 신청 수 조회
+  const { count: pendingCount } = usePendingJoinRequestCount(
+    ctx.groupId,
+    isGroupLeader && features.joinRequests,
+  );
 
   const visibleTabs = ALL_TABS.filter((tab) => {
     // 그룹 전용 탭은 프로젝트에서 숨김
@@ -111,6 +119,7 @@ export function EntityNav({ ctx }: EntityNavProps) {
         {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const active = isActive(tab.path);
+          const showBadge = tab.key === "settings" && isGroupLeader && pendingCount > 0;
           return (
             <Link
               key={tab.path}
@@ -119,6 +128,11 @@ export function EntityNav({ ctx }: EntityNavProps) {
             >
               <Icon className={iconClass} />
               {tab.label}
+              {showBadge && (
+                <span className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none ml-0.5">
+                  {pendingCount > 99 ? "99+" : pendingCount}
+                </span>
+              )}
             </Link>
           );
         })}

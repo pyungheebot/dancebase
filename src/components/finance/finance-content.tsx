@@ -6,10 +6,12 @@ import { FinanceTransactionForm } from "@/components/groups/finance-transaction-
 import { FinanceCategoryManager } from "@/components/groups/finance-category-manager";
 import { FinancePermissionManager } from "@/components/groups/finance-permission-manager";
 import { FinanceStats } from "@/components/groups/finance-stats";
+import { FinancePaymentStatus } from "@/components/finance/finance-payment-status";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -64,6 +66,12 @@ function buildMonthOptions(transactions: FinanceTransactionWithDetails[]) {
 
   // 내림차순 정렬
   return Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+}
+
+// 월 레이블 포맷: "2026-02" → "2026년 2월"
+function formatMonthLabel(ym: string) {
+  const [year, month] = ym.split("-");
+  return `${year}년 ${parseInt(month, 10)}월`;
 }
 
 export function FinanceContent({
@@ -141,6 +149,15 @@ export function FinanceContent({
     return { totalIncome, totalExpense, balance, byCategory };
   }, [filteredTransactions, categories, ctx.groupId]);
 
+  // 폼에 전달할 멤버 옵션 (GroupMemberWithProfile → { id, name })
+  const memberOptions = useMemo(() => {
+    if (!groupMembers) return undefined;
+    return groupMembers.map((m) => ({
+      id: m.user_id,
+      name: ctx.nicknameMap[m.user_id] || m.profiles.name,
+    }));
+  }, [groupMembers, ctx.nicknameMap]);
+
   const handleDeleteConfirm = async () => {
     if (!deleteTargetId) return;
     const { error } = await supabase
@@ -155,12 +172,6 @@ export function FinanceContent({
     }
     setDeleteTargetId(null);
   };
-
-  // 월 레이블 포맷: "2026-02" → "2026년 2월"
-  function formatMonthLabel(ym: string) {
-    const [year, month] = ym.split("-");
-    return `${year}년 ${parseInt(month, 10)}월`;
-  }
 
   return (
     <>
@@ -189,6 +200,7 @@ export function FinanceContent({
               groupId={ctx.groupId}
               projectId={ctx.projectId}
               categories={categories}
+              members={memberOptions}
               onSuccess={refetch}
             />
           </div>
@@ -205,6 +217,7 @@ export function FinanceContent({
               groupId={ctx.groupId}
               projectId={ctx.projectId}
               categories={categories}
+              members={memberOptions}
               onSuccess={refetch}
             />
           </div>
@@ -219,141 +232,174 @@ export function FinanceContent({
         byCategory={stats.byCategory}
       />
 
-      {/* 거래 내역 섹션 */}
+      {/* 거래 내역 / 납부 현황 탭 */}
       <div className="mt-3">
-        {/* 헤더: 제목 + 월 필터 드롭다운 */}
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xs font-medium text-muted-foreground">거래 내역</h2>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="h-6 w-28 text-[11px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
-              {monthOptions.map((ym) => (
-                <SelectItem key={ym} value={ym}>
-                  {formatMonthLabel(ym)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Tabs defaultValue="transactions">
+          <TabsList className="w-full h-7 mb-3">
+            <TabsTrigger value="transactions" className="flex-1 text-xs">
+              거래 내역
+            </TabsTrigger>
+            <TabsTrigger value="payment-status" className="flex-1 text-xs">
+              납부 현황
+            </TabsTrigger>
+          </TabsList>
 
-        {/* 월별 요약 카드 (전체가 아닌 경우) */}
-        {selectedMonth !== "all" && (
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            <div className="rounded-lg border bg-card px-3 py-2 text-center">
-              <p className="text-[10px] text-muted-foreground mb-0.5">수입</p>
-              <p className="text-sm font-semibold text-green-600 tabular-nums">
-                +{monthlyStats.totalIncome.toLocaleString("ko-KR")}
-              </p>
+          {/* 거래 내역 탭 */}
+          <TabsContent value="transactions" className="mt-0">
+            {/* 헤더: 제목 + 월 필터 드롭다운 */}
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-xs font-medium text-muted-foreground">거래 내역</h2>
+              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                <SelectTrigger className="h-6 w-28 text-[11px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {monthOptions.map((ym) => (
+                    <SelectItem key={ym} value={ym}>
+                      {formatMonthLabel(ym)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="rounded-lg border bg-card px-3 py-2 text-center">
-              <p className="text-[10px] text-muted-foreground mb-0.5">지출</p>
-              <p className="text-sm font-semibold text-red-600 tabular-nums">
-                -{monthlyStats.totalExpense.toLocaleString("ko-KR")}
-              </p>
-            </div>
-            <div className="rounded-lg border bg-card px-3 py-2 text-center">
-              <p className="text-[10px] text-muted-foreground mb-0.5">잔액</p>
-              <p
-                className={`text-sm font-semibold tabular-nums ${
-                  monthlyStats.balance >= 0 ? "text-blue-600" : "text-red-600"
-                }`}
-              >
-                {monthlyStats.balance >= 0 ? "+" : ""}
-                {monthlyStats.balance.toLocaleString("ko-KR")}
-              </p>
-            </div>
-          </div>
-        )}
 
-        {/* 거래 목록 */}
-        {filteredTransactions.length === 0 ? (
-          <p className="text-xs text-muted-foreground text-center py-8">
-            {selectedMonth === "all"
-              ? "거래 내역이 없습니다"
-              : `${formatMonthLabel(selectedMonth)}에 거래 내역이 없습니다`}
-          </p>
-        ) : (
-          <div className="rounded-lg border divide-y">
-            {filteredTransactions.map((txn) => (
-              <div
-                key={txn.id}
-                className="flex items-center justify-between px-3 py-2 gap-3"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span
-                    className={`text-sm font-semibold tabular-nums shrink-0 ${
-                      txn.type === "income"
-                        ? "text-green-600"
-                        : "text-red-600"
+            {/* 월별 요약 카드 (전체가 아닌 경우) */}
+            {selectedMonth !== "all" && (
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="rounded-lg border bg-card px-3 py-2 text-center">
+                  <p className="text-[10px] text-muted-foreground mb-0.5">수입</p>
+                  <p className="text-sm font-semibold text-green-600 tabular-nums">
+                    +{monthlyStats.totalIncome.toLocaleString("ko-KR")}
+                  </p>
+                </div>
+                <div className="rounded-lg border bg-card px-3 py-2 text-center">
+                  <p className="text-[10px] text-muted-foreground mb-0.5">지출</p>
+                  <p className="text-sm font-semibold text-red-600 tabular-nums">
+                    -{monthlyStats.totalExpense.toLocaleString("ko-KR")}
+                  </p>
+                </div>
+                <div className="rounded-lg border bg-card px-3 py-2 text-center">
+                  <p className="text-[10px] text-muted-foreground mb-0.5">잔액</p>
+                  <p
+                    className={`text-sm font-semibold tabular-nums ${
+                      monthlyStats.balance >= 0 ? "text-blue-600" : "text-red-600"
                     }`}
                   >
-                    {txn.type === "income" ? "+" : "-"}
-                    {txn.amount.toLocaleString("ko-KR")}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm truncate">{txn.title}</p>
-                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <span>{txn.transaction_date}</span>
-                      {txn.profiles && (
+                    {monthlyStats.balance >= 0 ? "+" : ""}
+                    {monthlyStats.balance.toLocaleString("ko-KR")}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* 거래 목록 */}
+            {filteredTransactions.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-8">
+                {selectedMonth === "all"
+                  ? "거래 내역이 없습니다"
+                  : `${formatMonthLabel(selectedMonth)}에 거래 내역이 없습니다`}
+              </p>
+            ) : (
+              <div className="rounded-lg border divide-y">
+                {filteredTransactions.map((txn) => (
+                  <div
+                    key={txn.id}
+                    className="flex items-center justify-between px-3 py-2 gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className={`text-sm font-semibold tabular-nums shrink-0 ${
+                          txn.type === "income"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {txn.type === "income" ? "+" : "-"}
+                        {txn.amount.toLocaleString("ko-KR")}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm truncate">{txn.title}</p>
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <span>{txn.transaction_date}</span>
+                          {/* 납부자 표시 (paid_by_profile 우선, 없으면 created_by profiles) */}
+                          {txn.paid_by_profile ? (
+                            <>
+                              <span className="text-muted-foreground/40">·</span>
+                              <span className="text-blue-600">
+                                {ctx.nicknameMap[txn.paid_by_profile.id] ||
+                                  txn.paid_by_profile.name}
+                              </span>
+                              <span className="text-muted-foreground/40">납부</span>
+                            </>
+                          ) : txn.profiles ? (
+                            <>
+                              <span className="text-muted-foreground/40">·</span>
+                              <span>
+                                {(txn.created_by &&
+                                  ctx.nicknameMap[txn.created_by]) ||
+                                  txn.profiles.name}
+                              </span>
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {txn.projects && (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] px-1 py-0 font-normal"
+                        >
+                          {txn.projects.name}
+                        </Badge>
+                      )}
+                      {txn.finance_categories && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] px-1.5 py-0 font-normal"
+                        >
+                          {txn.finance_categories.name}
+                        </Badge>
+                      )}
+                      {(isManager || canManage) && (
                         <>
-                          <span className="text-muted-foreground/40">·</span>
-                          <span>
-                            {(txn.created_by &&
-                              ctx.nicknameMap[txn.created_by]) ||
-                              txn.profiles.name}
-                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                            onClick={() => setEditingTxn(txn)}
+                            aria-label="거래 수정"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                            onClick={() => setDeleteTargetId(txn.id)}
+                            aria-label="거래 삭제"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </>
                       )}
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {txn.projects && (
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] px-1 py-0 font-normal"
-                    >
-                      {txn.projects.name}
-                    </Badge>
-                  )}
-                  {txn.finance_categories && (
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] px-1.5 py-0 font-normal"
-                    >
-                      {txn.finance_categories.name}
-                    </Badge>
-                  )}
-                  {(isManager || canManage) && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                        onClick={() => setEditingTxn(txn)}
-                        aria-label="거래 수정"
-                      >
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        onClick={() => setDeleteTargetId(txn.id)}
-                        aria-label="거래 삭제"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </>
-                  )}
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
+          </TabsContent>
+
+          {/* 납부 현황 탭 */}
+          <TabsContent value="payment-status" className="mt-0">
+            <FinancePaymentStatus
+              transactions={transactions}
+              members={ctx.members}
+              nicknameMap={ctx.nicknameMap}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* 거래 수정 폼 */}
@@ -363,6 +409,7 @@ export function FinanceContent({
           groupId={ctx.groupId}
           projectId={ctx.projectId}
           categories={categories}
+          members={memberOptions}
           initialData={editingTxn}
           open={!!editingTxn}
           onOpenChange={(open) => {

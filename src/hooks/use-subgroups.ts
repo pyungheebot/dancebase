@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import type { GroupMemberWithProfile } from "@/types";
 
 type SubgroupItem = {
   id: string;
@@ -52,6 +53,28 @@ export function useGroupAncestors(groupId: string) {
 
   return {
     ancestors: data ?? [],
+    loading: isLoading,
+  };
+}
+
+export function useParentGroupMembers(parentGroupId: string | null) {
+  const { data, isLoading } = useSWR(
+    parentGroupId ? swrKeys.parentGroupMembers(parentGroupId) : null,
+    async () => {
+      if (!parentGroupId) return [];
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("group_members")
+        .select("*, profiles(*)")
+        .eq("group_id", parentGroupId)
+        .order("joined_at");
+      if (error) return [];
+      return (data as GroupMemberWithProfile[]) || [];
+    },
+  );
+
+  return {
+    members: data ?? [],
     loading: isLoading,
   };
 }
