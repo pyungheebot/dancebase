@@ -6,6 +6,7 @@ import { EntityPageLayout } from "@/components/layout/entity-page-layout";
 import { EntityHeader } from "@/components/layout/entity-header";
 import { EntityNav } from "@/components/layout/entity-nav";
 import { SubgroupList } from "@/components/subgroups/subgroup-list";
+import { SubgroupPerformanceSection } from "@/components/subgroups/subgroup-performance";
 
 export default function SubgroupsPage({
   params,
@@ -22,6 +23,9 @@ export default function SubgroupsPage({
           <EntityHeader ctx={ctx} leaderLabel="그룹장" />
           <EntityNav ctx={ctx} />
           <SubgroupList groupId={id} canManage={ctx.permissions.canEdit} />
+          {ctx.permissions.canEdit && (
+            <SubgroupPerformanceSection groupId={id} />
+          )}
         </>
       )}
     </EntityPageLayout>

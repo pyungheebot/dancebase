@@ -26,8 +26,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AttendanceAnalytics } from "@/components/attendance/attendance-analytics";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
-import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download } from "lucide-react";
+import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import type { EntityContext } from "@/types/entity-context";
 import type {
@@ -375,6 +376,10 @@ export function AttendanceContent({
           <Users className="h-3.5 w-3.5" />
           멤버별 보기
         </TabsTrigger>
+        <TabsTrigger value="analytics" className="gap-1.5">
+          <BarChart3 className="h-3.5 w-3.5" />
+          분석
+        </TabsTrigger>
       </TabsList>
 
       {/* ===== 일정별 보기 ===== */}
@@ -666,6 +671,11 @@ export function AttendanceContent({
             </p>
           )}
         </div>
+      </TabsContent>
+
+      {/* ===== 분석 탭 ===== */}
+      <TabsContent value="analytics">
+        <AttendanceAnalytics ctx={ctx} />
       </TabsContent>
     </Tabs>
   );

@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
+import { MemberBadgeIcons } from "@/components/members/member-badge-icons";
 import { UserMinus, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -198,6 +199,12 @@ export function MemberList({
                 >
                   {displayName}
                 </UserPopoverMenu>
+                <MemberBadgeIcons
+                  groupId={groupId}
+                  userId={member.user_id}
+                  joinedAt={member.joined_at}
+                  role={member.role}
+                />
                 {isMe && (
                   <button
                     onClick={() => startEditNickname(member)}

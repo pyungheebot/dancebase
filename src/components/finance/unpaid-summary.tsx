@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, Bell, ChevronDown, ChevronUp } from "lucide-react";
+import { DelinquencyWorkflow } from "@/components/finance/delinquency-workflow";
 import type { FinanceTransactionWithDetails } from "@/types";
 import type { EntityMember } from "@/types/entity-context";
 
@@ -11,6 +13,10 @@ type Props = {
   members: EntityMember[];
   nicknameMap: Record<string, string>;
   selectedMonth: string; // "YYYY-MM" 또는 "all"
+  // 알림 기능용 추가 props
+  groupId?: string;
+  groupName?: string;
+  canManageFinance?: boolean;
 };
 
 type UnpaidRow = {
@@ -20,7 +26,17 @@ type UnpaidRow = {
   transactionDate: string;
 };
 
-export function UnpaidSummary({ transactions, members, nicknameMap, selectedMonth }: Props) {
+export function UnpaidSummary({
+  transactions,
+  members,
+  nicknameMap,
+  selectedMonth,
+  groupId,
+  groupName,
+  canManageFinance = false,
+}: Props) {
+  const [showWorkflow, setShowWorkflow] = useState(false);
+
   // 미납 집계: 수입(income) 거래 중 paid_by가 null인 것
   const unpaidTransactions = useMemo(() => {
     return transactions.filter((txn) => {
@@ -81,6 +97,9 @@ export function UnpaidSummary({ transactions, members, nicknameMap, selectedMont
       }));
   }, [members, paidMemberIds, nicknameMap, hasPaidByData]);
 
+  // 알림 워크플로우를 표시할 수 있는지: groupId, canManageFinance 및 paid_by 데이터가 있을 때
+  const canShowWorkflow = !!(groupId && canManageFinance && hasPaidByData);
+
   // 표시할 내용이 없으면 렌더링 안 함
   if (unpaidRows.length === 0 && unpaidMembers.length === 0) {
     return null;
@@ -96,11 +115,29 @@ export function UnpaidSummary({ transactions, members, nicknameMap, selectedMont
             미납 현황
           </span>
         </div>
-        {totalUnpaidAmount > 0 && (
-          <span className="text-xs font-semibold tabular-nums text-orange-600 dark:text-orange-400">
-            총 {totalUnpaidAmount.toLocaleString("ko-KR")}원 미납
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {totalUnpaidAmount > 0 && (
+            <span className="text-xs font-semibold tabular-nums text-orange-600 dark:text-orange-400">
+              총 {totalUnpaidAmount.toLocaleString("ko-KR")}원 미납
+            </span>
+          )}
+          {canShowWorkflow && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 text-[11px] px-2 gap-1 border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-orange-950/30"
+              onClick={() => setShowWorkflow((v) => !v)}
+            >
+              <Bell className="h-3 w-3" />
+              미납 알림
+              {showWorkflow ? (
+                <ChevronUp className="h-3 w-3" />
+              ) : (
+                <ChevronDown className="h-3 w-3" />
+              )}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 납부자 미지정 수입 거래 목록 */}
@@ -127,7 +164,7 @@ export function UnpaidSummary({ transactions, members, nicknameMap, selectedMont
       )}
 
       {/* 미납 멤버 목록 (납부자 데이터가 있는 경우에만) */}
-      {unpaidMembers.length > 0 && (
+      {unpaidMembers.length > 0 && !showWorkflow && (
         <div className="space-y-1">
           <p className="text-[10px] text-muted-foreground font-medium">
             미납 멤버 ({unpaidMembers.length}명)
@@ -143,6 +180,20 @@ export function UnpaidSummary({ transactions, members, nicknameMap, selectedMont
               </Badge>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* 미납 알림 워크플로우 (토글) */}
+      {showWorkflow && canShowWorkflow && groupId && groupName && (
+        <div className="border-t border-orange-200 dark:border-orange-900/40 pt-2 mt-1">
+          <DelinquencyWorkflow
+            transactions={transactions}
+            members={members}
+            nicknameMap={nicknameMap}
+            groupId={groupId}
+            groupName={groupName}
+            canManageFinance={canManageFinance}
+          />
         </div>
       )}
     </div>

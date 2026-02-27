@@ -525,7 +525,8 @@ export type NotificationType =
   | "attendance"
   | "join_request"
   | "join_approved"
-  | "join_rejected";
+  | "join_rejected"
+  | "finance_unpaid";
 
 export type Notification = {
   id: string;
@@ -657,4 +658,21 @@ export type Conversation = {
   last_message: string;
   last_message_at: string;
   unread_count: number;
+};
+
+// ============================================
+// Schedule Template (일정 템플릿)
+// ============================================
+
+export type ScheduleTemplate = {
+  id: string;
+  entity_type: "group" | "project";
+  entity_id: string;
+  name: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  duration_minutes: number | null;
+  created_by: string | null;
+  created_at: string;
 };

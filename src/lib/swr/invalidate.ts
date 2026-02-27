@@ -133,3 +133,7 @@ export function invalidateActivityLogs(entityType: string, entityId: string) {
 export function invalidateEntitySettings(entityType: string, entityId: string, key: string) {
   mutate(swrKeys.entitySettings(entityType, entityId, key));
 }
+
+export function invalidateScheduleTemplates(entityType: string, entityId: string) {
+  mutate(swrKeys.scheduleTemplates(entityType, entityId));
+}

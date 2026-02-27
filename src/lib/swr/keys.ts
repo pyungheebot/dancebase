@@ -8,6 +8,7 @@ export const swrKeys = {
   subgroups: (groupId: string) => `/groups/${groupId}/subgroups` as const,
   groupAncestors: (groupId: string) => `/groups/${groupId}/ancestors` as const,
   parentGroupMembers: (parentGroupId: string) => `/groups/${parentGroupId}/members` as const,
+  subgroupPerformance: (groupId: string) => `/groups/${groupId}/subgroup-performance` as const,
 
   // 프로젝트
   myProjects: () => "/my-projects" as const,
@@ -81,4 +82,12 @@ export const swrKeys = {
   // 엔티티 설정
   entitySettings: (entityType: string, entityId: string, key: string) =>
     `/entity-settings/${entityType}/${entityId}/${key}` as const,
+
+  // 일정 템플릿
+  scheduleTemplates: (entityType: string, entityId: string) =>
+    `/schedule-templates/${entityType}/${entityId}` as const,
+
+  // 멤버 뱃지 통계
+  memberBadgeStats: (groupId: string, userId: string) =>
+    `/member-badge-stats/${groupId}/${userId}` as const,
 };

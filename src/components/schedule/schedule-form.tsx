@@ -106,6 +106,12 @@ type ScheduleFormProps = {
   editScope?: RecurrenceScope;
   // 폼 내부 삭제 버튼 숨기기 (외부에서 삭제 처리할 때)
   hideDeleteButton?: boolean;
+  // 템플릿에서 불러온 초기값
+  prefill?: Partial<{
+    title: string;
+    description: string;
+    location: string;
+  }> | null;
 };
 
 export function ScheduleForm({
@@ -118,6 +124,7 @@ export function ScheduleForm({
   onOpenChange: controlledOnOpenChange,
   editScope = "this",
   hideDeleteButton = false,
+  prefill,
 }: ScheduleFormProps) {
   const isEdit = mode === "edit";
 
@@ -141,6 +148,18 @@ export function ScheduleForm({
   const [monthDay, setMonthDay] = useState(1);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  // Create mode: prefill from template
+  useEffect(() => {
+    if (open && !isEdit && prefill) {
+      setFields((prev) => ({
+        ...prev,
+        title: prefill.title ?? prev.title,
+        description: prefill.description ?? prev.description,
+        location: prefill.location ?? prev.location,
+      }));
+    }
+  }, [open, isEdit, prefill]);
 
   // Edit mode: initialize from schedule
   useEffect(() => {

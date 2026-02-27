@@ -404,6 +404,9 @@ export function FinanceContent({
               members={ctx.members}
               nicknameMap={ctx.nicknameMap}
               selectedMonth={selectedMonth}
+              groupId={ctx.groupId}
+              groupName={ctx.header.name}
+              canManageFinance={ctx.permissions.canManageFinance}
             />
 
             {/* 월별 요약 카드 (전체가 아닌 경우) */}

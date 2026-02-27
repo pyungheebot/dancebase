@@ -4,6 +4,7 @@ import { SettingsProvider } from "@/hooks/use-settings";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { SWRProvider } from "@/lib/swr/provider";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,8 +41,10 @@ export default function RootLayout({
         <AuthProvider>
           <SWRProvider>
             <SettingsProvider>
-              {children}
-              <Toaster richColors position="top-center" />
+              <TooltipProvider>
+                {children}
+                <Toaster richColors position="top-center" />
+              </TooltipProvider>
             </SettingsProvider>
           </SWRProvider>
         </AuthProvider>

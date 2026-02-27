@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { Loader2, CalendarDays } from "lucide-react";
 import { CalendarView } from "@/components/schedule/calendar-view";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
+import { ScheduleTemplateList } from "@/components/schedule/schedule-template-list";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { EmptyState } from "@/components/shared/empty-state";
 import type { EntityContext } from "@/types/entity-context";
-import type { Schedule } from "@/types";
+import type { Schedule, ScheduleTemplate } from "@/types";
 
 type ScheduleContentProps = {
   ctx: EntityContext;
@@ -25,6 +26,24 @@ export function ScheduleContent({
 }: ScheduleContentProps) {
   const router = useRouter();
   const [formOpen, setFormOpen] = useState(false);
+  const [templateSheetOpen, setTemplateSheetOpen] = useState(false);
+  const [templatePrefill, setTemplatePrefill] = useState<Partial<{
+    title: string;
+    description: string;
+    location: string;
+  }> | null>(null);
+
+  const handleSelectTemplate = (template: ScheduleTemplate) => {
+    setTemplatePrefill({
+      title: template.title,
+      description: template.description ?? "",
+      location: template.location ?? "",
+    });
+    setFormOpen(true);
+  };
+
+  const entityType = ctx.projectId ? "project" : "group";
+  const entityId = ctx.projectId ?? ctx.groupId;
 
   if (schedulesLoading) {
     return (
@@ -45,15 +64,32 @@ export function ScheduleContent({
       <IndependentToggle ctx={ctx} feature="schedule" featureLabel="일정" />
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xs font-medium">일정</h2>
-        {ctx.permissions.canEdit && (
-          <ScheduleForm
-            groupId={ctx.groupId}
-            projectId={ctx.projectId}
-            onCreated={refetch}
-            open={formOpen}
-            onOpenChange={setFormOpen}
+        <div className="flex items-center gap-1.5">
+          <ScheduleTemplateList
+            entityType={entityType}
+            entityId={entityId}
+            canEdit={ctx.permissions.canEdit}
+            open={templateSheetOpen}
+            onOpenChange={setTemplateSheetOpen}
+            onSelectTemplate={handleSelectTemplate}
           />
-        )}
+          {ctx.permissions.canEdit && (
+            <ScheduleForm
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+              onCreated={() => {
+                setTemplatePrefill(null);
+                refetch();
+              }}
+              open={formOpen}
+              onOpenChange={(v) => {
+                setFormOpen(v);
+                if (!v) setTemplatePrefill(null);
+              }}
+              prefill={templatePrefill}
+            />
+          )}
+        </div>
       </div>
 
       {schedules.length === 0 ? (
