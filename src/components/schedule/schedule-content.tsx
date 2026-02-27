@@ -18,6 +18,7 @@ import { PreRsvpPoll } from "@/components/schedule/pre-rsvp-poll";
 import { ScheduleIcsSubscribe } from "@/components/schedule/schedule-ics-subscribe";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { EmptyState } from "@/components/shared/empty-state";
+import { SessionTimerCard } from "@/components/schedule/session-timer-card";
 import { usePreRsvp } from "@/hooks/use-pre-rsvp";
 import type { EntityContext } from "@/types/entity-context";
 import type { Schedule, ScheduleTemplate } from "@/types";
@@ -160,6 +161,10 @@ export function ScheduleContent({
           <OptimalTimeHint groupId={ctx.groupId} projectId={ctx.projectId} />
         </div>
       )}
+
+      <div className="mb-3">
+        <SessionTimerCard groupId={ctx.groupId} />
+      </div>
 
       <Tabs defaultValue="monthly" className="w-full">
         <TabsList className="h-7 mb-3">

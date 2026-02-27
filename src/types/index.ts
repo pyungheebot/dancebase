@@ -4719,3 +4719,76 @@ export type WarmupRoutine = {
   totalDuration: number;   // 초 단위 합계
   createdAt: string;
 };
+
+// ============================================
+// Attendance Streak (출석 스트릭 트래커)
+// ============================================
+
+export type AttendanceStreakData = {
+  currentStreak: number;
+  longestStreak: number;
+  totalPresent: number;
+  streakDates: string[];     // 현재 스트릭에 포함된 날짜들 (ISO)
+  monthlyGrid: { date: string; present: boolean }[];  // 최근 90일 그리드
+};
+
+// ============================================
+// Session Timer (연습 세션 타이머)
+// ============================================
+
+export type SessionTimerSegment = {
+  id: string;
+  label: string;         // "워밍업", "기본기" 등
+  durationMinutes: number;
+  color: string;         // 구간 색상 (hex)
+};
+
+export type SessionTimerPreset = {
+  id: string;
+  title: string;         // "2시간 기본 연습" 등
+  segments: SessionTimerSegment[];
+  totalMinutes: number;
+  createdAt: string;
+};
+
+// ============================================
+// Kudos Board (멤버 칭찬 보드)
+// ============================================
+
+export type KudosCategory = "teamwork" | "effort" | "creativity" | "leadership" | "improvement";
+
+export type KudosMessage = {
+  id: string;
+  fromName: string;
+  toName: string;
+  category: KudosCategory;
+  message: string;       // 최대 100자
+  createdAt: string;
+};
+
+// ============================================
+// Time Capsule (타임캡슐)
+// ============================================
+
+export type TimeCapsuleMessage = {
+  id: string;
+  author: string;       // 작성자 이름
+  message: string;      // 메시지 내용
+  openDate: string;     // YYYY-MM-DD 개봉일
+  createdAt: string;
+  isOpened: boolean;
+};
+
+// ============================================
+// Project Role Assignment Board (프로젝트 역할 배정 보드)
+// ============================================
+
+export type ProjectRoleAssignment = {
+  id: string;
+  roleName: string;        // "메인 안무", "음향 담당" 등
+  assignees: string[];     // 담당자 이름 배열
+  status: "open" | "filled" | "completed";
+  color: string;           // 카드 색상 (hex)
+  note: string;
+  createdAt: string;
+};
