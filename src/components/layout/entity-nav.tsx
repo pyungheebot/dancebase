@@ -64,11 +64,11 @@ export function EntityNav({ ctx }: EntityNavProps) {
     // feature 플래그 필터
     if (tab.feature && !features[tab.feature]) return false;
 
-    // 회비: 그룹은 canViewFinance 권한도 필요
+    // 회비: 그룹은 canViewFinance 권한도 필요 (일반 멤버는 숨김)
     if (tab.key === "finances" && !isProject && !permissions.canViewFinance) return false;
 
-    // 설정: canEdit 권한 필요
-    if (tab.key === "settings" && !permissions.canEdit) return false;
+    // 설정: canManageSettings 권한 필요 (리더만 접근 가능, 일반 멤버·서브리더 숨김)
+    if (tab.key === "settings" && !permissions.canManageSettings) return false;
 
     return true;
   });

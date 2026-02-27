@@ -25,8 +25,9 @@ import {
 } from "@/components/ui/select";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { SubgroupInviteFromParent } from "@/components/subgroups/subgroup-invite-from-parent";
-import { Plus, Tags, Trash2 } from "lucide-react";
+import { Download, Plus, Tags, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { exportToCsv } from "@/lib/export-csv";
 import { getCategoryColorClasses } from "@/types";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
@@ -77,6 +78,17 @@ export function MembersContent({
 }
 
 // ============================================
+// 공통 유틸
+// ============================================
+
+/** EntityMember role → 한글 */
+function roleLabel(role: string): string {
+  if (role === "leader") return "리더";
+  if (role === "sub_leader") return "서브리더";
+  return "멤버";
+}
+
+// ============================================
 // 그룹 멤버 콘텐츠
 // ============================================
 
@@ -95,6 +107,17 @@ function GroupMembersContent({
 }) {
   const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const handleExportCsv = () => {
+    const headers = ["이름", "역할", "가입일"];
+    const rows = ctx.members.map((m) => [
+      m.nickname || m.profile.name,
+      roleLabel(m.role),
+      m.joinedAt ? m.joinedAt.slice(0, 10) : "",
+    ]);
+    exportToCsv(`멤버목록_${ctx.header.name}`, headers, rows);
+    toast.success("CSV 파일이 다운로드되었습니다");
+  };
 
   // NormalizedMember → GroupMemberWithProfile 역변환
   const allMembersForList: GroupMemberWithProfile[] = ctx.members.map((m) => ({
@@ -128,28 +151,41 @@ function GroupMembersContent({
 
   return (
     <>
-      {ctx.permissions.canEdit && (
-        <div className="flex items-center justify-end gap-1 mb-2">
+      <div className="flex items-center justify-end gap-1 mb-2">
+        {ctx.permissions.canManageMembers && (
           <Button
             variant="outline"
             size="sm"
             className="h-6 text-[11px] px-2"
-            onClick={() => setCategoryManagerOpen(true)}
+            onClick={handleExportCsv}
           >
-            <Tags className="h-3 w-3 mr-0.5" />
-            카테고리
+            <Download className="h-3 w-3 mr-0.5" />
+            CSV 내보내기
           </Button>
-          {ctx.parentGroupId && (
-            <SubgroupInviteFromParent
-              subgroupId={ctx.groupId}
-              parentGroupId={ctx.parentGroupId}
-              currentMemberIds={new Set(ctx.members.map((m) => m.userId))}
-              onInvited={onUpdate}
-            />
-          )}
-          {inviteCode && <InviteModal inviteCode={inviteCode} />}
-        </div>
-      )}
+        )}
+        {ctx.permissions.canEdit && (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 text-[11px] px-2"
+              onClick={() => setCategoryManagerOpen(true)}
+            >
+              <Tags className="h-3 w-3 mr-0.5" />
+              카테고리
+            </Button>
+            {ctx.parentGroupId && (
+              <SubgroupInviteFromParent
+                subgroupId={ctx.groupId}
+                parentGroupId={ctx.parentGroupId}
+                currentMemberIds={new Set(ctx.members.map((m) => m.userId))}
+                onInvited={onUpdate}
+              />
+            )}
+            {inviteCode && <InviteModal inviteCode={inviteCode} />}
+          </>
+        )}
+      </div>
 
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xs font-medium">멤버 관리</h2>
@@ -222,6 +258,17 @@ function ProjectMembersContent({
   const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
   const supabase = createClient();
 
+  const handleExportCsv = () => {
+    const headers = ["이름", "역할", "가입일"];
+    const rows = ctx.members.map((m) => [
+      m.nickname || m.profile.name,
+      roleLabel(m.role),
+      m.joinedAt ? m.joinedAt.slice(0, 10) : "",
+    ]);
+    exportToCsv(`멤버목록_${ctx.header.name}`, headers, rows);
+    toast.success("CSV 파일이 다운로드되었습니다");
+  };
+
   const projectMemberIds = new Set(ctx.members.map((m) => m.userId));
   const availableMembers = parentMembers.filter((m) => !projectMemberIds.has(m.userId));
 
@@ -269,7 +316,19 @@ function ProjectMembersContent({
     <>
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-base font-semibold">멤버 ({ctx.members.length})</h2>
-        {ctx.permissions.canEdit && availableMembers.length > 0 && (
+        <div className="flex items-center gap-1">
+          {ctx.permissions.canManageMembers && ctx.members.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={handleExportCsv}
+            >
+              <Download className="h-3 w-3 mr-1" />
+              CSV 내보내기
+            </Button>
+          )}
+          {ctx.permissions.canEdit && availableMembers.length > 0 && (
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="h-7 text-xs">
@@ -304,7 +363,8 @@ function ProjectMembersContent({
               </div>
             </DialogContent>
           </Dialog>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="rounded-lg border divide-y">

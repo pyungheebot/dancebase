@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle, UserPlus, Camera, LayoutList, Trash2 } from "lucide-react";
+import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle, UserPlus, Camera, LayoutList, Trash2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import type { EntityContext } from "@/types/entity-context";
 import type {
@@ -52,8 +52,10 @@ import {
 import { useSharedGroups } from "@/hooks/use-projects";
 import { useGroups } from "@/hooks/use-groups";
 import { useBoardCategories } from "@/hooks/use-board";
-import { invalidateBoardCategories } from "@/lib/swr/invalidate";
+import { invalidateBoardCategories, invalidateGroup } from "@/lib/swr/invalidate";
 import { createNotification } from "@/lib/notifications";
+import { useAuth } from "@/hooks/use-auth";
+import { ActivityLogSection } from "@/components/settings/activity-log-section";
 
 type SettingsContentProps = {
   ctx: EntityContext;
@@ -103,6 +105,12 @@ export function SettingsContent({
   const [dissolveNameInput, setDissolveNameInput] = useState("");
   const [leavingGroup, setLeavingGroup] = useState(false);
   const [dissolvingGroup, setDissolvingGroup] = useState(false);
+
+  // 현재 로그인 사용자
+  const { user } = useAuth();
+
+  // 역할 변경 state
+  const [updatingRoleUserId, setUpdatingRoleUserId] = useState<string | null>(null);
 
   // 공유 그룹 관리 (프로젝트 전용)
   const sharedGroupsHook = useSharedGroups(ctx.projectId ?? "");
@@ -168,6 +176,27 @@ export function SettingsContent({
     };
     fetchJoinRequests();
   }, [supabase, ctx.groupId, isGroup, ctx.permissions.canEdit]);
+
+  // ============================================
+  // 역할 관리 핸들러
+  // ============================================
+
+  const handleRoleChange = async (targetUserId: string, newRole: "leader" | "sub_leader" | "member") => {
+    setUpdatingRoleUserId(targetUserId);
+    const { error } = await supabase
+      .from("group_members")
+      .update({ role: newRole })
+      .eq("group_id", ctx.groupId)
+      .eq("user_id", targetUserId);
+    if (error) {
+      toast.error("역할 변경에 실패했습니다");
+    } else {
+      const roleLabel = newRole === "leader" ? "리더" : newRole === "sub_leader" ? "서브리더" : "멤버";
+      toast.success(`역할이 ${roleLabel}로 변경되었습니다`);
+      invalidateGroup(ctx.groupId);
+    }
+    setUpdatingRoleUserId(null);
+  };
 
   // ============================================
   // 게시판 카테고리 핸들러
@@ -508,9 +537,8 @@ export function SettingsContent({
   const { features } = ctx;
 
   // 현재 로그인 사용자의 그룹 내 역할 판별
-  // ctx.permissions.canEdit이 true이면 leader로 간주 (그룹 설정에서만 유효)
   const myGroupRole = isGroup
-    ? (ctx.permissions.canEdit ? "leader" : "member")
+    ? (ctx.members.find((m) => m.userId === user?.id)?.role ?? (ctx.permissions.canEdit ? "leader" : "member"))
     : null;
   const isGroupLeader = myGroupRole === "leader";
 
@@ -753,6 +781,75 @@ export function SettingsContent({
             </Card>
           )}
 
+          {/* 권한 관리 (리더 전용) */}
+          {isGroupLeader && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xs font-semibold flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  권한 관리
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className="text-[11px] text-muted-foreground mb-3">
+                  멤버의 역할을 변경합니다. 리더 본인의 역할은 변경할 수 없습니다.
+                </p>
+                {ctx.members.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-2 text-center">멤버가 없습니다</p>
+                ) : (
+                  ctx.members.map((member) => {
+                    const isSelf = member.userId === user?.id;
+                    const isUpdating = updatingRoleUserId === member.userId;
+                    return (
+                      <div
+                        key={member.userId}
+                        className="flex items-center justify-between px-2.5 py-2 rounded-md border bg-muted/30"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Avatar className="h-7 w-7 shrink-0">
+                            <AvatarImage src={member.profile.avatar_url ?? undefined} alt={member.profile.name} />
+                            <AvatarFallback className="text-[10px]">
+                              {member.profile.name?.charAt(0)?.toUpperCase() || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium truncate">
+                              {member.nickname || member.profile.name}
+                              {isSelf && (
+                                <span className="ml-1 text-[10px] text-muted-foreground">(나)</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isUpdating && (
+                            <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                          )}
+                          <Select
+                            value={member.role}
+                            onValueChange={(val) =>
+                              handleRoleChange(member.userId, val as "leader" | "sub_leader" | "member")
+                            }
+                            disabled={isSelf || isUpdating}
+                          >
+                            <SelectTrigger className="h-7 text-xs w-[90px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="leader" className="text-xs">리더</SelectItem>
+                              <SelectItem value="sub_leader" className="text-xs">서브리더</SelectItem>
+                              <SelectItem value="member" className="text-xs">멤버</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* 게시판 카테고리 관리 (리더 전용) */}
           {isGroupLeader && features.board && (
             <Card>
@@ -826,6 +923,11 @@ export function SettingsContent({
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* 활동 기록 (리더 전용) */}
+          {isGroupLeader && (
+            <ActivityLogSection entityType="group" entityId={ctx.groupId} />
           )}
 
           <Button onClick={handleSave} disabled={saving || !groupForm.name.trim()} className="w-full">

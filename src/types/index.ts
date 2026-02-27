@@ -300,6 +300,18 @@ export type FinanceTransactionWithDetails = FinanceTransaction & {
 
 export type FinanceRole = "manager" | "viewer" | null;
 
+export type FinanceBudget = {
+  id: string;
+  entity_type: "group" | "project";
+  entity_id: string;
+  year_month: string;
+  budget_income: number;
+  budget_expense: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 // ============================================
 // Project (프로젝트)
 // ============================================
@@ -550,6 +562,49 @@ export type ScheduleRsvpSummary = {
   not_going: number;
   maybe: number;
   my_response: ScheduleRsvpResponse | null;
+};
+
+// ============================================
+// Activity Log (활동 감사 로그)
+// ============================================
+
+export type ActivityLogAction =
+  | "member_joined"
+  | "member_left"
+  | "member_removed"
+  | "role_changed"
+  | "settings_changed"
+  | "post_deleted"
+  | "project_created"
+  | "project_deleted"
+  | "member_approved"
+  | "member_rejected";
+
+export const ACTIVITY_ACTION_LABELS: Record<ActivityLogAction, string> = {
+  member_joined: "멤버 가입",
+  member_left: "멤버 탈퇴",
+  member_removed: "멤버 강제 탈퇴",
+  role_changed: "역할 변경",
+  settings_changed: "설정 변경",
+  post_deleted: "게시글 삭제",
+  project_created: "프로젝트 생성",
+  project_deleted: "프로젝트 삭제",
+  member_approved: "가입 승인",
+  member_rejected: "가입 거부",
+};
+
+export type ActivityLog = {
+  id: string;
+  entity_type: "group" | "project";
+  entity_id: string;
+  user_id: string | null;
+  action: string;
+  details: Record<string, unknown> | null;
+  created_at: string;
+};
+
+export type ActivityLogWithProfile = ActivityLog & {
+  profiles: Pick<Profile, "id" | "name" | "avatar_url"> | null;
 };
 
 // ============================================

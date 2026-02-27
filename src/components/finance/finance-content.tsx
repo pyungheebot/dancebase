@@ -7,6 +7,7 @@ import { FinanceCategoryManager } from "@/components/groups/finance-category-man
 import { FinancePermissionManager } from "@/components/groups/finance-permission-manager";
 import { FinanceStats } from "@/components/groups/finance-stats";
 import { FinancePaymentStatus } from "@/components/finance/finance-payment-status";
+import { FinanceBudgetTab } from "@/components/finance/finance-budget-tab";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -272,7 +273,7 @@ export function FinanceContent({
         byCategory={stats.byCategory}
       />
 
-      {/* 거래 내역 / 납부 현황 탭 */}
+      {/* 거래 내역 / 납부 현황 / 예산 탭 */}
       <div className="mt-3">
         <Tabs defaultValue="transactions">
           <TabsList className="w-full h-7 mb-3">
@@ -281,6 +282,9 @@ export function FinanceContent({
             </TabsTrigger>
             <TabsTrigger value="payment-status" className="flex-1 text-xs">
               납부 현황
+            </TabsTrigger>
+            <TabsTrigger value="budget" className="flex-1 text-xs">
+              예산
             </TabsTrigger>
           </TabsList>
 
@@ -449,6 +453,15 @@ export function FinanceContent({
               transactions={transactions}
               members={ctx.members}
               nicknameMap={ctx.nicknameMap}
+            />
+          </TabsContent>
+
+          {/* 예산 탭 */}
+          <TabsContent value="budget" className="mt-0">
+            <FinanceBudgetTab
+              ctx={ctx}
+              canManage={canManage}
+              transactions={transactions}
             />
           </TabsContent>
         </Tabs>

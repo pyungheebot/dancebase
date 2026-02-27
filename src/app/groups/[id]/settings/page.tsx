@@ -14,7 +14,7 @@ export default function GroupSettingsPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const { ctx, loading } = useGroupEntity(id);
 
-  if (!loading && ctx && !ctx.permissions.canEdit) {
+  if (!loading && ctx && !ctx.permissions.canManageSettings) {
     return (
       <AppLayout>
         <div className="px-6 py-6 text-center">

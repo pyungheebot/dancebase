@@ -34,6 +34,10 @@ export const swrKeys = {
   finance: (groupId: string, projectId?: string | null) =>
     `/groups/${groupId}/finance${projectId ? `?project=${projectId}` : ""}` as const,
 
+  // 재정 예산
+  financeBudget: (entityType: string, entityId: string, yearMonth: string) =>
+    `/finance-budget/${entityType}/${entityId}/${yearMonth}` as const,
+
   // 알림
   notifications: () => "/notifications" as const,
   unreadNotificationCount: () => "/notifications/unread-count" as const,
@@ -64,4 +68,8 @@ export const swrKeys = {
   // 가입 신청
   pendingJoinRequestCount: (groupId: string) =>
     `/groups/${groupId}/join-requests/pending-count` as const,
+
+  // 활동 감사 로그
+  activityLogs: (entityType: string, entityId: string) =>
+    `/activity-logs/${entityType}/${entityId}` as const,
 };

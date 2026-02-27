@@ -37,6 +37,10 @@ export function invalidateFinance(groupId: string, projectId?: string | null) {
   }
 }
 
+export function invalidateFinanceBudget(entityType: string, entityId: string, yearMonth: string) {
+  mutate(swrKeys.financeBudget(entityType, entityId, yearMonth));
+}
+
 export function invalidateBoard(groupId: string) {
   // board 키는 category를 포함하므로 prefix 매칭으로 무효화
   mutate(
@@ -112,4 +116,8 @@ export function invalidateNotifications() {
 
 export function invalidatePendingJoinRequestCount(groupId: string) {
   mutate(swrKeys.pendingJoinRequestCount(groupId));
+}
+
+export function invalidateActivityLogs(entityType: string, entityId: string) {
+  mutate(swrKeys.activityLogs(entityType, entityId));
 }

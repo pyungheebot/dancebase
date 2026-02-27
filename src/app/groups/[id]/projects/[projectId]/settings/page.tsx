@@ -16,7 +16,7 @@ export default function ProjectSettingsPage({
   const { id, projectId } = use(params);
   const { ctx, loading } = useProjectEntity(id, projectId);
 
-  if (!loading && ctx && !ctx.permissions.canEdit) {
+  if (!loading && ctx && !ctx.permissions.canManageSettings) {
     return (
       <AppLayout>
         <div className="px-6 py-8 text-center">
