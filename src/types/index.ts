@@ -894,6 +894,21 @@ export const DEFAULT_GROUP_RULES_DATA: GroupRulesData = {
   updatedAt: "",
 };
 
+// ============================================
+// Group Notices (그룹 공지 배너)
+// ============================================
+
+export type NoticePriority = "urgent" | "important" | "normal";
+
+export type GroupNotice = {
+  id: string;
+  title: string;
+  content: string;
+  priority: NoticePriority;
+  createdAt: string;
+  expiresAt: string | null;
+};
+
 export type Conversation = {
   partner_id: string;
   partner_name: string;
@@ -1862,4 +1877,141 @@ export type OnboardingProgressResult = {
   averageCompletionRate: number;
   totalCount: number;
   allDoneCount: number;
+};
+
+// ============================================
+// Member Filter Preset (멤버 필터 프리셋)
+// ============================================
+
+/** 멤버 역할 타입 */
+export type MemberFilterRole = "leader" | "sub_leader" | "member";
+
+/** 멤버 활동 상태 */
+export type MemberActivityStatus = "active" | "inactive" | "all";
+
+/** 멤버 필터 조건 */
+export type MemberFilterCondition = {
+  role: MemberFilterRole[];
+  joinedAfter: string | null;
+  joinedBefore: string | null;
+  minAttendanceRate: number | null;
+  maxAttendanceRate: number | null;
+  activityStatus: MemberActivityStatus;
+};
+
+/** 멤버 필터 프리셋 */
+export type MemberFilterPreset = {
+  id: string;
+  name: string;
+  filters: MemberFilterCondition;
+  isDefault?: boolean;
+  createdAt: string;
+};
+
+// ============================================
+// Member Pairing (스마트 멤버 페어링, localStorage 기반)
+// ============================================
+
+/** 페어링 추천 카드의 유사 항목 배지 유형 */
+export type PairingSimilarityTag = "출석률 유사" | "활동 유사" | "가입 시기 유사";
+
+/** 단일 페어링 추천 결과 */
+export type PairingRecommendation = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  /** 호환성 점수: 0~100 */
+  score: number;
+  /** 유사 항목 배지 목록 */
+  similarityTags: PairingSimilarityTag[];
+};
+
+/** localStorage에 저장되는 페어링 상태 */
+export type PairingState = {
+  /** 숨김 처리된 userId 목록 */
+  dismissed: string[];
+  /** 수락된 userId 목록 */
+  accepted: string[];
+};
+
+// ============================================
+// Member Activity Distribution (멤버 활동 분포도)
+// ============================================
+
+/** 멤버 활동 등급 */
+export type MemberActivityGrade =
+  | "매우 활발"
+  | "활발"
+  | "보통"
+  | "저조";
+
+/** 멤버별 활동 점수 항목 */
+export type MemberActivityScore = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  /** 총 활동 점수 (출석 3점, 게시글 2점, 댓글 1점, RSVP 1점) */
+  totalScore: number;
+  /** 세부 점수 내역 */
+  breakdown: {
+    attendance: number;
+    posts: number;
+    comments: number;
+    rsvp: number;
+  };
+  grade: MemberActivityGrade;
+  rank: number;
+};
+
+/** 등급별 집계 */
+export type MemberActivityGradeSummary = {
+  grade: MemberActivityGrade;
+  count: number;
+  color: string;
+};
+
+/** 멤버 활동 분포도 전체 결과 */
+export type MemberActivityDistribution = {
+  /** 등급별 멤버 수 집계 (4개 등급) */
+  gradeSummary: MemberActivityGradeSummary[];
+  /** TOP 5 활동 멤버 */
+  top5: MemberActivityScore[];
+  /** 전체 멤버 수 */
+  totalMembers: number;
+  /** 그룹 평균 활동 점수 */
+  avgScore: number;
+};
+
+// ============================================
+// Group Activity Trends
+// ============================================
+
+/** 월별 그룹 활동 트렌드 데이터 */
+export type MonthlyActivityTrend = {
+  /** YYYY-MM 형식 */
+  month: string;
+  /** 한글 월 표시 (예: "9월") */
+  label: string;
+  /** 해당 월 일정 수 */
+  scheduleCount: number;
+  /** 해당 월 출석률 (0~100, %) */
+  attendanceRate: number;
+  /** 해당 월 게시글 수 */
+  postCount: number;
+  /** 해당 월 댓글 수 */
+  commentCount: number;
+};
+
+/** 지표별 전월 대비 변화율 */
+export type ActivityTrendChange = {
+  scheduleChange: number | null;
+  attendanceChange: number | null;
+  postChange: number | null;
+  commentChange: number | null;
+};
+
+/** useGroupActivityTrends 훅 반환 타입 */
+export type GroupActivityTrendsResult = {
+  monthly: MonthlyActivityTrend[];
+  change: ActivityTrendChange;
 };

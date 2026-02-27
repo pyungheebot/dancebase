@@ -399,3 +399,11 @@ export function invalidateMemberComparison(groupId: string) {
 export function invalidateOnboardingProgressTracker(groupId: string) {
   mutate(swrKeys.onboardingProgressTracker(groupId));
 }
+
+export function invalidateGroupActivityTrends(groupId: string) {
+  mutate(swrKeys.groupActivityTrends(groupId));
+}
+
+export function invalidateMemberActivityDistribution(groupId: string) {
+  mutate(swrKeys.memberActivityDistribution(groupId));
+}

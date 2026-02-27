@@ -383,4 +383,16 @@ export const swrKeys = {
   // 멤버 온보딩 완료도 추적
   onboardingProgressTracker: (groupId: string) =>
     `/groups/${groupId}/onboarding-progress-tracker` as const,
+
+  // 스마트 멤버 페어링 (호환성 점수 계산용 원시 데이터)
+  memberPairing: (groupId: string) =>
+    `/groups/${groupId}/member-pairing` as const,
+
+  // 그룹 활동 트렌드 (최근 6개월)
+  groupActivityTrends: (groupId: string) =>
+    `group-activity-trends-${groupId}` as const,
+
+  // 멤버 활동 분포도 (최근 30일 활동 점수 기반)
+  memberActivityDistribution: (groupId: string) =>
+    `/groups/${groupId}/member-activity-distribution` as const,
 };
