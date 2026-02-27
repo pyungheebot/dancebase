@@ -5,7 +5,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useSchedules } from "@/hooks/use-schedule";
 import { useEntityDashboardSettings } from "@/hooks/use-entity-dashboard-settings";
+import { useDashboardOrder } from "@/hooks/use-dashboard-order";
 import { DashboardSettingsDialog } from "@/components/groups/dashboard-settings-dialog";
+import { DashboardCardReorder } from "@/components/dashboard/dashboard-card-reorder";
 import { ScheduleCard, AttendanceCard, PostsCard, FinanceCard } from "@/components/dashboard/dashboard-cards";
 import { SubgroupsCard } from "@/components/dashboard/subgroups-card";
 import { ProjectSummaryCards } from "@/components/dashboard/project-summary-cards";
@@ -79,7 +81,19 @@ export function DashboardContent({ ctx, financeRole }: DashboardContentProps) {
     }
   }, [isGroup, ctx.permissions.canViewFinance, features]);
 
-  const { visibleCards, allCards, saveSettings, saving } = useEntityDashboardSettings({
+  // 카드 순서 훅 (localStorage 기반)
+  const {
+    orderedCards,
+    moveUp: moveOrderUp,
+    moveDown: moveOrderDown,
+    resetOrder,
+    sortVisibleCards,
+  } = useDashboardOrder({
+    groupId: entityId,
+    entityType: isGroup ? "group" : "project",
+  });
+
+  const { visibleCards: rawVisibleCards, allCards, saveSettings, saving } = useEntityDashboardSettings({
     entityId,
     memberTable: isGroup ? "group_members" : "project_members",
     memberIdField: isGroup ? "group_id" : "project_id",
@@ -88,6 +102,9 @@ export function DashboardContent({ ctx, financeRole }: DashboardContentProps) {
     filterFn,
     disabledFn,
   });
+
+  // visibleCards를 사용자 지정 순서로 정렬
+  const visibleCards = sortVisibleCards(rawVisibleCards);
 
   // 대시보드 데이터
   const [recentPosts, setRecentPosts] = useState<BoardPostWithDetails[]>([]);
@@ -212,7 +229,13 @@ export function DashboardContent({ ctx, financeRole }: DashboardContentProps) {
         <ProjectSummaryCards ctx={ctx} schedules={schedules} />
       )}
 
-      <div className={`flex justify-end ${isGroup ? "mb-3" : "-mt-2 mb-2"}`}>
+      <div className={`flex justify-end items-center gap-1 ${isGroup ? "mb-3" : "-mt-2 mb-2"}`}>
+        <DashboardCardReorder
+          cards={orderedCards}
+          onMoveUp={moveOrderUp}
+          onMoveDown={moveOrderDown}
+          onReset={resetOrder}
+        />
         <DashboardSettingsDialog
           allCards={allCards}
           saving={saving}

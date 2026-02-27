@@ -13,6 +13,7 @@ import { PaymentReminderSection } from "@/components/finance/payment-reminder-se
 import { FinanceReminderSettings } from "@/components/finance/finance-reminder-settings";
 import { FinanceSplitSection } from "@/components/finance/finance-split-section";
 import { ProjectCostAnalytics } from "@/components/finance/project-cost-analytics";
+import { ExpenseTemplateManager } from "@/components/finance/expense-template-manager";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -294,6 +295,11 @@ export function FinanceContent({
         <h2 className="text-xs font-medium">회비 관리</h2>
         {isManager && (
           <div className="flex gap-1">
+            <ExpenseTemplateManager
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+              categories={categories}
+            />
             <FinanceCategoryManager
               groupId={ctx.groupId}
               projectId={ctx.projectId}
@@ -320,6 +326,11 @@ export function FinanceContent({
         )}
         {!isManager && canManage && (
           <div className="flex gap-1.5">
+            <ExpenseTemplateManager
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+              categories={categories}
+            />
             <FinanceCategoryManager
               groupId={ctx.groupId}
               projectId={ctx.projectId}

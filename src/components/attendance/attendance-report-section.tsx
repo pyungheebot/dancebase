@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { useAttendanceReport, type ReportPeriod } from "@/hooks/use-attendance-report";
 import { exportToCsv } from "@/lib/export-csv";
 import { toast } from "sonner";
+import { AttendanceExportButton } from "@/components/attendance/attendance-export-button";
 import type { EntityContext } from "@/types/entity-context";
 
 type Props = {
@@ -165,6 +166,14 @@ export function AttendanceReportSection({ ctx }: Props) {
             <Download className="h-3 w-3" />
             CSV
           </Button>
+
+          {/* PDF 내보내기 */}
+          <AttendanceExportButton
+            groupId={ctx.groupId}
+            groupName={ctx.header.name}
+            members={ctx.members}
+            projectId={ctx.projectId}
+          />
         </div>
       </div>
 

@@ -244,3 +244,7 @@ export function invalidateRecentActivityFeed() {
     { revalidate: true }
   );
 }
+
+export function invalidateLocationHistory(groupId: string) {
+  mutate(swrKeys.locationSuggestions(groupId));
+}

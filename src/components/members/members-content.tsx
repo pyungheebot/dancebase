@@ -41,6 +41,8 @@ import { SubgroupInviteFromParent } from "@/components/subgroups/subgroup-invite
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, Download, Plus, Search, Tags, Trash2, TrendingUp, Users } from "lucide-react";
 import { InviteGroupMembersDialog } from "@/components/members/invite-group-members-dialog";
+import { MemberAdvancedFilter } from "@/components/members/member-advanced-filter";
+import { useMemberFilter } from "@/hooks/use-member-filter";
 import { toast } from "sonner";
 import { exportToCsv } from "@/lib/export-csv";
 import { getCategoryColorClasses } from "@/types";
@@ -134,6 +136,18 @@ function GroupMembersContent({
   const [roleFilter, setRoleFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("name");
 
+  // 고급 필터
+  const {
+    filter: advFilter,
+    activeCount: advActiveCount,
+    toggleRole: advToggleRole,
+    setJoinedFrom: advSetJoinedFrom,
+    setJoinedTo: advSetJoinedTo,
+    setAttendanceMin: advSetAttendanceMin,
+    setAttendanceMax: advSetAttendanceMax,
+    resetFilter: advResetFilter,
+  } = useMemberFilter();
+
   // 활동 추세 차트용 선택 멤버
   const [trendUserId, setTrendUserId] = useState<string>("");
 
@@ -206,9 +220,28 @@ function GroupMembersContent({
       });
     }
 
-    // 역할 필터
+    // 역할 필터 (기본 Select)
     if (roleFilter !== "all") {
       result = result.filter((m) => m.role === roleFilter);
+    }
+
+    // 고급 필터 — 역할 (체크박스 복수 선택)
+    if (advFilter.roles.length > 0) {
+      result = result.filter((m) =>
+        advFilter.roles.includes(m.role as "leader" | "sub_leader" | "member")
+      );
+    }
+
+    // 고급 필터 — 가입일 범위
+    if (advFilter.joinedFrom) {
+      result = result.filter(
+        (m) => m.joined_at && m.joined_at.slice(0, 10) >= advFilter.joinedFrom
+      );
+    }
+    if (advFilter.joinedTo) {
+      result = result.filter(
+        (m) => m.joined_at && m.joined_at.slice(0, 10) <= advFilter.joinedTo
+      );
     }
 
     // 정렬
@@ -225,9 +258,13 @@ function GroupMembersContent({
     });
 
     return result;
-  }, [allMembersForList, selectedCategory, categories, searchQuery, roleFilter, sortOrder]);
+  }, [allMembersForList, selectedCategory, categories, searchQuery, roleFilter, sortOrder, advFilter]);
 
-  const isGrouped = selectedCategory === "all" && !searchQuery.trim() && roleFilter === "all";
+  const isGrouped =
+    selectedCategory === "all" &&
+    !searchQuery.trim() &&
+    roleFilter === "all" &&
+    advActiveCount === 0;
   const myRole = ctx.permissions.canEdit ? "leader" : "member";
 
   // 선택 가능한 멤버 ids (자기 자신 제외)
@@ -395,6 +432,16 @@ function GroupMembersContent({
             <SelectItem value="joined">가입일순</SelectItem>
           </SelectContent>
         </Select>
+        <MemberAdvancedFilter
+          filter={advFilter}
+          activeCount={advActiveCount}
+          onToggleRole={advToggleRole}
+          onSetJoinedFrom={advSetJoinedFrom}
+          onSetJoinedTo={advSetJoinedTo}
+          onSetAttendanceMin={advSetAttendanceMin}
+          onSetAttendanceMax={advSetAttendanceMax}
+          onReset={advResetFilter}
+        />
       </div>
 
       {/* 일괄 선택 툴바 — canManageMembers일 때만 */}
@@ -609,6 +656,18 @@ function ProjectMembersContent({
   const [roleFilter, setRoleFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState("name");
 
+  // 고급 필터
+  const {
+    filter: advFilter,
+    activeCount: advActiveCount,
+    toggleRole: advToggleRole,
+    setJoinedFrom: advSetJoinedFrom,
+    setJoinedTo: advSetJoinedTo,
+    setAttendanceMin: advSetAttendanceMin,
+    setAttendanceMax: advSetAttendanceMax,
+    resetFilter: advResetFilter,
+  } = useMemberFilter();
+
   // 스크롤 위치 복원
   useScrollRestore();
 
@@ -680,9 +739,28 @@ function ProjectMembersContent({
       });
     }
 
-    // 역할 필터
+    // 역할 필터 (기본 Select)
     if (roleFilter !== "all") {
       result = result.filter((m) => m.role === roleFilter);
+    }
+
+    // 고급 필터 — 역할 (체크박스 복수 선택)
+    if (advFilter.roles.length > 0) {
+      result = result.filter((m) =>
+        advFilter.roles.includes(m.role as "leader" | "sub_leader" | "member")
+      );
+    }
+
+    // 고급 필터 — 가입일 범위
+    if (advFilter.joinedFrom) {
+      result = result.filter(
+        (m) => m.joinedAt && m.joinedAt.slice(0, 10) >= advFilter.joinedFrom
+      );
+    }
+    if (advFilter.joinedTo) {
+      result = result.filter(
+        (m) => m.joinedAt && m.joinedAt.slice(0, 10) <= advFilter.joinedTo
+      );
     }
 
     // 정렬
@@ -699,7 +777,7 @@ function ProjectMembersContent({
     });
 
     return result;
-  }, [ctx.members, searchQuery, roleFilter, sortOrder]);
+  }, [ctx.members, searchQuery, roleFilter, sortOrder, advFilter]);
 
   return (
     <>
@@ -795,6 +873,16 @@ function ProjectMembersContent({
             <SelectItem value="joined">가입일순</SelectItem>
           </SelectContent>
         </Select>
+        <MemberAdvancedFilter
+          filter={advFilter}
+          activeCount={advActiveCount}
+          onToggleRole={advToggleRole}
+          onSetJoinedFrom={advSetJoinedFrom}
+          onSetJoinedTo={advSetJoinedTo}
+          onSetAttendanceMin={advSetAttendanceMin}
+          onSetAttendanceMax={advSetAttendanceMax}
+          onReset={advResetFilter}
+        />
       </div>
 
       {displayedMembers.length === 0 && ctx.members.length === 0 ? (
