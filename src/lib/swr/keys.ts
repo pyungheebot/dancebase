@@ -843,4 +843,24 @@ export const swrKeys = {
   // 집중 모드 타이머 (localStorage 기반)
   focusTimer: (groupId: string) =>
     `focus-timer-${groupId}` as const,
+
+  // 이벤트 캘린더 (localStorage 기반)
+  eventCalendar: (groupId: string) =>
+    `event-calendar-${groupId}` as const,
+
+  // 좌석 배치도 (localStorage 기반)
+  seatingChart: (groupId: string, projectId: string) =>
+    `seating-chart-${groupId}-${projectId}` as const,
+
+  // 스킬 매트릭스 (localStorage 기반)
+  skillMatrix: (groupId: string) =>
+    `skill-matrix-${groupId}` as const,
+
+  // 공연 타임라인 (localStorage 기반)
+  showTimeline: (groupId: string, projectId: string) =>
+    `show-timeline-${groupId}-${projectId}` as const,
+
+  // 멤버 퀴즈 (localStorage 기반)
+  memberQuiz: (groupId: string) =>
+    `member-quiz-${groupId}` as const,
 };

@@ -6315,3 +6315,116 @@ export type FocusTimerConfig = {
   longBreak: number; // 기본 15분
   cyclesBeforeLongBreak: number; // 기본 4
 };
+
+// ============================================
+// Event Calendar (이벤트 캘린더)
+// ============================================
+
+export type CalendarEventType = "practice" | "performance" | "meeting" | "workshop" | "social" | "other";
+
+export type CalendarEvent = {
+  id: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:MM
+  endTime: string; // HH:MM
+  type: CalendarEventType;
+  location: string;
+  description: string;
+  createdAt: string;
+};
+
+// ============================================
+// Seating Chart (좌석 배치도)
+// ============================================
+
+export type SeatStatus = "available" | "reserved" | "blocked";
+
+export type SeatInfo = {
+  id: string;
+  row: string; // A, B, C...
+  number: number; // 1, 2, 3...
+  status: SeatStatus;
+  reservedBy: string;
+  tier: "vip" | "standard" | "economy";
+};
+
+export type SeatingChart = {
+  id: string;
+  eventName: string;
+  rows: number;
+  seatsPerRow: number;
+  seats: SeatInfo[];
+  createdAt: string;
+};
+
+// ============================================
+// Show Timeline (공연 타임라인)
+// ============================================
+
+export type ShowMilestoneStatus = "pending" | "in_progress" | "completed" | "delayed";
+
+export type ShowMilestone = {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  status: ShowMilestoneStatus;
+  assignee: string;
+  completedAt?: string;
+  order: number;
+};
+
+export type ShowTimeline = {
+  id: string;
+  showName: string;
+  showDate: string;
+  milestones: ShowMilestone[];
+  createdAt: string;
+};
+
+// ============================================
+// Skill Matrix (스킬 매트릭스)
+// ============================================
+
+export type SkillMatrixLevel = 0 | 1 | 2 | 3 | 4 | 5; // 0=미평가, 1=초급~5=마스터
+
+export type SkillMatrixEntry = {
+  memberName: string;
+  skills: Record<string, SkillMatrixLevel>;
+};
+
+export type SkillMatrixConfig = {
+  skillNames: string[]; // "팝핑", "락킹", "힙합" 등 커스텀 스킬
+  entries: SkillMatrixEntry[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ============================================
+// Member Quiz (멤버 퀴즈)
+// ============================================
+
+export type QuizQuestion = {
+  id: string;
+  question: string;
+  options: string[]; // 4개 선택지
+  correctIndex: number; // 0-3
+  aboutMember: string; // 이 질문의 주인공
+  createdBy: string;
+};
+
+export type QuizAttempt = {
+  id: string;
+  playerName: string;
+  answers: { questionId: string; selectedIndex: number; isCorrect: boolean }[];
+  score: number;
+  totalQuestions: number;
+  completedAt: string;
+};
+
+export type MemberQuizData = {
+  questions: QuizQuestion[];
+  attempts: QuizAttempt[];
+  createdAt: string;
+};
