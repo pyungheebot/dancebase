@@ -48,6 +48,7 @@ import { exportToCsv } from "@/lib/export-csv";
 import { getCategoryColorClasses } from "@/types";
 import { EmptyState } from "@/components/shared/empty-state";
 import { InactiveMembersSection } from "@/components/members/inactive-members-section";
+import { MemberComparisonDashboard } from "@/components/members/member-comparison-dashboard";
 import { MemberActivityReport } from "@/components/members/member-activity-report";
 import { MemberActivityTrendChart } from "@/components/members/member-activity-trend-chart";
 import { SkillMatrixSection } from "@/components/members/skill-matrix-section";
@@ -342,6 +343,12 @@ function GroupMembersContent({
   return (
     <>
       <div className="flex items-center justify-end gap-1 mb-2">
+        {ctx.members.length > 1 && (
+          <MemberComparisonDashboard
+            groupId={ctx.groupId}
+            members={ctx.members}
+          />
+        )}
         <MyFeedbackSheet
           groupId={ctx.groupId}
           currentUserId={currentUserId}

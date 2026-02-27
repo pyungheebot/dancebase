@@ -355,4 +355,32 @@ export const swrKeys = {
   // 그룹 성과 스냅샷 (주간/월간)
   groupPerformanceSnapshot: (groupId: string, period: "week" | "month") =>
     `/groups/${groupId}/performance-snapshot?period=${period}` as const,
+
+  // 멤버 일괄 초대 후보 목록
+  memberBatchInvite: (groupId: string) =>
+    `/groups/${groupId}/member-batch-invite` as const,
+
+  // 멤버 활동 비교 대시보드
+  memberComparison: (groupId: string, memberIds: string[]) =>
+    `/member-comparison/${groupId}?members=${memberIds.slice().sort().join(",")}` as const,
+
+  // 그룹 멤버 목록 (알림 발송용)
+  groupMembersForNotification: (groupId: string) =>
+    `/groups/${groupId}/members-for-notification` as const,
+
+  // 그룹 통계 내보내기 (출석)
+  analyticsExportAttendance: (groupId: string, startDate: string, endDate: string) =>
+    `analytics-export-attendance-${groupId}-${startDate}-${endDate}` as const,
+
+  // 그룹 통계 내보내기 (게시판)
+  analyticsExportBoard: (groupId: string, startDate: string, endDate: string) =>
+    `analytics-export-board-${groupId}-${startDate}-${endDate}` as const,
+
+  // 그룹 통계 내보내기 (재무)
+  analyticsExportFinance: (groupId: string, startDate: string, endDate: string) =>
+    `analytics-export-finance-${groupId}-${startDate}-${endDate}` as const,
+
+  // 멤버 온보딩 완료도 추적
+  onboardingProgressTracker: (groupId: string) =>
+    `/groups/${groupId}/onboarding-progress-tracker` as const,
 };

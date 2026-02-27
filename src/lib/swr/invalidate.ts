@@ -382,3 +382,20 @@ export function invalidateGroupPerformanceSnapshot(groupId: string) {
   mutate(swrKeys.groupPerformanceSnapshot(groupId, "week"));
   mutate(swrKeys.groupPerformanceSnapshot(groupId, "month"));
 }
+
+export function invalidateMemberBatchInvite(groupId: string) {
+  mutate(swrKeys.memberBatchInvite(groupId));
+}
+
+export function invalidateMemberComparison(groupId: string) {
+  mutate(
+    (key: string) =>
+      typeof key === "string" && key.startsWith(`/member-comparison/${groupId}`),
+    undefined,
+    { revalidate: true }
+  );
+}
+
+export function invalidateOnboardingProgressTracker(groupId: string) {
+  mutate(swrKeys.onboardingProgressTracker(groupId));
+}

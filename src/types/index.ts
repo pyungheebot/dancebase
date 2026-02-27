@@ -1699,6 +1699,17 @@ export type WinbackCampaignData = {
 };
 
 // ============================================
+// Member Batch Invite (멤버 일괄 초대)
+// ============================================
+
+export type InviteCandidate = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  isAlreadyMember: boolean;
+};
+
+// ============================================
 // Group Performance Snapshot (그룹 성과 스냅샷)
 // ============================================
 
@@ -1723,4 +1734,132 @@ export type GroupPerformanceSnapshotData = {
   contentCount: PerformanceMetric;   // 게시글 + 댓글 합계
   newMemberCount: PerformanceMetric;
   topContributor: TopContributor | null;
+};
+
+// ============================================
+// Notification Template (일정 알림 템플릿)
+// ============================================
+
+export type NotificationTemplate = {
+  id: string;
+  groupId: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NotificationTemplateVariable =
+  | "scheduleTitle"
+  | "location"
+  | "time"
+  | "nextSchedule";
+
+export const NOTIFICATION_TEMPLATE_VARIABLE_LABELS: Record<
+  NotificationTemplateVariable,
+  string
+> = {
+  scheduleTitle: "일정 제목",
+  location: "장소",
+  time: "시간",
+  nextSchedule: "다음 일정",
+};
+
+export type SendNotificationResult = {
+  success: boolean;
+  count: number;
+  error?: string;
+};
+
+// ============================================
+// Member Comparison Dashboard (멤버 활동 비교)
+// ============================================
+
+export type MemberComparisonData = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  attendanceRate: number;   // 0~100 (%)
+  postCount: number;
+  commentCount: number;
+  rsvpRate: number;         // 0~100 (%)
+};
+
+// ============================================
+// Analytics Export (그룹 통계 내보내기)
+// ============================================
+
+/** 내보내기 기간 프리셋 */
+export type ExportPeriodPreset = "this_month" | "last_month" | "last_3_months" | "all";
+
+/** 내보내기 기간 범위 */
+export type ExportDateRange = {
+  startDate: string | null; // ISO 날짜 문자열 (null = 전체)
+  endDate: string | null;
+};
+
+/** 내보내기 데이터 유형 */
+export type ExportDataType = "attendance" | "board" | "finance";
+
+/** 출석 CSV 행 */
+export type AttendanceExportRow = {
+  date: string;
+  scheduleTitle: string;
+  memberName: string;
+  status: string;
+};
+
+/** 게시판 활동 CSV 행 */
+export type BoardActivityExportRow = {
+  date: string;
+  title: string;
+  authorName: string;
+  commentCount: number;
+};
+
+/** 재무 CSV 행 */
+export type FinanceExportRow = {
+  date: string;
+  type: string;
+  amount: number;
+  title: string;
+  description: string;
+};
+
+// ============================================
+// Onboarding Progress Tracker (멤버 온보딩 완료도 추적)
+// ============================================
+
+/** 온보딩 항목 ID */
+export type OnboardingItemId =
+  | "avatar"
+  | "bio"
+  | "attendance"
+  | "post_or_comment"
+  | "rsvp";
+
+/** 온보딩 항목 완료 상태 */
+export type OnboardingItemStatus = {
+  id: OnboardingItemId;
+  label: string;
+  isDone: boolean;
+};
+
+/** 멤버별 온보딩 진행 상황 */
+export type MemberOnboardingProgress = {
+  userId: string;
+  memberId: string;
+  name: string;
+  joinedAt: string;
+  items: OnboardingItemStatus[];
+  completionRate: number;
+  isAllDone: boolean;
+};
+
+/** 그룹 전체 온보딩 추적 결과 */
+export type OnboardingProgressResult = {
+  members: MemberOnboardingProgress[];
+  averageCompletionRate: number;
+  totalCount: number;
+  allDoneCount: number;
 };
