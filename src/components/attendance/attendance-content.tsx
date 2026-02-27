@@ -27,10 +27,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AttendanceAnalytics } from "@/components/attendance/attendance-analytics";
+import { AttendanceComparisonChart } from "@/components/attendance/attendance-comparison-chart";
 import { AttendanceReportSection } from "@/components/attendance/attendance-report-section";
 import { AttendanceGoalCard } from "@/components/attendance/attendance-goal-card";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
-import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2 } from "lucide-react";
+import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { EntityContext } from "@/types/entity-context";
@@ -387,6 +388,10 @@ export function AttendanceContent({
           <BarChart3 className="h-3.5 w-3.5" />
           분석
         </TabsTrigger>
+        <TabsTrigger value="comparison" className="gap-1.5">
+          <GitCompareArrows className="h-3.5 w-3.5" />
+          비교
+        </TabsTrigger>
         <TabsTrigger value="report" className="gap-1.5">
           <FileBarChart2 className="h-3.5 w-3.5" />
           리포트
@@ -737,6 +742,11 @@ export function AttendanceContent({
       {/* ===== 분석 탭 ===== */}
       <TabsContent value="analytics">
         <AttendanceAnalytics ctx={ctx} />
+      </TabsContent>
+
+      {/* ===== 비교 탭 ===== */}
+      <TabsContent value="comparison">
+        <AttendanceComparisonChart ctx={ctx} />
       </TabsContent>
 
       {/* ===== 리포트 탭 ===== */}

@@ -11,6 +11,7 @@ import { BoardPostContent } from "@/components/board/board-post-content";
 import { BoardPostAttachments } from "@/components/board/board-post-attachments";
 import { BoardCommentSection } from "@/components/board/board-comment-section";
 import { BoardPollView } from "@/components/board/board-poll";
+import { PollStatisticsCard } from "@/components/board/poll-statistics-card";
 import { BoardPostList } from "@/components/board/board-post-list";
 import { BoardPostForm } from "@/components/board/board-post-form";
 import { useBoardPost } from "@/hooks/use-board";
@@ -211,8 +212,9 @@ export default function BoardPostPage({
 
         {/* 투표 */}
         {poll && (
-          <div className="mt-4">
+          <div className="mt-4 space-y-3">
             <BoardPollView poll={poll} options={pollOptions} onUpdate={refetch} />
+            <PollStatisticsCard postId={postId} groupId={id} />
           </div>
         )}
 

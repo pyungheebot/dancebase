@@ -19,6 +19,7 @@ import { MemberBadgeIcons } from "@/components/members/member-badge-icons";
 import { UserMinus, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { MemberNotePopover } from "@/components/members/member-note-popover";
 import type { GroupMemberWithProfile, MemberCategory } from "@/types";
 import { getCategoryColorClasses } from "@/types";
 
@@ -205,6 +206,13 @@ export function MemberList({
                   joinedAt={member.joined_at}
                   role={member.role}
                 />
+                {(myRole === "leader" || myRole === "sub_leader") && (
+                  <MemberNotePopover
+                    groupId={groupId}
+                    targetUserId={member.user_id}
+                    targetName={displayName}
+                  />
+                )}
                 {isMe && (
                   <button
                     onClick={() => startEditNickname(member)}

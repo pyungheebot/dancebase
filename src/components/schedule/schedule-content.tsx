@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, CalendarDays, CalendarCheck } from "lucide-react";
+import { Loader2, CalendarDays, CalendarCheck, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CalendarView } from "@/components/schedule/calendar-view";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { ScheduleTemplateList } from "@/components/schedule/schedule-template-list";
 import { OptimalTimeHint } from "@/components/schedule/optimal-time-hint";
 import { BulkRsvpDialog } from "@/components/schedule/bulk-rsvp-dialog";
+import { ScheduleCopyDialog } from "@/components/schedule/schedule-copy-dialog";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { EmptyState } from "@/components/shared/empty-state";
 import type { EntityContext } from "@/types/entity-context";
@@ -31,6 +32,7 @@ export function ScheduleContent({
   const [formOpen, setFormOpen] = useState(false);
   const [templateSheetOpen, setTemplateSheetOpen] = useState(false);
   const [bulkRsvpOpen, setBulkRsvpOpen] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
   const [templatePrefill, setTemplatePrefill] = useState<Partial<{
     title: string;
     description: string;
@@ -78,6 +80,17 @@ export function ScheduleContent({
             >
               <CalendarCheck className="h-3 w-3" />
               일괄 RSVP
+            </Button>
+          )}
+          {ctx.permissions.canEdit && ctx.projectId && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => setCopyOpen(true)}
+            >
+              <Copy className="h-3 w-3" />
+              일정 복사
             </Button>
           )}
           <ScheduleTemplateList
@@ -143,6 +156,17 @@ export function ScheduleContent({
         groupId={ctx.groupId}
         schedules={schedules}
       />
+
+      {/* 일정 복사 다이얼로그 */}
+      {ctx.permissions.canEdit && ctx.projectId && (
+        <ScheduleCopyDialog
+          open={copyOpen}
+          onOpenChange={setCopyOpen}
+          groupId={ctx.groupId}
+          currentProjectId={ctx.projectId}
+          onCopied={refetch}
+        />
+      )}
     </section>
   );
 }

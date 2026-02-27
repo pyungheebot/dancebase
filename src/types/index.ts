@@ -722,6 +722,29 @@ export const DEFAULT_FINANCE_DUE_DATE_SETTING: FinanceDueDateSettingValue = {
   day: 0, // 0이면 미설정
 };
 
+// 회비 자동 상기 알림 설정 타입
+export type FinanceAutoReminderSettingValue = {
+  enabled: boolean;
+  interval: "weekly" | "biweekly" | "monthly"; // 매주, 격주, 매월
+  message: string;
+};
+
+export const FINANCE_AUTO_REMINDER_SETTING_KEY = "finance_auto_reminder";
+
+export const DEFAULT_FINANCE_AUTO_REMINDER_SETTING: FinanceAutoReminderSettingValue = {
+  enabled: false,
+  interval: "monthly",
+  message: "안녕하세요! {name}님, 회비 납부를 부탁드립니다. 미납 금액: {amount}원",
+};
+
+// 회비 자동 알림 마지막 발송 시간 설정 타입
+export type FinanceAutoReminderLastSentValue = {
+  sentAt: string; // ISO 8601
+  sentCount: number;
+};
+
+export const FINANCE_AUTO_REMINDER_LAST_SENT_KEY = "finance_auto_reminder_last_sent";
+
 export type Conversation = {
   partner_id: string;
   partner_name: string;
@@ -803,6 +826,20 @@ export type AttendanceGoal = {
   period: "monthly" | "quarterly";
   created_by: string;
   created_at: string;
+};
+
+// ============================================
+// Member Note (멤버 프로필 메모)
+// ============================================
+
+export type MemberNote = {
+  id: string;
+  group_id: string;
+  target_user_id: string;
+  author_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
 };
 
 // ============================================

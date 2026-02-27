@@ -219,3 +219,20 @@ export function invalidateRolePromotionCandidates(groupId: string) {
 export function invalidateAttendanceGoal(groupId: string) {
   mutate(swrKeys.attendanceGoal(groupId));
 }
+
+export function invalidateAttendanceComparison(groupId: string) {
+  mutate(
+    (key: string) =>
+      typeof key === "string" && key.startsWith(`/attendance-comparison/${groupId}`),
+    undefined,
+    { revalidate: true }
+  );
+}
+
+export function invalidatePollStatistics(postId: string) {
+  mutate(swrKeys.pollStatistics(postId));
+}
+
+export function invalidateMemberNote(groupId: string, targetUserId: string) {
+  mutate(swrKeys.memberNote(groupId, targetUserId));
+}
