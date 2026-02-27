@@ -30,6 +30,7 @@ import { ScheduleRetroSheet } from "./schedule-retro-sheet";
 import { ScheduleLocationShare } from "./schedule-location-share";
 import { ScheduleCarpoolSection } from "./schedule-carpool-section";
 import { ScheduleBroadcastDialog } from "./schedule-broadcast-dialog";
+import { ScheduleDdayTimeline } from "./schedule-dday-timeline";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
@@ -770,6 +771,15 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
               {/* 카풀 섹션 */}
               <div className="border-t pt-3">
                 <ScheduleCarpoolSection scheduleId={detailSchedule.id} />
+              </div>
+
+              {/* D-Day 준비 타임라인 섹션 */}
+              <div className="border-t pt-3">
+                <ScheduleDdayTimeline
+                  scheduleId={detailSchedule.id}
+                  scheduleStartsAt={detailSchedule.starts_at}
+                  canEdit={canEditRoles ?? canEdit ?? false}
+                />
               </div>
 
               <div className="flex gap-2 flex-wrap">

@@ -56,6 +56,8 @@ import { ContactVerifyBanner } from "@/components/members/contact-verify-banner"
 import { RolePromotionSection } from "@/components/members/role-promotion-section";
 import { MemberRiskAlert } from "@/components/members/member-risk-alert";
 import { MentorMenteeSection } from "@/components/members/mentor-mentee-section";
+import { MyFeedbackSheet } from "@/components/members/peer-feedback-dialog";
+import { RewardPointsShop } from "@/components/members/reward-points-shop";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -340,6 +342,16 @@ function GroupMembersContent({
   return (
     <>
       <div className="flex items-center justify-end gap-1 mb-2">
+        <MyFeedbackSheet
+          groupId={ctx.groupId}
+          currentUserId={currentUserId}
+        />
+        <RewardPointsShop
+          groupId={ctx.groupId}
+          currentUserId={currentUserId}
+          members={ctx.members}
+          canEdit={ctx.permissions.canEdit}
+        />
         {ctx.permissions.canManageMembers && (
           <Button
             variant="outline"

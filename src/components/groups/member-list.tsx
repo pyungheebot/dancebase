@@ -22,6 +22,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MemberNotePopover } from "@/components/members/member-note-popover";
 import { PracticePlanSheet } from "@/components/members/practice-plan-sheet";
 import { MemberIntroCardDialog } from "@/components/members/member-intro-card-dialog";
+import { PeerFeedbackSendDialog } from "@/components/members/peer-feedback-dialog";
 import { useMemberIntroCards } from "@/hooks/use-member-intro-cards";
 import type { GroupMemberWithProfile, MemberCategory } from "@/types";
 import { getCategoryColorClasses } from "@/types";
@@ -227,6 +228,14 @@ export function MemberList({
                     groupId={groupId}
                     targetUserId={member.user_id}
                     targetName={displayName}
+                  />
+                )}
+                {!isMe && (
+                  <PeerFeedbackSendDialog
+                    groupId={groupId}
+                    currentUserId={currentUserId}
+                    receiverId={member.user_id}
+                    receiverName={displayName}
                   />
                 )}
                 {isMe && (

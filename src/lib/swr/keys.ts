@@ -327,4 +327,8 @@ export const swrKeys = {
   // 내 월간 활동 요약 (대시보드용)
   myMonthlySummary: (yearMonth: string) =>
     `/my-monthly-summary/${yearMonth}` as const,
+
+  // 연습 통계 (월별 연습 횟수·시간·참석 인원)
+  practiceStats: (groupId: string) =>
+    `practice-stats-${groupId}` as const,
 };

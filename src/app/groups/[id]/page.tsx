@@ -15,6 +15,7 @@ import { PerformanceRecordSection } from "@/components/groups/performance-record
 import { RoleOnboardingChecklist } from "@/components/groups/role-onboarding-checklist";
 import { MonthlyReportDialog } from "@/components/groups/monthly-report-dialog";
 import { GroupActivityFeed } from "@/components/groups/group-activity-feed";
+import { PracticeStatsCard } from "@/components/groups/practice-stats-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LeaderInfo } from "@/components/ui/leader-info";
@@ -106,6 +107,8 @@ export default function GroupDetailPage({
           <GroupStatsCards groupId={ctx.groupId} memberCount={ctx.members.length} />
 
           <GroupHealthCard groupId={ctx.groupId} />
+
+          <PracticeStatsCard groupId={ctx.groupId} />
 
           <GroupLinksSection
             groupId={ctx.groupId}

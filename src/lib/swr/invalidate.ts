@@ -357,3 +357,7 @@ export function invalidateScheduleCarpool(scheduleId: string) {
 export function invalidateGroupRules(groupId: string) {
   mutate(swrKeys.groupRules(groupId));
 }
+
+export function invalidatePracticeStats(groupId: string) {
+  mutate(swrKeys.practiceStats(groupId));
+}

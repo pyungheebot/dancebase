@@ -1475,6 +1475,35 @@ export type MemberIntroCard = {
 };
 
 // ============================================
+// Schedule D-Day Checklist (일정 D-Day 준비 체크리스트, localStorage 기반)
+// ============================================
+
+export type DdayChecklistItem = {
+  id: string;
+  scheduleId: string;
+  daysBefore: number; // D-7, D-3, D-1, D-0
+  title: string;
+  isDone: boolean;
+  createdAt: string;
+};
+
+// ============================================
+// Peer Feedback (멤버 간 익명 피드백)
+// ============================================
+
+export type PeerFeedbackType = "strength" | "improvement";
+
+export type PeerFeedback = {
+  id: string;
+  senderId: string; // 저장되지만 수신자에게는 보이지 않음
+  receiverId: string;
+  receiverName: string;
+  type: PeerFeedbackType;
+  content: string;
+  createdAt: string;
+};
+
+// ============================================
 // Birthday Calendar (생일 달력)
 // ============================================
 
@@ -1494,3 +1523,60 @@ export type BirthdayMember = {
   /** 오늘이 생일인지 여부 */
   isToday: boolean;
 };
+
+// ============================================
+// Runthrough Session (공연 런스루 모드, localStorage 기반)
+// ============================================
+
+export type RunthroughNote = {
+  songId: string;
+  songTitle: string;
+  timestamp: number; // 해당 곡 시작부터 경과 초
+  content: string;
+};
+
+export type RunthroughSession = {
+  id: string;
+  projectId: string;
+  startedAt: string;
+  endedAt: string | null;
+  notes: RunthroughNote[];
+  songOrder: string[]; // songId 순서
+};
+
+// ============================================
+// Reward Points Shop (포인트 상점, localStorage 기반)
+// ============================================
+
+export type RewardItem = {
+  id: string;
+  name: string;
+  description: string;
+  cost: number; // 필요 포인트
+  category: "title" | "badge" | "privilege"; // 칭호, 뱃지, 특권
+  emoji: string; // 아이콘 이모지
+  isActive: boolean;
+};
+
+export type PointTransaction = {
+  id: string;
+  userId: string;
+  amount: number; // +면 적립, -면 사용
+  reason: string;
+  createdAt: string;
+};
+
+export const REWARD_CATEGORY_LABELS: Record<RewardItem["category"], string> = {
+  title: "칭호",
+  badge: "뱃지",
+  privilege: "특권",
+};
+
+// 포인트 적립 규칙
+export const POINT_RULES = {
+  attendance: 10,       // 출석 1회
+  streak5: 50,          // 스트릭 5일
+  streak10: 100,        // 스트릭 10일
+  post: 5,              // 게시글 작성
+  rsvp: 3,              // RSVP 응답
+} as const;

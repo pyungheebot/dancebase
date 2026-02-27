@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { SongNoteSheet } from "@/components/projects/song-note-sheet";
 import { SongPartAssignment } from "@/components/projects/song-part-assignment";
+import { RunthroughModeDialog } from "@/components/projects/runthrough-mode-dialog";
 import {
   Music,
   Play,
@@ -368,6 +369,16 @@ export function SongTrackerSection({ ctx }: SongTrackerSectionProps) {
               </Badge>
             )}
           </CardTitle>
+          {/* 런스루 버튼: 곡이 2개 이상일 때만 표시 */}
+          {totalCount >= 2 && (
+            <RunthroughModeDialog
+              projectId={ctx.projectId ?? ""}
+              songs={[...notStartedSongs, ...inProgressSongs, ...masteredSongs].map((s) => ({
+                id: s.id,
+                title: s.title,
+              }))}
+            />
+          )}
         </CardHeader>
 
         <CardContent className="px-3 py-3">
