@@ -18,6 +18,7 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Loader2, Users, ChevronRight, CalendarRange, MoreVertical, Settings, Trash2, Check, FolderOpen, Plus } from "lucide-react";
 import { ProjectForm } from "./project-form";
+import { ProjectDuplicateDialog } from "./project-duplicate-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateProject } from "@/lib/swr/invalidate";
@@ -159,7 +160,16 @@ export function ProjectList({ groupId }: ProjectListProps) {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-lg font-semibold">프로젝트</h1>
         {canManage && (
-          <ProjectForm groupId={groupId} onCreated={refetch} />
+          <div className="flex items-center gap-1.5">
+            {projects.length > 0 && (
+              <ProjectDuplicateDialog
+                groupId={groupId}
+                projects={projects}
+                onDuplicated={refetch}
+              />
+            )}
+            <ProjectForm groupId={groupId} onCreated={refetch} />
+          </div>
         )}
       </div>
 

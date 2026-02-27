@@ -9,10 +9,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserPopoverMenu } from "@/components/user/user-popover-menu";
-import { Trash2, Pencil, Check, X, CornerDownRight } from "lucide-react";
+import { Trash2, Pencil, Check, X, CornerDownRight, Flag } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createNotification } from "@/lib/notifications";
+import { ContentReportDialog } from "@/components/board/content-report-dialog";
 
 interface BoardCommentSectionProps {
   postId: string;
@@ -48,11 +49,14 @@ function CommentItem({
   nicknameMap,
   groupId,
   isReply,
+  parentAuthorId,
+  parentAuthorName,
   onEditStart,
   onEditCancel,
   onEditSave,
   onDelete,
   onReplyClick,
+  onReport,
   activeReplyId,
   editingContentChange,
 }: {
@@ -64,15 +68,33 @@ function CommentItem({
   nicknameMap?: Record<string, string>;
   groupId?: string;
   isReply: boolean;
+  parentAuthorId?: string;
+  parentAuthorName?: string;
   onEditStart: (comment: BoardCommentWithProfile) => void;
   onEditCancel: () => void;
   onEditSave: (commentId: string) => void;
   onDelete: (commentId: string) => void;
   onReplyClick: (commentId: string) => void;
+  onReport: (commentId: string) => void;
   activeReplyId: string | null;
   editingContentChange: (value: string) => void;
 }) {
   const displayName = nicknameMap?.[comment.author_id] || comment.profiles.name;
+  const isOwnComment = currentUserId === comment.author_id;
+
+  // 숨김 처리된 댓글
+  if (comment.is_hidden) {
+    return (
+      <div className={`flex gap-2 ${isReply ? "ml-8" : ""}`}>
+        {isReply && (
+          <CornerDownRight className="h-3 w-3 text-muted-foreground mt-1.5 shrink-0" />
+        )}
+        <p className="text-xs text-muted-foreground italic py-0.5">
+          [숨김 처리된 댓글입니다]
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className={`flex gap-2 ${isReply ? "ml-8" : ""}`}>
@@ -97,7 +119,7 @@ function CommentItem({
           <span className="text-[11px] text-muted-foreground">
             {format(new Date(comment.created_at), "M/d HH:mm", { locale: ko })}
           </span>
-          {currentUserId === comment.author_id && editingId !== comment.id && (
+          {isOwnComment && editingId !== comment.id && (
             <>
               <Button
                 variant="ghost"
@@ -118,6 +140,18 @@ function CommentItem({
                 <Trash2 className="h-2.5 w-2.5" />
               </Button>
             </>
+          )}
+          {/* 신고 버튼: 본인 댓글이 아닌 경우 */}
+          {!isOwnComment && currentUserId && groupId && editingId !== comment.id && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 text-muted-foreground hover:text-orange-500"
+              onClick={() => onReport(comment.id)}
+              aria-label="댓글 신고"
+            >
+              <Flag className="h-2.5 w-2.5" />
+            </Button>
           )}
           {/* 답글 버튼: 원댓글에만 표시 (대댓글에는 표시하지 않음) */}
           {!isReply && editingId !== comment.id && (
@@ -162,7 +196,14 @@ function CommentItem({
             </div>
           </div>
         ) : (
-          <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+          <p className="text-sm whitespace-pre-wrap">
+            {isReply && parentAuthorId && parentAuthorName && (
+              <span className="text-blue-500 text-xs font-medium mr-1">
+                @{parentAuthorName}
+              </span>
+            )}
+            {comment.content}
+          </p>
         )}
       </div>
     </div>
@@ -188,6 +229,9 @@ export function BoardCommentSection({
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [replySubmitting, setReplySubmitting] = useState(false);
+  // 신고 다이얼로그 상태
+  const [reportTargetId, setReportTargetId] = useState<string | null>(null);
+
   const supabase = createClient();
 
   // 현재 유저 확인
@@ -303,13 +347,16 @@ export function BoardCommentSection({
 
   const handleReplyClick = (commentId: string) => {
     if (activeReplyId === commentId) {
-      // 이미 열린 경우 닫기
       setActiveReplyId(null);
       setReplyContent("");
     } else {
       setActiveReplyId(commentId);
       setReplyContent("");
     }
+  };
+
+  const handleReport = (commentId: string) => {
+    setReportTargetId(commentId);
   };
 
   // 트리 구조로 변환
@@ -330,6 +377,7 @@ export function BoardCommentSection({
     onEditSave: handleEditSave,
     onDelete: handleDelete,
     onReplyClick: handleReplyClick,
+    onReport: handleReport,
     activeReplyId,
     editingContentChange: setEditingContent,
   };
@@ -383,94 +431,17 @@ export function BoardCommentSection({
               {commentNode.replies.length > 0 && (
                 <div className="space-y-2">
                   {commentNode.replies.map((reply) => (
-                    <div key={reply.id} className="space-y-1">
-                      {/* @원댓글작성자 멘션 + 내용 */}
-                      <div className="ml-8 flex gap-1.5">
-                        <CornerDownRight className="h-3 w-3 text-muted-foreground mt-1.5 shrink-0" />
-                        <Avatar className="h-6 w-6 mt-0.5 shrink-0">
-                          <AvatarFallback className="text-[10px]">
-                            {(nicknameMap?.[reply.author_id] || reply.profiles.name)
-                              ?.charAt(0)
-                              ?.toUpperCase() || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <UserPopoverMenu
-                              userId={reply.author_id}
-                              displayName={nicknameMap?.[reply.author_id] || reply.profiles.name}
-                              groupId={groupId}
-                              className="text-xs font-medium hover:underline"
-                            >
-                              {nicknameMap?.[reply.author_id] || reply.profiles.name}
-                            </UserPopoverMenu>
-                            <span className="text-[11px] text-muted-foreground">
-                              {format(new Date(reply.created_at), "M/d HH:mm", { locale: ko })}
-                            </span>
-                            {currentUserId === reply.author_id && editingId !== reply.id && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                                  onClick={() => handleEditStart(reply)}
-                                  aria-label="댓글 수정"
-                                >
-                                  <Pencil className="h-2.5 w-2.5" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-5 w-5 text-muted-foreground hover:text-destructive"
-                                  onClick={() => handleDelete(reply.id)}
-                                  aria-label="댓글 삭제"
-                                >
-                                  <Trash2 className="h-2.5 w-2.5" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                          {editingId === reply.id ? (
-                            <div className="mt-1 space-y-1">
-                              <Textarea
-                                value={editingContent}
-                                onChange={(e) => setEditingContent(e.target.value)}
-                                className="text-sm min-h-[60px] resize-none"
-                                autoFocus
-                              />
-                              <div className="flex gap-1">
-                                <Button
-                                  size="sm"
-                                  className="h-6 text-[11px] px-2"
-                                  onClick={() => handleEditSave(reply.id)}
-                                  disabled={!editingContent.trim() || editSaving}
-                                >
-                                  <Check className="h-2.5 w-2.5 mr-1" />
-                                  저장
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-6 text-[11px] px-2"
-                                  onClick={handleEditCancel}
-                                  disabled={editSaving}
-                                >
-                                  <X className="h-2.5 w-2.5 mr-1" />
-                                  취소
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-sm whitespace-pre-wrap">
-                              <span className="text-blue-500 text-xs font-medium mr-1">
-                                @{nicknameMap?.[commentNode.author_id] || commentNode.profiles.name}
-                              </span>
-                              {reply.content}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <CommentItem
+                      key={reply.id}
+                      comment={reply}
+                      isReply={true}
+                      parentAuthorId={commentNode.author_id}
+                      parentAuthorName={
+                        nicknameMap?.[commentNode.author_id] ||
+                        commentNode.profiles.name
+                      }
+                      {...commonItemProps}
+                    />
                   ))}
                 </div>
               )}
@@ -501,6 +472,19 @@ export function BoardCommentSection({
           {submitting ? "..." : "작성"}
         </Button>
       </div>
+
+      {/* 신고 다이얼로그 */}
+      {groupId && reportTargetId && (
+        <ContentReportDialog
+          open={reportTargetId !== null}
+          onOpenChange={(open) => {
+            if (!open) setReportTargetId(null);
+          }}
+          groupId={groupId}
+          targetType="comment"
+          targetId={reportTargetId}
+        />
+      )}
     </div>
   );
 }

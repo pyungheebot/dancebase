@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ChevronLeft, ChevronRight, MapPin, Clock, Pencil, Calendar, Trash2, RefreshCw, CalendarPlus, Download } from "lucide-react";
 import { ScheduleForm } from "./schedule-form";
+import { AttendancePredictionBadge, AttendancePredictionCard } from "./attendance-prediction-card";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
@@ -41,6 +42,8 @@ type CalendarViewProps = {
   canEdit?: boolean;
   onScheduleUpdated?: () => void;
   attendancePath?: string;
+  /** 출석 예측 Badge 표시를 위한 그룹 ID */
+  groupId?: string;
 };
 
 // RSVP 버튼 섹션 (내부 컴포넌트)
@@ -304,7 +307,7 @@ function RecurrenceEditDialog({
   );
 }
 
-export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath }: CalendarViewProps) {
+export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath, groupId }: CalendarViewProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
   // 시리즈 수정 시 적용 범위 (null이면 단일 수정 모드)
@@ -576,6 +579,12 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   {schedule.recurrence_id && (
                     <RefreshCw className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
                   )}
+                  {groupId && (
+                    <AttendancePredictionBadge
+                      groupId={groupId}
+                      scheduleId={schedule.id}
+                    />
+                  )}
                 </div>
                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
                   <span className="flex items-center gap-0.5">
@@ -684,6 +693,17 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
               <div className="border-t pt-3">
                 <RsvpSection scheduleId={detailSchedule.id} />
               </div>
+
+              {/* 출석 예측 섹션 */}
+              {groupId && (
+                <div className="border-t pt-3">
+                  <p className="text-xs font-medium text-muted-foreground mb-1.5">출석 예측</p>
+                  <AttendancePredictionCard
+                    groupId={groupId}
+                    scheduleId={detailSchedule.id}
+                  />
+                </div>
+              )}
 
               <div className="flex gap-2 flex-wrap">
                 {canEdit && (

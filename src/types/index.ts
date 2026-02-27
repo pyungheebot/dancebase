@@ -313,6 +313,31 @@ export type FinanceBudget = {
 };
 
 // ============================================
+// Finance Split (분할 정산 AA)
+// ============================================
+
+export type FinanceSplit = {
+  id: string;
+  group_id: string;
+  project_id: string | null;
+  title: string;
+  total_amount: number;
+  paid_by: string;
+  split_type: "equal" | "custom";
+  created_at: string;
+  settled_at: string | null;
+};
+
+export type FinanceSplitMember = {
+  id: string;
+  split_id: string;
+  user_id: string;
+  amount: number;
+  is_settled: boolean;
+  settled_at: string | null;
+};
+
+// ============================================
 // Project (프로젝트)
 // ============================================
 
@@ -447,6 +472,7 @@ export type BoardComment = {
   author_id: string;
   content: string;
   parent_id: string | null;
+  is_hidden: boolean;
   created_at: string;
 };
 
@@ -493,6 +519,24 @@ export type BoardPostLike = {
   id: string;
   post_id: string;
   user_id: string;
+  created_at: string;
+};
+
+// ============================================
+// Content Report (콘텐츠 신고)
+// ============================================
+
+export type ContentReport = {
+  id: string;
+  group_id: string;
+  target_type: "post" | "comment";
+  target_id: string;
+  reporter_id: string;
+  reason: "spam" | "harassment" | "inappropriate" | "other";
+  description: string | null;
+  status: "pending" | "reviewed" | "dismissed";
+  reviewed_by: string | null;
+  reviewed_at: string | null;
   created_at: string;
 };
 

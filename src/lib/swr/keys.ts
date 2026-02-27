@@ -42,6 +42,12 @@ export const swrKeys = {
   financeBudget: (entityType: string, entityId: string, yearMonth: string) =>
     `/finance-budget/${entityType}/${entityId}/${yearMonth}` as const,
 
+  // 분할 정산
+  financeSplits: (groupId: string, projectId?: string | null) =>
+    `/groups/${groupId}/finance-splits${projectId ? `?project=${projectId}` : ""}` as const,
+  financeSplitMembers: (splitId: string) =>
+    `/finance-splits/${splitId}/members` as const,
+
   // 알림
   notifications: () => "/notifications" as const,
   unreadNotificationCount: () => "/notifications/unread-count" as const,
@@ -123,4 +129,26 @@ export const swrKeys = {
   // 최적 일정 시간대 추천
   optimalScheduleTime: (groupId: string, projectId?: string | null) =>
     `/optimal-schedule-time/${groupId}${projectId ? `?project=${projectId}` : ""}` as const,
+
+  // 멤버 활동 리포트
+  memberActivityReport: (groupId: string, period: string) =>
+    `/member-activity-report/${groupId}?period=${period}` as const,
+
+  // 출석 예측
+  attendancePrediction: (groupId: string, scheduleId: string) =>
+    `/attendance-prediction/${groupId}/${scheduleId}` as const,
+
+  // 그룹 show rate (과거 출석 비율)
+  groupShowRate: (groupId: string) =>
+    `/group-show-rate/${groupId}` as const,
+
+  // 앞으로의 일정 목록 (다중 RSVP용)
+  upcomingSchedules: (groupId: string, projectId?: string | null) =>
+    `/upcoming-schedules/${groupId}${projectId ? `?project=${projectId}` : ""}` as const,
+
+  // 콘텐츠 신고
+  contentReports: (groupId: string) =>
+    `/groups/${groupId}/content-reports` as const,
+  contentReportsPendingCount: (groupId: string) =>
+    `/groups/${groupId}/content-reports/pending-count` as const,
 };

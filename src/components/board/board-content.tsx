@@ -2,6 +2,7 @@
 
 import { BoardPostList } from "@/components/board/board-post-list";
 import { BoardTrash } from "@/components/board/board-trash";
+import { ContentModerationPanel } from "@/components/board/content-moderation-panel";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import type { EntityContext } from "@/types/entity-context";
 
@@ -16,7 +17,8 @@ export function BoardContent({ ctx }: BoardContentProps) {
     <>
       <IndependentToggle ctx={ctx} feature="board" featureLabel="게시판" />
       {isLeader && (
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end gap-1.5 mb-2">
+          <ContentModerationPanel groupId={ctx.groupId} />
           <BoardTrash groupId={ctx.groupId} nicknameMap={ctx.nicknameMap} />
         </div>
       )}

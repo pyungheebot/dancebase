@@ -45,6 +45,7 @@ import { exportToCsv } from "@/lib/export-csv";
 import { getCategoryColorClasses } from "@/types";
 import { EmptyState } from "@/components/shared/empty-state";
 import { InactiveMembersSection } from "@/components/members/inactive-members-section";
+import { MemberActivityReport } from "@/components/members/member-activity-report";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -488,6 +489,15 @@ function GroupMembersContent({
 
       {/* 비활성 멤버 섹션 (리더 전용, 비활성 멤버가 없으면 숨김) */}
       <InactiveMembersSection ctx={ctx} />
+
+      {/* 멤버 활동 리포트 (canEdit 권한인 경우에만 표시) */}
+      {ctx.permissions.canEdit && ctx.members.length > 0 && (
+        <MemberActivityReport
+          groupId={ctx.groupId}
+          groupName={ctx.header.name}
+          members={ctx.members}
+        />
+      )}
     </>
   );
 }

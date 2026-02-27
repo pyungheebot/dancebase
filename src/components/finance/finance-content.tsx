@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { FinanceTransactionForm } from "@/components/groups/finance-transaction-form";
 import { FinanceCategoryManager } from "@/components/groups/finance-category-manager";
@@ -9,6 +9,7 @@ import { FinanceStats } from "@/components/groups/finance-stats";
 import { FinancePaymentStatus } from "@/components/finance/finance-payment-status";
 import { FinanceBudgetTab } from "@/components/finance/finance-budget-tab";
 import { UnpaidSummary } from "@/components/finance/unpaid-summary";
+import { FinanceSplitSection } from "@/components/finance/finance-split-section";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -95,6 +96,15 @@ export function FinanceContent({
   const supabase = createClient();
   const [editingTxn, setEditingTxn] = useState<FinanceTransaction | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+
+  // 현재 유저 ID 조회
+  useEffect(() => {
+    void supabase.auth.getUser().then((res: Awaited<ReturnType<typeof supabase.auth.getUser>>) => {
+      if (res.data.user) setCurrentUserId(res.data.user.id);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 납부 기한 설정 훅 (entity_settings 재사용)
   const entityType = ctx.projectId ? "project" : "group";
@@ -331,7 +341,7 @@ export function FinanceContent({
         byCategory={stats.byCategory}
       />
 
-      {/* 거래 내역 / 납부 현황 / 예산 탭 */}
+      {/* 거래 내역 / 납부 현황 / 예산 / 분할 정산 탭 */}
       <div className="mt-3">
         <Tabs defaultValue="transactions">
           <TabsList className="w-full h-7 mb-3">
@@ -343,6 +353,9 @@ export function FinanceContent({
             </TabsTrigger>
             <TabsTrigger value="budget" className="flex-1 text-xs">
               예산
+            </TabsTrigger>
+            <TabsTrigger value="split" className="flex-1 text-xs">
+              분할 정산
             </TabsTrigger>
           </TabsList>
 
@@ -618,6 +631,18 @@ export function FinanceContent({
               ctx={ctx}
               canManage={canManage}
               transactions={transactions}
+            />
+          </TabsContent>
+
+          {/* 분할 정산 탭 */}
+          <TabsContent value="split" className="mt-0">
+            <FinanceSplitSection
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+              groupMembers={groupMembers ?? ctx.raw.groupMembers}
+              nicknameMap={ctx.nicknameMap}
+              canManage={canManage}
+              currentUserId={currentUserId}
             />
           </TabsContent>
         </Tabs>

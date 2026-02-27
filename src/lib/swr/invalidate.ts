@@ -41,6 +41,17 @@ export function invalidateFinanceBudget(entityType: string, entityId: string, ye
   mutate(swrKeys.financeBudget(entityType, entityId, yearMonth));
 }
 
+export function invalidateFinanceSplits(groupId: string, projectId?: string | null) {
+  mutate(swrKeys.financeSplits(groupId, projectId));
+  if (projectId) {
+    mutate(swrKeys.financeSplits(groupId));
+  }
+}
+
+export function invalidateFinanceSplitMembers(splitId: string) {
+  mutate(swrKeys.financeSplitMembers(splitId));
+}
+
 export function invalidateBoard(groupId: string) {
   // board 키는 category를 포함하므로 prefix 매칭으로 무효화
   mutate(
@@ -140,4 +151,29 @@ export function invalidateEntitySettings(entityType: string, entityId: string, k
 
 export function invalidateScheduleTemplates(entityType: string, entityId: string) {
   mutate(swrKeys.scheduleTemplates(entityType, entityId));
+}
+
+export function invalidateAttendancePrediction(groupId: string, scheduleId: string) {
+  mutate(swrKeys.attendancePrediction(groupId, scheduleId));
+}
+
+export function invalidateGroupShowRate(groupId: string) {
+  mutate(swrKeys.groupShowRate(groupId));
+}
+
+export function invalidateUpcomingSchedules(groupId: string, projectId?: string | null) {
+  mutate(swrKeys.upcomingSchedules(groupId, projectId));
+  if (projectId) {
+    mutate(swrKeys.upcomingSchedules(groupId));
+  }
+}
+
+export function invalidateContentReports(groupId: string) {
+  mutate(swrKeys.contentReports(groupId));
+  mutate(swrKeys.contentReportsPendingCount(groupId));
+}
+
+export function invalidateBulkRsvp(groupId: string, scheduleIds: string[]) {
+  scheduleIds.forEach((id) => mutate(swrKeys.scheduleRsvp(id)));
+  invalidateGroupShowRate(groupId);
 }
