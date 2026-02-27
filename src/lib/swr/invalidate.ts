@@ -631,3 +631,7 @@ export function invalidatePersonalGrowthTimeline(groupId: string, userId: string
 export function invalidateSessionAutoFeedback(groupId: string) {
   mutate(swrKeys.sessionAutoFeedback(groupId));
 }
+
+export function invalidateGroupActivityHeatmap(groupId: string) {
+  mutate(swrKeys.groupActivityHeatmap(groupId));
+}

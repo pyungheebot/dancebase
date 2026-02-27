@@ -599,4 +599,8 @@ export const swrKeys = {
   // 세션 피드백 생성기 (localStorage 기반)
   sessionAutoFeedback: (groupId: string) =>
     `/groups/${groupId}/session-feedback` as const,
+
+  // 그룹 활동 히트맵 (요일/시간대별 출석률)
+  groupActivityHeatmap: (groupId: string) =>
+    `/groups/${groupId}/activity-heatmap` as const,
 };

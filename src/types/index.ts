@@ -4624,3 +4624,98 @@ export type PersonalityProfile = {
   bio: string; // 한줄 소개 (최대 100자)
   updatedAt: string;
 };
+
+// ============================================
+// Practice Playlist Card (연습 플레이리스트 카드, localStorage 기반)
+// ============================================
+
+export type PracticeCardTrack = {
+  id: string;
+  title: string;       // 곡명
+  artist: string;      // 아티스트
+  bpm: number | null;  // BPM (선택)
+  duration: string;    // "3:45" 형식
+  genre: string;       // 장르
+  order: number;
+  createdAt: string;
+};
+
+export type PracticeCardPlaylist = {
+  tracks: PracticeCardTrack[];
+  updatedAt: string;
+};
+
+// ============================================
+// Onboarding Checklist (신입 멤버 온보딩 체크리스트)
+// ============================================
+
+export type OnboardingStep = {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  completedAt?: string;
+};
+
+export type OnboardingProgress = {
+  userId: string;
+  steps: OnboardingStep[];
+  startedAt: string;
+  completionRate: number;
+};
+
+// ============================================
+// Group Activity Heatmap (그룹 활동 히트맵)
+// ============================================
+
+export type HeatmapCell = {
+  dayIndex: number;     // 0=월 ~ 6=일
+  hourSlot: number;     // 0-23 (실제로는 6-22 범위, 2시간 단위 슬롯)
+  attendanceCount: number;
+  scheduleCount: number;
+  avgAttendanceRate: number;
+};
+
+export type ActivityHeatmapData = {
+  cells: HeatmapCell[];
+  bestSlots: { dayIndex: number; hourSlot: number; rate: number }[];
+};
+
+// ============================================
+// Expense Splitter (경비 분할 계산기)
+// ============================================
+
+export type ExpenseSplitItem = {
+  id: string;
+  description: string;
+  amount: number;
+  paidBy: string;        // 지불자 이름
+  splitAmong: string[];  // 분할 대상 이름 배열
+  createdAt: string;
+};
+
+export type ExpenseSplitSession = {
+  id: string;
+  title: string;         // "2월 공연 경비" 등
+  items: ExpenseSplitItem[];
+  createdAt: string;
+};
+
+// ============================================
+// Warmup Routine (워밍업 루틴)
+// ============================================
+
+export type WarmupExercise = {
+  id: string;
+  name: string;            // 동작명
+  durationSeconds: number; // 초 단위
+  description: string;
+};
+
+export type WarmupRoutine = {
+  id: string;
+  title: string;           // "기본 스트레칭", "힙합 워밍업" 등
+  exercises: WarmupExercise[];
+  totalDuration: number;   // 초 단위 합계
+  createdAt: string;
+};
