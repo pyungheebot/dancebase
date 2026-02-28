@@ -34,6 +34,8 @@ import {
   Gauge,
   Hand,
   X,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -380,8 +382,10 @@ interface MetronomePanelProps {
   effectiveBpm: number;
   beat: boolean;
   speedMultiplier: number;
+  soundEnabled: boolean;
   onBpmChange: (bpm: number) => void;
   onSpeedChange: (speed: number) => void;
+  onSoundToggle: (enabled: boolean) => void;
   onStart: () => void;
   onStop: () => void;
   // 탭 BPM
@@ -397,8 +401,10 @@ function MetronomePanel({
   effectiveBpm,
   beat,
   speedMultiplier,
+  soundEnabled,
   onBpmChange,
   onSpeedChange,
+  onSoundToggle,
   onStart,
   onStop,
   tappedBpm,
@@ -498,7 +504,7 @@ function MetronomePanel({
         </div>
       </div>
 
-      {/* 시작/정지 버튼 */}
+      {/* 시작/정지 + 음소거 버튼 */}
       <div className="flex gap-2">
         {active ? (
           <Button
@@ -520,6 +526,19 @@ function MetronomePanel({
             시작
           </Button>
         )}
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 w-8 p-0"
+          onClick={() => onSoundToggle(!soundEnabled)}
+          aria-label={soundEnabled ? "소리 끄기" : "소리 켜기"}
+        >
+          {soundEnabled ? (
+            <Volume2 className="h-3.5 w-3.5" />
+          ) : (
+            <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+        </Button>
       </div>
 
       {/* 탭 BPM */}
@@ -596,6 +615,9 @@ export function MusicTempoCard({ groupId, projectId }: MusicTempoCardProps) {
     effectiveBpm,
     startMetronome,
     stopMetronome,
+    // 사운드
+    soundEnabled,
+    setSoundEnabled,
     speedMultiplier,
     setSpeedMultiplier,
     // 탭
@@ -691,8 +713,10 @@ export function MusicTempoCard({ groupId, projectId }: MusicTempoCardProps) {
                 effectiveBpm={effectiveBpm}
                 beat={metronomeBeat}
                 speedMultiplier={speedMultiplier}
+                soundEnabled={soundEnabled}
                 onBpmChange={(v) => setMetronomeBpm(Math.max(BPM_MIN, Math.min(BPM_MAX, v)))}
                 onSpeedChange={setSpeedMultiplier}
+                onSoundToggle={setSoundEnabled}
                 onStart={() => startMetronome()}
                 onStop={stopMetronome}
                 tappedBpm={tappedBpm}

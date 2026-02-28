@@ -107,7 +107,11 @@ export function useMusicTempo(groupId: string, projectId: string) {
   const [metronomeActive, setMetronomeActive] = useState(false);
   const [metronomeBpm, setMetronomeBpm] = useState(120);
   const [metronomeBeat, setMetronomeBeat] = useState(false); // 깜빡임용 토글
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const metronomeRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const beatCountRef = useRef(0);
+  const soundEnabledRef = useRef(soundEnabled);
 
   // 탭 BPM 상태
   const [tapTimestamps, setTapTimestamps] = useState<number[]>([]);
@@ -116,6 +120,21 @@ export function useMusicTempo(groupId: string, projectId: string) {
 
   // 배속 슬라이더 (0.5x ~ 2.0x)
   const [speedMultiplier, setSpeedMultiplier] = useState(1.0);
+
+  // soundEnabled를 ref로 동기화 (playClick의 의존성에서 제거하여 메트로놈 재시작 방지)
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
+
+  // AudioContext cleanup
+  useEffect(() => {
+    return () => {
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close();
+        audioCtxRef.current = null;
+      }
+    };
+  }, []);
 
   // ---- 로드 ----
   const reload = useCallback(() => {
@@ -134,14 +153,58 @@ export function useMusicTempo(groupId: string, projectId: string) {
     reload();
   }, [reload]);
 
+  // ---- 메트로놈 오디오 ----
+  const getAudioContext = useCallback(() => {
+    if (typeof window === "undefined") return null;
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext();
+    }
+    if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
+    return audioCtxRef.current;
+  }, []);
+
+  const playClick = useCallback(
+    (isAccent: boolean) => {
+      if (!soundEnabledRef.current) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        // 강박은 높은 톤, 약박은 낮은 톤
+        oscillator.frequency.value = isAccent ? 1000 : 800;
+        oscillator.type = "sine";
+
+        const now = ctx.currentTime;
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.setTargetAtTime(0, now, 0.015);
+
+        oscillator.start(now);
+        oscillator.stop(now + 0.05);
+      } catch {
+        // 오디오 재생 실패 시 무시
+      }
+    },
+    [getAudioContext]
+  );
+
   // ---- 메트로놈 ----
   const effectiveBpm = Math.round(metronomeBpm * speedMultiplier);
   const intervalMs = Math.round(60000 / Math.max(1, effectiveBpm));
 
   useEffect(() => {
     if (metronomeActive) {
+      beatCountRef.current = 0;
       metronomeRef.current = setInterval(() => {
         setMetronomeBeat((v) => !v);
+        playClick(beatCountRef.current % 4 === 0);
+        beatCountRef.current++;
       }, intervalMs);
     } else {
       if (metronomeRef.current) {
@@ -155,7 +218,7 @@ export function useMusicTempo(groupId: string, projectId: string) {
         metronomeRef.current = null;
       }
     };
-  }, [metronomeActive, intervalMs]);
+  }, [metronomeActive, intervalMs, playClick]);
 
   const startMetronome = useCallback((bpm?: number) => {
     if (bpm !== undefined) setMetronomeBpm(bpm);
@@ -165,6 +228,7 @@ export function useMusicTempo(groupId: string, projectId: string) {
   const stopMetronome = useCallback(() => {
     setMetronomeActive(false);
     setMetronomeBeat(false);
+    beatCountRef.current = 0;
   }, []);
 
   // ---- 탭 BPM 측정 ----
@@ -276,6 +340,9 @@ export function useMusicTempo(groupId: string, projectId: string) {
     effectiveBpm,
     startMetronome,
     stopMetronome,
+    // 사운드
+    soundEnabled,
+    setSoundEnabled,
     // 배속
     speedMultiplier,
     setSpeedMultiplier,
