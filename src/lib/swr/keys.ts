@@ -1316,4 +1316,24 @@ export const swrKeys = {
   // 공연 무대 효과 큐시트 (localStorage 기반)
   stageEffect: (groupId: string, projectId: string) =>
     `stage-effect-${groupId}-${projectId}` as const,
+
+  // 멤버 댄스 영상 포트폴리오 (localStorage 기반)
+  videoPortfolio: (memberId: string) =>
+    `video-portfolio-${memberId}` as const,
+
+  // 그룹 공지 읽음 확인 (localStorage 기반)
+  readReceipt: (groupId: string) =>
+    `read-receipt-${groupId}` as const,
+
+  // 그룹 연습 하이라이트 (localStorage 기반)
+  practiceHighlight: (groupId: string) =>
+    `practice-highlight-${groupId}` as const,
+
+  // 공연 안전 체크리스트 (localStorage 기반)
+  safetyChecklist: (groupId: string, projectId: string) =>
+    `safety-checklist-${groupId}-${projectId}` as const,
+
+  // 공연 관객 설문조사 (localStorage 기반)
+  audienceSurvey: (groupId: string, projectId: string) =>
+    `audience-survey-${groupId}-${projectId}` as const,
 };

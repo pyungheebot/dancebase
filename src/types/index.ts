@@ -11031,3 +11031,253 @@ export type StageEffectData = {
   entries: StageEffectEntry[];
   updatedAt: string;
 };
+
+// ============================================
+// 댄스 영상 포트폴리오 링크 (VideoPortfolio)
+// ============================================
+
+/** 영상 카테고리 */
+export type VideoPortfolioCategory =
+  | "solo"
+  | "group"
+  | "freestyle"
+  | "battle"
+  | "performance"
+  | "practice";
+
+/** 영상 플랫폼 */
+export type VideoPortfolioPlatform =
+  | "youtube"
+  | "instagram"
+  | "tiktok"
+  | "vimeo"
+  | "other";
+
+/** 포트폴리오 영상 항목 */
+export type VideoPortfolioEntry = {
+  id: string;
+  /** 영상 제목 */
+  title: string;
+  /** 영상 URL */
+  url: string;
+  /** 플랫폼 */
+  platform: VideoPortfolioPlatform;
+  /** 카테고리 */
+  category: VideoPortfolioCategory;
+  /** 촬영/업로드 날짜 (YYYY-MM-DD) */
+  date?: string;
+  /** 태그 목록 */
+  tags: string[];
+  /** 설명 */
+  description?: string;
+  /** 썸네일 URL */
+  thumbnailUrl?: string;
+  /** 공개 여부 */
+  isPublic: boolean;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type VideoPortfolioData = {
+  memberId: string;
+  entries: VideoPortfolioEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// Read Receipt (그룹 공지 읽음 확인)
+// ============================================================
+
+/** 공지 중요도 */
+export type ReadReceiptPriority = "normal" | "important" | "urgent";
+
+/** 읽음 기록 (멤버별) */
+export type ReadReceiptReader = {
+  /** 멤버 이름 */
+  memberName: string;
+  /** 읽은 시각 (ISO 8601) */
+  readAt: string;
+};
+
+/** 공지 항목 */
+export type ReadReceiptAnnouncement = {
+  /** 고유 ID */
+  id: string;
+  /** 제목 */
+  title: string;
+  /** 내용 */
+  content: string;
+  /** 작성자 */
+  author: string;
+  /** 중요도 */
+  priority: ReadReceiptPriority;
+  /** 전체 대상 멤버 목록 */
+  targetMembers: string[];
+  /** 읽음 기록 목록 */
+  readers: ReadReceiptReader[];
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type ReadReceiptData = {
+  groupId: string;
+  announcements: ReadReceiptAnnouncement[];
+  updatedAt: string;
+};
+
+// ============================================
+// 연습 하이라이트 (Practice Highlights)
+// ============================================
+
+/** 연습 하이라이트 카테고리 */
+export type PracticeHighlightCategory =
+  | "awesome_move"    // 멋진 동작
+  | "growth_moment"   // 성장 순간
+  | "teamwork"        // 팀워크
+  | "funny_episode"   // 재미있는 에피소드
+  | "other";          // 기타
+
+/** 개별 하이라이트 항목 */
+export type PracticeHighlightEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 연습 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 하이라이트 제목 */
+  title: string;
+  /** 관련 멤버 이름 */
+  memberName: string;
+  /** 카테고리 */
+  category: PracticeHighlightCategory;
+  /** 상세 설명 (선택) */
+  description?: string;
+  /** 좋아요 수 */
+  likes: number;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type PracticeHighlightData = {
+  groupId: string;
+  entries: PracticeHighlightEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 안전 체크리스트 (Safety Checklist)
+// ============================================================
+
+/** 안전 체크리스트 카테고리 */
+export type SafetyChecklistCategory =
+  | "stage"      // 무대안전
+  | "electric"   // 전기
+  | "fire"       // 소방
+  | "emergency"  // 응급
+  | "audience"   // 관객안전
+  | "etc";       // 기타
+
+/** 안전 체크리스트 항목 확인 상태 */
+export type SafetyChecklistStatus =
+  | "pending"   // 미확인
+  | "checked"   // 확인완료
+  | "issue";    // 문제발견
+
+/** 안전 체크리스트 항목 우선순위 */
+export type SafetyChecklistPriority =
+  | "high"    // 높음
+  | "medium"  // 보통
+  | "low";    // 낮음
+
+/** 안전 체크리스트 개별 항목 */
+export type SafetyChecklistItem = {
+  /** 고유 ID */
+  id: string;
+  /** 카테고리 */
+  category: SafetyChecklistCategory;
+  /** 항목 내용 */
+  content: string;
+  /** 담당자 */
+  assignee?: string;
+  /** 확인 상태 */
+  status: SafetyChecklistStatus;
+  /** 확인 시간 (ISO 8601) */
+  checkedAt?: string;
+  /** 우선순위 */
+  priority: SafetyChecklistPriority;
+  /** 비고 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type SafetyChecklistData = {
+  groupId: string;
+  projectId: string;
+  items: SafetyChecklistItem[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 관객 설문조사 (AudienceSurvey)
+// ============================================================
+
+/** 설문 항목 종류 */
+export type AudienceSurveyQuestion =
+  | "overall"
+  | "stage"
+  | "choreography"
+  | "music"
+  | "costume"
+  | "revisit";
+
+/** 점수 (1~5) */
+export type AudienceSurveyScore = 1 | 2 | 3 | 4 | 5;
+
+/** 항목별 집계 */
+export type AudienceSurveyQuestionStat = {
+  question: AudienceSurveyQuestion;
+  avg: number;
+  count: number;
+};
+
+/** 설문 일괄 입력 엔트리 */
+export type AudienceSurveyEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 엔트리 제목 (예: "1회차 공연") */
+  title: string;
+  /** 수집 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 총 응답 수 */
+  responseCount: number;
+  /** 항목별 평균 점수 */
+  questionStats: AudienceSurveyQuestionStat[];
+  /** 자유 의견 목록 */
+  freeComments: string[];
+  /** 비고 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type AudienceSurveyData = {
+  groupId: string;
+  projectId: string;
+  entries: AudienceSurveyEntry[];
+  updatedAt: string;
+};

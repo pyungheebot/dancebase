@@ -740,3 +740,19 @@ export function invalidateMemberAvailabilitySchedule(groupId: string) {
 export function invalidateCatering(groupId: string, projectId: string) {
   mutate(swrKeys.catering(groupId, projectId));
 }
+
+export function invalidateVideoPortfolio(memberId: string) {
+  mutate(swrKeys.videoPortfolio(memberId));
+}
+
+export function invalidateReadReceipt(groupId: string) {
+  mutate(swrKeys.readReceipt(groupId));
+}
+
+export function invalidateSafetyChecklist(groupId: string, projectId: string) {
+  mutate(swrKeys.safetyChecklist(groupId, projectId));
+}
+
+export function invalidateAudienceSurvey(groupId: string, projectId: string) {
+  mutate(swrKeys.audienceSurvey(groupId, projectId));
+}
