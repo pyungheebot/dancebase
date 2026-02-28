@@ -1587,4 +1587,19 @@ export const swrKeys = {
 
   // 야외 공연 날씨 관리 (localStorage 기반)
   stageWeather: (projectId: string) => `stage-weather-${projectId}` as const,
+
+  // 유연성 트래커 (localStorage 기반)
+  danceFlexibility: (memberId: string) => `dance-flexibility-${memberId}` as const,
+
+  // 리허설 런다운 (localStorage 기반)
+  showRundown: (projectId: string) => `show-rundown-${projectId}` as const,
+
+  // 아티스트 라이더 (localStorage 기반)
+  artistRider: (projectId: string) => `artist-rider-${projectId}` as const,
+
+  // 익명 피드백 박스 (localStorage 기반)
+  groupFeedbackBox: (groupId: string) => `group-feedback-box-${groupId}` as const,
+
+  // 카풀 매칭 (localStorage 기반)
+  groupCarPool: (groupId: string) => `group-carpool-${groupId}` as const,
 };

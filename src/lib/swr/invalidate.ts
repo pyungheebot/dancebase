@@ -917,3 +917,23 @@ export function invalidateShowIntercom(projectId: string) {
 export function invalidateStageWeather(projectId: string) {
   mutate(swrKeys.stageWeather(projectId));
 }
+
+export function invalidateDanceFlexibility(memberId: string) {
+  mutate(swrKeys.danceFlexibility(memberId));
+}
+
+export function invalidateShowRundown(projectId: string) {
+  mutate(swrKeys.showRundown(projectId));
+}
+
+export function invalidateArtistRider(projectId: string) {
+  mutate(swrKeys.artistRider(projectId));
+}
+
+export function invalidateGroupFeedbackBox(groupId: string) {
+  mutate(swrKeys.groupFeedbackBox(groupId));
+}
+
+export function invalidateGroupCarPool(groupId: string) {
+  mutate(swrKeys.groupCarPool(groupId));
+}

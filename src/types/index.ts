@@ -14901,3 +14901,207 @@ export type StageWeatherData = {
   rainPlan: StageWeatherRainPlan;
   updatedAt: string;
 };
+
+// ============================================================
+// CarPool 타입 (GroupCarPoolCard - localStorage 기반)
+// ============================================================
+
+/** 카풀 상태 */
+export type CarPoolStatus = "모집중" | "마감" | "완료";
+
+/** 탑승자 */
+export type CarPoolPassenger = {
+  id: string;
+  name: string;
+  addedAt: string;
+};
+
+/** 카풀 항목 */
+export type CarPoolItem = {
+  id: string;
+  /** 운전자명 */
+  driverName: string;
+  /** 출발지 */
+  departurePlace: string;
+  /** 도착지 */
+  arrivalPlace: string;
+  /** 출발 시간 (ISO 8601) */
+  departureTime: string;
+  /** 탑승 가능 인원 (운전자 제외) */
+  maxPassengers: number;
+  /** 차량 정보 (선택) */
+  carInfo?: string;
+  /** 상태 */
+  status: CarPoolStatus;
+  /** 탑승자 목록 */
+  passengers: CarPoolPassenger[];
+  createdAt: string;
+};
+
+/** GroupCarPoolCard 전체 데이터 (localStorage 기반) */
+export type CarPoolData = {
+  groupId: string;
+  carpools: CarPoolItem[];
+  updatedAt: string;
+};
+
+// ─── ShowRundown (리허설 런다운) ───────────────────────────────
+
+/** 런다운 항목 */
+export type ShowRundownItem = {
+  id: string;
+  /** 시작 시간 (HH:MM) */
+  startTime: string;
+  /** 종료 시간 (HH:MM) */
+  endTime: string;
+  /** 활동명 */
+  activity: string;
+  /** 장소 */
+  location: string;
+  /** 담당자 */
+  owner: string;
+  /** 참여자 목록 (쉼표 구분 문자열) */
+  participants: string;
+  /** 비고 */
+  note: string;
+  /** 완료 여부 */
+  done: boolean;
+};
+
+/** ShowRundownCard 전체 데이터 (localStorage 기반) */
+export type ShowRundownData = {
+  projectId: string;
+  /** 런다운 항목 목록 (시간순 정렬) */
+  items: ShowRundownItem[];
+  updatedAt: string;
+};
+
+// ============================================================
+// FlexTrack* - 유연성 트래커 (DanceFlexibilityCard)
+// ============================================================
+
+/** 측정 부위 */
+export type FlexTrackPart =
+  | "forward_bend"    // 전굴 (앞으로 숙이기) - cm
+  | "side_split"      // 개각 (좌우 벌리기) - °
+  | "y_balance"       // Y밸런스 (한발 균형) - cm
+  | "shoulder"        // 어깨 유연성 - cm
+  | "hip_mobility";   // 고관절 가동범위 - °
+
+/** 측정 단위 */
+export type FlexTrackUnit = "cm" | "deg";
+
+/** 단일 측정 기록 */
+export type FlexTrackRecord = {
+  id: string;
+  /** 측정일 (YYYY-MM-DD) */
+  date: string;
+  /** 측정값 */
+  value: number;
+  /** 메모 */
+  note: string;
+};
+
+/** 부위별 설정 (목표값 포함) */
+export type FlexTrackPartConfig = {
+  part: FlexTrackPart;
+  /** 목표값 */
+  goal: number;
+  /** 기록 목록 (최신순) */
+  records: FlexTrackRecord[];
+};
+
+/** DanceFlexibilityCard 전체 데이터 (localStorage 기반) */
+export type FlexTrackData = {
+  memberId: string;
+  parts: FlexTrackPartConfig[];
+  updatedAt: string;
+};
+
+// ============================================================
+// ShowRider* - 아티스트 라이더 (ArtistRiderCard)
+// ============================================================
+
+/** 라이더 카테고리 */
+export type ShowRiderCategory =
+  | "technical"     // 기술
+  | "backstage"     // 백스테이지
+  | "catering"      // 케이터링
+  | "accommodation" // 숙박
+  | "transport"     // 교통
+  | "etc";          // 기타
+
+/** 우선순위 */
+export type ShowRiderPriority =
+  | "required"   // 필수
+  | "preferred"  // 희망
+  | "optional";  // 선택
+
+/** 확보 상태 */
+export type ShowRiderStatus =
+  | "pending"      // 미확인
+  | "secured"      // 확보
+  | "unavailable"; // 불가
+
+/** 라이더 단일 항목 */
+export type ShowRiderItem = {
+  id: string;
+  /** 아티스트/팀명 */
+  artistName: string;
+  /** 카테고리 */
+  category: ShowRiderCategory;
+  /** 요청 내용 */
+  request: string;
+  /** 수량 */
+  quantity: number;
+  /** 우선순위 */
+  priority: ShowRiderPriority;
+  /** 확보 상태 */
+  status: ShowRiderStatus;
+  /** 메모 */
+  note: string;
+};
+
+/** ArtistRiderCard 전체 데이터 (localStorage 기반) */
+export type ShowRiderData = {
+  projectId: string;
+  /** 라이더 항목 목록 */
+  items: ShowRiderItem[];
+  updatedAt: string;
+};
+
+// ============================================================
+// AnonFeedback* — 익명 피드백 박스 (localStorage 기반)
+// ============================================================
+
+/** 피드백 카테고리 */
+export type AnonFeedbackCategory =
+  | "칭찬"
+  | "건의"
+  | "불만"
+  | "아이디어"
+  | "기타";
+
+/** 개별 피드백 항목 */
+export type AnonFeedbackItem = {
+  id: string;
+  /** 피드백 내용 */
+  content: string;
+  /** 카테고리 */
+  category: AnonFeedbackCategory;
+  /** 작성일 (ISO 8601) */
+  createdAt: string;
+  /** 해결 여부 */
+  resolved: boolean;
+  /** 관리자 답변 텍스트 (없으면 undefined) */
+  replyText?: string;
+  /** 관리자 답변일 (ISO 8601, 없으면 undefined) */
+  repliedAt?: string;
+};
+
+/** GroupFeedbackBoxCard 전체 데이터 (localStorage 기반) */
+export type AnonFeedbackData = {
+  groupId: string;
+  feedbacks: AnonFeedbackItem[];
+  updatedAt: string;
+};
