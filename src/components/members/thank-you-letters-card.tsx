@@ -58,8 +58,11 @@ const TOP_MEDALS = ["🥇", "🥈", "🥉"];
 
 // 카테고리별 배지 색상
 const CATEGORY_BADGE_CLASS: Record<ThankYouCategory, string> = {
+  help: "bg-blue-100 text-blue-700 border-blue-200",
+  motivation: "bg-orange-100 text-orange-700 border-orange-200",
   teamwork: "bg-blue-100 text-blue-700 border-blue-200",
   teaching: "bg-purple-100 text-purple-700 border-purple-200",
+  creativity: "bg-pink-100 text-pink-700 border-pink-200",
   encouragement: "bg-green-100 text-green-700 border-green-200",
   effort: "bg-orange-100 text-orange-700 border-orange-200",
   general: "bg-pink-100 text-pink-700 border-pink-200",

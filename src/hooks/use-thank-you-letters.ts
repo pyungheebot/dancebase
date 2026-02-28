@@ -7,8 +7,11 @@ import type { ThankYouLetter, ThankYouCategory } from "@/types";
 
 // 카테고리 레이블
 export const THANK_YOU_CATEGORY_LABEL: Record<ThankYouCategory, string> = {
+  help: "도움",
+  motivation: "동기부여",
   teamwork: "팀워크",
   teaching: "가르침",
+  creativity: "창의성",
   encouragement: "격려",
   effort: "노력",
   general: "감사",
@@ -16,8 +19,11 @@ export const THANK_YOU_CATEGORY_LABEL: Record<ThankYouCategory, string> = {
 
 // 카테고리 이모지
 export const THANK_YOU_CATEGORY_EMOJI: Record<ThankYouCategory, string> = {
+  help: "🤲",
+  motivation: "🔥",
   teamwork: "🤝",
   teaching: "📚",
+  creativity: "🎨",
   encouragement: "💪",
   effort: "⭐",
   general: "💖",

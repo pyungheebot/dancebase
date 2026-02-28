@@ -975,4 +975,23 @@ export const swrKeys = {
   // 그룹 회의록 메모 (localStorage 기반)
   meetingMinutesMemo: (groupId: string) =>
     `meeting-minutes-${groupId}` as const,
+
+  // 멤버 역할 히스토리 (localStorage 기반)
+  roleHistory: (groupId: string) => `role-history-${groupId}` as const,
+
+  // 감사 메시지 보드 (localStorage 기반)
+  thankYouBoard: (groupId: string) =>
+    `thank-you-board-${groupId}` as const,
+
+  // 공연 리허설 스케줄 (localStorage 기반)
+  rehearsalSchedule: (groupId: string, projectId: string) =>
+    `rehearsal-schedule-${groupId}-${projectId}` as const,
+
+  // 연습 체크인 (localStorage 기반)
+  practiceCheckin: (groupId: string) =>
+    `practice-checkin-${groupId}` as const,
+
+  // 멤버 기술 인증 (localStorage 기반)
+  skillCertification: (groupId: string) =>
+    `skill-certification-${groupId}` as const,
 };

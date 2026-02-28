@@ -5142,7 +5142,15 @@ export type CostumeStore = {
 // Thank You Letter (감사 편지)
 // ============================================
 
-export type ThankYouCategory = "teamwork" | "teaching" | "encouragement" | "effort" | "general";
+export type ThankYouCategory =
+  | "help"
+  | "motivation"
+  | "teaching"
+  | "teamwork"
+  | "creativity"
+  | "encouragement"
+  | "effort"
+  | "general";
 
 export type ThankYouLetter = {
   id: string;
@@ -7295,5 +7303,140 @@ export type MeetingMinutesEntry = {
   agendaItems: MeetingAgendaItem[];
   generalNotes?: string;
   nextMeetingDate?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 멤버 기술 인증 (Skill Certification)
+// ============================================================
+
+/** 기술 인증 레벨 */
+export type SkillCertLevel =
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+  | "expert"
+  | "master";
+
+/** 기술 인증 정의 */
+export type SkillCertDefinition = {
+  id: string;
+  skillName: string;
+  description: string;
+  category: string;
+  level: SkillCertLevel;
+  requirements: string[];
+  createdAt: string;
+};
+
+/** 기술 인증 수여 기록 */
+export type SkillCertAward = {
+  id: string;
+  certId: string;
+  memberName: string;
+  certifiedBy: string;
+  certifiedAt: string;
+  notes?: string;
+};
+
+/** 멤버 역할 유형 */
+export type MemberRoleType =
+  | "leader"
+  | "sub_leader"
+  | "treasurer"
+  | "secretary"
+  | "choreographer"
+  | "trainer"
+  | "member"
+  | "other";
+
+/** 멤버 역할 히스토리 항목 */
+export type RoleHistoryEntry = {
+  id: string;
+  memberName: string;
+  role: MemberRoleType;
+  customRoleTitle?: string;
+  startDate: string;
+  endDate?: string;
+  isActive: boolean;
+  assignedBy?: string;
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================
+// 감사 메시지 보드
+// ============================================
+
+/** 감사 메시지 항목 */
+export type ThankYouMessage = {
+  id: string;
+  fromMember: string;
+  toMember: string;
+  category: ThankYouCategory;
+  message: string;
+  emoji?: string;
+  likes: string[];
+  isPublic: boolean;
+  createdAt: string;
+};
+
+// ============================================
+// 연습 체크인
+// ============================================
+
+/** 연습 체크인 상태 */
+export type PracticeCheckinStatus = "checked_in" | "checked_out" | "absent";
+
+/** 연습 체크인 세션 */
+export type PracticeCheckinSession = {
+  id: string;
+  date: string;
+  title: string;
+  startTime: string;
+  endTime?: string;
+  isActive: boolean;
+  createdAt: string;
+};
+
+/** 연습 체크인 기록 */
+export type PracticeCheckinRecord = {
+  id: string;
+  sessionId: string;
+  memberName: string;
+  status: PracticeCheckinStatus;
+  checkinTime?: string;
+  checkoutTime?: string;
+  lateMinutes?: number;
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 리허설 스케줄
+// ============================================================
+
+/** 리허설 유형 */
+export type RehearsalType =
+  | "full_run"
+  | "tech_rehearsal"
+  | "dress_rehearsal"
+  | "section"
+  | "blocking"
+  | "other";
+
+/** 리허설 스케줄 항목 */
+export type RehearsalScheduleEntry = {
+  id: string;
+  title: string;
+  type: RehearsalType;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location?: string;
+  focusAreas: string[];
+  requiredMembers: string[];
+  notes?: string;
+  status: "scheduled" | "completed" | "cancelled";
   createdAt: string;
 };
