@@ -1127,4 +1127,21 @@ export const swrKeys = {
   // 공연 협찬품 관리 (localStorage 기반)
   sponsoredGoods: (groupId: string, projectId: string) =>
     `sponsored-goods-${groupId}-${projectId}` as const,
+
+  // 멤버 댄스 포트폴리오 (localStorage 기반)
+  dancePortfolio: (memberId: string) => `dance-portfolio-${memberId}` as const,
+
+  // 공연 관객 좌석 예약 (localStorage 기반)
+  seatReservation: (groupId: string, projectId: string) =>
+    `seat-reservation-${groupId}-${projectId}` as const,
+
+  // 그룹 연습 날씨 알림 (localStorage 기반)
+  weatherAlert: (groupId: string) => `weather-alert-${groupId}` as const,
+
+  // 그룹 팀빌딩 활동 (localStorage 기반)
+  teamBuilding: (groupId: string) => `team-building-${groupId}` as const,
+
+  // 공연 기술 요구사항 (localStorage 기반)
+  techRequirements: (groupId: string, projectId: string) =>
+    `tech-requirements-${groupId}-${projectId}` as const,
 };

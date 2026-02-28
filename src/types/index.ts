@@ -8627,3 +8627,166 @@ export type SponsoredGoodsItem = {
   notes?: string;
   createdAt: string;
 };
+
+// ============================================================
+// 멤버 댄스 포트폴리오
+// ============================================================
+
+export type PortfolioEntryType =
+  | "performance"
+  | "competition"
+  | "workshop"
+  | "collaboration"
+  | "solo";
+
+export type PortfolioAward = {
+  title: string;
+  rank?: string;
+  date: string;
+};
+
+export type DancePortfolioEntry = {
+  id: string;
+  type: PortfolioEntryType;
+  title: string;
+  date: string;
+  venue?: string;
+  role?: string;
+  genre?: string;
+  description?: string;
+  awards: PortfolioAward[];
+  highlights: string[];
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 관객 좌석 예약
+// ============================================================
+
+export type SeatReservationStatus =
+  | "available"
+  | "reserved"
+  | "occupied"
+  | "blocked";
+
+export type SeatReservationEntry = {
+  id: string;
+  seatLabel: string;
+  row: string;
+  number: number;
+  status: SeatReservationStatus;
+  reservedBy?: string;
+  reservedFor?: string;
+  phone?: string;
+  notes?: string;
+  reservedAt?: string;
+};
+
+export type SeatReservationLayout = {
+  id: string;
+  projectId: string;
+  layoutName: string;
+  rows: number;
+  seatsPerRow: number;
+  seats: SeatReservationEntry[];
+  createdAt: string;
+};
+
+// ============================================================
+// 그룹 팀빌딩 활동
+// ============================================================
+
+export type TeamBuildingCategory =
+  | "ice_breaker"
+  | "game"
+  | "outing"
+  | "workshop"
+  | "dinner"
+  | "other";
+
+export type TeamBuildingParticipant = {
+  memberName: string;
+  feedback?: string;
+  rating?: number; // 1-5
+};
+
+export type TeamBuildingEvent = {
+  id: string;
+  title: string;
+  category: TeamBuildingCategory;
+  date: string;
+  time?: string;
+  location?: string;
+  description?: string;
+  organizer: string;
+  budget?: number;
+  participants: TeamBuildingParticipant[];
+  maxParticipants?: number;
+  isCompleted: boolean;
+  photos?: string[];
+  createdAt: string;
+};
+
+// ============================================================
+// 그룹 연습 날씨 알림
+// ============================================================
+
+export type WeatherAlertCondition =
+  | "sunny"
+  | "cloudy"
+  | "rainy"
+  | "snowy"
+  | "windy"
+  | "hot"
+  | "cold"
+  | "humid";
+
+export type WeatherAlertLevel = "safe" | "caution" | "warning" | "danger";
+
+export type WeatherAlertEntry = {
+  id: string;
+  date: string;
+  condition: WeatherAlertCondition;
+  temperature?: number;
+  humidity?: number;
+  windSpeed?: number;
+  alertLevel: WeatherAlertLevel;
+  recommendation: string;
+  isOutdoorSafe: boolean;
+  notes?: string;
+  createdBy: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 기술 요구사항
+// ============================================================
+
+export type TechRequirementCategory =
+  | "sound"
+  | "lighting"
+  | "video"
+  | "stage"
+  | "power"
+  | "communication"
+  | "other";
+
+export type TechRequirementPriority =
+  | "essential"
+  | "important"
+  | "nice_to_have";
+
+export type TechRequirementItem = {
+  id: string;
+  category: TechRequirementCategory;
+  title: string;
+  description: string;
+  priority: TechRequirementPriority;
+  quantity?: number;
+  isAvailable: boolean;
+  supplier?: string;
+  estimatedCost?: number;
+  assignedTo?: string;
+  notes?: string;
+  createdAt: string;
+};
