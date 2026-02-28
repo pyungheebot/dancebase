@@ -8204,3 +8204,175 @@ export type PracticeChallengeEntry = {
   createdBy: string;
   createdAt: string;
 };
+
+// ─── 스트레칭 루틴 ────────────────────────────────────────────
+
+export type StretchingBodyPart =
+  | "neck"
+  | "shoulders"
+  | "back"
+  | "hips"
+  | "legs"
+  | "ankles"
+  | "wrists"
+  | "full_body";
+
+export type StretchingExercise = {
+  id: string;
+  name: string;
+  bodyPart: StretchingBodyPart;
+  durationSeconds: number;
+  sets: number;
+  description?: string;
+};
+
+export type StretchingRoutine = {
+  id: string;
+  routineName: string;
+  exercises: StretchingExercise[];
+  totalMinutes: number;
+  createdAt: string;
+};
+
+export type StretchingLog = {
+  id: string;
+  routineId: string;
+  date: string;
+  completedExercises: string[];
+  flexibilityRating?: number;
+  notes?: string;
+  createdAt: string;
+};
+
+// ─── 그룹 연습 평가표 ─────────────────────────────────────────
+
+export type PracticeEvalCriteria = {
+  id: string;
+  name: string;
+  maxScore: number;
+};
+
+export type PracticeEvalScore = {
+  criteriaId: string;
+  score: number;
+  comment?: string;
+};
+
+export type PracticeEvalMemberResult = {
+  memberName: string;
+  scores: PracticeEvalScore[];
+  totalScore: number;
+  feedback?: string;
+};
+
+export type PracticeEvalSession = {
+  id: string;
+  date: string;
+  title: string;
+  criteria: PracticeEvalCriteria[];
+  results: PracticeEvalMemberResult[];
+  evaluator: string;
+  notes?: string;
+  createdAt: string;
+};
+
+// ─── 그룹 이벤트 RSVP ────────────────────────────────────────
+
+export type EventRsvpResponse = "attending" | "maybe" | "not_attending" | "pending";
+
+export type EventRsvpMember = {
+  memberName: string;
+  response: EventRsvpResponse;
+  respondedAt?: string;
+  note?: string;
+};
+
+export type EventRsvpItem = {
+  id: string;
+  title: string;
+  date: string;
+  time?: string;
+  location?: string;
+  description?: string;
+  deadline?: string;
+  responses: EventRsvpMember[];
+  createdBy: string;
+  createdAt: string;
+};
+
+// ─── 공연 포스터 관리 ─────────────────────────────────────
+
+export type PosterVersionStatus =
+  | "draft"
+  | "review"
+  | "approved"
+  | "rejected"
+  | "final";
+
+export type PosterVote = {
+  memberName: string;
+  rating: number; // 1-5
+  comment?: string;
+};
+
+export type PosterVersion = {
+  id: string;
+  versionNumber: number;
+  title: string;
+  designer: string;
+  description: string;
+  dimensions?: string;
+  colorScheme?: string[];
+  status: PosterVersionStatus;
+  votes: PosterVote[];
+  createdAt: string;
+};
+
+export type PosterProject = {
+  id: string;
+  projectId: string;
+  posterName: string;
+  versions: PosterVersion[];
+  selectedVersionId?: string;
+  deadline?: string;
+  createdAt: string;
+};
+
+// ─── 공연 음향 큐시트 ─────────────────────────────────────────
+
+export type SoundCueType =
+  | "music"
+  | "sfx"
+  | "voiceover"
+  | "ambient"
+  | "silence";
+
+export type SoundCueAction =
+  | "play"
+  | "stop"
+  | "fade_in"
+  | "fade_out"
+  | "crossfade"
+  | "loop";
+
+export type SoundCueEntry = {
+  id: string;
+  cueNumber: number;
+  name: string;
+  type: SoundCueType;
+  action: SoundCueAction;
+  triggerTime?: string;
+  duration?: string;
+  volume: number;
+  source?: string;
+  notes?: string;
+  isActive: boolean;
+};
+
+export type SoundCueSheet = {
+  id: string;
+  projectId: string;
+  title: string;
+  cues: SoundCueEntry[];
+  createdAt: string;
+};

@@ -1,0 +1,946 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Trash2,
+  Pencil,
+  Volume2,
+  Music,
+  Mic,
+  Wind,
+  Radio,
+  VolumeX,
+  Play,
+  Square,
+  RotateCcw,
+  Zap,
+  Layers,
+  Clock,
+  FileText,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useSoundCue } from "@/hooks/use-sound-cue";
+import type { SoundCueEntry, SoundCueType, SoundCueAction, SoundCueSheet } from "@/types";
+
+// ============================================================
+// 상수 & 레이블
+// ============================================================
+
+const TYPE_LABELS: Record<SoundCueType, string> = {
+  music: "음악",
+  sfx: "효과음",
+  voiceover: "보이스오버",
+  ambient: "앰비언트",
+  silence: "무음",
+};
+
+const TYPE_ICONS: Record<SoundCueType, React.ReactNode> = {
+  music: <Music className="h-3 w-3" />,
+  sfx: <Zap className="h-3 w-3" />,
+  voiceover: <Mic className="h-3 w-3" />,
+  ambient: <Wind className="h-3 w-3" />,
+  silence: <VolumeX className="h-3 w-3" />,
+};
+
+const TYPE_BADGE_COLORS: Record<SoundCueType, string> = {
+  music: "bg-blue-100 text-blue-700 border-blue-200",
+  sfx: "bg-orange-100 text-orange-700 border-orange-200",
+  voiceover: "bg-purple-100 text-purple-700 border-purple-200",
+  ambient: "bg-teal-100 text-teal-700 border-teal-200",
+  silence: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
+const ACTION_LABELS: Record<SoundCueAction, string> = {
+  play: "재생",
+  stop: "정지",
+  fade_in: "페이드인",
+  fade_out: "페이드아웃",
+  crossfade: "크로스페이드",
+  loop: "반복",
+};
+
+const ACTION_ICONS: Record<SoundCueAction, React.ReactNode> = {
+  play: <Play className="h-3 w-3" />,
+  stop: <Square className="h-3 w-3" />,
+  fade_in: <Volume2 className="h-3 w-3" />,
+  fade_out: <VolumeX className="h-3 w-3" />,
+  crossfade: <Radio className="h-3 w-3" />,
+  loop: <RotateCcw className="h-3 w-3" />,
+};
+
+const ACTION_BADGE_COLORS: Record<SoundCueAction, string> = {
+  play: "bg-green-100 text-green-700 border-green-200",
+  stop: "bg-red-100 text-red-700 border-red-200",
+  fade_in: "bg-sky-100 text-sky-700 border-sky-200",
+  fade_out: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  crossfade: "bg-violet-100 text-violet-700 border-violet-200",
+  loop: "bg-amber-100 text-amber-700 border-amber-200",
+};
+
+const ALL_TYPES: SoundCueType[] = ["music", "sfx", "voiceover", "ambient", "silence"];
+const ALL_ACTIONS: SoundCueAction[] = ["play", "stop", "fade_in", "fade_out", "crossfade", "loop"];
+
+// ============================================================
+// 큐 추가/편집 다이얼로그
+// ============================================================
+
+interface CueDialogProps {
+  open: boolean;
+  mode: "add" | "edit";
+  initial?: Partial<Omit<SoundCueEntry, "id" | "isActive">>;
+  nextCueNumber: number;
+  onClose: () => void;
+  onSubmit: (data: Omit<SoundCueEntry, "id" | "isActive">) => void;
+}
+
+function CueDialog({
+  open,
+  mode,
+  initial,
+  nextCueNumber,
+  onClose,
+  onSubmit,
+}: CueDialogProps) {
+  const [cueNumber, setCueNumber] = useState(
+    String(initial?.cueNumber ?? nextCueNumber)
+  );
+  const [name, setName] = useState(initial?.name ?? "");
+  const [type, setType] = useState<SoundCueType>(initial?.type ?? "music");
+  const [action, setAction] = useState<SoundCueAction>(initial?.action ?? "play");
+  const [volume, setVolume] = useState(initial?.volume ?? 80);
+  const [triggerTime, setTriggerTime] = useState(initial?.triggerTime ?? "");
+  const [duration, setDuration] = useState(initial?.duration ?? "");
+  const [source, setSource] = useState(initial?.source ?? "");
+  const [notes, setNotes] = useState(initial?.notes ?? "");
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) onClose();
+  };
+
+  const handleSubmit = () => {
+    if (!name.trim()) {
+      toast.error("큐 이름을 입력해주세요.");
+      return;
+    }
+    const num = parseInt(cueNumber, 10);
+    if (isNaN(num) || num < 1) {
+      toast.error("올바른 큐 번호를 입력해주세요.");
+      return;
+    }
+    onSubmit({
+      cueNumber: num,
+      name: name.trim(),
+      type,
+      action,
+      volume,
+      triggerTime: triggerTime.trim() || undefined,
+      duration: duration.trim() || undefined,
+      source: source.trim() || undefined,
+      notes: notes.trim() || undefined,
+    });
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-semibold">
+            {mode === "add" ? "큐 추가" : "큐 편집"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-3 py-2">
+          {/* 번호 + 이름 */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">큐 번호</Label>
+              <Input
+                className="h-8 text-xs"
+                type="number"
+                min={1}
+                placeholder="1"
+                value={cueNumber}
+                onChange={(e) => setCueNumber(e.target.value)}
+              />
+            </div>
+            <div className="col-span-2 space-y-1">
+              <Label className="text-xs text-muted-foreground">큐 이름</Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="예: 오프닝 BGM"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* 유형 + 액션 */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">유형</Label>
+              <Select value={type} onValueChange={(v) => setType(v as SoundCueType)}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ALL_TYPES.map((t) => (
+                    <SelectItem key={t} value={t} className="text-xs">
+                      {TYPE_LABELS[t]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">액션</Label>
+              <Select value={action} onValueChange={(v) => setAction(v as SoundCueAction)}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ALL_ACTIONS.map((a) => (
+                    <SelectItem key={a} value={a} className="text-xs">
+                      {ACTION_LABELS[a]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* 볼륨 슬라이더 */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs text-muted-foreground">볼륨</Label>
+              <span className="text-xs font-medium tabular-nums">{volume}%</span>
+            </div>
+            <Slider
+              min={0}
+              max={100}
+              step={1}
+              value={[volume]}
+              onValueChange={([v]) => setVolume(v)}
+              className="w-full"
+            />
+          </div>
+
+          {/* 트리거 시간 + 길이 */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                트리거 시간 (선택)
+              </Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="예: 0:30 또는 큐A 후"
+                value={triggerTime}
+                onChange={(e) => setTriggerTime(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                재생 길이 (선택)
+              </Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="예: 2:30 또는 무제한"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* 소스 */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">
+              소스/파일명 (선택)
+            </Label>
+            <Input
+              className="h-8 text-xs"
+              placeholder="예: track01_opening.mp3"
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+            />
+          </div>
+
+          {/* 메모 */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">메모 (선택)</Label>
+            <Textarea
+              className="text-xs min-h-[52px] resize-none"
+              placeholder="특이사항 또는 운영자 메모"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={onClose}
+          >
+            취소
+          </Button>
+          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
+            {mode === "add" ? "추가" : "저장"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ============================================================
+// 시트 추가/편집 다이얼로그
+// ============================================================
+
+interface SheetDialogProps {
+  open: boolean;
+  mode: "add" | "edit";
+  initialTitle?: string;
+  onClose: () => void;
+  onSubmit: (title: string) => void;
+}
+
+function SheetDialog({ open, mode, initialTitle, onClose, onSubmit }: SheetDialogProps) {
+  const [title, setTitle] = useState(initialTitle ?? "");
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) onClose();
+  };
+
+  const handleSubmit = () => {
+    if (!title.trim()) {
+      toast.error("시트 제목을 입력해주세요.");
+      return;
+    }
+    onSubmit(title.trim());
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-semibold">
+            {mode === "add" ? "큐시트 추가" : "큐시트 편집"}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">시트 제목</Label>
+            <Input
+              className="h-8 text-xs"
+              placeholder="예: 1부 공연, 앙코르 세트"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSubmit();
+              }}
+            />
+          </div>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={onClose}
+          >
+            취소
+          </Button>
+          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
+            {mode === "add" ? "추가" : "저장"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ============================================================
+// 볼륨 바
+// ============================================================
+
+function VolumeBar({ volume }: { volume: number }) {
+  const pct = Math.max(0, Math.min(100, volume));
+  const color =
+    pct >= 80
+      ? "bg-red-400"
+      : pct >= 50
+        ? "bg-amber-400"
+        : pct >= 20
+          ? "bg-green-400"
+          : "bg-muted-foreground";
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="w-14 h-1.5 bg-muted rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${color}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="text-[10px] text-muted-foreground tabular-nums w-6 text-right">
+        {pct}%
+      </span>
+    </div>
+  );
+}
+
+// ============================================================
+// 타임라인 시각화
+// ============================================================
+
+interface TimelineProps {
+  cues: SoundCueEntry[];
+}
+
+function Timeline({ cues }: TimelineProps) {
+  const activeCues = cues.filter((c) => c.isActive);
+  if (activeCues.length === 0) return null;
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <Clock className="h-3 w-3 text-muted-foreground" />
+        <span className="text-[10px] font-medium text-muted-foreground">
+          타임라인 ({activeCues.length}개 활성)
+        </span>
+      </div>
+      <div className="relative h-8 bg-muted/30 rounded-md border overflow-hidden">
+        {/* 큐 블록 */}
+        {activeCues.map((cue, idx) => {
+          const segWidth = 100 / activeCues.length;
+          const left = idx * segWidth;
+          const typeColor =
+            cue.type === "music"
+              ? "bg-blue-400"
+              : cue.type === "sfx"
+                ? "bg-orange-400"
+                : cue.type === "voiceover"
+                  ? "bg-purple-400"
+                  : cue.type === "ambient"
+                    ? "bg-teal-400"
+                    : "bg-gray-300";
+          const heightPct = Math.max(20, cue.volume);
+
+          return (
+            <div
+              key={cue.id}
+              className={`absolute bottom-0 ${typeColor} opacity-70 rounded-sm`}
+              style={{
+                left: `calc(${left}% + 1px)`,
+                width: `calc(${segWidth}% - 2px)`,
+                height: `${heightPct}%`,
+              }}
+              title={`Q${cue.cueNumber} ${cue.name} (${TYPE_LABELS[cue.type]}, ${cue.volume}%)`}
+            />
+          );
+        })}
+        {/* 큐 번호 레이블 */}
+        {activeCues.map((cue, idx) => {
+          const segWidth = 100 / activeCues.length;
+          const left = idx * segWidth;
+          return (
+            <span
+              key={`label-${cue.id}`}
+              className="absolute top-0.5 text-[9px] text-foreground/70 font-medium"
+              style={{ left: `calc(${left}% + 3px)` }}
+            >
+              Q{cue.cueNumber}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 큐 행 컴포넌트
+// ============================================================
+
+interface CueRowProps {
+  cue: SoundCueEntry;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggleActive: () => void;
+}
+
+function CueRow({ cue, onEdit, onDelete, onToggleActive }: CueRowProps) {
+  return (
+    <div
+      className={`flex items-center gap-2 px-2.5 py-2 rounded-md border group transition-colors ${
+        cue.isActive
+          ? "bg-white border-border"
+          : "bg-muted/20 border-dashed border-border opacity-60"
+      }`}
+    >
+      {/* 큐 번호 */}
+      <span className="text-[10px] font-mono font-bold text-muted-foreground w-6 flex-shrink-0 text-center">
+        Q{cue.cueNumber}
+      </span>
+
+      {/* 유형 아이콘 + 배지 */}
+      <Badge
+        variant="outline"
+        className={`text-[10px] px-1.5 py-0 flex items-center gap-0.5 flex-shrink-0 ${TYPE_BADGE_COLORS[cue.type]}`}
+      >
+        {TYPE_ICONS[cue.type]}
+        {TYPE_LABELS[cue.type]}
+      </Badge>
+
+      {/* 이름 */}
+      <span className="text-xs font-medium flex-1 min-w-0 truncate">{cue.name}</span>
+
+      {/* 액션 배지 */}
+      <Badge
+        variant="outline"
+        className={`text-[10px] px-1.5 py-0 flex items-center gap-0.5 flex-shrink-0 ${ACTION_BADGE_COLORS[cue.action]}`}
+      >
+        {ACTION_ICONS[cue.action]}
+        {ACTION_LABELS[cue.action]}
+      </Badge>
+
+      {/* 볼륨 바 */}
+      <div className="flex-shrink-0">
+        <VolumeBar volume={cue.volume} />
+      </div>
+
+      {/* 트리거 시간 */}
+      {cue.triggerTime && (
+        <span className="text-[10px] text-muted-foreground flex-shrink-0 flex items-center gap-0.5">
+          <Clock className="h-2.5 w-2.5" />
+          {cue.triggerTime}
+        </span>
+      )}
+
+      {/* 소스 */}
+      {cue.source && (
+        <span className="text-[10px] text-muted-foreground flex-shrink-0 max-w-[80px] truncate hidden sm:block">
+          {cue.source}
+        </span>
+      )}
+
+      {/* 액션 버튼 */}
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-5 w-5 p-0 text-xs ${cue.isActive ? "text-muted-foreground" : "text-green-600"}`}
+          onClick={onToggleActive}
+          title={cue.isActive ? "비활성화" : "활성화"}
+        >
+          {cue.isActive ? (
+            <VolumeX className="h-3 w-3" />
+          ) : (
+            <Volume2 className="h-3 w-3" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-5 w-5 p-0"
+          onClick={onEdit}
+        >
+          <Pencil className="h-3 w-3" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-5 w-5 p-0 text-destructive hover:text-destructive"
+          onClick={onDelete}
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 메인 컴포넌트
+// ============================================================
+
+interface SoundCueCardProps {
+  groupId: string;
+  projectId: string;
+}
+
+export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
+  const {
+    sheets,
+    loading,
+    addSheet,
+    updateSheet,
+    deleteSheet,
+    addCue,
+    updateCue,
+    deleteCue,
+    toggleActive,
+    stats,
+  } = useSoundCue(groupId, projectId);
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedSheetId, setSelectedSheetId] = useState<string | null>(null);
+
+  // 시트 다이얼로그 상태
+  const [sheetDialogOpen, setSheetDialogOpen] = useState(false);
+  const [sheetDialogMode, setSheetDialogMode] = useState<"add" | "edit">("add");
+  const [editingSheet, setEditingSheet] = useState<SoundCueSheet | null>(null);
+
+  // 큐 다이얼로그 상태
+  const [cueDialogOpen, setCueDialogOpen] = useState(false);
+  const [cueDialogMode, setCueDialogMode] = useState<"add" | "edit">("add");
+  const [editingCue, setEditingCue] = useState<SoundCueEntry | null>(null);
+
+  // 선택된 시트
+  const selectedSheet = useMemo(() => {
+    return sheets.find((s) => s.id === selectedSheetId) ?? sheets[0] ?? null;
+  }, [sheets, selectedSheetId]);
+
+  // 번호순 정렬된 큐
+  const sortedCues = useMemo(() => {
+    if (!selectedSheet) return [];
+    return [...selectedSheet.cues].sort((a, b) => a.cueNumber - b.cueNumber);
+  }, [selectedSheet]);
+
+  // 다음 큐 번호
+  const nextCueNumber = useMemo(() => {
+    if (!selectedSheet || selectedSheet.cues.length === 0) return 1;
+    return Math.max(...selectedSheet.cues.map((c) => c.cueNumber)) + 1;
+  }, [selectedSheet]);
+
+  // ── 시트 핸들러 ───────────────────────────────────────────
+
+  const handleAddSheetOpen = () => {
+    setEditingSheet(null);
+    setSheetDialogMode("add");
+    setSheetDialogOpen(true);
+  };
+
+  const handleEditSheetOpen = (sheet: SoundCueSheet) => {
+    setEditingSheet(sheet);
+    setSheetDialogMode("edit");
+    setSheetDialogOpen(true);
+  };
+
+  const handleSheetSubmit = (title: string) => {
+    if (sheetDialogMode === "add") {
+      const newSheet = addSheet(title);
+      setSelectedSheetId(newSheet.id);
+      toast.success("큐시트가 추가되었습니다.");
+    } else if (editingSheet) {
+      updateSheet(editingSheet.id, title);
+      toast.success("큐시트가 수정되었습니다.");
+    }
+  };
+
+  const handleDeleteSheet = (sheetId: string) => {
+    deleteSheet(sheetId);
+    if (selectedSheetId === sheetId) {
+      setSelectedSheetId(null);
+    }
+    toast.success("큐시트가 삭제되었습니다.");
+  };
+
+  // ── 큐 핸들러 ─────────────────────────────────────────────
+
+  const handleAddCueOpen = () => {
+    setEditingCue(null);
+    setCueDialogMode("add");
+    setCueDialogOpen(true);
+  };
+
+  const handleEditCueOpen = (cue: SoundCueEntry) => {
+    setEditingCue(cue);
+    setCueDialogMode("edit");
+    setCueDialogOpen(true);
+  };
+
+  const handleCueSubmit = (data: Omit<SoundCueEntry, "id" | "isActive">) => {
+    if (!selectedSheet) return;
+
+    if (cueDialogMode === "add") {
+      addCue(selectedSheet.id, data);
+      toast.success("큐가 추가되었습니다.");
+    } else if (editingCue) {
+      updateCue(selectedSheet.id, editingCue.id, data);
+      toast.success("큐가 수정되었습니다.");
+    }
+  };
+
+  const handleDeleteCue = (cueId: string) => {
+    if (!selectedSheet) return;
+    deleteCue(selectedSheet.id, cueId);
+    toast.success("큐가 삭제되었습니다.");
+  };
+
+  const handleToggleActive = (cueId: string) => {
+    if (!selectedSheet) return;
+    toggleActive(selectedSheet.id, cueId);
+  };
+
+  return (
+    <>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card className="w-full">
+          <CardHeader className="pb-2 pt-3 px-4">
+            <CollapsibleTrigger asChild>
+              <div className="flex items-center justify-between cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <Volume2 className="h-4 w-4 text-indigo-500" />
+                  <CardTitle className="text-sm font-semibold">
+                    공연 음향 큐시트
+                  </CardTitle>
+                  {stats.totalSheets > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 bg-indigo-50 text-indigo-600 border-indigo-200"
+                    >
+                      {stats.totalSheets}개 시트
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {stats.totalCues > 0 && (
+                    <span className="text-[10px] text-muted-foreground">
+                      큐 {stats.activeCues}/{stats.totalCues}개 활성
+                    </span>
+                  )}
+                  {isOpen ? (
+                    <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                </div>
+              </div>
+            </CollapsibleTrigger>
+          </CardHeader>
+
+          <CollapsibleContent>
+            <CardContent className="px-4 pb-4 pt-0 space-y-3">
+              {loading ? (
+                <p className="text-xs text-muted-foreground py-2">불러오는 중...</p>
+              ) : (
+                <>
+                  {/* 시트 탭 */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {sheets.map((sheet) => (
+                      <button
+                        key={sheet.id}
+                        onClick={() => setSelectedSheetId(sheet.id)}
+                        className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                          selectedSheet?.id === sheet.id
+                            ? "bg-indigo-100 border-indigo-300 text-indigo-700 font-medium"
+                            : "bg-muted/50 border-border text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Layers className="h-3 w-3" />
+                        {sheet.title}
+                      </button>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs px-2 rounded-full"
+                      onClick={handleAddSheetOpen}
+                    >
+                      <Plus className="h-3 w-3 mr-0.5" />
+                      시트 추가
+                    </Button>
+                  </div>
+
+                  {/* 선택된 시트 상세 */}
+                  {selectedSheet ? (
+                    <div className="space-y-3">
+                      {/* 시트 헤더 */}
+                      <div className="flex items-center justify-between gap-2 p-2.5 rounded-md bg-muted/40 border">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <FileText className="h-3.5 w-3.5 text-indigo-500 flex-shrink-0" />
+                          <span className="text-sm font-medium truncate">
+                            {selectedSheet.title}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0 flex-shrink-0"
+                          >
+                            큐 {selectedSheet.cues.length}개
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={() => handleEditSheetOpen(selectedSheet)}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteSheet(selectedSheet.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* 타임라인 */}
+                      {sortedCues.length > 0 && (
+                        <Timeline cues={sortedCues} />
+                      )}
+
+                      {/* 큐 목록 헤더 */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          큐 목록 (번호순)
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={handleAddCueOpen}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          큐 추가
+                        </Button>
+                      </div>
+
+                      {/* 큐 목록 */}
+                      {sortedCues.length === 0 ? (
+                        <div className="py-6 text-center space-y-1.5">
+                          <Volume2 className="h-6 w-6 text-muted-foreground mx-auto" />
+                          <p className="text-xs text-muted-foreground">
+                            큐를 추가하여 음향 큐시트를 작성하세요.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {sortedCues.map((cue) => (
+                            <CueRow
+                              key={cue.id}
+                              cue={cue}
+                              onEdit={() => handleEditCueOpen(cue)}
+                              onDelete={() => handleDeleteCue(cue.id)}
+                              onToggleActive={() => handleToggleActive(cue.id)}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* 메모가 있는 큐 요약 */}
+                      {sortedCues.some((c) => c.notes) && (
+                        <div className="space-y-1.5">
+                          <span className="text-[10px] font-medium text-muted-foreground">
+                            운영자 메모
+                          </span>
+                          {sortedCues
+                            .filter((c) => c.notes)
+                            .map((cue) => (
+                              <div
+                                key={`note-${cue.id}`}
+                                className="flex gap-2 p-2 rounded-md bg-amber-50 border border-amber-200"
+                              >
+                                <span className="text-[10px] font-mono font-bold text-amber-700 flex-shrink-0">
+                                  Q{cue.cueNumber}
+                                </span>
+                                <p className="text-[10px] text-amber-800 leading-relaxed">
+                                  {cue.notes}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="py-6 text-center space-y-1.5">
+                      <Volume2 className="h-6 w-6 text-muted-foreground mx-auto" />
+                      <p className="text-xs text-muted-foreground">
+                        시트를 추가하여 음향 큐시트를 관리하세요.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* 시트 다이얼로그 */}
+      <SheetDialog
+        open={sheetDialogOpen}
+        mode={sheetDialogMode}
+        initialTitle={editingSheet?.title}
+        onClose={() => setSheetDialogOpen(false)}
+        onSubmit={handleSheetSubmit}
+      />
+
+      {/* 큐 다이얼로그 */}
+      <CueDialog
+        open={cueDialogOpen}
+        mode={cueDialogMode}
+        initial={
+          editingCue
+            ? {
+                cueNumber: editingCue.cueNumber,
+                name: editingCue.name,
+                type: editingCue.type,
+                action: editingCue.action,
+                volume: editingCue.volume,
+                triggerTime: editingCue.triggerTime,
+                duration: editingCue.duration,
+                source: editingCue.source,
+                notes: editingCue.notes,
+              }
+            : undefined
+        }
+        nextCueNumber={nextCueNumber}
+        onClose={() => setCueDialogOpen(false)}
+        onSubmit={handleCueSubmit}
+      />
+    </>
+  );
+}

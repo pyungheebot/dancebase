@@ -1078,4 +1078,21 @@ export const swrKeys = {
 
   // 그룹 연습 도전 과제 (localStorage 기반)
   practiceChallenge: (groupId: string) => `practice-challenge-${groupId}` as const,
+
+  // 멤버 스트레칭 루틴 (localStorage 기반)
+  stretchingRoutine: (memberId: string) => `stretching-routine-${memberId}` as const,
+
+  // 그룹 이벤트 RSVP (localStorage 기반)
+  eventRsvp: (groupId: string) => `event-rsvp-${groupId}` as const,
+
+  // 그룹 연습 평가표 (localStorage 기반)
+  practiceEvaluation: (groupId: string) => `practice-evaluation-${groupId}` as const,
+
+  // 공연 음향 큐시트 (localStorage 기반)
+  soundCue: (groupId: string, projectId: string) =>
+    `sound-cue-${groupId}-${projectId}` as const,
+
+  // 공연 포스터 관리 (localStorage 기반)
+  posterManagement: (groupId: string, projectId: string) =>
+    `poster-management-${groupId}-${projectId}` as const,
 };
