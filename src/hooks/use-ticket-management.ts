@@ -1,222 +1,329 @@
 "use client";
 
-import { useCallback } from "react";
-import useSWR from "swr";
-import { swrKeys } from "@/lib/swr/keys";
-import type { TicketConfig, TicketReservation, TicketTier } from "@/types";
+import { useState, useEffect, useCallback } from "react";
+import type {
+  TicketMgmtEvent,
+  TicketMgmtTier,
+  TicketMgmtSale,
+  TicketMgmtType,
+} from "@/types";
 
-// ============================================
-// localStorage 유틸리티
-// ============================================
+// ============================================================
+// localStorage 헬퍼
+// ============================================================
 
-function getStorageKey(groupId: string, projectId: string): string {
-  return `dancebase:tickets:${groupId}:${projectId}`;
+function storageKey(groupId: string, projectId: string): string {
+  return `dancebase:ticket-management:${groupId}:${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): TicketConfig[] {
+function loadData(groupId: string, projectId: string): TicketMgmtEvent[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as TicketConfig[]) : [];
+    const raw = localStorage.getItem(storageKey(groupId, projectId));
+    if (!raw) return [];
+    return JSON.parse(raw) as TicketMgmtEvent[];
   } catch {
     return [];
   }
 }
 
-function persistData(
+function saveData(
   groupId: string,
   projectId: string,
-  data: TicketConfig[]
+  data: TicketMgmtEvent[]
 ): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(
-      getStorageKey(groupId, projectId),
-      JSON.stringify(data)
-    );
+    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
   } catch {
-    // localStorage 접근 실패 시 무시
+    // 무시
   }
 }
 
-// ============================================
-// 통계 유틸리티
-// ============================================
+// ============================================================
+// 통계 타입
+// ============================================================
 
-export type TierStat = {
-  tier: TicketTier;
-  price: number;
-  capacity: number;
-  sold: number;
-  remaining: number;
+export type TicketMgmtTierStats = {
+  type: TicketMgmtType;
+  totalSeats: number;
+  soldCount: number;
+  remainingSeats: number;
   revenue: number;
+  soldRate: number; // 0-100 퍼센트
 };
 
-function calcTierStats(config: TicketConfig): TierStat[] {
-  return config.tiers.map(({ tier, price, capacity }) => {
-    const sold = config.reservations
-      .filter((r) => r.tier === tier)
-      .reduce((sum, r) => sum + r.quantity, 0);
-    return {
-      tier,
-      price,
-      capacity,
-      sold,
-      remaining: Math.max(0, capacity - sold),
-      revenue: config.reservations
-        .filter((r) => r.tier === tier && r.isPaid)
-        .reduce((sum, r) => sum + r.totalPrice, 0),
-    };
-  });
-}
+export type TicketMgmtEventStats = {
+  tierStats: TicketMgmtTierStats[];
+  totalRevenue: number;
+  totalSold: number;
+  totalSeats: number;
+  totalRemaining: number;
+};
 
-// ============================================
+export type TicketMgmtSummaryStats = {
+  totalEvents: number;
+  totalRevenue: number;
+  totalSold: number;
+  soldOutTiers: number;
+};
+
+// ============================================================
 // 훅
-// ============================================
+// ============================================================
 
 export function useTicketManagement(groupId: string, projectId: string) {
-  const key = swrKeys.ticketManagement(groupId, projectId);
+  const [events, setEvents] = useState<TicketMgmtEvent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const { data, mutate } = useSWR<TicketConfig[]>(key, () =>
-    loadData(groupId, projectId)
-  );
+  const reload = useCallback(() => {
+    if (!groupId || !projectId) return;
+    const data = loadData(groupId, projectId);
+    setEvents(data);
+    setLoading(false);
+  }, [groupId, projectId]);
 
-  const configs: TicketConfig[] = data ?? [];
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
-  /** 내부 상태 + localStorage 동기 업데이트 */
-  const update = useCallback(
-    (next: TicketConfig[]) => {
-      persistData(groupId, projectId, next);
-      mutate(next, false);
+  const persist = useCallback(
+    (next: TicketMgmtEvent[]) => {
+      saveData(groupId, projectId, next);
+      setEvents(next);
     },
-    [groupId, projectId, mutate]
+    [groupId, projectId]
   );
 
-  // ============================================
-  // TicketConfig CRUD
-  // ============================================
+  // ── 이벤트 CRUD ───────────────────────────────────────────
 
-  /** 티켓 설정(공연) 추가 */
-  const addConfig = useCallback(
+  const addEvent = useCallback(
     (
-      input: Omit<TicketConfig, "id" | "reservations" | "createdAt">
-    ) => {
-      const newConfig: TicketConfig = {
-        ...input,
+      partial: Omit<
+        TicketMgmtEvent,
+        "id" | "projectId" | "tiers" | "sales" | "createdAt"
+      >
+    ): TicketMgmtEvent => {
+      const newEvent: TicketMgmtEvent = {
         id: crypto.randomUUID(),
-        reservations: [],
+        projectId,
+        tiers: [],
+        sales: [],
         createdAt: new Date().toISOString(),
+        ...partial,
       };
-      update([...configs, newConfig]);
+      persist([...events, newEvent]);
+      return newEvent;
     },
-    [configs, update]
+    [events, persist, projectId]
   );
 
-  /** 티켓 설정(공연) 삭제 */
-  const deleteConfig = useCallback(
-    (configId: string) => {
-      update(configs.filter((c) => c.id !== configId));
-    },
-    [configs, update]
-  );
-
-  // ============================================
-  // 예약 CRUD
-  // ============================================
-
-  /** 예약 추가 */
-  const addReservation = useCallback(
+  const updateEvent = useCallback(
     (
-      configId: string,
-      input: Omit<TicketReservation, "id" | "isPaid" | "reservedAt">
-    ) => {
-      const newReservation: TicketReservation = {
-        ...input,
+      eventId: string,
+      partial: Partial<Pick<TicketMgmtEvent, "eventName" | "eventDate">>
+    ): boolean => {
+      const idx = events.findIndex((e) => e.id === eventId);
+      if (idx === -1) return false;
+      const next = [...events];
+      next[idx] = { ...next[idx], ...partial };
+      persist(next);
+      return true;
+    },
+    [events, persist]
+  );
+
+  const deleteEvent = useCallback(
+    (eventId: string): boolean => {
+      const next = events.filter((e) => e.id !== eventId);
+      if (next.length === events.length) return false;
+      persist(next);
+      return true;
+    },
+    [events, persist]
+  );
+
+  // ── 티어(등급) CRUD ───────────────────────────────────────
+
+  const addTier = useCallback(
+    (
+      eventId: string,
+      tier: Omit<TicketMgmtTier, "id">
+    ): TicketMgmtTier | null => {
+      const idx = events.findIndex((e) => e.id === eventId);
+      if (idx === -1) return null;
+
+      const newTier: TicketMgmtTier = {
         id: crypto.randomUUID(),
-        isPaid: false,
-        reservedAt: new Date().toISOString(),
+        ...tier,
       };
-      const next = configs.map((c) => {
-        if (c.id !== configId) return c;
-        return { ...c, reservations: [...c.reservations, newReservation] };
-      });
-      update(next);
+      const next = [...events];
+      next[idx] = { ...next[idx], tiers: [...next[idx].tiers, newTier] };
+      persist(next);
+      return newTier;
     },
-    [configs, update]
+    [events, persist]
   );
 
-  /** 예약 삭제 */
-  const deleteReservation = useCallback(
-    (configId: string, reservationId: string) => {
-      const next = configs.map((c) => {
-        if (c.id !== configId) return c;
+  const updateTier = useCallback(
+    (
+      eventId: string,
+      tierId: string,
+      partial: Partial<Omit<TicketMgmtTier, "id">>
+    ): boolean => {
+      const evIdx = events.findIndex((e) => e.id === eventId);
+      if (evIdx === -1) return false;
+      const tierIdx = events[evIdx].tiers.findIndex((t) => t.id === tierId);
+      if (tierIdx === -1) return false;
+
+      const next = [...events];
+      const updatedTiers = [...next[evIdx].tiers];
+      updatedTiers[tierIdx] = { ...updatedTiers[tierIdx], ...partial };
+      next[evIdx] = { ...next[evIdx], tiers: updatedTiers };
+      persist(next);
+      return true;
+    },
+    [events, persist]
+  );
+
+  const deleteTier = useCallback(
+    (eventId: string, tierId: string): boolean => {
+      const evIdx = events.findIndex((e) => e.id === eventId);
+      if (evIdx === -1) return false;
+      const filtered = events[evIdx].tiers.filter((t) => t.id !== tierId);
+      if (filtered.length === events[evIdx].tiers.length) return false;
+
+      const next = [...events];
+      next[evIdx] = { ...next[evIdx], tiers: filtered };
+      persist(next);
+      return true;
+    },
+    [events, persist]
+  );
+
+  // ── 판매 기록 CRUD ────────────────────────────────────────
+
+  const addSale = useCallback(
+    (
+      eventId: string,
+      sale: Omit<TicketMgmtSale, "id" | "soldAt">
+    ): TicketMgmtSale | null => {
+      const idx = events.findIndex((e) => e.id === eventId);
+      if (idx === -1) return null;
+
+      const newSale: TicketMgmtSale = {
+        id: crypto.randomUUID(),
+        soldAt: new Date().toISOString(),
+        ...sale,
+      };
+      const next = [...events];
+      next[idx] = { ...next[idx], sales: [...next[idx].sales, newSale] };
+      persist(next);
+      return newSale;
+    },
+    [events, persist]
+  );
+
+  const deleteSale = useCallback(
+    (eventId: string, saleId: string): boolean => {
+      const evIdx = events.findIndex((e) => e.id === eventId);
+      if (evIdx === -1) return false;
+      const filtered = events[evIdx].sales.filter((s) => s.id !== saleId);
+      if (filtered.length === events[evIdx].sales.length) return false;
+
+      const next = [...events];
+      next[evIdx] = { ...next[evIdx], sales: filtered };
+      persist(next);
+      return true;
+    },
+    [events, persist]
+  );
+
+  // ── 이벤트 통계 ───────────────────────────────────────────
+
+  const getEventStats = useCallback(
+    (eventId: string): TicketMgmtEventStats | null => {
+      const event = events.find((e) => e.id === eventId);
+      if (!event) return null;
+
+      const tierStats: TicketMgmtTierStats[] = event.tiers.map((tier) => {
+        const soldCount = event.sales
+          .filter((s) => s.ticketType === tier.type)
+          .reduce((sum, s) => sum + s.quantity, 0);
+        const revenue = event.sales
+          .filter((s) => s.ticketType === tier.type)
+          .reduce((sum, s) => sum + s.totalPrice, 0);
+        const remainingSeats = Math.max(0, tier.totalSeats - soldCount);
+        const soldRate =
+          tier.totalSeats === 0
+            ? 0
+            : Math.min(100, Math.round((soldCount / tier.totalSeats) * 100));
+
         return {
-          ...c,
-          reservations: c.reservations.filter((r) => r.id !== reservationId),
+          type: tier.type,
+          totalSeats: tier.totalSeats,
+          soldCount,
+          remainingSeats,
+          revenue,
+          soldRate,
         };
       });
-      update(next);
+
+      const totalRevenue = tierStats.reduce((sum, t) => sum + t.revenue, 0);
+      const totalSold = tierStats.reduce((sum, t) => sum + t.soldCount, 0);
+      const totalSeats = tierStats.reduce((sum, t) => sum + t.totalSeats, 0);
+      const totalRemaining = tierStats.reduce(
+        (sum, t) => sum + t.remainingSeats,
+        0
+      );
+
+      return { tierStats, totalRevenue, totalSold, totalSeats, totalRemaining };
     },
-    [configs, update]
+    [events]
   );
 
-  /** 결제 여부 토글 */
-  const togglePaid = useCallback(
-    (configId: string, reservationId: string) => {
-      const next = configs.map((c) => {
-        if (c.id !== configId) return c;
-        return {
-          ...c,
-          reservations: c.reservations.map((r) =>
-            r.id === reservationId ? { ...r, isPaid: !r.isPaid } : r
-          ),
-        };
-      });
-      update(next);
-    },
-    [configs, update]
-  );
+  // ── 전체 통계 ─────────────────────────────────────────────
 
-  // ============================================
-  // 통계
-  // ============================================
+  const stats: TicketMgmtSummaryStats = (() => {
+    const totalEvents = events.length;
+    const totalRevenue = events.reduce(
+      (sum, ev) => sum + ev.sales.reduce((s, sl) => s + sl.totalPrice, 0),
+      0
+    );
+    const totalSold = events.reduce(
+      (sum, ev) => sum + ev.sales.reduce((s, sl) => s + sl.quantity, 0),
+      0
+    );
 
-  /** 전체 판매 수량 */
-  const totalSold = configs.reduce(
-    (sum, c) => sum + c.reservations.reduce((s, r) => s + r.quantity, 0),
-    0
-  );
+    // 매진된 티어 수
+    let soldOutTiers = 0;
+    for (const ev of events) {
+      for (const tier of ev.tiers) {
+        const sold = ev.sales
+          .filter((s) => s.ticketType === tier.type)
+          .reduce((sum, s) => sum + s.quantity, 0);
+        if (tier.totalSeats > 0 && sold >= tier.totalSeats) {
+          soldOutTiers++;
+        }
+      }
+    }
 
-  /** 전체 수입 (결제 완료 건만) */
-  const totalRevenue = configs.reduce(
-    (sum, c) =>
-      sum +
-      c.reservations
-        .filter((r) => r.isPaid)
-        .reduce((s, r) => s + r.totalPrice, 0),
-    0
-  );
-
-  /** 설정별 티어 통계 */
-  const getTierStats = useCallback(
-    (configId: string): TierStat[] => {
-      const config = configs.find((c) => c.id === configId);
-      if (!config) return [];
-      return calcTierStats(config);
-    },
-    [configs]
-  );
+    return { totalEvents, totalRevenue, totalSold, soldOutTiers };
+  })();
 
   return {
-    configs,
-    addConfig,
-    deleteConfig,
-    addReservation,
-    deleteReservation,
-    togglePaid,
-    totalSold,
-    totalRevenue,
-    getTierStats,
-    refetch: () => mutate(),
+    events,
+    loading,
+    addEvent,
+    updateEvent,
+    deleteEvent,
+    addTier,
+    updateTier,
+    deleteTier,
+    addSale,
+    deleteSale,
+    getEventStats,
+    stats,
+    refetch: reload,
   };
 }

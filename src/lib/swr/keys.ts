@@ -1065,4 +1065,17 @@ export const swrKeys = {
   // 공연 드레스 코드 (localStorage 기반)
   dressCode: (groupId: string, projectId: string) =>
     `dress-code-${groupId}-${projectId}` as const,
+
+  // 멤버 수면 추적 (localStorage 기반)
+  sleepTracker: (memberId: string) => `sleep-tracker-${memberId}` as const,
+
+  // 그룹 장비 대여 관리 (localStorage 기반)
+  equipmentRental: (groupId: string) => `equipment-rental-${groupId}` as const,
+
+  // 공연 메이크업 시트 (localStorage 기반)
+  makeupSheet: (groupId: string, projectId: string) =>
+    `makeup-sheet-${groupId}-${projectId}` as const,
+
+  // 그룹 연습 도전 과제 (localStorage 기반)
+  practiceChallenge: (groupId: string) => `practice-challenge-${groupId}` as const,
 };

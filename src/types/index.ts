@@ -8061,3 +8061,146 @@ export type DressCodeSet = {
   memberStatuses: DressCodeMemberStatus[];
   createdAt: string;
 };
+
+export type SleepTrackerQuality =
+  | "excellent"
+  | "good"
+  | "fair"
+  | "poor"
+  | "terrible";
+
+export type SleepTrackerEntry = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  bedtime: string; // HH:MM
+  wakeTime: string; // HH:MM
+  durationHours: number;
+  quality: SleepTrackerQuality;
+  notes?: string;
+  hadNap: boolean;
+  napMinutes?: number;
+  createdAt: string;
+};
+
+// 그룹 장비 대여 관리
+export type EquipmentRentalStatus =
+  | "available"
+  | "rented"
+  | "overdue"
+  | "maintenance";
+
+export type EquipmentRentalRecord = {
+  id: string;
+  borrower: string;
+  borrowDate: string;
+  dueDate: string;
+  returnDate?: string;
+  condition?: string;
+};
+
+export type EquipmentRentalItem = {
+  id: string;
+  name: string;
+  category: string;
+  status: EquipmentRentalStatus;
+  totalQuantity: number;
+  availableQuantity: number;
+  rentals: EquipmentRentalRecord[];
+  description?: string;
+  createdAt: string;
+};
+
+// 공연 티켓 관리
+export type TicketMgmtType =
+  | "vip"
+  | "general"
+  | "student"
+  | "early_bird"
+  | "free";
+
+export type TicketMgmtSale = {
+  id: string;
+  buyerName?: string;
+  ticketType: TicketMgmtType;
+  quantity: number;
+  totalPrice: number;
+  soldAt: string;
+  seatInfo?: string;
+  notes?: string;
+};
+
+export type TicketMgmtTier = {
+  id: string;
+  type: TicketMgmtType;
+  price: number;
+  totalSeats: number;
+  description?: string;
+};
+
+export type TicketMgmtEvent = {
+  id: string;
+  projectId: string;
+  eventName: string;
+  eventDate: string;
+  tiers: TicketMgmtTier[];
+  sales: TicketMgmtSale[];
+  createdAt: string;
+};
+
+// 공연 메이크업 시트
+export type MakeupSheetArea =
+  | "base"
+  | "eyes"
+  | "lips"
+  | "cheeks"
+  | "brows"
+  | "special_effects";
+
+export type MakeupSheetProduct = {
+  id: string;
+  area: MakeupSheetArea;
+  productName: string;
+  brand?: string;
+  colorCode?: string;
+  technique?: string;
+  order: number;
+};
+
+export type MakeupSheetLook = {
+  id: string;
+  lookName: string;
+  performanceName: string;
+  products: MakeupSheetProduct[];
+  assignedMembers: string[];
+  notes?: string;
+  estimatedMinutes?: number;
+  createdAt: string;
+};
+
+// 그룹 연습 도전 과제
+export type PracticeChallengeStatus =
+  | "upcoming"
+  | "active"
+  | "completed"
+  | "cancelled";
+
+export type PracticeChallengeParticipant = {
+  memberName: string;
+  progress: number;
+  completedAt?: string;
+};
+
+export type PracticeChallengeEntry = {
+  id: string;
+  title: string;
+  description: string;
+  status: PracticeChallengeStatus;
+  targetValue: number;
+  unit: string;
+  startDate: string;
+  endDate: string;
+  participants: PracticeChallengeParticipant[];
+  reward?: string;
+  createdBy: string;
+  createdAt: string;
+};

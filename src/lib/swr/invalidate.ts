@@ -663,3 +663,7 @@ export function invalidatePerformanceRevenue(groupId: string) {
 export function invalidateGroupEnergyTracker(groupId: string) {
   mutate(swrKeys.groupEnergyTracker(groupId));
 }
+
+export function invalidateEquipmentRental(groupId: string) {
+  mutate(swrKeys.equipmentRental(groupId));
+}
