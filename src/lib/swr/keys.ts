@@ -1480,4 +1480,24 @@ export const swrKeys = {
   // 공연 관객 피드백 수집 (localStorage 기반)
   audienceFeedback: (projectId: string) =>
     `audience-feedback-${projectId}` as const,
+
+  // 공연 무대 안전 점검 (localStorage 기반)
+  stageSafetyCheck: (projectId: string) =>
+    `stage-safety-check-${projectId}` as const,
+
+  // 공연 의상 핏팅 기록 (localStorage 기반)
+  costumeFitting: (projectId: string) =>
+    `costume-fitting-${projectId}` as const,
+
+  // 댄스 수업 평가 노트 (localStorage 기반)
+  danceClassReview: (memberId: string) =>
+    `dance-class-review-${memberId}` as const,
+
+  // 그룹 미디어 갤러리 (localStorage 기반)
+  groupMediaGallery: (groupId: string) =>
+    `group-media-gallery-${groupId}` as const,
+
+  // 그룹 기념일 (localStorage 기반)
+  groupAnniversary: (groupId: string) =>
+    `group-anniversary-${groupId}` as const,
 };

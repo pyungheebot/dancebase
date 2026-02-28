@@ -13274,3 +13274,252 @@ export type AudienceFeedbackData = {
   /** 마지막 수정일 (ISO 8601) */
   updatedAt: string;
 };
+
+// ============================================
+// Dance Class Review (댄스 수업 평가 노트, localStorage 기반)
+// ============================================
+
+/** 수업 난이도 */
+export type DanceClassDifficulty = "beginner" | "intermediate" | "advanced";
+
+/** 단일 댄스 수업 평가 */
+export type DanceClassReview = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 수업/워크숍 이름 */
+  className: string;
+  /** 강사 이름 (null = 미기재) */
+  instructorName: string | null;
+  /** 수강 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 평가 별점 (1~5) */
+  rating: number;
+  /** 난이도 */
+  difficulty: DanceClassDifficulty;
+  /** 장르 (null = 미기재) */
+  genre: string | null;
+  /** 배운 점 / 핵심 메모 */
+  takeaways: string;
+  /** 재수강 의향 */
+  wouldRepeat: boolean;
+  /** 수업 비용 (null = 미기재, 0 = 무료) */
+  cost: number | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** localStorage에 저장되는 댄스 수업 평가 전체 데이터 */
+export type DanceClassReviewData = {
+  /** 연결된 멤버 ID */
+  memberId: string;
+  /** 평가 목록 */
+  reviews: DanceClassReview[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 무대 안전 점검
+// ============================================================
+
+/** 안전 점검 항목 */
+export type SafetyCheckItem = {
+  /** 항목 ID */
+  id: string;
+  /** 카테고리 */
+  category:
+    | "electrical"
+    | "structural"
+    | "fire"
+    | "emergency"
+    | "equipment"
+    | "other";
+  /** 점검 내용 */
+  description: string;
+  /** 점검 상태 */
+  status: "pass" | "fail" | "pending" | "na";
+  /** 비고 */
+  notes: string | null;
+  /** 점검자 이름 */
+  inspectorName: string | null;
+};
+
+/** 안전 점검 기록 */
+export type SafetyInspection = {
+  /** 점검 ID */
+  id: string;
+  /** 점검 제목 */
+  title: string;
+  /** 점검 일자 (ISO 8601) */
+  date: string;
+  /** 공연장 */
+  venue: string | null;
+  /** 점검 항목 목록 */
+  items: SafetyCheckItem[];
+  /** 전체 결과 */
+  overallStatus: "approved" | "conditional" | "rejected";
+  /** 서명자 */
+  signedBy: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 공연 무대 안전 점검 전체 데이터 (localStorage 저장 단위) */
+export type StageSafetyData = {
+  /** 연결된 프로젝트 ID */
+  projectId: string;
+  /** 점검 기록 목록 */
+  inspections: SafetyInspection[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// Costume Fitting (공연 의상 핏팅 기록, localStorage 기반)
+// ============================================
+
+/** 의상 핏팅 치수 정보 */
+export type CostumeFittingMeasurement = {
+  /** 키 (cm) */
+  height: string | null;
+  /** 가슴둘레 (cm) */
+  chest: string | null;
+  /** 허리둘레 (cm) */
+  waist: string | null;
+  /** 엉덩이둘레 (cm) */
+  hip: string | null;
+  /** 신발 사이즈 (mm) */
+  shoeSize: string | null;
+  /** 기타 메모 */
+  notes: string | null;
+};
+
+/** 의상 핏팅 상태 */
+export type CostumeFittingStatus = "pending" | "fitted" | "altered" | "completed";
+
+/** 의상 핏팅 항목 */
+export type CostumeFittingEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 멤버 이름 */
+  memberName: string;
+  /** 의상 이름 */
+  costumeName: string;
+  /** 치수 정보 */
+  measurements: CostumeFittingMeasurement;
+  /** 핏팅 상태 */
+  status: CostumeFittingStatus;
+  /** 핏팅 날짜 (ISO 8601) */
+  fittingDate: string | null;
+  /** 수선 메모 */
+  alterationNotes: string | null;
+  /** 사진 URL */
+  photoUrl: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 공연 의상 핏팅 전체 데이터 (localStorage 저장 단위) */
+export type CostumeFittingData = {
+  /** 연결된 프로젝트 ID */
+  projectId: string;
+  /** 핏팅 항목 목록 */
+  entries: CostumeFittingEntry[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 그룹 미디어 갤러리
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/** 미디어 갤러리 개별 항목 */
+export type MediaGalleryItem = {
+  /** 고유 ID */
+  id: string;
+  /** 미디어 유형 */
+  type: "photo" | "video";
+  /** 제목 */
+  title: string;
+  /** 미디어 URL */
+  url: string;
+  /** 썸네일 URL (null이면 url을 직접 사용) */
+  thumbnailUrl: string | null;
+  /** 설명 */
+  description: string | null;
+  /** 업로드한 멤버 이름 또는 ID */
+  uploadedBy: string;
+  /** 태그 목록 */
+  tags: string[];
+  /** 소속 앨범 ID (null이면 미분류) */
+  albumId: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 미디어 앨범 */
+export type MediaAlbum = {
+  /** 고유 ID */
+  id: string;
+  /** 앨범 이름 */
+  name: string;
+  /** 앨범 설명 */
+  description: string | null;
+  /** 커버 이미지 URL */
+  coverUrl: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 그룹 미디어 갤러리 전체 데이터 (localStorage 저장 단위) */
+export type MediaGalleryData = {
+  /** 연결된 그룹 ID */
+  groupId: string;
+  /** 미디어 항목 목록 */
+  items: MediaGalleryItem[];
+  /** 앨범 목록 */
+  albums: MediaAlbum[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 기념일 (Group Anniversary, localStorage 기반)
+// ============================================================
+
+/** 기념일 유형 */
+export type GroupAnniversaryType =
+  | "founding"       // 창립 기념일
+  | "performance"    // 공연 기념일
+  | "achievement"    // 성과/수상 기념일
+  | "custom";        // 사용자 정의
+
+/** 기념일 단일 항목 */
+export type GroupAnniversaryItem = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 기념일 제목 */
+  title: string;
+  /** 기념일 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 기념일 유형 */
+  type: GroupAnniversaryType;
+  /** 설명 (선택) */
+  description: string | null;
+  /** 매년 반복 여부 */
+  isRecurring: boolean;
+  /** 사전 알림 일수 (null이면 알림 없음) */
+  reminderDays: number | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 그룹 기념일 전체 데이터 (localStorage 저장 단위) */
+export type GroupAnniversaryData = {
+  /** 그룹 ID */
+  groupId: string;
+  /** 기념일 목록 */
+  anniversaries: GroupAnniversaryItem[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};

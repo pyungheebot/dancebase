@@ -33,6 +33,8 @@ import { ProgramBookEditorCard } from "@/components/projects/program-book-editor
 import { MarketingCampaignCard } from "@/components/projects/marketing-campaign-card";
 import { RehearsalScheduleCard } from "@/components/projects/rehearsal-schedule-card";
 import { AudienceFeedbackCard } from "@/components/projects/audience-feedback-card";
+import { StageSafetyCard } from "@/components/projects/stage-safety-card";
+import { CostumeFittingCard } from "@/components/projects/costume-fitting-card";
 
 export default function ProjectDetailPage({
   params,
@@ -184,6 +186,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <AudienceFeedbackCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <StageSafetyCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <CostumeFittingCard
               projectId={ctx.projectId}
             />
           )}

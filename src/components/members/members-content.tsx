@@ -75,6 +75,7 @@ import { DanceMusicCard } from "@/components/members/dance-music-card";
 import { DanceGoalCard } from "@/components/members/dance-goal-card";
 import { DanceConditionJournalCard } from "@/components/members/dance-condition-journal-card";
 import { DanceVideoPortfolioCard } from "@/components/members/dance-video-portfolio-card";
+import { DanceClassReviewCard } from "@/components/members/dance-class-review-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -719,6 +720,7 @@ function GroupMembersContent({
       <DanceGoalCard memberId={currentUserId} />
       <DanceConditionJournalCard memberId={currentUserId} />
       <DanceVideoPortfolioCard memberId={currentUserId} />
+      <DanceClassReviewCard memberId={currentUserId} />
     </>
   );
 }

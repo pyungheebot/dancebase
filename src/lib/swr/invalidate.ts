@@ -796,3 +796,16 @@ export function invalidateGroupSharedFiles(groupId: string) {
 export function invalidateAudienceFeedback(projectId: string) {
   mutate(swrKeys.audienceFeedback(projectId));
 }
+
+export function invalidateStageSafetyCheck(projectId: string) {
+  mutate(swrKeys.stageSafetyCheck(projectId));
+}
+
+export function invalidateCostumeFitting(projectId: string) {
+  mutate(swrKeys.costumeFitting(projectId));
+}
+
+
+export function invalidateGroupMediaGallery(groupId: string) {
+  mutate(swrKeys.groupMediaGallery(groupId));
+}
