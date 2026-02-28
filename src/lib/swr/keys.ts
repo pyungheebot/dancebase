@@ -1178,4 +1178,14 @@ export const swrKeys = {
 
   // 그룹 연습 비디오 리뷰 (localStorage 기반)
   videoReview: (groupId: string) => `video-review-${groupId}` as const,
+
+  // 멤버 목표 달성 배지 (localStorage 기반)
+  achievementBadge: (memberId: string) => `achievement-badge-${memberId}` as const,
+
+  // 그룹 연습 장소 관리 (localStorage 기반)
+  practiceVenue: (groupId: string) => `practice-venue-${groupId}` as const,
+
+  // 공연 프로그램 편집 (localStorage 기반)
+  showProgram: (groupId: string, projectId: string) =>
+    `show-program-${groupId}-${projectId}` as const,
 };

@@ -9046,3 +9046,139 @@ export type VideoReviewEntry = {
   reviewedBy: string[];
   createdAt: string;
 };
+
+// ============================================================
+// 멤버 목표 달성 배지 (Achievement Badges)
+// ============================================================
+
+export type AchievementBadgeCategory =
+  | "practice"   // 연습
+  | "performance" // 공연
+  | "teamwork"   // 팀워크
+  | "attendance" // 출석
+  | "skill"      // 실력
+  | "leadership" // 리더십
+  | "other";     // 기타
+
+export type AchievementBadgeLevel =
+  | "bronze"  // 브론즈
+  | "silver"  // 실버
+  | "gold";   // 골드
+
+export type AchievementBadgeEntry = {
+  id: string;
+  memberId: string;
+  memberName: string;
+  title: string;
+  description?: string;
+  category: AchievementBadgeCategory;
+  level: AchievementBadgeLevel;
+  condition?: string;   // 획득 조건 설명
+  earnedAt: string;     // ISO 날짜 문자열
+  awardedBy?: string;   // 수여자 이름 (선택)
+  createdAt: string;
+};
+
+// ── 그룹 연습 장소 관리 ───────────────────────────────────────
+
+export type PracticeVenueFacility =
+  | "mirror"      // 거울
+  | "sound"       // 음향
+  | "parking"     // 주차
+  | "shower"      // 샤워실
+  | "locker"      // 사물함
+  | "aircon"      // 에어컨
+  | "heating"     // 난방
+  | "piano"       // 피아노
+  | "stage"       // 무대
+  | "bar";        // 바(연습용 봉)
+
+export type PracticeVenueStatus =
+  | "available"   // 예약 가능
+  | "booked"      // 예약됨
+  | "unavailable" // 이용 불가
+  | "unknown";    // 상태 미확인
+
+export type PracticeVenueEntry = {
+  id: string;
+  name: string;           // 장소명
+  address?: string;       // 주소
+  phone?: string;         // 전화번호
+  website?: string;       // 웹사이트 URL
+  costPerHour?: number;   // 시간당 비용 (원)
+  capacity?: number;      // 수용 인원
+  size?: number;          // 면적 (m²)
+  facilities: PracticeVenueFacility[]; // 시설 목록
+  status: PracticeVenueStatus;         // 예약 상태
+  rating?: number;        // 평점 (1-5)
+  ratingCount: number;    // 평점 참여 수
+  isFavorite: boolean;    // 즐겨찾기 여부
+  memo?: string;          // 메모
+  lastUsedAt?: string;    // 마지막 이용일 (ISO date string)
+  createdAt: string;      // 생성일 (ISO datetime string)
+};
+
+// ============================================================
+// 공연 프로그램 편집 (Show Program Editor)
+// ============================================================
+
+/** 프로그램 순서 항목 (곡명, 안무가, 출연진 등) */
+export type ShowProgramPiece = {
+  id: string;
+  order: number;           // 순서 인덱스 (1부터)
+  title: string;           // 작품/곡명
+  subtitle?: string;       // 부제 (선택)
+  choreographer?: string;  // 안무가
+  performers: string[];    // 출연자 목록
+  duration?: string;       // 소요시간 (예: "3분 30초")
+  notes?: string;          // 추가 메모
+};
+
+/** 크레딧 역할 유형 */
+export type ShowProgramCreditRole =
+  | "director"       // 연출
+  | "choreographer"  // 안무
+  | "music"          // 음악/음향
+  | "lighting"       // 조명
+  | "costume"        // 의상
+  | "makeup"         // 메이크업
+  | "stage"          // 무대 감독
+  | "photography"    // 사진/영상
+  | "design"         // 디자인
+  | "sponsor"        // 후원
+  | "other";         // 기타
+
+/** 크레딧 항목 */
+export type ShowProgramCredit = {
+  id: string;
+  role: ShowProgramCreditRole;
+  roleLabel?: string;  // 역할 커스텀 레이블 (role이 other일 때)
+  names: string[];     // 담당자 이름 목록
+};
+
+/** 스폰서 항목 */
+export type ShowProgramSponsor = {
+  id: string;
+  name: string;        // 스폰서명
+  tier?: string;       // 등급 (예: 골드, 실버, 브론즈)
+  description?: string;
+};
+
+/** 공연 프로그램 전체 엔트리 */
+export type ShowProgramEntry = {
+  id: string;
+  groupId: string;
+  projectId: string;
+  showTitle: string;            // 공연 제목
+  showSubtitle?: string;        // 부제
+  showDate?: string;            // 공연 날짜 (ISO)
+  venue?: string;               // 공연 장소
+  greeting?: string;            // 인사말
+  closingMessage?: string;      // 마무리 인사
+  pieces: ShowProgramPiece[];   // 프로그램 순서
+  credits: ShowProgramCredit[]; // 크레딧
+  sponsors: ShowProgramSponsor[]; // 스폰서
+  specialThanks?: string;       // 특별 감사
+  createdAt: string;
+  updatedAt: string;
+};

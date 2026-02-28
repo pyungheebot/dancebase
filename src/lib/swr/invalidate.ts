@@ -679,3 +679,7 @@ export function invalidateStageLayout(groupId: string, projectId: string) {
 export function invalidateVideoReview(groupId: string) {
   mutate(swrKeys.videoReview(groupId));
 }
+
+export function invalidateShowProgram(groupId: string, projectId: string) {
+  mutate(swrKeys.showProgram(groupId, projectId));
+}
