@@ -12356,3 +12356,228 @@ export type StageTransitionData = {
   items: StageTransitionItem[];
   updatedAt: string;
 };
+
+// ============================================
+// Group Budget Tracker (그룹 예산 트래커, localStorage 기반)
+// ============================================
+
+export type GroupBudgetTransaction = {
+  id: string;
+  type: "income" | "expense";
+  category: string;
+  description: string;
+  amount: number;
+  date: string; // "YYYY-MM-DD"
+  paidBy: string | null;
+  receiptNote: string | null;
+  createdAt: string;
+};
+
+export type GroupBudgetCategory = {
+  name: string;
+  icon: string; // emoji
+};
+
+export type GroupBudgetData = {
+  groupId: string;
+  transactions: GroupBudgetTransaction[];
+  categories: GroupBudgetCategory[];
+  monthlyBudgetLimit: number | null;
+  updatedAt: string;
+};
+
+// ============================================================
+// QR 체크인 (그룹 출결 QR 기반 체크인 시스템)
+// ============================================================
+
+/** QR 체크인 세션 */
+export type QrCheckInSession = {
+  /** 세션 ID */
+  id: string;
+  /** 세션 제목 (예: "2024년 2월 정기 연습") */
+  title: string;
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 시작 시간 (HH:MM) */
+  startTime: string;
+  /** 종료 시간 (HH:MM) — 진행 중이면 null */
+  endTime: string | null;
+  /** QR 코드로 사용할 랜덤 문자열 */
+  qrCode: string;
+  /** 활성 여부 */
+  isActive: boolean;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** QR 체크인 기록 */
+export type QrCheckInRecord = {
+  /** 기록 ID */
+  id: string;
+  /** 세션 ID */
+  sessionId: string;
+  /** 체크인한 멤버 이름 */
+  memberName: string;
+  /** 체크인 시각 (ISO 8601) */
+  checkedInAt: string;
+  /** 체크인 방식 */
+  method: "qr" | "manual";
+};
+
+/** localStorage 저장 단위 */
+export type QrCheckInData = {
+  groupId: string;
+  sessions: QrCheckInSession[];
+  records: QrCheckInRecord[];
+  updatedAt: string;
+};
+
+// ============================================
+// 공연 티켓 관리 (Performance Ticket)
+// ============================================
+
+/** 티켓 등급 */
+export type PerfTicketTier = {
+  id: string;
+  /** 등급 이름 (VIP, 일반석 등) */
+  name: string;
+  /** 티켓 가격 (원) */
+  price: number;
+  /** 총 수량 */
+  totalQuantity: number;
+  /** 표시 색상 */
+  color: string;
+};
+
+/** 배분 상태 */
+export type PerfAllocationStatus = "reserved" | "confirmed" | "cancelled";
+
+/** 티켓 배분 내역 */
+export type PerfTicketAllocation = {
+  id: string;
+  /** 연결된 등급 id */
+  tierId: string;
+  /** 수령인 이름 */
+  recipientName: string;
+  /** 배분 수량 */
+  quantity: number;
+  /** 배분 상태 */
+  status: PerfAllocationStatus;
+  /** 메모 */
+  notes: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type PerfTicketData = {
+  projectId: string;
+  tiers: PerfTicketTier[];
+  allocations: PerfTicketAllocation[];
+  /** 판매 목표 수량 (null = 미설정) */
+  salesGoal: number | null;
+  updatedAt: string;
+};
+
+// ============================================
+// Stage Formation (무대 포메이션 디자이너, localStorage 기반)
+// ============================================
+
+/** 무대 위 멤버 한 명의 위치 (포메이션 디자이너용) */
+export type StageFormationPosition = {
+  /** 고유 ID */
+  id: string;
+  /** 멤버 이름 */
+  memberName: string;
+  /** 가로 위치 (0~100%) */
+  x: number;
+  /** 세로 위치 (0~100%) */
+  y: number;
+  /** 마커 색상 */
+  color: string;
+};
+
+/** 포메이션 씬 (대형 한 장면, 포메이션 디자이너용) */
+export type StageFormationScene = {
+  /** 고유 ID */
+  id: string;
+  /** 씬 이름 */
+  name: string;
+  /** 씬 설명 */
+  description: string;
+  /** 멤버 위치 목록 */
+  positions: StageFormationPosition[];
+  /** 표시 순서 */
+  order: number;
+  /** 지속 시간 (초, null 이면 미지정) */
+  durationSec: number | null;
+};
+
+/** localStorage 저장 단위 */
+export type StageFormationData = {
+  projectId: string;
+  scenes: StageFormationScene[];
+  /** 무대 너비 (m) */
+  stageWidth: number;
+  /** 무대 깊이 (m) */
+  stageDepth: number;
+  /** 전체 메모 */
+  notes: string;
+  updatedAt: string;
+};
+
+// ============================================================
+// 멤버 댄스 뮤직 플레이리스트 (Dance Music Playlist, localStorage 기반)
+// ============================================================
+
+/** 댄스 뮤직 트랙 단일 항목 */
+export type DanceMusicTrack = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 곡명 */
+  title: string;
+  /** 아티스트 */
+  artist: string;
+  /** 장르 */
+  genre: string;
+  /** BPM (선택) */
+  bpm: number | null;
+  /** 재생 시간 (예: "3:45", 선택) */
+  duration: string | null;
+  /** 링크 URL (YouTube, Spotify 등, 선택) */
+  url: string | null;
+  /** 태그 목록 */
+  tags: string[];
+  /** 메모 */
+  notes: string;
+  /** 즐겨찾기 여부 */
+  isFavorite: boolean;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 댄스 뮤직 플레이리스트 단일 항목 */
+export type DanceMusicPlaylist = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 플레이리스트 이름 */
+  name: string;
+  /** 설명 */
+  description: string;
+  /** 트랙 목록 */
+  tracks: DanceMusicTrack[];
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type DanceMusicData = {
+  /** 멤버 ID */
+  memberId: string;
+  /** 플레이리스트 목록 */
+  playlists: DanceMusicPlaylist[];
+  /** 마지막 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};

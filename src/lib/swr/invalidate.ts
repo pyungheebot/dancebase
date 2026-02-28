@@ -764,3 +764,15 @@ export function invalidateAudienceSurvey(groupId: string, projectId: string) {
 export function invalidateLiveShowFeed(groupId: string, projectId: string) {
   mutate(swrKeys.liveShowFeed(groupId, projectId));
 }
+
+export function invalidateQrCheckIn(groupId: string) {
+  mutate(swrKeys.qrCheckIn(groupId));
+}
+
+export function invalidatePerformanceTicket(projectId: string) {
+  mutate(swrKeys.performanceTicket(projectId));
+}
+
+export function invalidateDanceMusicPlaylist(memberId: string) {
+  mutate(swrKeys.danceMusicPlaylist(memberId));
+}

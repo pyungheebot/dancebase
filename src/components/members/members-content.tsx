@@ -71,6 +71,7 @@ import { InjuryLogCard } from "@/components/members/injury-log-card";
 import { DanceStyleAnalysisCard } from "@/components/members/dance-style-analysis-card";
 import { RoutineBuilderCard } from "@/components/members/routine-builder-card";
 import { InspirationBoardCard } from "@/components/members/inspiration-board-card";
+import { DanceMusicCard } from "@/components/members/dance-music-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -711,6 +712,7 @@ function GroupMembersContent({
       {/* 댄스 루틴 빌더 (개인 연습 루틴 구성) */}
       <RoutineBuilderCard memberId={currentUserId} />
       <InspirationBoardCard memberId={currentUserId} />
+      <DanceMusicCard memberId={currentUserId} />
     </>
   );
 }

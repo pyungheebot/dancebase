@@ -25,6 +25,8 @@ import { DressRehearsalCard } from "@/components/projects/dress-rehearsal-card";
 import { StageRiskCard } from "@/components/projects/stage-risk-card";
 import { SoundCueCard } from "@/components/projects/sound-cue-card";
 import { StageTransitionCard } from "@/components/projects/stage-transition-card";
+import { StageFormationCard } from "@/components/projects/stage-formation-card";
+import { PerformanceTicketCard } from "@/components/projects/performance-ticket-card";
 
 export default function ProjectDetailPage({
   params,
@@ -136,6 +138,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <StageTransitionCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <StageFormationCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <PerformanceTicketCard
               projectId={ctx.projectId}
             />
           )}

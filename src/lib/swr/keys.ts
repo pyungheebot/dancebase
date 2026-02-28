@@ -1408,4 +1408,24 @@ export const swrKeys = {
   // 공연 무대 전환 계획 (localStorage 기반)
   stageTransitionPlan: (projectId: string) =>
     `stage-transition-plan-${projectId}` as const,
+
+  // 그룹 출결 QR 체크인 (localStorage 기반)
+  qrCheckIn: (groupId: string) =>
+    `qr-check-in-${groupId}` as const,
+
+  // 그룹 예산 트래커 (localStorage 기반)
+  groupBudgetTracker: (groupId: string) =>
+    `group-budget-tracker-${groupId}` as const,
+
+  // 공연 티켓 관리 (localStorage 기반)
+  performanceTicket: (projectId: string) =>
+    `performance-ticket-${projectId}` as const,
+
+  // 공연 무대 포메이션 디자이너 (localStorage 기반)
+  stageFormation: (projectId: string) =>
+    `stage-formation-${projectId}` as const,
+
+  // 멤버 댄스 뮤직 플레이리스트 (localStorage 기반)
+  danceMusicPlaylist: (memberId: string) =>
+    `dance-music-playlist-${memberId}` as const,
 };

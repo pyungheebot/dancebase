@@ -1,0 +1,320 @@
+"use client";
+
+import useSWR from "swr";
+import { useCallback, useMemo } from "react";
+import { swrKeys } from "@/lib/swr/keys";
+import type {
+  GroupBudgetData,
+  GroupBudgetTransaction,
+  GroupBudgetCategory,
+} from "@/types";
+
+// ============================================================
+// 기본 카테고리
+// ============================================================
+
+const DEFAULT_CATEGORIES: GroupBudgetCategory[] = [
+  { name: "회비", icon: "💰" },
+  { name: "연습비", icon: "🏃" },
+  { name: "의상비", icon: "👗" },
+  { name: "장소대여", icon: "🏢" },
+  { name: "식비", icon: "🍱" },
+  { name: "교통비", icon: "🚌" },
+  { name: "장비구매", icon: "🎵" },
+  { name: "공연준비", icon: "🎭" },
+  { name: "기타수입", icon: "📥" },
+  { name: "기타지출", icon: "📤" },
+];
+
+// ============================================================
+// localStorage 헬퍼
+// ============================================================
+
+function storageKey(groupId: string): string {
+  return `dancebase:group-budget-tracker:${groupId}`;
+}
+
+function loadData(groupId: string): GroupBudgetData {
+  if (typeof window === "undefined") {
+    return {
+      groupId,
+      transactions: [],
+      categories: DEFAULT_CATEGORIES,
+      monthlyBudgetLimit: null,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+  try {
+    const raw = localStorage.getItem(storageKey(groupId));
+    if (!raw) {
+      return {
+        groupId,
+        transactions: [],
+        categories: DEFAULT_CATEGORIES,
+        monthlyBudgetLimit: null,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+    const parsed = JSON.parse(raw) as GroupBudgetData;
+    // 기본 카테고리가 없으면 추가
+    if (!parsed.categories || parsed.categories.length === 0) {
+      parsed.categories = DEFAULT_CATEGORIES;
+    }
+    return parsed;
+  } catch {
+    return {
+      groupId,
+      transactions: [],
+      categories: DEFAULT_CATEGORIES,
+      monthlyBudgetLimit: null,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+}
+
+function saveData(groupId: string, data: GroupBudgetData): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
+  } catch {
+    // 무시
+  }
+}
+
+// ============================================================
+// 통계 타입
+// ============================================================
+
+export type GroupBudgetCategoryBreakdown = {
+  category: string;
+  icon: string;
+  amount: number;
+  ratio: number; // 전체 지출 대비 비율 (0~100)
+};
+
+export type GroupBudgetStats = {
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+  monthlySpending: number; // 이번 달 지출 합계
+  categoryBreakdown: GroupBudgetCategoryBreakdown[];
+  recentTransactions: GroupBudgetTransaction[];
+};
+
+// ============================================================
+// 훅
+// ============================================================
+
+export function useGroupBudget(groupId: string) {
+  const swrKey = swrKeys.groupBudgetTracker(groupId);
+
+  const { data, mutate, isLoading } = useSWR(
+    groupId ? swrKey : null,
+    () => loadData(groupId),
+    { revalidateOnFocus: false }
+  );
+
+  const budgetData: GroupBudgetData = data ?? {
+    groupId,
+    transactions: [],
+    categories: DEFAULT_CATEGORIES,
+    monthlyBudgetLimit: null,
+    updatedAt: new Date().toISOString(),
+  };
+
+  // ── 내부 저장 헬퍼 ──────────────────────────────────────
+
+  const persist = useCallback(
+    async (next: GroupBudgetData) => {
+      saveData(groupId, next);
+      await mutate(next, { revalidate: false });
+    },
+    [groupId, mutate]
+  );
+
+  // ── 거래 CRUD ────────────────────────────────────────────
+
+  const addTransaction = useCallback(
+    async (
+      payload: Omit<GroupBudgetTransaction, "id" | "createdAt">
+    ): Promise<void> => {
+      const newTx: GroupBudgetTransaction = {
+        ...payload,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+      };
+      const next: GroupBudgetData = {
+        ...budgetData,
+        transactions: [newTx, ...budgetData.transactions],
+        updatedAt: new Date().toISOString(),
+      };
+      await persist(next);
+    },
+    [budgetData, persist]
+  );
+
+  const updateTransaction = useCallback(
+    async (
+      txId: string,
+      partial: Partial<Omit<GroupBudgetTransaction, "id" | "createdAt">>
+    ): Promise<boolean> => {
+      const idx = budgetData.transactions.findIndex((t) => t.id === txId);
+      if (idx === -1) return false;
+      const updated = { ...budgetData.transactions[idx], ...partial };
+      const txs = [...budgetData.transactions];
+      txs[idx] = updated;
+      const next: GroupBudgetData = {
+        ...budgetData,
+        transactions: txs,
+        updatedAt: new Date().toISOString(),
+      };
+      await persist(next);
+      return true;
+    },
+    [budgetData, persist]
+  );
+
+  const deleteTransaction = useCallback(
+    async (txId: string): Promise<boolean> => {
+      const filtered = budgetData.transactions.filter((t) => t.id !== txId);
+      if (filtered.length === budgetData.transactions.length) return false;
+      const next: GroupBudgetData = {
+        ...budgetData,
+        transactions: filtered,
+        updatedAt: new Date().toISOString(),
+      };
+      await persist(next);
+      return true;
+    },
+    [budgetData, persist]
+  );
+
+  // ── 카테고리 관리 ─────────────────────────────────────────
+
+  const addCategory = useCallback(
+    async (category: GroupBudgetCategory): Promise<void> => {
+      const exists = budgetData.categories.some(
+        (c) => c.name === category.name
+      );
+      if (exists) return;
+      const next: GroupBudgetData = {
+        ...budgetData,
+        categories: [...budgetData.categories, category],
+        updatedAt: new Date().toISOString(),
+      };
+      await persist(next);
+    },
+    [budgetData, persist]
+  );
+
+  const removeCategory = useCallback(
+    async (categoryName: string): Promise<void> => {
+      const filtered = budgetData.categories.filter(
+        (c) => c.name !== categoryName
+      );
+      const next: GroupBudgetData = {
+        ...budgetData,
+        categories: filtered,
+        updatedAt: new Date().toISOString(),
+      };
+      await persist(next);
+    },
+    [budgetData, persist]
+  );
+
+  // ── 월별 예산 한도 ────────────────────────────────────────
+
+  const setMonthlyLimit = useCallback(
+    async (limit: number | null): Promise<void> => {
+      const next: GroupBudgetData = {
+        ...budgetData,
+        monthlyBudgetLimit: limit,
+        updatedAt: new Date().toISOString(),
+      };
+      await persist(next);
+    },
+    [budgetData, persist]
+  );
+
+  // ── 통계 계산 ─────────────────────────────────────────────
+
+  const stats = useMemo((): GroupBudgetStats => {
+    const transactions = budgetData.transactions;
+
+    const totalIncome = transactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalExpense = transactions
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const balance = totalIncome - totalExpense;
+
+    // 이번 달 지출
+    const now = new Date();
+    const thisYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const monthlySpending = transactions
+      .filter(
+        (t) => t.type === "expense" && t.date.startsWith(thisYearMonth)
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    // 카테고리별 지출 분포
+    const expenseTransactions = transactions.filter((t) => t.type === "expense");
+    const categoryMap = new Map<string, { amount: number; icon: string }>();
+
+    for (const tx of expenseTransactions) {
+      const existing = categoryMap.get(tx.category);
+      const catDef = budgetData.categories.find((c) => c.name === tx.category);
+      const icon = catDef?.icon ?? "💸";
+      if (existing) {
+        existing.amount += tx.amount;
+      } else {
+        categoryMap.set(tx.category, { amount: tx.amount, icon });
+      }
+    }
+
+    const categoryBreakdown: GroupBudgetCategoryBreakdown[] = Array.from(
+      categoryMap.entries()
+    )
+      .map(([category, { amount, icon }]) => ({
+        category,
+        icon,
+        amount,
+        ratio: totalExpense > 0 ? Math.round((amount / totalExpense) * 100) : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    // 최근 거래 5건
+    const recentTransactions = [...transactions]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 5);
+
+    return {
+      totalIncome,
+      totalExpense,
+      balance,
+      monthlySpending,
+      categoryBreakdown,
+      recentTransactions,
+    };
+  }, [budgetData]);
+
+  return {
+    data: budgetData,
+    loading: isLoading,
+    stats,
+    // 거래 CRUD
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    // 카테고리
+    addCategory,
+    removeCategory,
+    // 예산 한도
+    setMonthlyLimit,
+    // 리페치
+    refetch: () => mutate(),
+  };
+}
