@@ -37,6 +37,8 @@ import { StageSafetyCard } from "@/components/projects/stage-safety-card";
 import { CostumeFittingCard } from "@/components/projects/costume-fitting-card";
 import { PerformanceSetlistCard } from "@/components/projects/performance-setlist-card";
 import { StagePropCard } from "@/components/projects/stage-prop-card";
+import { ConsentFormCard } from "@/components/projects/consent-form-card";
+import { PhotoShootCard } from "@/components/projects/photo-shoot-card";
 
 export default function ProjectDetailPage({
   params,
@@ -208,6 +210,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <StagePropCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <ConsentFormCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <PhotoShootCard
               projectId={ctx.projectId}
             />
           )}

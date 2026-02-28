@@ -13729,3 +13729,190 @@ export type GroupRulebookData = {
   /** 마지막 수정일 (ISO 8601) */
   updatedAt: string;
 };
+
+// ============================================
+// Consent Form (공연 출연 동의서 관리, localStorage 기반)
+// ============================================
+
+/** 동의서 유형 */
+export type ConsentFormType =
+  | "performance"
+  | "photo"
+  | "video"
+  | "medical"
+  | "liability"
+  | "other";
+
+/** 동의서 상태 */
+export type ConsentFormStatus = "pending" | "signed" | "declined";
+
+/** 동의서 개별 항목 */
+export type ConsentFormItem = {
+  id: string;
+  memberName: string;
+  formType: ConsentFormType;
+  status: ConsentFormStatus;
+  signedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+};
+
+/** 동의서 전체 데이터 (localStorage 저장 단위) */
+export type ConsentFormData = {
+  projectId: string;
+  items: ConsentFormItem[];
+  updatedAt: string;
+};
+
+// ============================================
+// Group Music Library (그룹 음악 라이브러리)
+// ============================================
+
+/** 음악 트랙 용도 */
+export type MusicTrackUseCase =
+  | "practice"
+  | "performance"
+  | "warmup"
+  | "cooldown"
+  | "other";
+
+/** 그룹 음악 라이브러리 트랙 */
+export type GroupMusicTrack = {
+  /** 트랙 고유 ID */
+  id: string;
+  /** 트랙 제목 */
+  title: string;
+  /** 아티스트명 */
+  artist: string;
+  /** 장르 (없으면 null) */
+  genre: string | null;
+  /** BPM (없으면 null) */
+  bpm: number | null;
+  /** 재생 시간 (예: "3:45", 없으면 null) */
+  duration: string | null;
+  /** 음악 URL 또는 링크 (없으면 null) */
+  url: string | null;
+  /** 추가한 멤버 이름 */
+  addedBy: string;
+  /** 태그 목록 */
+  tags: string[];
+  /** 즐겨찾기 여부 */
+  isFavorite: boolean;
+  /** 용도 */
+  useCase: MusicTrackUseCase;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 그룹 음악 라이브러리 전체 데이터 (localStorage 저장 단위) */
+export type GroupMusicLibraryData = {
+  /** 그룹 ID */
+  groupId: string;
+  /** 트랙 목록 */
+  tracks: GroupMusicTrack[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// Group Practice Feedback v2 (그룹 연습 피드백 - 상호 피드백 공유)
+// ============================================
+
+/** 연습 피드백 항목 */
+export type GroupPracticeFeedbackEntry = {
+  id: string;
+  /** 연습 날짜 (YYYY-MM-DD) */
+  practiceDate: string;
+  /** 연습 제목 (선택) */
+  practiceTitle: string | null;
+  /** 작성자 이름 */
+  authorName: string;
+  /** 별점 (1~5) */
+  rating: number;
+  /** 잘한 점 */
+  positives: string;
+  /** 개선할 점 */
+  improvements: string;
+  /** 다음 목표 (선택) */
+  goals: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 그룹 연습 피드백 전체 데이터 (localStorage 저장 단위) */
+export type GroupPracticeFeedbackData = {
+  /** 그룹 ID */
+  groupId: string;
+  /** 피드백 항목 목록 */
+  entries: GroupPracticeFeedbackEntry[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// Photo Shoot Plan (공연 사진 촬영 계획, localStorage 기반)
+// ============================================
+
+export type PhotoShootPlanType =
+  | "group"
+  | "individual"
+  | "action"
+  | "backstage"
+  | "detail";
+
+export type PhotoShootPlan = {
+  id: string;
+  title: string;
+  type: PhotoShootPlanType;
+  location: string | null;
+  timing: string | null;
+  participants: string[];
+  poseDescription: string | null;
+  referenceUrl: string | null;
+  isCompleted: boolean;
+  notes: string;
+  createdAt: string;
+};
+
+export type PhotoShootData = {
+  projectId: string;
+  plans: PhotoShootPlan[];
+  photographerName: string | null;
+  updatedAt: string;
+};
+
+// ============================================
+// Fitness Test (멤버 댄스 체력 측정 기록, localStorage 기반)
+// ============================================
+
+/** 댄스 체력 측정 기록 항목 */
+export type FitnessTestRecord = {
+  /** 고유 식별자 */
+  id: string;
+  /** 측정 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 유연성 점수 (0~100, 없으면 null) */
+  flexibility: number | null;
+  /** 근력 점수 (0~100, 없으면 null) */
+  strength: number | null;
+  /** 지구력 점수 (0~100, 없으면 null) */
+  endurance: number | null;
+  /** 균형감각 점수 (0~100, 없으면 null) */
+  balance: number | null;
+  /** 스피드/리듬 점수 (0~100, 없으면 null) */
+  speed: number | null;
+  /** 메모 (없으면 null) */
+  notes: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 멤버 체력 측정 전체 데이터 (localStorage 저장 단위) */
+export type FitnessTestData = {
+  /** 멤버 ID */
+  memberId: string;
+  /** 측정 기록 목록 */
+  records: FitnessTestRecord[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};

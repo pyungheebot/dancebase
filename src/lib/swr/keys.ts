@@ -1520,4 +1520,18 @@ export const swrKeys = {
   // 그룹 규정집 (localStorage 기반)
   groupRulebook: (groupId: string) =>
     `group-rulebook-${groupId}` as const,
+
+  // 그룹 음악 라이브러리 (localStorage 기반)
+  groupMusicLibrary: (groupId: string) =>
+    `group-music-library-${groupId}` as const,
+
+  // 공연 출연 동의서 관리 (localStorage 기반)
+  consentForm: (projectId: string) => `consent-form-${projectId}` as const,
+
+  // 그룹 연습 피드백 v2 (localStorage 기반)
+  groupPracticeFeedback: (groupId: string) =>
+    `practice-feedback-${groupId}` as const,
+
+  // 공연 사진 촬영 계획 (localStorage 기반)
+  photoShootPlan: (projectId: string) => `photo-shoot-plan-${projectId}` as const,
 };

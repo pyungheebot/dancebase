@@ -817,3 +817,23 @@ export function invalidateMembershipFee(groupId: string) {
 export function invalidatePerformanceSetlist(projectId: string) {
   mutate(swrKeys.performanceSetlist(projectId));
 }
+
+export function invalidateGroupMusicLibrary(groupId: string) {
+  mutate(swrKeys.groupMusicLibrary(groupId));
+}
+
+export function invalidateConsentForm(projectId: string) {
+  mutate(swrKeys.consentForm(projectId));
+}
+
+export function invalidateGroupPracticeFeedback(groupId: string) {
+  mutate(swrKeys.groupPracticeFeedback(groupId));
+}
+
+export function invalidatePhotoShootPlan(projectId: string) {
+  mutate(swrKeys.photoShootPlan(projectId));
+}
+
+export function invalidateFitnessTest(memberId: string) {
+  mutate(swrKeys.fitnessTest(memberId));
+}
