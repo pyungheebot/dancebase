@@ -1,269 +1,418 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import useSWR from "swr";
+import { useCallback } from "react";
+import { swrKeys } from "@/lib/swr/keys";
 import type {
-  AudienceFeedbackSurvey,
-  AudienceFeedbackEntry,
-  AudienceFeedbackRating,
+  AudienceFeedbackData,
+  AudienceFeedbackQuestion,
+  AudienceFeedbackResponse,
+  AudienceFeedbackSurveyItem,
 } from "@/types";
 
-// ============================================================
+// ——————————————————————————————
 // localStorage 헬퍼
-// ============================================================
+// ——————————————————————————————
 
-function storageKey(groupId: string, projectId: string): string {
-  return `dancebase:audience-feedback:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): AudienceFeedbackSurvey[] {
-  if (typeof window === "undefined") return [];
+function loadData(projectId: string): AudienceFeedbackData {
+  if (typeof window === "undefined") {
+    return { projectId, surveys: [], updatedAt: new Date().toISOString() };
+  }
   try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as AudienceFeedbackSurvey[];
+    const raw = localStorage.getItem(`audience-feedback-${projectId}`);
+    if (!raw) {
+      return { projectId, surveys: [], updatedAt: new Date().toISOString() };
+    }
+    return JSON.parse(raw) as AudienceFeedbackData;
   } catch {
-    return [];
+    return { projectId, surveys: [], updatedAt: new Date().toISOString() };
   }
 }
 
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: AudienceFeedbackSurvey[]
-): void {
+function persistData(data: AudienceFeedbackData): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
+    localStorage.setItem(
+      `audience-feedback-${data.projectId}`,
+      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
+    );
   } catch {
-    // 무시
+    // localStorage 접근 실패 시 무시
   }
 }
 
-// ============================================================
-// 통계 타입
-// ============================================================
+// ——————————————————————————————
+// 파라미터 타입
+// ——————————————————————————————
 
-export type AudienceFeedbackStats = {
-  totalResponses: number;
-  averageRatings: AudienceFeedbackRating;
-  recommendRate: number; // 0~100 (%)
-  ratingDistribution: Record<keyof AudienceFeedbackRating, number[]>; // 각 축별 1~5 분포 [1점수,2점수,3점수,4점수,5점수]
+export type CreateSurveyParams = {
+  title: string;
+  questions: Omit<AudienceFeedbackQuestion, "id">[];
 };
 
-function computeStats(entries: AudienceFeedbackEntry[]): AudienceFeedbackStats {
-  const total = entries.length;
+export type AddQuestionParams = Omit<AudienceFeedbackQuestion, "id">;
 
-  if (total === 0) {
-    const emptyDist: number[] = [0, 0, 0, 0, 0];
-    return {
-      totalResponses: 0,
-      averageRatings: {
-        choreography: 0,
-        music: 0,
-        costumes: 0,
-        stagePresence: 0,
-        overall: 0,
-      },
-      recommendRate: 0,
-      ratingDistribution: {
-        choreography: [...emptyDist],
-        music: [...emptyDist],
-        costumes: [...emptyDist],
-        stagePresence: [...emptyDist],
-        overall: [...emptyDist],
-      },
-    };
-  }
+export type UpdateQuestionParams = Partial<
+  Omit<AudienceFeedbackQuestion, "id">
+>;
 
-  const axes: (keyof AudienceFeedbackRating)[] = [
-    "choreography",
-    "music",
-    "costumes",
-    "stagePresence",
-    "overall",
-  ];
+export type SubmitResponseParams = {
+  respondentName: string | null;
+  answers: Record<string, string | number>;
+};
 
-  const sums: Record<keyof AudienceFeedbackRating, number> = {
-    choreography: 0,
-    music: 0,
-    costumes: 0,
-    stagePresence: 0,
-    overall: 0,
-  };
-  const distribution: Record<keyof AudienceFeedbackRating, number[]> = {
-    choreography: [0, 0, 0, 0, 0],
-    music: [0, 0, 0, 0, 0],
-    costumes: [0, 0, 0, 0, 0],
-    stagePresence: [0, 0, 0, 0, 0],
-    overall: [0, 0, 0, 0, 0],
-  };
+// ——————————————————————————————
+// 설문 결과 분석 타입
+// ——————————————————————————————
 
-  let recommendCount = 0;
+export type RatingQuestionResult = {
+  questionId: string;
+  question: string;
+  type: "rating";
+  averageScore: number;
+  totalAnswers: number;
+  /** 별점 1~5 각 개수 */
+  distribution: Record<number, number>;
+};
 
-  for (const entry of entries) {
-    if (entry.wouldRecommend) recommendCount++;
-    for (const axis of axes) {
-      const score = entry.ratings[axis];
-      sums[axis] += score;
-      const idx = Math.min(Math.max(Math.round(score), 1), 5) - 1;
-      distribution[axis][idx]++;
-    }
-  }
+export type TextQuestionResult = {
+  questionId: string;
+  question: string;
+  type: "text";
+  responses: string[];
+};
 
-  const averageRatings: AudienceFeedbackRating = {
-    choreography: Math.round((sums.choreography / total) * 10) / 10,
-    music: Math.round((sums.music / total) * 10) / 10,
-    costumes: Math.round((sums.costumes / total) * 10) / 10,
-    stagePresence: Math.round((sums.stagePresence / total) * 10) / 10,
-    overall: Math.round((sums.overall / total) * 10) / 10,
-  };
+export type ChoiceQuestionResult = {
+  questionId: string;
+  question: string;
+  type: "choice";
+  choices: string[];
+  /** 보기 텍스트 -> 선택 수 */
+  distribution: Record<string, number>;
+};
 
-  return {
-    totalResponses: total,
-    averageRatings,
-    recommendRate: Math.round((recommendCount / total) * 100),
-    ratingDistribution: distribution,
-  };
-}
+export type QuestionResult =
+  | RatingQuestionResult
+  | TextQuestionResult
+  | ChoiceQuestionResult;
 
-// ============================================================
+export type SurveyResults = {
+  surveyId: string;
+  title: string;
+  totalResponses: number;
+  questionResults: QuestionResult[];
+};
+
+// ——————————————————————————————
 // 훅
-// ============================================================
+// ——————————————————————————————
 
-export function useAudienceFeedback(groupId: string, projectId: string) {
-  const [surveys, setSurveys] = useState<AudienceFeedbackSurvey[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const reload = useCallback(() => {
-    if (!groupId || !projectId) return;
-    const data = loadData(groupId, projectId);
-    setSurveys(data);
-    setLoading(false);
-  }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  const persist = useCallback(
-    (next: AudienceFeedbackSurvey[]) => {
-      saveData(groupId, projectId, next);
-      setSurveys(next);
-    },
-    [groupId, projectId]
+export function useAudienceFeedback(projectId: string) {
+  const { data, isLoading, mutate } = useSWR(
+    swrKeys.audienceFeedback(projectId),
+    () => loadData(projectId),
+    { revalidateOnFocus: false }
   );
 
-  // 설문 생성
+  const feedbackData: AudienceFeedbackData = data ?? {
+    projectId,
+    surveys: [],
+    updatedAt: new Date().toISOString(),
+  };
+
+  // ——— 설문 생성 ———
   const createSurvey = useCallback(
-    (title: string): AudienceFeedbackSurvey => {
-      const survey: AudienceFeedbackSurvey = {
+    (params: CreateSurveyParams) => {
+      const current = loadData(projectId);
+      const newSurvey: AudienceFeedbackSurveyItem = {
         id: crypto.randomUUID(),
-        projectId,
-        title,
-        isActive: false,
-        entries: [],
+        title: params.title,
+        questions: params.questions.map((q) => ({
+          ...q,
+          id: crypto.randomUUID(),
+        })),
+        responses: [],
+        isActive: true,
         createdAt: new Date().toISOString(),
       };
-      persist([...surveys, survey]);
-      return survey;
+      const updated: AudienceFeedbackData = {
+        ...current,
+        surveys: [newSurvey, ...current.surveys],
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
+      mutate(updated, false);
     },
-    [surveys, persist, projectId]
+    [projectId, mutate]
   );
 
-  // 설문 삭제
+  // ——— 설문 삭제 ———
   const deleteSurvey = useCallback(
-    (surveyId: string): boolean => {
-      const next = surveys.filter((s) => s.id !== surveyId);
-      if (next.length === surveys.length) return false;
-      persist(next);
-      return true;
+    (surveyId: string) => {
+      const current = loadData(projectId);
+      const updated: AudienceFeedbackData = {
+        ...current,
+        surveys: current.surveys.filter((s) => s.id !== surveyId),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
+      mutate(updated, false);
     },
-    [surveys, persist]
+    [projectId, mutate]
   );
 
-  // 설문 활성화 토글
-  const toggleActive = useCallback(
-    (surveyId: string): boolean => {
-      const idx = surveys.findIndex((s) => s.id === surveyId);
-      if (idx === -1) return false;
-      // 활성화 시 다른 설문 비활성화
-      const next = surveys.map((s, i) => ({
-        ...s,
-        isActive: i === idx ? !s.isActive : false,
-      }));
-      persist(next);
-      return true;
+  // ——— 설문 활성/비활성 토글 ———
+  const toggleSurveyActive = useCallback(
+    (surveyId: string) => {
+      const current = loadData(projectId);
+      const updated: AudienceFeedbackData = {
+        ...current,
+        surveys: current.surveys.map((s) =>
+          s.id !== surveyId ? s : { ...s, isActive: !s.isActive }
+        ),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
+      mutate(updated, false);
     },
-    [surveys, persist]
+    [projectId, mutate]
   );
 
-  // 피드백 추가
-  const addFeedback = useCallback(
-    (
-      surveyId: string,
-      entry: Omit<AudienceFeedbackEntry, "id" | "submittedAt">
-    ): boolean => {
-      const idx = surveys.findIndex((s) => s.id === surveyId);
-      if (idx === -1) return false;
-
-      const newEntry: AudienceFeedbackEntry = {
-        ...entry,
+  // ——— 질문 추가 ———
+  const addQuestion = useCallback(
+    (surveyId: string, params: AddQuestionParams) => {
+      const current = loadData(projectId);
+      const newQuestion: AudienceFeedbackQuestion = {
         id: crypto.randomUUID(),
+        ...params,
+      };
+      const updated: AudienceFeedbackData = {
+        ...current,
+        surveys: current.surveys.map((s) =>
+          s.id !== surveyId
+            ? s
+            : { ...s, questions: [...s.questions, newQuestion] }
+        ),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
+      mutate(updated, false);
+    },
+    [projectId, mutate]
+  );
+
+  // ——— 질문 수정 ———
+  const updateQuestion = useCallback(
+    (surveyId: string, questionId: string, params: UpdateQuestionParams) => {
+      const current = loadData(projectId);
+      const updated: AudienceFeedbackData = {
+        ...current,
+        surveys: current.surveys.map((s) =>
+          s.id !== surveyId
+            ? s
+            : {
+                ...s,
+                questions: s.questions.map((q) =>
+                  q.id !== questionId ? q : { ...q, ...params }
+                ),
+              }
+        ),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
+      mutate(updated, false);
+    },
+    [projectId, mutate]
+  );
+
+  // ——— 질문 삭제 ———
+  const removeQuestion = useCallback(
+    (surveyId: string, questionId: string) => {
+      const current = loadData(projectId);
+      const updated: AudienceFeedbackData = {
+        ...current,
+        surveys: current.surveys.map((s) =>
+          s.id !== surveyId
+            ? s
+            : {
+                ...s,
+                questions: s.questions.filter((q) => q.id !== questionId),
+              }
+        ),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
+      mutate(updated, false);
+    },
+    [projectId, mutate]
+  );
+
+  // ——— 응답 제출 ———
+  const submitResponse = useCallback(
+    (surveyId: string, params: SubmitResponseParams) => {
+      const current = loadData(projectId);
+      const newResponse: AudienceFeedbackResponse = {
+        id: crypto.randomUUID(),
+        respondentName: params.respondentName,
+        answers: params.answers,
         submittedAt: new Date().toISOString(),
       };
-
-      const next = [...surveys];
-      next[idx] = {
-        ...next[idx],
-        entries: [...next[idx].entries, newEntry],
+      const updated: AudienceFeedbackData = {
+        ...current,
+        surveys: current.surveys.map((s) =>
+          s.id !== surveyId
+            ? s
+            : { ...s, responses: [...s.responses, newResponse] }
+        ),
+        updatedAt: new Date().toISOString(),
       };
-      persist(next);
-      return true;
+      persistData(updated);
+      mutate(updated, false);
     },
-    [surveys, persist]
+    [projectId, mutate]
   );
 
-  // 피드백 삭제
-  const deleteFeedback = useCallback(
-    (surveyId: string, entryId: string): boolean => {
-      const idx = surveys.findIndex((s) => s.id === surveyId);
-      if (idx === -1) return false;
+  // ——— 설문 결과 분석 ———
+  const getSurveyResults = useCallback(
+    (surveyId: string): SurveyResults | null => {
+      const current = loadData(projectId);
+      const survey = current.surveys.find((s) => s.id === surveyId);
+      if (!survey) return null;
 
-      const filtered = surveys[idx].entries.filter((e) => e.id !== entryId);
-      if (filtered.length === surveys[idx].entries.length) return false;
+      const questionResults: QuestionResult[] = survey.questions.map((q) => {
+        if (q.type === "rating") {
+          const distribution: Record<number, number> = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+          };
+          let totalScore = 0;
+          let totalAnswers = 0;
+          for (const response of survey.responses) {
+            const answer = response.answers[q.id];
+            if (answer !== undefined && answer !== "") {
+              const score = Number(answer);
+              if (!isNaN(score) && score >= 1 && score <= 5) {
+                distribution[score] = (distribution[score] ?? 0) + 1;
+                totalScore += score;
+                totalAnswers++;
+              }
+            }
+          }
+          return {
+            questionId: q.id,
+            question: q.question,
+            type: "rating",
+            averageScore:
+              totalAnswers === 0
+                ? 0
+                : Math.round((totalScore / totalAnswers) * 10) / 10,
+            totalAnswers,
+            distribution,
+          };
+        }
 
-      const next = [...surveys];
-      next[idx] = { ...next[idx], entries: filtered };
-      persist(next);
-      return true;
+        if (q.type === "text") {
+          const responses: string[] = [];
+          for (const response of survey.responses) {
+            const answer = response.answers[q.id];
+            if (typeof answer === "string" && answer.trim() !== "") {
+              responses.push(answer.trim());
+            }
+          }
+          return {
+            questionId: q.id,
+            question: q.question,
+            type: "text",
+            responses,
+          };
+        }
+
+        // choice
+        const choices = q.choices ?? [];
+        const distribution: Record<string, number> = {};
+        for (const c of choices) {
+          distribution[c] = 0;
+        }
+        for (const response of survey.responses) {
+          const answer = response.answers[q.id];
+          if (typeof answer === "string" && answer !== "") {
+            distribution[answer] = (distribution[answer] ?? 0) + 1;
+          }
+        }
+        return {
+          questionId: q.id,
+          question: q.question,
+          type: "choice",
+          choices,
+          distribution,
+        };
+      });
+
+      return {
+        surveyId: survey.id,
+        title: survey.title,
+        totalResponses: survey.responses.length,
+        questionResults,
+      };
     },
-    [surveys, persist]
+    [projectId]
   );
 
-  // 설문별 통계 계산
-  const getStats = useCallback(
-    (surveyId: string): AudienceFeedbackStats => {
-      const survey = surveys.find((s) => s.id === surveyId);
-      if (!survey) return computeStats([]);
-      return computeStats(survey.entries);
-    },
-    [surveys]
+  // ——————————————————————————————
+  // 통계 계산
+  // ——————————————————————————————
+
+  const surveys = feedbackData.surveys;
+  const totalSurveys = surveys.length;
+  const totalResponses = surveys.reduce(
+    (sum, s) => sum + s.responses.length,
+    0
   );
 
-  // 전체 통계 (모든 설문 엔트리 합산)
-  const allEntries = surveys.flatMap((s) => s.entries);
-  const totalStats = computeStats(allEntries);
+  // 모든 설문의 rating 질문 평균 (전체 평균 별점)
+  let ratingTotal = 0;
+  let ratingCount = 0;
+  for (const survey of surveys) {
+    for (const question of survey.questions) {
+      if (question.type === "rating") {
+        for (const response of survey.responses) {
+          const answer = response.answers[question.id];
+          if (answer !== undefined && answer !== "") {
+            const score = Number(answer);
+            if (!isNaN(score) && score >= 1 && score <= 5) {
+              ratingTotal += score;
+              ratingCount++;
+            }
+          }
+        }
+      }
+    }
+  }
+  const averageRating =
+    ratingCount === 0
+      ? 0
+      : Math.round((ratingTotal / ratingCount) * 10) / 10;
 
   return {
-    surveys,
-    loading,
+    feedbackData,
+    loading: isLoading,
+    refetch: () => mutate(),
+    // CRUD
     createSurvey,
     deleteSurvey,
-    toggleActive,
-    addFeedback,
-    deleteFeedback,
-    getStats,
-    totalStats,
-    refetch: reload,
+    toggleSurveyActive,
+    addQuestion,
+    updateQuestion,
+    removeQuestion,
+    submitResponse,
+    // 결과 분석
+    getSurveyResults,
+    // 통계
+    totalSurveys,
+    totalResponses,
+    averageRating,
   };
 }

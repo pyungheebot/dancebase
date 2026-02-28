@@ -984,8 +984,8 @@ export const swrKeys = {
     `thank-you-board-${groupId}` as const,
 
   // 공연 리허설 스케줄 (localStorage 기반)
-  rehearsalSchedule: (groupId: string, projectId: string) =>
-    `rehearsal-schedule-${groupId}-${projectId}` as const,
+  rehearsalSchedule: (projectId: string) =>
+    `rehearsal-schedule-${projectId}` as const,
 
   // 연습 체크인 (localStorage 기반)
   practiceCheckin: (groupId: string) =>
@@ -1034,10 +1034,6 @@ export const swrKeys = {
 
   // 그룹 예산 플래너 (localStorage 기반)
   budgetPlanner: (groupId: string) => `budget-planner-${groupId}` as const,
-
-  // 공연 관객 피드백 (localStorage 기반)
-  audienceFeedback: (groupId: string, projectId: string) =>
-    `audience-feedback-${groupId}-${projectId}` as const,
 
   // 멤버 댄스 다이어리 (localStorage 기반)
   danceDiary: (memberId: string) => `dance-diary-${memberId}` as const,
@@ -1468,4 +1464,20 @@ export const swrKeys = {
   // 공연 마케팅 캠페인 (localStorage 기반)
   marketingCampaign: (projectId: string) =>
     `marketing-campaign-${projectId}` as const,
+
+  // 그룹 공유 파일함 (localStorage 기반)
+  groupSharedFiles: (groupId: string) =>
+    `group-shared-files-${groupId}` as const,
+
+  // 멤버 댄스 영상 포트폴리오 (localStorage 기반)
+  danceVideoPortfolio: (memberId: string) =>
+    `dance-video-portfolio-${memberId}` as const,
+
+  // 그룹 멤버 생일 캘린더 (localStorage 기반)
+  memberBirthdayCalendar: (groupId: string) =>
+    `member-birthday-calendar-${groupId}` as const,
+
+  // 공연 관객 피드백 수집 (localStorage 기반)
+  audienceFeedback: (projectId: string) =>
+    `audience-feedback-${projectId}` as const,
 };

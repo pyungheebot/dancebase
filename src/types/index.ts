@@ -7504,7 +7504,11 @@ export type RehearsalType =
   | "dress_rehearsal"
   | "section"
   | "blocking"
-  | "other";
+  | "other"
+  | "full"
+  | "partial"
+  | "tech"
+  | "dress";
 
 /** 리허설 스케줄 항목 */
 export type RehearsalScheduleEntry = {
@@ -13010,6 +13014,263 @@ export type MarketingCampaignData = {
   targetAudience: string | null;
   /** 예산 (원, null = 미설정) */
   budget: number | null;
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// 그룹 공유 파일함
+// ============================================
+
+/** 공유 파일 카테고리 */
+export type SharedFileCategory =
+  | "document"
+  | "image"
+  | "video"
+  | "audio"
+  | "spreadsheet"
+  | "other";
+
+/** 공유 파일 항목 */
+export type SharedFileItem = {
+  /** 고유 ID */
+  id: string;
+  /** 파일/자료 이름 */
+  name: string;
+  /** 파일 URL 또는 링크 */
+  url: string;
+  /** 카테고리 */
+  category: SharedFileCategory;
+  /** 설명 (null = 미입력) */
+  description: string | null;
+  /** 업로더 이름 */
+  uploadedBy: string;
+  /** 파일 크기 표시 텍스트 (null = 미입력) */
+  fileSize: string | null;
+  /** 태그 목록 */
+  tags: string[];
+  /** 소속 폴더 ID (null = 루트) */
+  folderId: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 공유 파일 폴더 항목 */
+export type SharedFileFolderItem = {
+  /** 고유 ID */
+  id: string;
+  /** 폴더 이름 */
+  name: string;
+  /** 상위 폴더 ID (null = 루트) */
+  parentId: string | null;
+};
+
+/** 공유 파일함 전체 데이터 (localStorage 저장 단위) */
+export type SharedFileData = {
+  /** 연결된 그룹 ID */
+  groupId: string;
+  /** 파일 목록 */
+  files: SharedFileItem[];
+  /** 폴더 목록 */
+  folders: SharedFileFolderItem[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// 리허설 스케줄러 (공연 리허설 일정 관리 - localStorage 기반)
+// ============================================================
+
+/** 리허설 스케줄러용 체크리스트 항목 */
+export type RehearsalScheduleCheckItem = {
+  /** 항목 ID */
+  id: string;
+  /** 항목 제목 */
+  title: string;
+  /** 완료 여부 */
+  isChecked: boolean;
+};
+
+/** 리허설 스케줄러용 리허설 유형 */
+export type RehearsalScheduleType = "full" | "partial" | "tech" | "dress" | "blocking";
+
+/** 리허설 스케줄러용 상태 */
+export type RehearsalScheduleStatus = "scheduled" | "completed" | "cancelled";
+
+/** 리허설 일정 항목 */
+export type RehearsalScheduleItem = {
+  /** 리허설 ID */
+  id: string;
+  /** 리허설 제목 */
+  title: string;
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 시작 시간 (HH:MM) */
+  startTime: string;
+  /** 종료 시간 (HH:MM, null = 미설정) */
+  endTime: string | null;
+  /** 장소 (null = 미설정) */
+  location: string | null;
+  /** 리허설 유형 */
+  type: RehearsalScheduleType;
+  /** 참여자 목록 */
+  participants: string[];
+  /** 체크리스트 */
+  checklist: RehearsalScheduleCheckItem[];
+  /** 메모 */
+  notes: string;
+  /** 상태 */
+  status: RehearsalScheduleStatus;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 리허설 스케줄 전체 데이터 (localStorage 저장 단위) */
+export type RehearsalScheduleData = {
+  /** 연결된 프로젝트 ID */
+  projectId: string;
+  /** 리허설 목록 */
+  rehearsals: RehearsalScheduleItem[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// 멤버 댄스 영상 포트폴리오
+// ============================================
+
+/** 댄스 영상 개별 항목 */
+export type DanceVideoItem = {
+  /** 고유 ID */
+  id: string;
+  /** 영상 제목 */
+  title: string;
+  /** 영상 URL (유튜브, 인스타 등) */
+  url: string;
+  /** 썸네일 URL (null = 없음) */
+  thumbnailUrl: string | null;
+  /** 장르 (예: 힙합, 팝핀, null = 미설정) */
+  genre: string | null;
+  /** 태그 목록 */
+  tags: string[];
+  /** 설명 */
+  description: string;
+  /** 영상 길이 (예: "3:45", null = 미설정) */
+  duration: string | null;
+  /** 촬영/업로드 날짜 (YYYY-MM-DD, null = 미설정) */
+  recordedAt: string | null;
+  /** 대표 영상 여부 */
+  isFeatured: boolean;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 댄스 영상 포트폴리오 전체 데이터 (localStorage 저장 단위) */
+export type DanceVideoPortfolioData = {
+  /** 연결된 멤버 ID */
+  memberId: string;
+  /** 영상 목록 */
+  videos: DanceVideoItem[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 멤버 생일 캘린더 (Member Birthday Calendar - localStorage 기반)
+// ============================================================
+
+/** 멤버 생일 항목 */
+export type MemberBirthdayEntry = {
+  /** 항목 고유 ID */
+  id: string;
+  /** 멤버 이름 */
+  memberName: string;
+  /** 생일 월 (1~12) */
+  birthMonth: number;
+  /** 생일 일 (1~31) */
+  birthDay: number;
+  /** 소원/희망 메시지 (null = 미설정) */
+  wishMessage: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 생일 축하 메시지 */
+export type BirthdayCelebration = {
+  /** 항목 고유 ID */
+  id: string;
+  /** 연결된 MemberBirthdayEntry.id */
+  birthdayId: string;
+  /** 작성자 이름 */
+  fromName: string;
+  /** 축하 메시지 */
+  message: string;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 그룹 멤버 생일 캘린더 전체 데이터 (localStorage 저장 단위) */
+export type MemberBirthdayData = {
+  /** 연결된 그룹 ID */
+  groupId: string;
+  /** 생일 목록 */
+  birthdays: MemberBirthdayEntry[];
+  /** 축하 메시지 목록 */
+  celebrations: BirthdayCelebration[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 관객 피드백 수집 (Audience Feedback - localStorage 기반)
+// ============================================================
+
+/** 관객 피드백 질문 항목 */
+export type AudienceFeedbackQuestion = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 질문 내용 */
+  question: string;
+  /** 질문 유형: rating(별점), text(주관식), choice(객관식) */
+  type: "rating" | "text" | "choice";
+  /** 객관식 보기 목록 (choice 타입일 때만 사용, 나머지는 null) */
+  choices: string[] | null;
+};
+
+/** 관객 피드백 응답 단건 */
+export type AudienceFeedbackResponse = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 응답자 이름 (null = 익명) */
+  respondentName: string | null;
+  /** 질문별 답변 (key: questionId, value: 별점 숫자 또는 텍스트) */
+  answers: Record<string, string | number>;
+  /** 제출 시각 (ISO 8601) */
+  submittedAt: string;
+};
+
+/** 관객 피드백 설문 단건 */
+export type AudienceFeedbackSurveyItem = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 설문 제목 */
+  title: string;
+  /** 질문 목록 */
+  questions: AudienceFeedbackQuestion[];
+  /** 응답 목록 */
+  responses: AudienceFeedbackResponse[];
+  /** 설문 활성 여부 */
+  isActive: boolean;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 공연 관객 피드백 전체 데이터 (localStorage 저장 단위) */
+export type AudienceFeedbackData = {
+  /** 연결된 프로젝트 ID */
+  projectId: string;
+  /** 설문 목록 */
+  surveys: AudienceFeedbackSurveyItem[];
   /** 마지막 수정일 (ISO 8601) */
   updatedAt: string;
 };

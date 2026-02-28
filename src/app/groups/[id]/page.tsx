@@ -38,6 +38,8 @@ import { GroupAnnouncementCard } from "@/components/groups/group-announcement-ca
 import { AttendanceBookCard } from "@/components/groups/attendance-book-card";
 import { GroupEquipmentCard } from "@/components/groups/group-equipment-card";
 import { MeetingVoteCard } from "@/components/groups/meeting-vote-card";
+import { MemberBirthdayCard } from "@/components/groups/member-birthday-card";
+import { SharedFilesCard } from "@/components/groups/shared-files-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -210,6 +212,10 @@ export default function GroupDetailPage({
           <GroupEquipmentCard groupId={ctx.groupId} />
 
           <MeetingVoteCard groupId={ctx.groupId} />
+
+          <MemberBirthdayCard groupId={ctx.groupId} />
+
+          <SharedFilesCard groupId={ctx.groupId} />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

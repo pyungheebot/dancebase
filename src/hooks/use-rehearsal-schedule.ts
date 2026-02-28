@@ -1,191 +1,316 @@
 "use client";
 
-import { useCallback } from "react";
 import useSWR from "swr";
+import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
-import type { RehearsalScheduleEntry, RehearsalType } from "@/types";
+import type {
+  RehearsalScheduleData,
+  RehearsalScheduleItem,
+  RehearsalScheduleCheckItem as RehearsalCheckItem,
+  RehearsalScheduleType as RehearsalType,
+  RehearsalScheduleStatus as RehearsalStatus,
+} from "@/types";
 
-// ============================================================
-// localStorage 유틸
-// ============================================================
+// ——————————————————————————————
+// localStorage 헬퍼
+// ——————————————————————————————
 
-function storageKey(groupId: string, projectId: string): string {
-  return `dancebase:rehearsal-schedule:${groupId}:${projectId}`;
-}
-
-function loadEntries(
-  groupId: string,
-  projectId: string
-): RehearsalScheduleEntry[] {
-  if (typeof window === "undefined") return [];
+function loadData(projectId: string): RehearsalScheduleData {
+  if (typeof window === "undefined") {
+    return {
+      projectId,
+      rehearsals: [],
+      updatedAt: new Date().toISOString(),
+    };
+  }
   try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as RehearsalScheduleEntry[];
+    const raw = localStorage.getItem(`rehearsal-schedule-${projectId}`);
+    if (!raw) {
+      return {
+        projectId,
+        rehearsals: [],
+        updatedAt: new Date().toISOString(),
+      };
+    }
+    return JSON.parse(raw) as RehearsalScheduleData;
   } catch {
-    return [];
+    return {
+      projectId,
+      rehearsals: [],
+      updatedAt: new Date().toISOString(),
+    };
   }
 }
 
-function saveEntries(
-  groupId: string,
-  projectId: string,
-  entries: RehearsalScheduleEntry[]
-): void {
+function persistData(data: RehearsalScheduleData): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(
-      storageKey(groupId, projectId),
-      JSON.stringify(entries)
+      `rehearsal-schedule-${data.projectId}`,
+      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
     );
   } catch {
     // localStorage 접근 실패 시 무시
   }
 }
 
-// ============================================================
-// 훅
-// ============================================================
+// ——————————————————————————————
+// 파라미터 타입
+// ——————————————————————————————
 
-export function useRehearsalSchedule(groupId: string, projectId: string) {
+export type AddRehearsalParams = {
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string | null;
+  location: string | null;
+  type: RehearsalType;
+  participants: string[];
+  notes: string;
+};
+
+export type UpdateRehearsalParams = Partial<
+  Omit<RehearsalScheduleItem, "id" | "createdAt" | "checklist">
+>;
+
+// ——————————————————————————————
+// 훅
+// ——————————————————————————————
+
+export function useRehearsalSchedule(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
-    swrKeys.rehearsalSchedule(groupId, projectId),
-    () => loadEntries(groupId, projectId),
-    { fallbackData: [] }
+    swrKeys.rehearsalSchedule(projectId),
+    () => loadData(projectId),
+    { revalidateOnFocus: false }
   );
 
-  const entries = data ?? [];
+  const scheduleData: RehearsalScheduleData = data ?? {
+    projectId,
+    rehearsals: [],
+    updatedAt: new Date().toISOString(),
+  };
 
-  /** 리허설 추가 */
+  // ——— 리허설 추가 ———
   const addRehearsal = useCallback(
-    (params: {
-      title: string;
-      type: RehearsalType;
-      date: string;
-      startTime: string;
-      endTime: string;
-      location?: string;
-      focusAreas: string[];
-      requiredMembers: string[];
-      notes?: string;
-    }): boolean => {
-      if (!params.title.trim()) return false;
-      const current = loadEntries(groupId, projectId);
-      const newEntry: RehearsalScheduleEntry = {
+    (params: AddRehearsalParams) => {
+      const current = loadData(projectId);
+      const newRehearsal: RehearsalScheduleItem = {
         id: crypto.randomUUID(),
-        title: params.title.trim(),
-        type: params.type,
+        title: params.title,
         date: params.date,
         startTime: params.startTime,
         endTime: params.endTime,
-        location: params.location?.trim() || undefined,
-        focusAreas: params.focusAreas,
-        requiredMembers: params.requiredMembers,
-        notes: params.notes?.trim() || undefined,
+        location: params.location,
+        type: params.type,
+        participants: params.participants,
+        checklist: [],
+        notes: params.notes,
         status: "scheduled",
         createdAt: new Date().toISOString(),
       };
-      const updated = [newEntry, ...current];
-      saveEntries(groupId, projectId, updated);
+      const updated: RehearsalScheduleData = {
+        ...current,
+        rehearsals: [...current.rehearsals, newRehearsal],
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
       mutate(updated, false);
-      return true;
     },
-    [groupId, projectId, mutate]
+    [projectId, mutate]
   );
 
-  /** 리허설 수정 */
+  // ——— 리허설 수정 ———
   const updateRehearsal = useCallback(
-    (
-      id: string,
-      patch: Partial<Omit<RehearsalScheduleEntry, "id" | "createdAt">>
-    ): void => {
-      const current = loadEntries(groupId, projectId);
-      const updated = current.map((e) =>
-        e.id === id ? { ...e, ...patch } : e
-      );
-      saveEntries(groupId, projectId, updated);
+    (rehearsalId: string, params: UpdateRehearsalParams) => {
+      const current = loadData(projectId);
+      const updated: RehearsalScheduleData = {
+        ...current,
+        rehearsals: current.rehearsals.map((r) =>
+          r.id !== rehearsalId ? r : { ...r, ...params }
+        ),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
       mutate(updated, false);
     },
-    [groupId, projectId, mutate]
+    [projectId, mutate]
   );
 
-  /** 리허설 삭제 */
+  // ——— 리허설 삭제 ———
   const deleteRehearsal = useCallback(
-    (id: string): void => {
-      const current = loadEntries(groupId, projectId);
-      const updated = current.filter((e) => e.id !== id);
-      saveEntries(groupId, projectId, updated);
+    (rehearsalId: string) => {
+      const current = loadData(projectId);
+      const updated: RehearsalScheduleData = {
+        ...current,
+        rehearsals: current.rehearsals.filter((r) => r.id !== rehearsalId),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
       mutate(updated, false);
     },
-    [groupId, projectId, mutate]
+    [projectId, mutate]
   );
 
-  /** 완료 처리 */
+  // ——— 체크리스트 항목 토글 ———
+  const toggleCheckItem = useCallback(
+    (rehearsalId: string, itemId: string) => {
+      const current = loadData(projectId);
+      const updated: RehearsalScheduleData = {
+        ...current,
+        rehearsals: current.rehearsals.map((r) => {
+          if (r.id !== rehearsalId) return r;
+          return {
+            ...r,
+            checklist: r.checklist.map((item) =>
+              item.id !== itemId
+                ? item
+                : { ...item, isChecked: !item.isChecked }
+            ),
+          };
+        }),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
+      mutate(updated, false);
+    },
+    [projectId, mutate]
+  );
+
+  // ——— 체크리스트 항목 추가 ———
+  const addCheckItem = useCallback(
+    (rehearsalId: string, title: string) => {
+      const current = loadData(projectId);
+      const newItem: RehearsalCheckItem = {
+        id: crypto.randomUUID(),
+        title,
+        isChecked: false,
+      };
+      const updated: RehearsalScheduleData = {
+        ...current,
+        rehearsals: current.rehearsals.map((r) => {
+          if (r.id !== rehearsalId) return r;
+          return { ...r, checklist: [...r.checklist, newItem] };
+        }),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
+      mutate(updated, false);
+    },
+    [projectId, mutate]
+  );
+
+  // ——— 체크리스트 항목 삭제 ———
+  const removeCheckItem = useCallback(
+    (rehearsalId: string, itemId: string) => {
+      const current = loadData(projectId);
+      const updated: RehearsalScheduleData = {
+        ...current,
+        rehearsals: current.rehearsals.map((r) => {
+          if (r.id !== rehearsalId) return r;
+          return {
+            ...r,
+            checklist: r.checklist.filter((item) => item.id !== itemId),
+          };
+        }),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
+      mutate(updated, false);
+    },
+    [projectId, mutate]
+  );
+
+  // ——— 리허설 완료 처리 ———
   const completeRehearsal = useCallback(
-    (id: string): void => {
-      const current = loadEntries(groupId, projectId);
-      const updated = current.map((e) =>
-        e.id === id ? { ...e, status: "completed" as const } : e
-      );
-      saveEntries(groupId, projectId, updated);
+    (rehearsalId: string) => {
+      const current = loadData(projectId);
+      const updated: RehearsalScheduleData = {
+        ...current,
+        rehearsals: current.rehearsals.map((r) =>
+          r.id !== rehearsalId
+            ? r
+            : { ...r, status: "completed" as RehearsalStatus }
+        ),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
       mutate(updated, false);
     },
-    [groupId, projectId, mutate]
+    [projectId, mutate]
   );
 
-  /** 취소 처리 */
+  // ——— 리허설 취소 처리 ———
   const cancelRehearsal = useCallback(
-    (id: string): void => {
-      const current = loadEntries(groupId, projectId);
-      const updated = current.map((e) =>
-        e.id === id ? { ...e, status: "cancelled" as const } : e
-      );
-      saveEntries(groupId, projectId, updated);
+    (rehearsalId: string) => {
+      const current = loadData(projectId);
+      const updated: RehearsalScheduleData = {
+        ...current,
+        rehearsals: current.rehearsals.map((r) =>
+          r.id !== rehearsalId
+            ? r
+            : { ...r, status: "cancelled" as RehearsalStatus }
+        ),
+        updatedAt: new Date().toISOString(),
+      };
+      persistData(updated);
       mutate(updated, false);
     },
-    [groupId, projectId, mutate]
+    [projectId, mutate]
   );
 
-  /** 오늘 이후 예정된 리허설 */
-  const getUpcoming = useCallback((): RehearsalScheduleEntry[] => {
-    const today = new Date().toISOString().slice(0, 10);
-    return entries
-      .filter((e) => e.status === "scheduled" && e.date >= today)
-      .sort((a, b) => a.date.localeCompare(b.date));
-  }, [entries]);
+  // ——————————————————————————————
+  // 통계 계산
+  // ——————————————————————————————
 
-  /** 유형별 필터 */
-  const getByType = useCallback(
-    (type: RehearsalType): RehearsalScheduleEntry[] => {
-      return entries.filter((e) => e.type === type);
-    },
-    [entries]
-  );
+  const rehearsals = scheduleData.rehearsals;
 
-  // 통계
-  const totalRehearsals = entries.length;
-  const completedCount = entries.filter((e) => e.status === "completed").length;
-  const today = new Date().toISOString().slice(0, 10);
-  const upcomingList = entries
-    .filter((e) => e.status === "scheduled" && e.date >= today)
-    .sort((a, b) => a.date.localeCompare(b.date));
-  const upcomingCount = upcomingList.length;
-  const nextRehearsal = upcomingList.length > 0 ? upcomingList[0] : null;
+  // 전체 리허설 수
+  const totalRehearsals = rehearsals.length;
+
+  // 완료된 리허설 수
+  const completedCount = rehearsals.filter(
+    (r) => r.status === "completed"
+  ).length;
+
+  // 다가오는 리허설 (예정 상태 + 오늘 이후, 날짜순)
+  const today = new Date().toISOString().split("T")[0];
+  const upcomingRehearsals = rehearsals
+    .filter((r) => r.status === "scheduled" && r.date >= today)
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return a.startTime.localeCompare(b.startTime);
+    });
+
+  // 체크리스트 전체 진행률
+  const allCheckItems = rehearsals.flatMap((r) => r.checklist);
+  const totalCheckItems = allCheckItems.length;
+  const checkedItems = allCheckItems.filter((item) => item.isChecked).length;
+  const checklistProgress =
+    totalCheckItems === 0
+      ? 0
+      : Math.round((checkedItems / totalCheckItems) * 100);
 
   return {
-    entries,
+    scheduleData,
     loading: isLoading,
     refetch: () => mutate(),
+    // CRUD
     addRehearsal,
     updateRehearsal,
     deleteRehearsal,
+    // 체크리스트
+    toggleCheckItem,
+    addCheckItem,
+    removeCheckItem,
+    // 상태 변경
     completeRehearsal,
     cancelRehearsal,
-    getUpcoming,
-    getByType,
+    // 통계
     totalRehearsals,
     completedCount,
-    upcomingCount,
-    nextRehearsal,
+    upcomingRehearsals,
+    checklistProgress,
+    totalCheckItems,
+    checkedItems,
   };
 }

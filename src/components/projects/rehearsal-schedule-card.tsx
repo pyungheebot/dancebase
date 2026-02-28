@@ -1,24 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { useRehearsalSchedule } from "@/hooks/use-rehearsal-schedule";
-import type { RehearsalType, RehearsalScheduleEntry } from "@/types";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Calendar,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  MapPin,
+  Users,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  StickyNote,
+  ListChecks,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -27,147 +40,64 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import {
-  Calendar,
-  ChevronDown,
-  ChevronRight,
-  Plus,
-  Trash2,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  MapPin,
-  Users,
-  Tag,
-  Layers,
-  Shirt,
-  Wrench,
-  Scissors,
-  LayoutGrid,
-  HelpCircle,
-  ArrowRight,
-} from "lucide-react";
-import { toast } from "sonner";
+  useRehearsalSchedule,
+  type AddRehearsalParams,
+} from "@/hooks/use-rehearsal-schedule";
+import type {
+  RehearsalScheduleItem,
+  RehearsalScheduleType as RehearsalType,
+  RehearsalScheduleStatus as RehearsalStatus,
+} from "@/types";
 
 // ============================================================
-// 유형 헬퍼
+// 상수 & 헬퍼
 // ============================================================
 
-const ALL_TYPES: RehearsalType[] = [
-  "full_run",
-  "tech_rehearsal",
-  "dress_rehearsal",
-  "section",
-  "blocking",
-  "other",
+const TYPE_LABELS: Record<RehearsalType, string> = {
+  full: "전체 런스루",
+  partial: "부분 연습",
+  tech: "기술 리허설",
+  dress: "드레스 리허설",
+  blocking: "블로킹",
+};
+
+const TYPE_BADGE_CLASS: Record<RehearsalType, string> = {
+  full: "bg-blue-100 text-blue-700 border-blue-200",
+  partial: "bg-green-100 text-green-700 border-green-200",
+  tech: "bg-orange-100 text-orange-700 border-orange-200",
+  dress: "bg-purple-100 text-purple-700 border-purple-200",
+  blocking: "bg-cyan-100 text-cyan-700 border-cyan-200",
+};
+
+const TYPE_DOT_CLASS: Record<RehearsalType, string> = {
+  full: "bg-blue-500",
+  partial: "bg-green-500",
+  tech: "bg-orange-500",
+  dress: "bg-purple-500",
+  blocking: "bg-cyan-500",
+};
+
+const STATUS_LABELS: Record<RehearsalStatus, string> = {
+  scheduled: "예정",
+  completed: "완료",
+  cancelled: "취소",
+};
+
+const STATUS_BADGE_CLASS: Record<RehearsalStatus, string> = {
+  scheduled: "bg-blue-100 text-blue-700 border-blue-200",
+  completed: "bg-green-100 text-green-700 border-green-200",
+  cancelled: "bg-gray-100 text-gray-500 border-gray-200",
+};
+
+const ALL_TYPES: RehearsalType[] = ["full", "partial", "tech", "dress", "blocking"];
+const ALL_STATUSES_FILTER: (RehearsalStatus | "all")[] = [
+  "all",
+  "scheduled",
+  "completed",
+  "cancelled",
 ];
-
-function typeLabel(type: RehearsalType): string {
-  switch (type) {
-    case "full_run":
-      return "전체 런";
-    case "tech_rehearsal":
-      return "기술 리허설";
-    case "dress_rehearsal":
-      return "드레스 리허설";
-    case "section":
-      return "섹션 연습";
-    case "blocking":
-      return "블로킹";
-    case "other":
-      return "기타";
-  }
-}
-
-function TypeIcon({
-  type,
-  className,
-}: {
-  type: RehearsalType;
-  className?: string;
-}) {
-  const cls = className ?? "h-3.5 w-3.5";
-  switch (type) {
-    case "full_run":
-      return <Layers className={cls} />;
-    case "tech_rehearsal":
-      return <Wrench className={cls} />;
-    case "dress_rehearsal":
-      return <Shirt className={cls} />;
-    case "section":
-      return <Scissors className={cls} />;
-    case "blocking":
-      return <LayoutGrid className={cls} />;
-    case "other":
-      return <HelpCircle className={cls} />;
-  }
-}
-
-function typeColor(type: RehearsalType): string {
-  switch (type) {
-    case "full_run":
-      return "text-blue-500";
-    case "tech_rehearsal":
-      return "text-orange-500";
-    case "dress_rehearsal":
-      return "text-purple-500";
-    case "section":
-      return "text-green-500";
-    case "blocking":
-      return "text-cyan-500";
-    case "other":
-      return "text-gray-500";
-  }
-}
-
-function typeBadgeClass(type: RehearsalType): string {
-  switch (type) {
-    case "full_run":
-      return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800";
-    case "tech_rehearsal":
-      return "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800";
-    case "dress_rehearsal":
-      return "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800";
-    case "section":
-      return "bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800";
-    case "blocking":
-      return "bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800";
-    case "other":
-      return "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800/40 dark:text-gray-300 dark:border-gray-700";
-  }
-}
-
-// ============================================================
-// 상태 헬퍼
-// ============================================================
-
-function statusBadgeClass(
-  status: RehearsalScheduleEntry["status"]
-): string {
-  switch (status) {
-    case "scheduled":
-      return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800";
-    case "completed":
-      return "bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-300 dark:border-green-800";
-    case "cancelled":
-      return "bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800";
-  }
-}
-
-function statusLabel(status: RehearsalScheduleEntry["status"]): string {
-  switch (status) {
-    case "scheduled":
-      return "예정";
-    case "completed":
-      return "완료";
-    case "cancelled":
-      return "취소";
-  }
-}
-
-// ============================================================
-// 날짜/시간 포맷 헬퍼
-// ============================================================
 
 function formatDate(dateStr: string): string {
   if (!dateStr) return "-";
@@ -183,137 +113,124 @@ function daysUntil(dateStr: string): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr + "T00:00:00");
-  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return Math.round(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
 }
 
 // ============================================================
-// 추가 다이얼로그
+// 리허설 추가/수정 다이얼로그
 // ============================================================
 
-interface AddRehearsalDialogProps {
+type RehearsalDialogMode = "add" | "edit";
+
+type RehearsalDialogProps = {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  memberNames: string[];
-  onSubmit: (params: {
-    title: string;
-    type: RehearsalType;
-    date: string;
-    startTime: string;
-    endTime: string;
-    location: string;
-    focusAreas: string[];
-    requiredMembers: string[];
-    notes: string;
-  }) => void;
-}
+  mode: RehearsalDialogMode;
+  initial?: Partial<RehearsalScheduleItem>;
+  onClose: () => void;
+  onSubmit: (params: AddRehearsalParams) => void;
+};
 
-function AddRehearsalDialog({
+function RehearsalDialog({
   open,
-  onOpenChange,
-  memberNames,
+  mode,
+  initial,
+  onClose,
   onSubmit,
-}: AddRehearsalDialogProps) {
-  const [title, setTitle] = useState("");
-  const [type, setType] = useState<RehearsalType>("full_run");
-  const [date, setDate] = useState("");
-  const [startTime, setStartTime] = useState("14:00");
-  const [endTime, setEndTime] = useState("17:00");
-  const [location, setLocation] = useState("");
-  const [focusAreasStr, setFocusAreasStr] = useState("");
-  const [requiredMembers, setRequiredMembers] = useState<string[]>([]);
-  const [notes, setNotes] = useState("");
+}: RehearsalDialogProps) {
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [date, setDate] = useState(initial?.date ?? "");
+  const [startTime, setStartTime] = useState(initial?.startTime ?? "14:00");
+  const [endTime, setEndTime] = useState(initial?.endTime ?? "17:00");
+  const [location, setLocation] = useState(initial?.location ?? "");
+  const [type, setType] = useState<RehearsalType>(initial?.type ?? "full");
+  const [participantsStr, setParticipantsStr] = useState(
+    (initial?.participants ?? []).join(", ")
+  );
+  const [notes, setNotes] = useState(initial?.notes ?? "");
 
-  const resetForm = () => {
-    setTitle("");
-    setType("full_run");
-    setDate("");
-    setStartTime("14:00");
-    setEndTime("17:00");
-    setLocation("");
-    setFocusAreasStr("");
-    setRequiredMembers([]);
-    setNotes("");
-  };
-
-  const toggleMember = (name: string) => {
-    setRequiredMembers((prev) =>
-      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
-    );
-  };
+  // open 변경 시 초기값 재설정
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setTitle(initial?.title ?? "");
+      setDate(initial?.date ?? "");
+      setStartTime(initial?.startTime ?? "14:00");
+      setEndTime(initial?.endTime ?? "17:00");
+      setLocation(initial?.location ?? "");
+      setType(initial?.type ?? "full");
+      setParticipantsStr((initial?.participants ?? []).join(", "));
+      setNotes(initial?.notes ?? "");
+    }
+  }
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error("리허설 제목을 입력해주세요.");
       return;
     }
     if (!date) {
       toast.error("날짜를 선택해주세요.");
       return;
     }
-    if (!startTime || !endTime) {
-      toast.error("시작/종료 시간을 입력해주세요.");
+    if (!startTime) {
+      toast.error("시작 시간을 입력해주세요.");
       return;
     }
-    const focusAreas = focusAreasStr
+    const participants = participantsStr
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
     onSubmit({
       title: title.trim(),
-      type,
       date,
       startTime,
-      endTime,
-      location: location.trim(),
-      focusAreas,
-      requiredMembers,
+      endTime: endTime.trim() || null,
+      location: location.trim() || null,
+      type,
+      participants,
       notes: notes.trim(),
     });
-    resetForm();
-    onOpenChange(false);
+    onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">
-            리허설 일정 추가
+          <DialogTitle className="text-sm">
+            {mode === "add" ? "리허설 추가" : "리허설 수정"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3 pt-1">
+        <div className="space-y-3 py-1">
           {/* 제목 */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">제목 *</Label>
+            <Label className="text-xs">제목 *</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="예: 1차 전체 런스루"
-              className="h-7 text-xs"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleSubmit();
-                }
-              }}
+              placeholder="예) 1차 전체 런스루"
+              className="h-8 text-xs"
             />
           </div>
 
           {/* 유형 */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">유형 *</Label>
+            <Label className="text-xs">유형 *</Label>
             <Select
               value={type}
               onValueChange={(v) => setType(v as RehearsalType)}
             >
-              <SelectTrigger className="h-7 text-xs">
+              <SelectTrigger className="h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {ALL_TYPES.map((t) => (
                   <SelectItem key={t} value={t} className="text-xs">
-                    {typeLabel(t)}
+                    {TYPE_LABELS[t]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -322,540 +239,728 @@ function AddRehearsalDialog({
 
           {/* 날짜 */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">날짜 *</Label>
+            <Label className="text-xs">날짜 *</Label>
             <Input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="h-7 text-xs"
+              className="h-8 text-xs"
             />
           </div>
 
           {/* 시작/종료 시간 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">시작 시간 *</Label>
+              <Label className="text-xs">시작 시간 *</Label>
               <Input
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="h-7 text-xs"
+                className="h-8 text-xs"
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">종료 시간 *</Label>
+              <Label className="text-xs">종료 시간</Label>
               <Input
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="h-7 text-xs"
+                className="h-8 text-xs"
               />
             </div>
           </div>
 
           {/* 장소 */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">장소 (선택)</Label>
+            <Label className="text-xs">장소</Label>
             <Input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="예: 연습실 A"
-              className="h-7 text-xs"
+              placeholder="예) 연습실 A"
+              className="h-8 text-xs"
             />
           </div>
 
-          {/* 포커스 영역 */}
+          {/* 참여자 */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">
-              포커스 영역 (쉼표로 구분)
-            </Label>
+            <Label className="text-xs">참여자 (쉼표 구분)</Label>
             <Input
-              value={focusAreasStr}
-              onChange={(e) => setFocusAreasStr(e.target.value)}
-              placeholder="예: 오프닝, 클라이맥스, 엔딩"
-              className="h-7 text-xs"
+              value={participantsStr}
+              onChange={(e) => setParticipantsStr(e.target.value)}
+              placeholder="예) 김지수, 이민준, 박소연"
+              className="h-8 text-xs"
             />
           </div>
-
-          {/* 필요 멤버 */}
-          {memberNames.length > 0 && (
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">
-                필요 멤버 (선택)
-              </Label>
-              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1 border rounded-md">
-                {memberNames.map((name) => (
-                  <label
-                    key={name}
-                    className="flex items-center gap-1 cursor-pointer select-none"
-                  >
-                    <Checkbox
-                      checked={requiredMembers.includes(name)}
-                      onCheckedChange={() => toggleMember(name)}
-                      className="h-3.5 w-3.5"
-                    />
-                    <span className="text-xs">{name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* 메모 */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">메모 (선택)</Label>
+            <Label className="text-xs">메모</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="준비사항, 특이사항 등"
-              className="text-xs min-h-[48px] resize-none"
-              rows={2}
+              className="text-xs min-h-[60px] resize-none"
             />
           </div>
-
-          <div className="flex gap-1.5 justify-end pt-0.5">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={() => {
-                resetForm();
-                onOpenChange(false);
-              }}
-            >
-              취소
-            </Button>
-            <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-              추가
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter className="gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={onClose}
+          >
+            <X className="h-3 w-3 mr-1" />
+            취소
+          </Button>
+          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
+            {mode === "add" ? "추가" : "저장"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
 // ============================================================
-// 리허설 항목 행
+// 체크리스트 섹션 (인라인)
 // ============================================================
 
-interface RehearsalEntryRowProps {
-  entry: RehearsalScheduleEntry;
-  onComplete: (id: string) => void;
-  onCancel: (id: string) => void;
-  onDelete: (id: string) => void;
-}
+type ChecklistSectionProps = {
+  rehearsal: RehearsalScheduleItem;
+  onToggle: (rehearsalId: string, itemId: string) => void;
+  onAdd: (rehearsalId: string, title: string) => void;
+  onRemove: (rehearsalId: string, itemId: string) => void;
+};
 
-function RehearsalEntryRow({
-  entry,
-  onComplete,
-  onCancel,
-  onDelete,
-}: RehearsalEntryRowProps) {
-  const days = daysUntil(entry.date);
-  const isScheduled = entry.status === "scheduled";
+function ChecklistSection({
+  rehearsal,
+  onToggle,
+  onAdd,
+  onRemove,
+}: ChecklistSectionProps) {
+  const [newItemTitle, setNewItemTitle] = useState("");
+
+  const checklist = rehearsal.checklist;
+  const checkedCount = checklist.filter((item) => item.isChecked).length;
+
+  const handleAdd = () => {
+    if (!newItemTitle.trim()) return;
+    onAdd(rehearsal.id, newItemTitle.trim());
+    setNewItemTitle("");
+  };
 
   return (
-    <div className="flex gap-3 py-3 border-b last:border-b-0">
-      {/* 타임라인 점 */}
-      <div className="flex flex-col items-center flex-shrink-0 pt-0.5">
-        <div
-          className={`h-2.5 w-2.5 rounded-full mt-0.5 ${
-            entry.status === "completed"
-              ? "bg-green-500"
-              : entry.status === "cancelled"
-              ? "bg-red-400"
-              : "bg-blue-500"
-          }`}
-        />
-        <div className="w-px flex-1 bg-border mt-1" />
+    <div className="mt-2 space-y-1.5">
+      {/* 체크리스트 헤더 */}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-medium text-gray-500 flex items-center gap-1">
+          <ListChecks className="h-3 w-3" />
+          체크리스트
+          {checklist.length > 0 && (
+            <span className="text-gray-400">
+              ({checkedCount}/{checklist.length})
+            </span>
+          )}
+        </span>
       </div>
 
-      {/* 내용 */}
-      <div className="flex-1 min-w-0">
-        {/* 날짜 + 시간 + 상태 */}
-        <div className="flex items-center gap-1.5 flex-wrap mb-1">
-          <span className="text-[10px] text-muted-foreground font-mono">
-            {formatDate(entry.date)}
-          </span>
-          <ArrowRight className="h-2.5 w-2.5 text-muted-foreground flex-shrink-0" />
-          <span className="text-[10px] text-muted-foreground font-mono">
-            {entry.startTime} ~ {entry.endTime}
-          </span>
-          {isScheduled && days >= 0 && (
-            <span
-              className={`text-[10px] font-medium ${
-                days === 0
-                  ? "text-red-500"
-                  : days <= 3
-                  ? "text-orange-500"
-                  : "text-muted-foreground"
-              }`}
+      {/* 체크리스트 항목 */}
+      {checklist.length > 0 && (
+        <div className="space-y-1">
+          {checklist.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-1.5 group"
             >
-              {days === 0 ? "오늘" : `D-${days}`}
-            </span>
-          )}
-          <span
-            className={`inline-flex text-[10px] px-1.5 py-0 rounded-full border ${statusBadgeClass(entry.status)}`}
-          >
-            {statusLabel(entry.status)}
-          </span>
-        </div>
-
-        {/* 유형 배지 + 제목 */}
-        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-          <span
-            className={`inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 rounded-full border ${typeBadgeClass(entry.type)}`}
-          >
-            <TypeIcon type={entry.type} className="h-2.5 w-2.5" />
-            {typeLabel(entry.type)}
-          </span>
-          <span className="text-xs font-semibold truncate">{entry.title}</span>
-        </div>
-
-        {/* 장소 */}
-        {entry.location && (
-          <div className="flex items-center gap-1 mb-1">
-            <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-            <span className="text-[11px] text-muted-foreground truncate">
-              {entry.location}
-            </span>
-          </div>
-        )}
-
-        {/* 포커스 영역 칩 */}
-        {entry.focusAreas.length > 0 && (
-          <div className="flex items-center gap-1 flex-wrap mb-1">
-            <Tag className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-            {entry.focusAreas.map((area) => (
+              <button
+                onClick={() => onToggle(rehearsal.id, item.id)}
+                className={`h-3.5 w-3.5 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
+                  item.isChecked
+                    ? "bg-green-500 border-green-500 text-white"
+                    : "border-gray-300 hover:border-green-400"
+                }`}
+                aria-label={item.isChecked ? "체크 해제" : "체크"}
+              >
+                {item.isChecked && <Check className="h-2.5 w-2.5" />}
+              </button>
               <span
-                key={area}
-                className="inline-block text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border"
+                className={`text-xs flex-1 leading-tight ${
+                  item.isChecked
+                    ? "line-through text-gray-400"
+                    : "text-gray-700"
+                }`}
               >
-                {area}
+                {item.title}
               </span>
-            ))}
-          </div>
-        )}
-
-        {/* 필요 멤버 */}
-        {entry.requiredMembers.length > 0 && (
-          <div className="flex items-center gap-1 flex-wrap mb-1">
-            <Users className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-            <span className="text-[10px] text-muted-foreground">
-              {entry.requiredMembers.join(", ")}
-            </span>
-          </div>
-        )}
-
-        {/* 메모 */}
-        {entry.notes && (
-          <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">
-            {entry.notes}
-          </p>
-        )}
-
-        {/* 액션 버튼 */}
-        <div className="flex items-center gap-1 mt-1.5">
-          {isScheduled && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-6 text-[10px] px-2 text-green-700 border-green-300 hover:bg-green-50 dark:text-green-400 dark:border-green-700 dark:hover:bg-green-950/30"
-                onClick={() => onComplete(entry.id)}
+              <button
+                onClick={() => onRemove(rehearsal.id, item.id)}
+                className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all"
+                aria-label="항목 삭제"
               >
-                <CheckCircle2 className="h-3 w-3 mr-0.5" />
-                완료
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-6 text-[10px] px-2 text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-950/30"
-                onClick={() => onCancel(entry.id)}
-              >
-                <XCircle className="h-3 w-3 mr-0.5" />
-                취소
-              </Button>
-            </>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-            onClick={() => onDelete(entry.id)}
-            title="삭제"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
         </div>
+      )}
+
+      {/* 항목 추가 입력 */}
+      <div className="flex gap-1">
+        <Input
+          value={newItemTitle}
+          onChange={(e) => setNewItemTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAdd();
+            }
+          }}
+          placeholder="체크리스트 항목 추가..."
+          className="h-6 text-[10px] flex-1"
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-6 w-6 p-0"
+          onClick={handleAdd}
+          aria-label="추가"
+        >
+          <Plus className="h-3 w-3" />
+        </Button>
       </div>
     </div>
   );
 }
 
 // ============================================================
-// 메인 카드 컴포넌트
+// 리허설 아이템 (타임라인 행)
 // ============================================================
 
-interface RehearsalScheduleCardProps {
-  groupId: string;
-  projectId: string;
-  memberNames: string[];
+type RehearsalItemProps = {
+  rehearsal: RehearsalScheduleItem;
+  onEdit: (rehearsal: RehearsalScheduleItem) => void;
+  onDelete: (id: string) => void;
+  onComplete: (id: string) => void;
+  onCancel: (id: string) => void;
+  onToggleCheck: (rehearsalId: string, itemId: string) => void;
+  onAddCheck: (rehearsalId: string, title: string) => void;
+  onRemoveCheck: (rehearsalId: string, itemId: string) => void;
+};
+
+function RehearsalItem({
+  rehearsal,
+  onEdit,
+  onDelete,
+  onComplete,
+  onCancel,
+  onToggleCheck,
+  onAddCheck,
+  onRemoveCheck,
+}: RehearsalItemProps) {
+  const [expanded, setExpanded] = useState(false);
+
+  const isScheduled = rehearsal.status === "scheduled";
+  const isCancelled = rehearsal.status === "cancelled";
+  const days = daysUntil(rehearsal.date);
+
+  const checklistProgress =
+    rehearsal.checklist.length === 0
+      ? 0
+      : Math.round(
+          (rehearsal.checklist.filter((i) => i.isChecked).length /
+            rehearsal.checklist.length) *
+            100
+        );
+
+  return (
+    <div className={`flex gap-3 py-3 border-b last:border-b-0 ${isCancelled ? "opacity-50" : ""}`}>
+      {/* 타임라인 점 & 선 */}
+      <div className="flex flex-col items-center flex-shrink-0 pt-1">
+        <div
+          className={`h-2.5 w-2.5 rounded-full ${TYPE_DOT_CLASS[rehearsal.type]} ${
+            isCancelled ? "opacity-40" : ""
+          }`}
+        />
+        <div className="w-px flex-1 bg-gray-100 mt-1" />
+      </div>
+
+      {/* 내용 */}
+      <div className="flex-1 min-w-0">
+        {/* 날짜 + 시간 + D-day */}
+        <div className="flex items-center gap-1.5 flex-wrap mb-1">
+          <span className="text-[10px] text-gray-500 font-mono">
+            {formatDate(rehearsal.date)}
+          </span>
+          <span className="text-[10px] text-gray-400">
+            {rehearsal.startTime}
+            {rehearsal.endTime ? ` ~ ${rehearsal.endTime}` : ""}
+          </span>
+          {isScheduled && days >= 0 && (
+            <span
+              className={`text-[10px] font-semibold ${
+                days === 0
+                  ? "text-red-500"
+                  : days <= 3
+                  ? "text-orange-500"
+                  : "text-gray-400"
+              }`}
+            >
+              {days === 0 ? "오늘" : `D-${days}`}
+            </span>
+          )}
+        </div>
+
+        {/* 유형 배지 + 제목 + 상태 배지 */}
+        <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+          <Badge
+            variant="outline"
+            className={`text-[10px] px-1.5 py-0 ${TYPE_BADGE_CLASS[rehearsal.type]}`}
+          >
+            {TYPE_LABELS[rehearsal.type]}
+          </Badge>
+          <span
+            className={`text-xs font-semibold truncate flex-1 ${
+              isCancelled ? "line-through text-gray-400" : "text-gray-800"
+            }`}
+          >
+            {rehearsal.title}
+          </span>
+          <Badge
+            variant="outline"
+            className={`text-[10px] px-1.5 py-0 shrink-0 ${STATUS_BADGE_CLASS[rehearsal.status]}`}
+          >
+            {STATUS_LABELS[rehearsal.status]}
+          </Badge>
+        </div>
+
+        {/* 메타 정보 */}
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-gray-400 mb-1">
+          {rehearsal.location && (
+            <span className="flex items-center gap-0.5">
+              <MapPin className="h-3 w-3" />
+              {rehearsal.location}
+            </span>
+          )}
+          {rehearsal.participants.length > 0 && (
+            <span className="flex items-center gap-0.5">
+              <Users className="h-3 w-3" />
+              {rehearsal.participants.join(", ")}
+            </span>
+          )}
+        </div>
+
+        {/* 메모 */}
+        {rehearsal.notes && (
+          <div className="flex items-start gap-1 mb-1">
+            <StickyNote className="h-3 w-3 text-gray-300 mt-0.5 flex-shrink-0" />
+            <p className="text-[10px] text-gray-400 leading-tight line-clamp-2">
+              {rehearsal.notes}
+            </p>
+          </div>
+        )}
+
+        {/* 체크리스트 진행률 미리보기 */}
+        {rehearsal.checklist.length > 0 && (
+          <div className="flex items-center gap-1.5 mb-1">
+            <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-400 rounded-full transition-all"
+                style={{ width: `${checklistProgress}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-gray-400 shrink-0">
+              {checklistProgress}%
+            </span>
+          </div>
+        )}
+
+        {/* 펼치기/접기 + 액션 버튼 */}
+        <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-0.5 text-[10px] text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            {expanded ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            )}
+            체크리스트
+          </button>
+
+          <div className="flex items-center gap-1 ml-auto">
+            {isScheduled && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-[10px] px-2 text-green-700 border-green-300 hover:bg-green-50"
+                  onClick={() => onComplete(rehearsal.id)}
+                >
+                  <CheckCircle2 className="h-3 w-3 mr-0.5" />
+                  완료
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-[10px] px-2 text-red-600 border-red-300 hover:bg-red-50"
+                  onClick={() => onCancel(rehearsal.id)}
+                >
+                  <XCircle className="h-3 w-3 mr-0.5" />
+                  취소
+                </Button>
+              </>
+            )}
+            <button
+              onClick={() => onEdit(rehearsal)}
+              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+              aria-label="수정"
+            >
+              <Pencil className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => onDelete(rehearsal.id)}
+              className="text-gray-400 hover:text-red-500 transition-colors p-1"
+              aria-label="삭제"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
+
+        {/* 체크리스트 인라인 (펼쳐진 경우) */}
+        {expanded && (
+          <ChecklistSection
+            rehearsal={rehearsal}
+            onToggle={onToggleCheck}
+            onAdd={onAddCheck}
+            onRemove={onRemoveCheck}
+          />
+        )}
+      </div>
+    </div>
+  );
 }
 
-export function RehearsalScheduleCard({
-  groupId,
-  projectId,
-  memberNames,
-}: RehearsalScheduleCardProps) {
-  const [open, setOpen] = useState(true);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [filterType, setFilterType] = useState<RehearsalType | "all">("all");
+// ============================================================
+// 메인 컴포넌트
+// ============================================================
 
+type RehearsalScheduleCardProps = {
+  projectId: string;
+  /** 하위 호환용 (사용되지 않음) */
+  groupId?: string;
+  /** 하위 호환용 (사용되지 않음) */
+  memberNames?: string[];
+};
+
+export function RehearsalScheduleCard({
+  projectId,
+}: RehearsalScheduleCardProps) {
   const {
-    entries,
+    scheduleData,
+    loading,
     addRehearsal,
+    updateRehearsal,
+    deleteRehearsal,
+    toggleCheckItem,
+    addCheckItem,
+    removeCheckItem,
     completeRehearsal,
     cancelRehearsal,
-    deleteRehearsal,
     totalRehearsals,
     completedCount,
-    upcomingCount,
-    nextRehearsal,
-  } = useRehearsalSchedule(groupId, projectId);
+    upcomingRehearsals,
+    checklistProgress,
+    totalCheckItems,
+    checkedItems,
+  } = useRehearsalSchedule(projectId);
 
-  // 정렬 및 필터
-  const sortedEntries = [...entries]
-    .filter((e) => filterType === "all" || e.type === filterType)
+  // 다이얼로그 상태
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editingRehearsal, setEditingRehearsal] =
+    useState<RehearsalScheduleItem | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  // 상태 필터
+  const [statusFilter, setStatusFilter] = useState<RehearsalStatus | "all">(
+    "all"
+  );
+
+  // ——— 정렬 & 필터 ———
+  const filteredRehearsals = [...scheduleData.rehearsals]
+    .filter((r) => statusFilter === "all" || r.status === statusFilter)
     .sort((a, b) => {
-      // 예정 먼저, 날짜 오름차순; 완료/취소는 아래
+      // 예정 먼저, 날짜 오름차순, 완료/취소는 아래
       if (a.status === "scheduled" && b.status !== "scheduled") return -1;
       if (a.status !== "scheduled" && b.status === "scheduled") return 1;
-      return a.date.localeCompare(b.date);
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return a.startTime.localeCompare(b.startTime);
     });
 
-  const handleAdd = (params: {
-    title: string;
-    type: RehearsalType;
-    date: string;
-    startTime: string;
-    endTime: string;
-    location: string;
-    focusAreas: string[];
-    requiredMembers: string[];
-    notes: string;
-  }) => {
-    const ok = addRehearsal({
-      ...params,
-      location: params.location || undefined,
-      notes: params.notes || undefined,
-    });
-    if (ok) {
-      toast.success("리허설 일정이 추가되었습니다.");
-    } else {
-      toast.error("제목을 입력해주세요.");
-    }
+  // ——— 핸들러 ———
+
+  const handleAdd = (params: AddRehearsalParams) => {
+    addRehearsal(params);
+    toast.success("리허설 일정이 추가되었습니다.");
+  };
+
+  const handleUpdate = (params: AddRehearsalParams) => {
+    if (!editingRehearsal) return;
+    updateRehearsal(editingRehearsal.id, params);
+    toast.success("리허설 일정이 수정되었습니다.");
+    setEditingRehearsal(null);
+  };
+
+  const handleDelete = (id: string) => {
+    deleteRehearsal(id);
+    toast.success("리허설 일정이 삭제되었습니다.");
+    setDeleteConfirmId(null);
   };
 
   const handleComplete = (id: string) => {
     completeRehearsal(id);
-    toast.success("리허설을 완료 처리했습니다.");
+    toast.success("리허설이 완료 처리되었습니다.");
   };
 
   const handleCancel = (id: string) => {
-    if (confirm("이 리허설을 취소하시겠습니까?")) {
-      cancelRehearsal(id);
-      toast.success("리허설이 취소되었습니다.");
-    }
+    cancelRehearsal(id);
+    toast.success("리허설이 취소되었습니다.");
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("이 리허설 일정을 삭제하시겠습니까?")) {
-      deleteRehearsal(id);
-      toast.success("리허설 일정이 삭제되었습니다.");
-    }
-  };
+  // ——— 로딩 ———
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-xs text-gray-400">
+          불러오는 중...
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
-      <AddRehearsalDialog
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
-        memberNames={memberNames}
-        onSubmit={handleAdd}
-      />
-
-      <Collapsible open={open} onOpenChange={setOpen}>
-        {/* 카드 헤더 */}
-        <div className="flex items-center justify-between px-3 py-2 border rounded-t-lg bg-card">
-          <CollapsibleTrigger asChild>
-            <button className="flex items-center gap-2 flex-1 min-w-0 text-left">
-              {open ? (
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-              ) : (
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-              )}
-              <Calendar className="h-4 w-4 text-indigo-500 flex-shrink-0" />
-              <span className="text-sm font-semibold">공연 리허설 스케줄</span>
-              {totalRehearsals > 0 && (
-                <span className="ml-1 text-[10px] text-muted-foreground">
-                  {totalRehearsals}개
-                </span>
-              )}
-            </button>
-          </CollapsibleTrigger>
-
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {/* 통계 배지 */}
-            {totalRehearsals > 0 && (
-              <>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] px-1.5 py-0 gap-0.5 hidden sm:flex"
-                >
-                  <Clock className="h-2.5 w-2.5" />
-                  예정 {upcomingCount}
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] px-1.5 py-0 gap-0.5 hidden sm:flex text-green-600 border-green-300 dark:text-green-400 dark:border-green-700"
-                >
-                  <CheckCircle2 className="h-2.5 w-2.5" />
-                  완료 {completedCount}
-                </Badge>
-              </>
-            )}
-
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-4 w-4 text-indigo-500" />
+              <CardTitle className="text-sm">공연 리허설 스케줄러</CardTitle>
+            </div>
             <Button
-              variant="outline"
               size="sm"
               className="h-7 text-xs"
-              onClick={() => {
-                setAddDialogOpen(true);
-                setOpen(true);
-              }}
+              onClick={() => setAddDialogOpen(true)}
             >
               <Plus className="h-3 w-3 mr-1" />
               추가
             </Button>
           </div>
-        </div>
 
-        {/* 카드 바디 */}
-        <CollapsibleContent>
-          <div className="border border-t-0 rounded-b-lg bg-card">
-            {/* 통계 요약 */}
-            {totalRehearsals > 0 && (
-              <div className="flex items-center gap-4 px-3 py-2 border-b flex-wrap">
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-muted-foreground">전체</span>
-                  <span className="text-xs font-semibold">{totalRehearsals}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-muted-foreground">완료</span>
-                  <span className="text-xs font-semibold text-green-600 dark:text-green-400">
-                    {completedCount}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-muted-foreground">예정</span>
-                  <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                    {upcomingCount}
-                  </span>
-                </div>
-                {/* 다음 리허설 */}
-                {nextRehearsal && (
-                  <div className="flex items-center gap-1 ml-auto">
-                    <span className="text-[10px] text-muted-foreground">
-                      다음 리허설
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 rounded-full border ${typeBadgeClass(nextRehearsal.type)}`}
-                    >
-                      <TypeIcon type={nextRehearsal.type} className="h-2.5 w-2.5" />
-                      {nextRehearsal.title}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {formatDate(nextRehearsal.date)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* 유형 필터 */}
-            {totalRehearsals > 0 && (
-              <div className="flex items-center gap-1 px-3 py-1.5 border-b flex-wrap">
-                <button
-                  onClick={() => setFilterType("all")}
-                  className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
-                    filterType === "all"
-                      ? "bg-foreground text-background border-foreground"
-                      : "text-muted-foreground border-border hover:border-foreground/40"
-                  }`}
-                >
-                  전체
-                </button>
-                {ALL_TYPES.map((t) => {
-                  const count = entries.filter((e) => e.type === t).length;
-                  if (count === 0) return null;
-                  return (
-                    <button
-                      key={t}
-                      onClick={() => setFilterType(t)}
-                      className={`inline-flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
-                        filterType === t
-                          ? typeBadgeClass(t)
-                          : "text-muted-foreground border-border hover:border-foreground/40"
-                      }`}
-                    >
-                      <span className={filterType === t ? "" : typeColor(t)}>
-                        <TypeIcon type={t} className="h-2.5 w-2.5" />
-                      </span>
-                      {typeLabel(t)}
-                      <span className="ml-0.5 opacity-70">({count})</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* 빈 상태 */}
-            {totalRehearsals === 0 && (
-              <div className="text-center py-10 text-muted-foreground">
-                <Calendar className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-xs">등록된 리허설 일정이 없습니다.</p>
-                <p className="text-[11px] mt-0.5">
-                  상단의 &ldquo;추가&rdquo; 버튼으로 리허설 스케줄을 등록하세요.
+          {/* 통계 요약 */}
+          {totalRehearsals > 0 && (
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="text-center p-2 bg-gray-50 rounded-md">
+                <p className="text-xs font-semibold text-gray-700">
+                  {totalRehearsals}
                 </p>
+                <p className="text-[10px] text-gray-400">전체</p>
               </div>
-            )}
+              <div className="text-center p-2 bg-blue-50 rounded-md">
+                <p className="text-xs font-semibold text-blue-700">
+                  {upcomingRehearsals.length}
+                </p>
+                <p className="text-[10px] text-blue-400">예정</p>
+              </div>
+              <div className="text-center p-2 bg-green-50 rounded-md">
+                <p className="text-xs font-semibold text-green-700">
+                  {completedCount}
+                </p>
+                <p className="text-[10px] text-green-400">완료</p>
+              </div>
+            </div>
+          )}
 
-            {/* 필터 결과 없음 */}
-            {totalRehearsals > 0 && sortedEntries.length === 0 && (
-              <div className="text-center py-6 text-muted-foreground">
-                <p className="text-xs">해당 유형의 리허설이 없습니다.</p>
+          {/* 체크리스트 전체 진행률 */}
+          {totalCheckItems > 0 && (
+            <div className="mt-2 space-y-1">
+              <div className="flex justify-between text-[10px] text-gray-500">
+                <span className="flex items-center gap-1">
+                  <ListChecks className="h-3 w-3" />
+                  체크리스트 진행률 ({checkedItems}/{totalCheckItems})
+                </span>
+                <span className="font-medium text-gray-700">
+                  {checklistProgress}%
+                </span>
               </div>
-            )}
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full transition-all duration-500"
+                  style={{ width: `${checklistProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
 
-            {/* 타임라인 목록 */}
-            {sortedEntries.length > 0 && (
-              <div className="px-3">
-                {sortedEntries.map((entry) => (
-                  <RehearsalEntryRow
-                    key={entry.id}
-                    entry={entry}
-                    onComplete={handleComplete}
-                    onCancel={handleCancel}
-                    onDelete={handleDelete}
-                  />
-                ))}
+          {/* 다음 리허설 알림 */}
+          {upcomingRehearsals.length > 0 && (
+            <div className="mt-2 p-2 bg-indigo-50 border border-indigo-200 rounded-md">
+              <p className="text-[10px] font-medium text-indigo-700 mb-0.5">
+                다음 리허설
+              </p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] px-1.5 py-0 ${TYPE_BADGE_CLASS[upcomingRehearsals[0].type]}`}
+                >
+                  {TYPE_LABELS[upcomingRehearsals[0].type]}
+                </Badge>
+                <span className="text-[10px] font-medium text-indigo-700">
+                  {upcomingRehearsals[0].title}
+                </span>
+                <span className="text-[10px] text-indigo-500">
+                  {formatDate(upcomingRehearsals[0].date)}
+                </span>
+                <span className="text-[10px] text-indigo-400 flex items-center gap-0.5">
+                  <Clock className="h-2.5 w-2.5" />
+                  {upcomingRehearsals[0].startTime}
+                </span>
               </div>
-            )}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+            </div>
+          )}
+        </CardHeader>
+
+        <CardContent className="pt-0">
+          {/* 빈 상태 */}
+          {totalRehearsals === 0 && (
+            <div className="text-center py-8 text-gray-400">
+              <Calendar className="h-8 w-8 mx-auto mb-2 opacity-30" />
+              <p className="text-xs">아직 리허설 일정이 없습니다.</p>
+              <p className="text-[10px] mt-0.5">
+                전체 런스루, 드레스 리허설 등 일정을 추가해보세요.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-3 h-7 text-xs"
+                onClick={() => setAddDialogOpen(true)}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                첫 리허설 추가
+              </Button>
+            </div>
+          )}
+
+          {/* 상태 필터 탭 */}
+          {totalRehearsals > 0 && (
+            <div className="flex gap-1 mb-3 flex-wrap">
+              {ALL_STATUSES_FILTER.map((s) => {
+                const count =
+                  s === "all"
+                    ? totalRehearsals
+                    : scheduleData.rehearsals.filter((r) => r.status === s)
+                        .length;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setStatusFilter(s)}
+                    className={`text-[10px] px-2.5 py-0.5 rounded-full border transition-colors ${
+                      statusFilter === s
+                        ? "bg-indigo-600 text-white border-indigo-600"
+                        : "text-gray-500 border-gray-200 hover:border-indigo-300"
+                    }`}
+                  >
+                    {s === "all" ? "전체" : STATUS_LABELS[s]} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* 필터 결과 없음 */}
+          {totalRehearsals > 0 && filteredRehearsals.length === 0 && (
+            <div className="text-center py-6 text-gray-400">
+              <p className="text-xs">해당 상태의 리허설이 없습니다.</p>
+            </div>
+          )}
+
+          {/* 타임라인 목록 */}
+          {filteredRehearsals.length > 0 && (
+            <div>
+              {filteredRehearsals.map((rehearsal) => (
+                <RehearsalItem
+                  key={rehearsal.id}
+                  rehearsal={rehearsal}
+                  onEdit={(r) => setEditingRehearsal(r)}
+                  onDelete={(id) => setDeleteConfirmId(id)}
+                  onComplete={handleComplete}
+                  onCancel={handleCancel}
+                  onToggleCheck={toggleCheckItem}
+                  onAddCheck={addCheckItem}
+                  onRemoveCheck={removeCheckItem}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 리허설 추가 다이얼로그 */}
+      <RehearsalDialog
+        open={addDialogOpen}
+        mode="add"
+        onClose={() => setAddDialogOpen(false)}
+        onSubmit={handleAdd}
+      />
+
+      {/* 리허설 수정 다이얼로그 */}
+      {editingRehearsal && (
+        <RehearsalDialog
+          open={!!editingRehearsal}
+          mode="edit"
+          initial={editingRehearsal}
+          onClose={() => setEditingRehearsal(null)}
+          onSubmit={handleUpdate}
+        />
+      )}
+
+      {/* 삭제 확인 다이얼로그 */}
+      <Dialog
+        open={!!deleteConfirmId}
+        onOpenChange={(v) => !v && setDeleteConfirmId(null)}
+      >
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-sm">리허설 삭제</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-gray-600 py-1">
+            이 리허설 일정을 삭제하시겠습니까? 체크리스트도 함께 삭제됩니다.
+          </p>
+          <DialogFooter className="gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => setDeleteConfirmId(null)}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() =>
+                deleteConfirmId && handleDelete(deleteConfirmId)
+              }
+            >
+              삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

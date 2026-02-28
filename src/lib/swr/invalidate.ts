@@ -788,3 +788,11 @@ export function invalidateAttendanceBook(groupId: string) {
 export function invalidateDanceConditionLog(memberId: string) {
   mutate(swrKeys.danceConditionLog(memberId));
 }
+
+export function invalidateGroupSharedFiles(groupId: string) {
+  mutate(swrKeys.groupSharedFiles(groupId));
+}
+
+export function invalidateAudienceFeedback(projectId: string) {
+  mutate(swrKeys.audienceFeedback(projectId));
+}

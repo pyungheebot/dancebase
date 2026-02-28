@@ -31,42 +31,20 @@ import {
   Plus,
   Trash2,
   MessageSquare,
+  BarChart2,
+  Star,
   ToggleLeft,
   ToggleRight,
-  BarChart2,
-  ThumbsUp,
-  User,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useAudienceFeedback } from "@/hooks/use-audience-feedback";
-import type {
-  AudienceFeedbackSurvey,
-  AudienceFeedbackRating,
-} from "@/types";
-
-// ============================================================
-// 상수
-// ============================================================
-
-const RATING_AXES: {
-  key: keyof AudienceFeedbackRating;
-  label: string;
-  color: string;
-}[] = [
-  { key: "overall", label: "전체 만족도", color: "bg-purple-500" },
-  { key: "choreography", label: "안무", color: "bg-blue-500" },
-  { key: "music", label: "음악", color: "bg-green-500" },
-  { key: "costumes", label: "의상", color: "bg-pink-500" },
-  { key: "stagePresence", label: "무대 존재감", color: "bg-orange-500" },
-];
-
-const DEFAULT_RATINGS: AudienceFeedbackRating = {
-  choreography: 3,
-  music: 3,
-  costumes: 3,
-  stagePresence: 3,
-  overall: 3,
-};
+import {
+  useAudienceFeedback,
+  type CreateSurveyParams,
+  type QuestionResult,
+  type SurveyResults,
+} from "@/hooks/use-audience-feedback";
+import type { AudienceFeedbackQuestion, AudienceFeedbackSurveyItem } from "@/types";
 
 // ============================================================
 // 별점 입력 컴포넌트
@@ -86,7 +64,7 @@ function StarInput({
           key={star}
           type="button"
           onClick={() => onChange(star)}
-          className={`text-base transition-colors ${
+          className={`text-lg leading-none transition-colors ${
             star <= value ? "text-yellow-400" : "text-gray-300"
           } hover:text-yellow-300`}
         >
@@ -98,24 +76,37 @@ function StarInput({
 }
 
 // ============================================================
+// 별점 표시 컴포넌트
+// ============================================================
+
+function StarDisplay({ value }: { value: number }) {
+  return (
+    <span className="text-yellow-400 text-xs">
+      {"★".repeat(Math.round(value))}
+      {"☆".repeat(5 - Math.round(value))}
+    </span>
+  );
+}
+
+// ============================================================
 // 수평 바 차트 컴포넌트
 // ============================================================
 
 function HorizontalBar({
   label,
-  value,
-  max = 5,
-  color,
+  count,
+  total,
+  color = "bg-blue-500",
 }: {
   label: string;
-  value: number;
-  max?: number;
-  color: string;
+  count: number;
+  total: number;
+  color?: string;
 }) {
-  const pct = max > 0 ? (value / max) * 100 : 0;
+  const pct = total > 0 ? (count / total) * 100 : 0;
   return (
     <div className="flex items-center gap-2">
-      <span className="w-24 text-xs text-muted-foreground shrink-0 text-right">
+      <span className="w-20 text-xs text-muted-foreground shrink-0 truncate">
         {label}
       </span>
       <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
@@ -124,9 +115,498 @@ function HorizontalBar({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-8 text-xs font-medium text-right shrink-0">
-        {value > 0 ? value.toFixed(1) : "-"}
-      </span>
+      <span className="w-6 text-xs font-medium text-right shrink-0">{count}</span>
+    </div>
+  );
+}
+
+// ============================================================
+// 질문 결과 뷰어
+// ============================================================
+
+function QuestionResultView({ result }: { result: QuestionResult }) {
+  if (result.type === "rating") {
+    const total = result.totalAnswers;
+    return (
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <StarDisplay value={result.averageScore} />
+          <span className="text-sm font-semibold">{result.averageScore.toFixed(1)}</span>
+          <span className="text-xs text-muted-foreground">/ 5 ({total}명 응답)</span>
+        </div>
+        <div className="space-y-1">
+          {[5, 4, 3, 2, 1].map((star) => (
+            <HorizontalBar
+              key={star}
+              label={`${star}점`}
+              count={result.distribution[star] ?? 0}
+              total={total}
+              color={star >= 4 ? "bg-yellow-400" : star === 3 ? "bg-blue-400" : "bg-gray-400"}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (result.type === "text") {
+    return (
+      <div className="space-y-1">
+        {result.responses.length === 0 ? (
+          <p className="text-xs text-muted-foreground">응답 없음</p>
+        ) : (
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {result.responses.map((r, i) => (
+              <p key={i} className="text-xs bg-muted/50 rounded px-2 py-1 leading-relaxed">
+                {r}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // choice
+  const total = Object.values(result.distribution).reduce((a, b) => a + b, 0);
+  return (
+    <div className="space-y-1">
+      {result.choices.length === 0 ? (
+        <p className="text-xs text-muted-foreground">보기 없음</p>
+      ) : (
+        result.choices.map((c) => (
+          <HorizontalBar
+            key={c}
+            label={c}
+            count={result.distribution[c] ?? 0}
+            total={total}
+            color="bg-purple-500"
+          />
+        ))
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// 설문 생성 다이얼로그 내부 - 질문 빌더
+// ============================================================
+
+type DraftQuestion = {
+  _key: string;
+  question: string;
+  type: "rating" | "text" | "choice";
+  choices: string[];
+  choiceInput: string;
+};
+
+function QuestionBuilder({
+  questions,
+  onAdd,
+  onRemove,
+  onUpdate,
+}: {
+  questions: DraftQuestion[];
+  onAdd: () => void;
+  onRemove: (key: string) => void;
+  onUpdate: (key: string, patch: Partial<DraftQuestion>) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      {questions.map((q) => (
+        <div key={q._key} className="border rounded-lg p-3 space-y-2 bg-muted/20">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 space-y-1.5">
+              <Input
+                className="h-7 text-xs"
+                placeholder="질문 내용을 입력하세요"
+                value={q.question}
+                onChange={(e) => onUpdate(q._key, { question: e.target.value })}
+              />
+              <div className="flex gap-1.5">
+                {(["rating", "text", "choice"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => onUpdate(q._key, { type: t })}
+                    className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                      q.type === t
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    {t === "rating" ? "별점" : t === "text" ? "주관식" : "객관식"}
+                  </button>
+                ))}
+              </div>
+              {q.type === "choice" && (
+                <div className="space-y-1">
+                  <div className="flex gap-1">
+                    <Input
+                      className="h-6 text-xs flex-1"
+                      placeholder="보기 추가"
+                      value={q.choiceInput}
+                      onChange={(e) =>
+                        onUpdate(q._key, { choiceInput: e.target.value })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const val = q.choiceInput.trim();
+                          if (val && !q.choices.includes(val)) {
+                            onUpdate(q._key, {
+                              choices: [...q.choices, val],
+                              choiceInput: "",
+                            });
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-6 px-2 text-[10px]"
+                      onClick={() => {
+                        const val = q.choiceInput.trim();
+                        if (val && !q.choices.includes(val)) {
+                          onUpdate(q._key, {
+                            choices: [...q.choices, val],
+                            choiceInput: "",
+                          });
+                        }
+                      }}
+                    >
+                      추가
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {q.choices.map((c) => (
+                      <span
+                        key={c}
+                        className="text-[10px] bg-secondary px-1.5 py-0.5 rounded flex items-center gap-1"
+                      >
+                        {c}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onUpdate(q._key, {
+                              choices: q.choices.filter((x) => x !== c),
+                            })
+                          }
+                          className="text-muted-foreground hover:text-destructive"
+                        >
+                          <X className="h-2.5 w-2.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive shrink-0"
+              onClick={() => onRemove(q._key)}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      ))}
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        className="h-7 text-xs w-full"
+        onClick={onAdd}
+      >
+        <Plus className="h-3 w-3 mr-1" />
+        질문 추가
+      </Button>
+    </div>
+  );
+}
+
+// ============================================================
+// 설문 생성 다이얼로그
+// ============================================================
+
+function CreateSurveyDialog({
+  open,
+  onOpenChange,
+  onCreate,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onCreate: (params: CreateSurveyParams) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [questions, setQuestions] = useState<DraftQuestion[]>([]);
+
+  const addQuestion = () => {
+    setQuestions((prev) => [
+      ...prev,
+      {
+        _key: crypto.randomUUID(),
+        question: "",
+        type: "rating",
+        choices: [],
+        choiceInput: "",
+      },
+    ]);
+  };
+
+  const removeQuestion = (key: string) => {
+    setQuestions((prev) => prev.filter((q) => q._key !== key));
+  };
+
+  const updateQuestion = (key: string, patch: Partial<DraftQuestion>) => {
+    setQuestions((prev) =>
+      prev.map((q) => (q._key === key ? { ...q, ...patch } : q))
+    );
+  };
+
+  const handleSubmit = () => {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      toast.error("설문 제목을 입력해주세요");
+      return;
+    }
+    const validQuestions = questions.filter((q) => q.question.trim() !== "");
+    const mapped: Omit<AudienceFeedbackQuestion, "id">[] = validQuestions.map(
+      (q) => ({
+        question: q.question.trim(),
+        type: q.type,
+        choices: q.type === "choice" ? q.choices : null,
+      })
+    );
+    onCreate({ title: trimmedTitle, questions: mapped });
+    toast.success("설문이 생성되었습니다");
+    setTitle("");
+    setQuestions([]);
+    onOpenChange(false);
+  };
+
+  const handleClose = () => {
+    setTitle("");
+    setQuestions([]);
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-sm">설문 생성</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1">
+            <Label className="text-xs">설문 제목</Label>
+            <Input
+              className="h-8 text-sm"
+              placeholder="예: 2025 정기공연 관객 만족도"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">질문 목록</Label>
+            <QuestionBuilder
+              questions={questions}
+              onAdd={addQuestion}
+              onRemove={removeQuestion}
+              onUpdate={updateQuestion}
+            />
+          </div>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={handleClose}
+          >
+            취소
+          </Button>
+          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
+            생성
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ============================================================
+// 응답 폼 다이얼로그
+// ============================================================
+
+function ResponseFormDialog({
+  survey,
+  open,
+  onOpenChange,
+  onSubmit,
+}: {
+  survey: AudienceFeedbackSurveyItem | null;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onSubmit: (
+    surveyId: string,
+    params: { respondentName: string | null; answers: Record<string, string | number> }
+  ) => void;
+}) {
+  const [respondentName, setRespondentName] = useState("");
+  const [answers, setAnswers] = useState<Record<string, string | number>>({});
+
+  const setAnswer = (questionId: string, value: string | number) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (!survey) return;
+    onSubmit(survey.id, {
+      respondentName: respondentName.trim() || null,
+      answers,
+    });
+    toast.success("응답이 제출되었습니다");
+    setRespondentName("");
+    setAnswers({});
+    onOpenChange(false);
+  };
+
+  const handleClose = () => {
+    setRespondentName("");
+    setAnswers({});
+    onOpenChange(false);
+  };
+
+  if (!survey) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-sm">{survey.title}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1">
+            <Label className="text-xs">이름 (선택, 익명 가능)</Label>
+            <Input
+              className="h-8 text-sm"
+              placeholder="이름을 입력하세요"
+              value={respondentName}
+              onChange={(e) => setRespondentName(e.target.value)}
+            />
+          </div>
+          {survey.questions.map((q, idx) => (
+            <div key={q.id} className="space-y-1.5">
+              <Label className="text-xs font-medium">
+                {idx + 1}. {q.question}
+              </Label>
+              {q.type === "rating" && (
+                <StarInput
+                  value={Number(answers[q.id] ?? 0)}
+                  onChange={(v) => setAnswer(q.id, v)}
+                />
+              )}
+              {q.type === "text" && (
+                <Textarea
+                  className="text-sm min-h-[60px] resize-none"
+                  placeholder="자유롭게 입력하세요"
+                  value={String(answers[q.id] ?? "")}
+                  onChange={(e) => setAnswer(q.id, e.target.value)}
+                />
+              )}
+              {q.type === "choice" && (
+                <div className="space-y-1">
+                  {(q.choices ?? []).map((c) => (
+                    <label
+                      key={c}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name={`q-${q.id}`}
+                        value={c}
+                        checked={answers[q.id] === c}
+                        onChange={() => setAnswer(q.id, c)}
+                        className="h-3 w-3"
+                      />
+                      <span className="text-xs">{c}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          {survey.questions.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-2">
+              등록된 질문이 없습니다
+            </p>
+          )}
+        </div>
+        <DialogFooter className="gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={handleClose}
+          >
+            취소
+          </Button>
+          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
+            제출
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ============================================================
+// 결과 분석 뷰
+// ============================================================
+
+function ResultsView({ results }: { results: SurveyResults }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium truncate">{results.title}</p>
+        <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">
+          {results.totalResponses}명 응답
+        </Badge>
+      </div>
+      {results.totalResponses === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-4">
+          아직 응답이 없습니다
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {results.questionResults.map((qr) => (
+            <div key={qr.questionId} className="border rounded-lg p-2.5 space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">
+                {qr.question}
+                <Badge
+                  variant="outline"
+                  className={`ml-1.5 text-[9px] px-1 py-0 ${
+                    qr.type === "rating"
+                      ? "text-yellow-600 border-yellow-200"
+                      : qr.type === "text"
+                      ? "text-blue-600 border-blue-200"
+                      : "text-purple-600 border-purple-200"
+                  }`}
+                >
+                  {qr.type === "rating" ? "별점" : qr.type === "text" ? "주관식" : "객관식"}
+                </Badge>
+              </p>
+              <QuestionResultView result={qr} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -135,100 +615,36 @@ function HorizontalBar({
 // 설문 관리 탭
 // ============================================================
 
-function SurveyManagementTab({
+function SurveyManageTab({
   surveys,
-  groupId,
   projectId,
   createSurvey,
   deleteSurvey,
-  toggleActive,
-  addFeedback,
+  toggleSurveyActive,
+  submitResponse,
 }: {
-  surveys: AudienceFeedbackSurvey[];
-  groupId: string;
+  surveys: AudienceFeedbackSurveyItem[];
   projectId: string;
-  createSurvey: (title: string) => AudienceFeedbackSurvey;
-  deleteSurvey: (id: string) => boolean;
-  toggleActive: (id: string) => boolean;
-  addFeedback: (
+  createSurvey: (params: CreateSurveyParams) => void;
+  deleteSurvey: (id: string) => void;
+  toggleSurveyActive: (id: string) => void;
+  submitResponse: (
     surveyId: string,
-    entry: {
-      name?: string;
-      email?: string;
-      ratings: AudienceFeedbackRating;
-      favoritePerformance?: string;
-      comment?: string;
-      wouldRecommend: boolean;
-    }
-  ) => boolean;
+    params: { respondentName: string | null; answers: Record<string, string | number> }
+  ) => void;
 }) {
-  // 설문 생성 다이얼로그
   const [createOpen, setCreateOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
+  const [responseSurvey, setResponseSurvey] =
+    useState<AudienceFeedbackSurveyItem | null>(null);
+  const [responseOpen, setResponseOpen] = useState(false);
 
-  // 피드백 입력 다이얼로그
-  const [feedbackSurveyId, setFeedbackSurveyId] = useState<string | null>(null);
-  const [feedbackName, setFeedbackName] = useState("");
-  const [feedbackEmail, setFeedbackEmail] = useState("");
-  const [feedbackRatings, setFeedbackRatings] =
-    useState<AudienceFeedbackRating>({ ...DEFAULT_RATINGS });
-  const [feedbackFavorite, setFeedbackFavorite] = useState("");
-  const [feedbackComment, setFeedbackComment] = useState("");
-  const [feedbackRecommend, setFeedbackRecommend] = useState(true);
-
-  const handleCreate = () => {
-    const title = newTitle.trim();
-    if (!title) {
-      toast.error("설문 제목을 입력해주세요");
-      return;
-    }
-    createSurvey(title);
-    toast.success("설문이 생성되었습니다");
-    setNewTitle("");
-    setCreateOpen(false);
+  const openResponseForm = (survey: AudienceFeedbackSurveyItem) => {
+    setResponseSurvey(survey);
+    setResponseOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    const ok = deleteSurvey(id);
-    if (ok) toast.success("설문이 삭제되었습니다");
-    else toast.error("삭제에 실패했습니다");
-  };
-
-  const handleToggle = (id: string) => {
-    toggleActive(id);
-  };
-
-  const openFeedbackDialog = (surveyId: string) => {
-    setFeedbackSurveyId(surveyId);
-    setFeedbackName("");
-    setFeedbackEmail("");
-    setFeedbackRatings({ ...DEFAULT_RATINGS });
-    setFeedbackFavorite("");
-    setFeedbackComment("");
-    setFeedbackRecommend(true);
-  };
-
-  const handleSubmitFeedback = () => {
-    if (!feedbackSurveyId) return;
-    const ok = addFeedback(feedbackSurveyId, {
-      name: feedbackName.trim() || undefined,
-      email: feedbackEmail.trim() || undefined,
-      ratings: feedbackRatings,
-      favoritePerformance: feedbackFavorite.trim() || undefined,
-      comment: feedbackComment.trim() || undefined,
-      wouldRecommend: feedbackRecommend,
-    });
-    if (ok) {
-      toast.success("피드백이 제출되었습니다");
-      setFeedbackSurveyId(null);
-    } else {
-      toast.error("피드백 제출에 실패했습니다");
-    }
-  };
-
-  const setRating = (axis: keyof AudienceFeedbackRating, value: number) => {
-    setFeedbackRatings((prev) => ({ ...prev, [axis]: value }));
-  };
+  // projectId 사용 (lint 경고 방지 - 실제로는 훅에서 이미 사용됨)
+  void projectId;
 
   return (
     <div className="space-y-3">
@@ -252,19 +668,16 @@ function SurveyManagementTab({
       ) : (
         <div className="space-y-2">
           {surveys.map((survey) => (
-            <div
-              key={survey.id}
-              className="border rounded-lg p-3 space-y-2"
-            >
+            <div key={survey.id} className="border rounded-lg p-3 space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <Badge
+                    variant="outline"
                     className={`text-[10px] px-1.5 py-0 shrink-0 ${
                       survey.isActive
-                        ? "bg-green-100 text-green-700 border-green-200"
-                        : "bg-gray-100 text-gray-500 border-gray-200"
+                        ? "bg-green-50 text-green-700 border-green-200"
+                        : "bg-gray-50 text-gray-500 border-gray-200"
                     }`}
-                    variant="outline"
                   >
                     {survey.isActive ? "활성" : "비활성"}
                   </Badge>
@@ -273,11 +686,11 @@ function SurveyManagementTab({
                   </span>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] px-1.5 py-0"
-                  >
-                    {survey.entries.length}명
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                    {survey.responses.length}명
+                  </Badge>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                    {survey.questions.length}문항
                   </Badge>
                 </div>
               </div>
@@ -286,7 +699,7 @@ function SurveyManagementTab({
                   size="sm"
                   variant="outline"
                   className="h-6 text-[11px] px-2"
-                  onClick={() => handleToggle(survey.id)}
+                  onClick={() => toggleSurveyActive(survey.id)}
                 >
                   {survey.isActive ? (
                     <>
@@ -304,16 +717,19 @@ function SurveyManagementTab({
                   size="sm"
                   variant="outline"
                   className="h-6 text-[11px] px-2"
-                  onClick={() => openFeedbackDialog(survey.id)}
+                  onClick={() => openResponseForm(survey)}
                 >
                   <Plus className="h-3 w-3 mr-1" />
-                  피드백 입력
+                  응답 입력
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   className="h-6 text-[11px] px-2 text-destructive hover:text-destructive"
-                  onClick={() => handleDelete(survey.id)}
+                  onClick={() => {
+                    deleteSurvey(survey.id);
+                    toast.success("설문이 삭제되었습니다");
+                  }}
                 >
                   <Trash2 className="h-3 w-3 mr-1" />
                   삭제
@@ -324,162 +740,18 @@ function SurveyManagementTab({
         </div>
       )}
 
-      {/* 설문 생성 다이얼로그 */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-sm">설문 생성</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-1">
-              <Label className="text-xs">설문 제목</Label>
-              <Input
-                className="h-8 text-sm"
-                placeholder="예: 2024 정기공연 관객 만족도"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleCreate();
-                }}
-              />
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs"
-              onClick={() => setCreateOpen(false)}
-            >
-              취소
-            </Button>
-            <Button size="sm" className="h-7 text-xs" onClick={handleCreate}>
-              생성
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateSurveyDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreate={createSurvey}
+      />
 
-      {/* 피드백 입력 다이얼로그 */}
-      <Dialog
-        open={feedbackSurveyId !== null}
-        onOpenChange={(open) => {
-          if (!open) setFeedbackSurveyId(null);
-        }}
-      >
-        <DialogContent className="max-w-sm max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-sm">관객 피드백 입력</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            {/* 관객 정보 */}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">
-                관객 정보 (선택)
-              </p>
-              <div className="space-y-1">
-                <Label className="text-xs">이름</Label>
-                <Input
-                  className="h-8 text-sm"
-                  placeholder="관객 이름"
-                  value={feedbackName}
-                  onChange={(e) => setFeedbackName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">이메일</Label>
-                <Input
-                  className="h-8 text-sm"
-                  placeholder="이메일 주소"
-                  value={feedbackEmail}
-                  onChange={(e) => setFeedbackEmail(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* 평가 */}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">
-                만족도 평가
-              </p>
-              {RATING_AXES.map((axis) => (
-                <div
-                  key={axis.key}
-                  className="flex items-center justify-between"
-                >
-                  <Label className="text-xs w-24 shrink-0">{axis.label}</Label>
-                  <StarInput
-                    value={feedbackRatings[axis.key]}
-                    onChange={(v) => setRating(axis.key, v)}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* 좋아했던 공연 */}
-            <div className="space-y-1">
-              <Label className="text-xs">가장 인상 깊었던 순서 (선택)</Label>
-              <Input
-                className="h-8 text-sm"
-                placeholder="예: 2번째 무대"
-                value={feedbackFavorite}
-                onChange={(e) => setFeedbackFavorite(e.target.value)}
-              />
-            </div>
-
-            {/* 코멘트 */}
-            <div className="space-y-1">
-              <Label className="text-xs">자유 코멘트 (선택)</Label>
-              <Textarea
-                className="text-sm min-h-[60px] resize-none"
-                placeholder="공연에 대한 자유로운 의견을 남겨주세요"
-                value={feedbackComment}
-                onChange={(e) => setFeedbackComment(e.target.value)}
-              />
-            </div>
-
-            {/* 추천 여부 */}
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">다른 분께 추천하시겠어요?</Label>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant={feedbackRecommend ? "default" : "outline"}
-                  className="h-6 text-[11px] px-2"
-                  onClick={() => setFeedbackRecommend(true)}
-                >
-                  예
-                </Button>
-                <Button
-                  size="sm"
-                  variant={!feedbackRecommend ? "default" : "outline"}
-                  className="h-6 text-[11px] px-2"
-                  onClick={() => setFeedbackRecommend(false)}
-                >
-                  아니오
-                </Button>
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs"
-              onClick={() => setFeedbackSurveyId(null)}
-            >
-              취소
-            </Button>
-            <Button
-              size="sm"
-              className="h-7 text-xs"
-              onClick={handleSubmitFeedback}
-            >
-              제출
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ResponseFormDialog
+        survey={responseSurvey}
+        open={responseOpen}
+        onOpenChange={setResponseOpen}
+        onSubmit={submitResponse}
+      />
     </div>
   );
 }
@@ -490,26 +762,22 @@ function SurveyManagementTab({
 
 function AnalyticsTab({
   surveys,
-  getStats,
-  totalStats,
+  getSurveyResults,
+  totalSurveys,
+  totalResponses,
+  averageRating,
 }: {
-  surveys: AudienceFeedbackSurvey[];
-  getStats: ReturnType<typeof useAudienceFeedback>["getStats"];
-  totalStats: ReturnType<typeof useAudienceFeedback>["totalStats"];
+  surveys: AudienceFeedbackSurveyItem[];
+  getSurveyResults: (surveyId: string) => SurveyResults | null;
+  totalSurveys: number;
+  totalResponses: number;
+  averageRating: number;
 }) {
   const [selectedSurveyId, setSelectedSurveyId] = useState<string | null>(
     surveys.length > 0 ? surveys[0].id : null
   );
 
-  const currentStats = selectedSurveyId
-    ? getStats(selectedSurveyId)
-    : totalStats;
-
-  const currentSurvey = selectedSurveyId
-    ? surveys.find((s) => s.id === selectedSurveyId)
-    : null;
-
-  const comments = (currentSurvey?.entries ?? []).filter((e) => e.comment);
+  const results = selectedSurveyId ? getSurveyResults(selectedSurveyId) : null;
 
   if (surveys.length === 0) {
     return (
@@ -522,22 +790,33 @@ function AnalyticsTab({
 
   return (
     <div className="space-y-4">
+      {/* 전체 요약 */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="border rounded-lg p-2 text-center">
+          <p className="text-base font-bold text-primary">{totalSurveys}</p>
+          <p className="text-[10px] text-muted-foreground">총 설문</p>
+        </div>
+        <div className="border rounded-lg p-2 text-center">
+          <p className="text-base font-bold text-blue-600">{totalResponses}</p>
+          <p className="text-[10px] text-muted-foreground">총 응답</p>
+        </div>
+        <div className="border rounded-lg p-2 text-center">
+          <div className="flex items-center justify-center gap-0.5">
+            <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+            <p className="text-base font-bold text-yellow-600">
+              {averageRating > 0 ? averageRating.toFixed(1) : "-"}
+            </p>
+          </div>
+          <p className="text-[10px] text-muted-foreground">평균 별점</p>
+        </div>
+      </div>
+
       {/* 설문 선택 */}
       <div className="flex flex-wrap gap-1.5">
-        <button
-          className={`text-[11px] px-2 py-0.5 rounded-full border transition-colors ${
-            selectedSurveyId === null
-              ? "bg-primary text-primary-foreground border-primary"
-              : "border-border hover:bg-muted"
-          }`}
-          onClick={() => setSelectedSurveyId(null)}
-        >
-          전체
-        </button>
         {surveys.map((s) => (
           <button
             key={s.id}
-            className={`text-[11px] px-2 py-0.5 rounded-full border transition-colors truncate max-w-[120px] ${
+            className={`text-[11px] px-2 py-0.5 rounded-full border transition-colors truncate max-w-[140px] ${
               selectedSurveyId === s.id
                 ? "bg-primary text-primary-foreground border-primary"
                 : "border-border hover:bg-muted"
@@ -549,87 +828,13 @@ function AnalyticsTab({
         ))}
       </div>
 
-      {/* 요약 */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="border rounded-lg p-2.5 text-center">
-          <p className="text-lg font-bold text-primary">
-            {currentStats.totalResponses}
-          </p>
-          <p className="text-[10px] text-muted-foreground">총 응답 수</p>
-        </div>
-        <div className="border rounded-lg p-2.5 text-center">
-          <div className="flex items-center justify-center gap-1">
-            <ThumbsUp className="h-3.5 w-3.5 text-green-600" />
-            <p className="text-lg font-bold text-green-600">
-              {currentStats.recommendRate}%
-            </p>
-          </div>
-          <p className="text-[10px] text-muted-foreground">추천률</p>
-        </div>
-      </div>
-
-      {/* 5축 수평 바 차트 */}
-      <div className="border rounded-lg p-3 space-y-2">
-        <p className="text-xs font-medium">항목별 평균 점수</p>
-        {currentStats.totalResponses === 0 ? (
-          <p className="text-xs text-muted-foreground text-center py-2">
-            응답 데이터가 없습니다
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {RATING_AXES.map((axis) => (
-              <HorizontalBar
-                key={axis.key}
-                label={axis.label}
-                value={currentStats.averageRatings[axis.key]}
-                max={5}
-                color={axis.color}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 코멘트 목록 */}
-      {selectedSurveyId && comments.length > 0 && (
-        <div className="border rounded-lg p-3 space-y-2">
-          <p className="text-xs font-medium">관객 코멘트</p>
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-            {comments.map((entry) => (
-              <div key={entry.id} className="bg-muted/50 rounded p-2 space-y-1">
-                <div className="flex items-center gap-1.5">
-                  <User className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[11px] font-medium">
-                    {entry.name ?? "익명"}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className={`text-[9px] px-1 py-0 ml-auto ${
-                      entry.wouldRecommend
-                        ? "text-green-600 border-green-200"
-                        : "text-gray-400 border-gray-200"
-                    }`}
-                  >
-                    {entry.wouldRecommend ? "추천" : "비추천"}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {entry.comment}
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {RATING_AXES.slice(0, 3).map((axis) => (
-                    <span
-                      key={axis.key}
-                      className="text-[10px] text-muted-foreground"
-                    >
-                      {axis.label} {entry.ratings[axis.key]}점
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* 선택된 설문 결과 */}
+      {results ? (
+        <ResultsView results={results} />
+      ) : (
+        <p className="text-xs text-muted-foreground text-center py-4">
+          설문을 선택하면 결과를 확인할 수 있습니다
+        </p>
       )}
     </div>
   );
@@ -639,27 +844,23 @@ function AnalyticsTab({
 // 메인 카드 컴포넌트
 // ============================================================
 
-export function AudienceFeedbackCard({
-  groupId,
-  projectId,
-}: {
-  groupId: string;
-  projectId: string;
-}) {
+export function AudienceFeedbackCard({ projectId }: { projectId: string }) {
   const [open, setOpen] = useState(false);
 
   const {
-    surveys,
+    feedbackData,
     loading,
     createSurvey,
     deleteSurvey,
-    toggleActive,
-    addFeedback,
-    getStats,
-    totalStats,
-  } = useAudienceFeedback(groupId, projectId);
+    toggleSurveyActive,
+    submitResponse,
+    getSurveyResults,
+    totalSurveys,
+    totalResponses,
+    averageRating,
+  } = useAudienceFeedback(projectId);
 
-  const totalResponses = surveys.reduce((sum, s) => sum + s.entries.length, 0);
+  const activeSurveyCount = feedbackData.surveys.filter((s) => s.isActive).length;
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -680,7 +881,7 @@ export function AudienceFeedbackCard({
                     {totalResponses}개 응답
                   </Badge>
                 )}
-                {surveys.some((s) => s.isActive) && (
+                {activeSurveyCount > 0 && (
                   <Badge
                     variant="outline"
                     className="text-[10px] px-1.5 py-0 bg-green-50 text-green-700 border-green-200"
@@ -716,22 +917,23 @@ export function AudienceFeedbackCard({
                 </TabsList>
 
                 <TabsContent value="manage" className="mt-0">
-                  <SurveyManagementTab
-                    surveys={surveys}
-                    groupId={groupId}
+                  <SurveyManageTab
+                    surveys={feedbackData.surveys}
                     projectId={projectId}
                     createSurvey={createSurvey}
                     deleteSurvey={deleteSurvey}
-                    toggleActive={toggleActive}
-                    addFeedback={addFeedback}
+                    toggleSurveyActive={toggleSurveyActive}
+                    submitResponse={submitResponse}
                   />
                 </TabsContent>
 
                 <TabsContent value="analytics" className="mt-0">
                   <AnalyticsTab
-                    surveys={surveys}
-                    getStats={getStats}
-                    totalStats={totalStats}
+                    surveys={feedbackData.surveys}
+                    getSurveyResults={getSurveyResults}
+                    totalSurveys={totalSurveys}
+                    totalResponses={totalResponses}
+                    averageRating={averageRating}
                   />
                 </TabsContent>
               </Tabs>

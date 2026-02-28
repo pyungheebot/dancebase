@@ -31,6 +31,8 @@ import { BackstageLogCard } from "@/components/projects/backstage-log-card";
 import { PerformanceSponsorCard } from "@/components/projects/performance-sponsor-card";
 import { ProgramBookEditorCard } from "@/components/projects/program-book-editor-card";
 import { MarketingCampaignCard } from "@/components/projects/marketing-campaign-card";
+import { RehearsalScheduleCard } from "@/components/projects/rehearsal-schedule-card";
+import { AudienceFeedbackCard } from "@/components/projects/audience-feedback-card";
 
 export default function ProjectDetailPage({
   params,
@@ -172,6 +174,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <MarketingCampaignCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <RehearsalScheduleCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <AudienceFeedbackCard
               projectId={ctx.projectId}
             />
           )}
