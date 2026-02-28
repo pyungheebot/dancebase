@@ -25,6 +25,7 @@ import { GroupPollsCard } from "@/components/groups/group-polls-card";
 import { MeetingMinutesCard } from "@/components/groups/meeting-minutes-card";
 import { TimeCapsuleCard } from "@/components/groups/time-capsule-card";
 import { AppreciationCardCard } from "@/components/groups/appreciation-card-card";
+import { MemberAttendanceStatsCard } from "@/components/groups/member-attendance-stats-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -156,6 +157,8 @@ export default function GroupDetailPage({
             groupId={ctx.groupId}
             memberNames={ctx.members.map((m) => m.nickname || m.profile.name)}
           />
+
+          <MemberAttendanceStatsCard groupId={ctx.groupId} />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

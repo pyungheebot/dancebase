@@ -1,101 +1,225 @@
 "use client";
 
+import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
-import type { VipGuestEntry, VipGuestStatus, VipGuestCategory } from "@/types";
+import type {
+  VipGuestEntry,
+  VipGuestStore,
+  VipGuestTier,
+  VipGuestStatus,
+} from "@/types";
 
-function getStorageKey(groupId: string, projectId: string) {
+// ============================================================
+// localStorage 유틸
+// ============================================================
+
+function storageKey(groupId: string, projectId: string): string {
   return `dancebase:vip-guest:${groupId}:${projectId}`;
 }
 
-function loadGuests(groupId: string, projectId: string): VipGuestEntry[] {
-  if (typeof window === "undefined") return [];
+function loadData(groupId: string, projectId: string): VipGuestStore {
+  if (typeof window === "undefined") {
+    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
+  }
   try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as VipGuestEntry[]) : [];
+    const raw = localStorage.getItem(storageKey(groupId, projectId));
+    if (!raw) {
+      return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
+    }
+    return JSON.parse(raw) as VipGuestStore;
   } catch {
-    return [];
+    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
   }
 }
 
-function saveGuests(groupId: string, projectId: string, guests: VipGuestEntry[]) {
+function saveData(data: VipGuestStore): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId, projectId), JSON.stringify(guests));
+  try {
+    localStorage.setItem(storageKey(data.groupId, data.projectId), JSON.stringify(data));
+  } catch {
+    // localStorage 접근 실패 시 무시
+  }
 }
+
+// ============================================================
+// 훅
+// ============================================================
 
 export function useVipGuest(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.vipGuest(groupId, projectId),
-    async () => loadGuests(groupId, projectId)
+    () => loadData(groupId, projectId),
+    {
+      fallbackData: {
+        groupId,
+        projectId,
+        entries: [],
+        updatedAt: new Date().toISOString(),
+      },
+    }
   );
 
-  const guests = data ?? [];
+  const entries: VipGuestEntry[] = data?.entries ?? [];
 
-  async function addGuest(
-    input: Omit<VipGuestEntry, "id" | "createdAt">
-  ): Promise<void> {
-    const newGuest: VipGuestEntry = {
-      ...input,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
+  /** 게스트 추가 */
+  const addEntry = useCallback(
+    (params: {
+      name: string;
+      organization?: string;
+      title?: string;
+      phone?: string;
+      email?: string;
+      tier: VipGuestTier;
+      status: VipGuestStatus;
+      seatZone?: string;
+      seatNumber?: string;
+      specialRequest?: string;
+    }): VipGuestEntry => {
+      const current = loadData(groupId, projectId);
+      const now = new Date().toISOString();
+      const newEntry: VipGuestEntry = {
+        id: crypto.randomUUID(),
+        name: params.name.trim(),
+        organization: params.organization?.trim() || undefined,
+        title: params.title?.trim() || undefined,
+        phone: params.phone?.trim() || undefined,
+        email: params.email?.trim() || undefined,
+        tier: params.tier,
+        status: params.status,
+        seatZone: params.seatZone?.trim() || undefined,
+        seatNumber: params.seatNumber?.trim() || undefined,
+        specialRequest: params.specialRequest?.trim() || undefined,
+        createdAt: now,
+        updatedAt: now,
+      };
+      const updated: VipGuestStore = {
+        ...current,
+        entries: [newEntry, ...current.entries],
+        updatedAt: now,
+      };
+      saveData(updated);
+      mutate(updated, false);
+      return newEntry;
+    },
+    [groupId, projectId, mutate]
+  );
+
+  /** 게스트 수정 */
+  const updateEntry = useCallback(
+    (
+      entryId: string,
+      params: Partial<{
+        name: string;
+        organization: string;
+        title: string;
+        phone: string;
+        email: string;
+        tier: VipGuestTier;
+        status: VipGuestStatus;
+        seatZone: string;
+        seatNumber: string;
+        specialRequest: string;
+      }>
+    ): boolean => {
+      const current = loadData(groupId, projectId);
+      const idx = current.entries.findIndex((e) => e.id === entryId);
+      if (idx === -1) return false;
+
+      const existing = current.entries[idx];
+      const updatedEntry: VipGuestEntry = {
+        ...existing,
+        ...(params.name !== undefined && { name: params.name.trim() }),
+        organization:
+          params.organization !== undefined
+            ? params.organization.trim() || undefined
+            : existing.organization,
+        title:
+          params.title !== undefined
+            ? params.title.trim() || undefined
+            : existing.title,
+        phone:
+          params.phone !== undefined
+            ? params.phone.trim() || undefined
+            : existing.phone,
+        email:
+          params.email !== undefined
+            ? params.email.trim() || undefined
+            : existing.email,
+        ...(params.tier !== undefined && { tier: params.tier }),
+        ...(params.status !== undefined && { status: params.status }),
+        seatZone:
+          params.seatZone !== undefined
+            ? params.seatZone.trim() || undefined
+            : existing.seatZone,
+        seatNumber:
+          params.seatNumber !== undefined
+            ? params.seatNumber.trim() || undefined
+            : existing.seatNumber,
+        specialRequest:
+          params.specialRequest !== undefined
+            ? params.specialRequest.trim() || undefined
+            : existing.specialRequest,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updated: VipGuestStore = {
+        ...current,
+        entries: current.entries.map((e) => (e.id === entryId ? updatedEntry : e)),
+        updatedAt: new Date().toISOString(),
+      };
+      saveData(updated);
+      mutate(updated, false);
+      return true;
+    },
+    [groupId, projectId, mutate]
+  );
+
+  /** 게스트 삭제 */
+  const deleteEntry = useCallback(
+    (entryId: string): boolean => {
+      const current = loadData(groupId, projectId);
+      const exists = current.entries.some((e) => e.id === entryId);
+      if (!exists) return false;
+
+      const updated: VipGuestStore = {
+        ...current,
+        entries: current.entries.filter((e) => e.id !== entryId),
+        updatedAt: new Date().toISOString(),
+      };
+      saveData(updated);
+      mutate(updated, false);
+      return true;
+    },
+    [groupId, projectId, mutate]
+  );
+
+  /** 통계 */
+  const stats = (() => {
+    const total = entries.length;
+    const byTier = {
+      VVIP: entries.filter((e) => e.tier === "VVIP").length,
+      VIP: entries.filter((e) => e.tier === "VIP").length,
+      general: entries.filter((e) => e.tier === "general").length,
     };
-    const updated = [...guests, newGuest];
-    saveGuests(groupId, projectId, updated);
-    await mutate(updated, false);
-  }
-
-  async function updateGuest(
-    guestId: string,
-    changes: Partial<Omit<VipGuestEntry, "id" | "createdAt">>
-  ): Promise<void> {
-    const updated = guests.map((g) =>
-      g.id === guestId ? { ...g, ...changes } : g
-    );
-    saveGuests(groupId, projectId, updated);
-    await mutate(updated, false);
-  }
-
-  async function deleteGuest(guestId: string): Promise<void> {
-    const updated = guests.filter((g) => g.id !== guestId);
-    saveGuests(groupId, projectId, updated);
-    await mutate(updated, false);
-  }
-
-  async function updateStatus(guestId: string, status: VipGuestStatus): Promise<void> {
-    await updateGuest(guestId, { status });
-  }
-
-  const totalGuests = guests.length;
-  const confirmedGuests = guests.filter((g) => g.status === "confirmed" || g.status === "attended").length;
-  const declinedGuests = guests.filter((g) => g.status === "declined" || g.status === "no_show").length;
-
-  const categoryBreakdown: Record<VipGuestCategory, number> = {
-    sponsor: 0,
-    media: 0,
-    celebrity: 0,
-    judge: 0,
-    family: 0,
-    other: 0,
-  };
-  for (const g of guests) {
-    categoryBreakdown[g.category] = (categoryBreakdown[g.category] ?? 0) + 1;
-  }
-
-  const stats = {
-    totalGuests,
-    confirmedGuests,
-    declinedGuests,
-    categoryBreakdown,
-  };
+    const byStatus = {
+      pending: entries.filter((e) => e.status === "pending").length,
+      invited: entries.filter((e) => e.status === "invited").length,
+      confirmed: entries.filter((e) => e.status === "confirmed").length,
+      declined: entries.filter((e) => e.status === "declined").length,
+    };
+    const confirmedCount = byStatus.confirmed;
+    const seatedCount = entries.filter((e) => e.seatNumber).length;
+    return { total, byTier, byStatus, confirmedCount, seatedCount };
+  })();
 
   return {
-    guests,
+    entries,
     loading: isLoading,
     refetch: () => mutate(),
-    addGuest,
-    updateGuest,
-    deleteGuest,
-    updateStatus,
+    addEntry,
+    updateEntry,
+    deleteEntry,
     stats,
   };
 }

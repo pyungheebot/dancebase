@@ -17,6 +17,8 @@ import { PhotoCallCard } from "@/components/projects/photo-call-card";
 import { StageBlockingCard } from "@/components/projects/stage-blocking-card";
 import { PostShowReportCard } from "@/components/projects/post-show-report-card";
 import { LiveShowFeedCard } from "@/components/projects/live-show-feed-card";
+import { VipGuestCard } from "@/components/projects/vip-guest-card";
+import { SocialPostPlannerCard } from "@/components/projects/social-post-planner-card";
 
 export default function ProjectDetailPage({
   params,
@@ -82,6 +84,18 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <PostShowReportCard
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <VipGuestCard
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <SocialPostPlannerCard
               groupId={ctx.groupId}
               projectId={ctx.projectId}
             />

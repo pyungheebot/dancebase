@@ -8471,35 +8471,53 @@ export type InspirationBoardItem = {
 };
 
 // 공연 VIP 게스트 관리
-export type VipGuestCategory =
-  | "sponsor"
-  | "media"
-  | "celebrity"
-  | "judge"
-  | "family"
-  | "other";
 
+/** 게스트 등급 */
+export type VipGuestTier = "VVIP" | "VIP" | "general";
+
+/** 초대 상태 */
 export type VipGuestStatus =
+  | "pending"
   | "invited"
   | "confirmed"
-  | "declined"
-  | "attended"
-  | "no_show";
+  | "declined";
 
+/** VIP 게스트 항목 */
 export type VipGuestEntry = {
+  /** 고유 식별자 */
   id: string;
+  /** 이름 */
   name: string;
-  category: VipGuestCategory;
-  status: VipGuestStatus;
+  /** 소속 (기관/단체명) */
   organization?: string;
-  email?: string;
+  /** 직함 */
+  title?: string;
+  /** 연락처 */
   phone?: string;
-  seatAssignment?: string;
-  plusOne: boolean;
-  specialRequirements?: string;
-  invitedBy: string;
-  notes?: string;
+  /** 이메일 */
+  email?: string;
+  /** 게스트 등급 */
+  tier: VipGuestTier;
+  /** 초대 상태 */
+  status: VipGuestStatus;
+  /** 좌석 구역 */
+  seatZone?: string;
+  /** 좌석 번호 */
+  seatNumber?: string;
+  /** 특별 요청 사항 */
+  specialRequest?: string;
+  /** 생성 시각 (ISO 8601) */
   createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type VipGuestStore = {
+  groupId: string;
+  projectId: string;
+  entries: VipGuestEntry[];
+  updatedAt: string;
 };
 
 // 그룹 출석 통계 대시보드
@@ -11539,5 +11557,190 @@ export type TimeCapsuleEntry = {
 export type TimeCapsuleStore = {
   groupId: string;
   entries: TimeCapsuleEntry[];
+  updatedAt: string;
+};
+
+// ============================================
+// Member Attendance Stats Dashboard (멤버 출석 통계 대시보드)
+// ============================================
+
+/** 출석 상태 */
+export type MemberAttendStatStatus = "present" | "late" | "early_leave" | "absent";
+
+/** 출석 기록 단건 */
+export type MemberAttendStatRecord = {
+  id: string;
+  /** 그룹 ID */
+  groupId: string;
+  /** 멤버 이름 */
+  memberName: string;
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 출석 상태 */
+  status: MemberAttendStatStatus;
+  /** 비고 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 기간 필터 */
+export type MemberAttendStatPeriod = "weekly" | "monthly" | "all";
+
+/** 멤버별 통계 요약 */
+export type MemberAttendStatSummary = {
+  memberName: string;
+  totalCount: number;
+  presentCount: number;
+  lateCount: number;
+  earlyLeaveCount: number;
+  absentCount: number;
+  /** 출석률 (0~100) */
+  attendanceRate: number;
+  /** 연속 출석일 (스트릭) */
+  currentStreak: number;
+  /** 최장 연속 출석일 */
+  longestStreak: number;
+};
+
+/** 대시보드 전체 통계 */
+export type MemberAttendStatOverall = {
+  totalRecords: number;
+  overallAttendanceRate: number;
+  topAttendee: string | null;
+  mostAbsentee: string | null;
+  perfectAttendanceMembers: string[];
+};
+
+// ============================================================
+// Dance Injury Log (댄스 부상 기록)
+// ============================================================
+
+/** 댄스 부상 부위 */
+export type DanceInjuryBodyPart =
+  | "shoulder"   // 어깨
+  | "knee"       // 무릎
+  | "ankle"      // 발목
+  | "waist"      // 허리
+  | "wrist"      // 손목
+  | "neck"       // 목
+  | "hip"        // 고관절
+  | "elbow"      // 팔꿈치
+  | "foot"       // 발
+  | "other";     // 기타
+
+/** 댄스 부상 유형 */
+export type DanceInjuryType =
+  | "muscle_pain"      // 근육통
+  | "ligament"         // 인대 손상
+  | "fracture"         // 골절
+  | "dislocation"      // 탈구
+  | "bruise"           // 타박상
+  | "sprain"           // 염좌
+  | "tendinitis"       // 건염
+  | "other";           // 기타
+
+/** 댄스 부상 심각도 */
+export type DanceInjurySeverity = "mild" | "moderate" | "severe";
+
+/** 댄스 부상 재활 상태 */
+export type DanceInjuryRehabStatus = "in_progress" | "recovered" | "chronic";
+
+/** 댄스 부상 기록 항목 */
+export type DanceInjuryEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 멤버 ID */
+  memberId: string;
+  /** 부상 부위 */
+  bodyPart: DanceInjuryBodyPart;
+  /** 부상 유형 */
+  injuryType: DanceInjuryType;
+  /** 심각도 */
+  severity: DanceInjurySeverity;
+  /** 부상 날짜 (YYYY-MM-DD) */
+  injuredAt: string;
+  /** 예상 회복일 (YYYY-MM-DD, 선택) */
+  expectedRecoveryAt?: string;
+  /** 재활 상태 */
+  rehabStatus: DanceInjuryRehabStatus;
+  /** 치료 내용 메모 */
+  treatmentNote: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type DanceInjuryLogStore = {
+  memberId: string;
+  entries: DanceInjuryEntry[];
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type MemberAttendStatStore = {
+  groupId: string;
+  records: MemberAttendStatRecord[];
+  updatedAt: string;
+};
+
+
+// ============================================================
+// 소셜 미디어 포스트 플래너 (Social Media Post Planner)
+// ============================================================
+
+/** SNS 플랫폼 */
+export type SocialPlatform =
+  | "instagram"
+  | "youtube"
+  | "tiktok"
+  | "twitter"
+  | "facebook";
+
+/** 포스트 유형 */
+export type SocialPostType =
+  | "performance_promo"
+  | "practice_behind"
+  | "member_intro"
+  | "review"
+  | "etc";
+
+/** SNS 포스트 계획 항목 */
+export type SocialPostEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 포스트 제목 */
+  title: string;
+  /** 본문 내용 */
+  content: string;
+  /** 해시태그 목록 */
+  hashtags: string[];
+  /** 플랫폼 */
+  platform: SocialPlatform;
+  /** 포스트 유형 */
+  postType: SocialPostType;
+  /** 게시 상태 */
+  status: SocialPostStatus;
+  /** 예정 날짜 (YYYY-MM-DD) */
+  scheduledDate: string;
+  /** 예정 시각 (HH:mm) */
+  scheduledTime: string;
+  /** 담당자 */
+  assignee: string;
+  /** 비고 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type SocialPostPlannerData = {
+  groupId: string;
+  projectId: string;
+  entries: SocialPostEntry[];
   updatedAt: string;
 };

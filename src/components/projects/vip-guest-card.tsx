@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import {
   Collapsible,
   CollapsibleContent,
@@ -26,6 +25,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -38,7 +47,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Switch } from "@/components/ui/switch";
 import {
   ChevronDown,
   ChevronUp,
@@ -50,96 +58,103 @@ import {
   Mail,
   Phone,
   MapPin,
-  Users,
+  StickyNote,
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useVipGuest } from "@/hooks/use-vip-guest";
-import type { VipGuestEntry, VipGuestCategory, VipGuestStatus } from "@/types";
+import type { VipGuestEntry, VipGuestTier, VipGuestStatus } from "@/types";
 
 // ============================================================
 // 상수 & 레이블
 // ============================================================
 
-const CATEGORY_LABELS: Record<VipGuestCategory, string> = {
-  sponsor: "스폰서",
-  media: "미디어",
-  celebrity: "셀럽",
-  judge: "심사위원",
-  family: "가족/지인",
-  other: "기타",
+const TIER_LABELS: Record<VipGuestTier, string> = {
+  VVIP: "VVIP",
+  VIP: "VIP",
+  general: "일반 초대",
 };
 
-const CATEGORY_COLORS: Record<VipGuestCategory, string> = {
-  sponsor: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  media: "bg-blue-100 text-blue-800 border-blue-300",
-  celebrity: "bg-purple-100 text-purple-800 border-purple-300",
-  judge: "bg-orange-100 text-orange-800 border-orange-300",
-  family: "bg-green-100 text-green-800 border-green-300",
-  other: "bg-gray-100 text-gray-700 border-gray-300",
+const TIER_COLORS: Record<VipGuestTier, string> = {
+  VVIP: "bg-amber-100 text-amber-800 border-amber-300",
+  VIP: "bg-purple-100 text-purple-800 border-purple-300",
+  general: "bg-gray-100 text-gray-700 border-gray-300",
+};
+
+const TIER_DOT_COLORS: Record<VipGuestTier, string> = {
+  VVIP: "bg-amber-400",
+  VIP: "bg-purple-400",
+  general: "bg-gray-400",
 };
 
 const STATUS_LABELS: Record<VipGuestStatus, string> = {
-  invited: "초대",
-  confirmed: "확정",
+  pending: "초대 예정",
+  invited: "초대 완료",
+  confirmed: "참석 확정",
   declined: "불참",
-  attended: "참석",
-  no_show: "미참석",
 };
 
 const STATUS_COLORS: Record<VipGuestStatus, string> = {
-  invited: "bg-blue-100 text-blue-700 border-blue-300",
+  pending: "bg-blue-100 text-blue-700 border-blue-300",
+  invited: "bg-yellow-100 text-yellow-700 border-yellow-300",
   confirmed: "bg-green-100 text-green-700 border-green-300",
-  declined: "bg-red-100 text-red-700 border-red-300",
-  attended: "bg-emerald-100 text-emerald-700 border-emerald-300",
-  no_show: "bg-gray-100 text-gray-600 border-gray-300",
+  declined: "bg-gray-100 text-gray-600 border-gray-300",
 };
 
-const STATUS_FILTER_OPTIONS: Array<{ value: VipGuestStatus | "all"; label: string }> = [
-  { value: "all", label: "전체" },
-  { value: "invited", label: "초대" },
-  { value: "confirmed", label: "확정" },
-  { value: "declined", label: "불참" },
-  { value: "attended", label: "참석" },
-  { value: "no_show", label: "미참석" },
-];
+const STATUS_DOT_COLORS: Record<VipGuestStatus, string> = {
+  pending: "bg-blue-400",
+  invited: "bg-yellow-400",
+  confirmed: "bg-green-500",
+  declined: "bg-gray-400",
+};
 
-const CATEGORY_OPTIONS: VipGuestCategory[] = [
-  "sponsor",
-  "media",
-  "celebrity",
-  "judge",
-  "family",
-  "other",
-];
-
-const STATUS_OPTIONS: VipGuestStatus[] = [
-  "invited",
-  "confirmed",
-  "declined",
-  "attended",
-  "no_show",
-];
+const TIER_OPTIONS: VipGuestTier[] = ["VVIP", "VIP", "general"];
+const STATUS_OPTIONS: VipGuestStatus[] = ["pending", "invited", "confirmed", "declined"];
 
 // ============================================================
-// 빈 폼 초기값
+// 폼 타입
 // ============================================================
 
-type GuestFormData = Omit<VipGuestEntry, "id" | "createdAt">;
+type GuestFormData = {
+  name: string;
+  organization: string;
+  title: string;
+  phone: string;
+  email: string;
+  tier: VipGuestTier;
+  status: VipGuestStatus;
+  seatZone: string;
+  seatNumber: string;
+  specialRequest: string;
+};
 
 function emptyForm(): GuestFormData {
   return {
     name: "",
-    category: "other",
-    status: "invited",
     organization: "",
-    email: "",
+    title: "",
     phone: "",
-    seatAssignment: "",
-    plusOne: false,
-    specialRequirements: "",
-    invitedBy: "",
-    notes: "",
+    email: "",
+    tier: "VIP",
+    status: "pending",
+    seatZone: "",
+    seatNumber: "",
+    specialRequest: "",
+  };
+}
+
+function entryToForm(entry: VipGuestEntry): GuestFormData {
+  return {
+    name: entry.name,
+    organization: entry.organization ?? "",
+    title: entry.title ?? "",
+    phone: entry.phone ?? "",
+    email: entry.email ?? "",
+    tier: entry.tier,
+    status: entry.status,
+    seatZone: entry.seatZone ?? "",
+    seatNumber: entry.seatNumber ?? "",
+    specialRequest: entry.specialRequest ?? "",
   };
 }
 
@@ -154,96 +169,103 @@ export function VipGuestCard({
   groupId: string;
   projectId: string;
 }) {
-  const { guests, loading, addGuest, updateGuest, deleteGuest, updateStatus, stats } =
+  const { entries, loading, addEntry, updateEntry, deleteEntry, stats } =
     useVipGuest(groupId, projectId);
 
   const [isOpen, setIsOpen] = useState(false);
+  const [tierFilter, setTierFilter] = useState<VipGuestTier | "all">("all");
   const [statusFilter, setStatusFilter] = useState<VipGuestStatus | "all">("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<VipGuestEntry | null>(null);
   const [form, setForm] = useState<GuestFormData>(emptyForm());
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<VipGuestEntry | null>(null);
 
   // 필터링된 게스트 목록
-  const filtered =
-    statusFilter === "all"
-      ? guests
-      : guests.filter((g) => g.status === statusFilter);
+  const filtered = entries.filter((e) => {
+    if (tierFilter !== "all" && e.tier !== tierFilter) return false;
+    if (statusFilter !== "all" && e.status !== statusFilter) return false;
+    return true;
+  });
 
-  // 확정률 (확정+참석 / 전체)
-  const confirmRate =
-    stats.totalGuests > 0
-      ? Math.round((stats.confirmedGuests / stats.totalGuests) * 100)
-      : 0;
-
-  // ── 다이얼로그 열기 ──
+  // 다이얼로그 열기
   function openAdd() {
     setEditTarget(null);
     setForm(emptyForm());
     setDialogOpen(true);
   }
 
-  function openEdit(guest: VipGuestEntry) {
-    setEditTarget(guest);
-    setForm({
-      name: guest.name,
-      category: guest.category,
-      status: guest.status,
-      organization: guest.organization ?? "",
-      email: guest.email ?? "",
-      phone: guest.phone ?? "",
-      seatAssignment: guest.seatAssignment ?? "",
-      plusOne: guest.plusOne,
-      specialRequirements: guest.specialRequirements ?? "",
-      invitedBy: guest.invitedBy,
-      notes: guest.notes ?? "",
-    });
+  function openEdit(entry: VipGuestEntry) {
+    setEditTarget(entry);
+    setForm(entryToForm(entry));
     setDialogOpen(true);
   }
 
-  // ── 저장 ──
-  async function handleSave() {
+  // 저장
+  function handleSave() {
     if (!form.name.trim()) {
       toast.error("게스트 이름을 입력해주세요.");
-      return;
-    }
-    if (!form.invitedBy.trim()) {
-      toast.error("초대자를 입력해주세요.");
       return;
     }
     setSaving(true);
     try {
       if (editTarget) {
-        await updateGuest(editTarget.id, form);
-        toast.success("게스트 정보가 수정되었습니다.");
+        const ok = updateEntry(editTarget.id, {
+          name: form.name,
+          organization: form.organization,
+          title: form.title,
+          phone: form.phone,
+          email: form.email,
+          tier: form.tier,
+          status: form.status,
+          seatZone: form.seatZone,
+          seatNumber: form.seatNumber,
+          specialRequest: form.specialRequest,
+        });
+        if (ok) {
+          toast.success("게스트 정보가 수정되었습니다.");
+        } else {
+          toast.error("수정에 실패했습니다.");
+        }
       } else {
-        await addGuest(form);
+        addEntry({
+          name: form.name,
+          organization: form.organization || undefined,
+          title: form.title || undefined,
+          phone: form.phone || undefined,
+          email: form.email || undefined,
+          tier: form.tier,
+          status: form.status,
+          seatZone: form.seatZone || undefined,
+          seatNumber: form.seatNumber || undefined,
+          specialRequest: form.specialRequest || undefined,
+        });
         toast.success("VIP 게스트가 추가되었습니다.");
       }
       setDialogOpen(false);
-    } catch {
-      toast.error("저장에 실패했습니다.");
     } finally {
       setSaving(false);
     }
   }
 
-  // ── 삭제 ──
-  async function handleDelete(guest: VipGuestEntry) {
-    try {
-      await deleteGuest(guest.id);
-      toast.success(`${guest.name} 게스트가 삭제되었습니다.`);
-    } catch {
+  // 삭제 확인
+  function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    const ok = deleteEntry(deleteTarget.id);
+    if (ok) {
+      toast.success(`${deleteTarget.name} 게스트가 삭제되었습니다.`);
+    } else {
       toast.error("삭제에 실패했습니다.");
     }
+    setDeleteTarget(null);
   }
 
-  // ── 상태 변경 ──
-  async function handleStatusChange(guestId: string, status: VipGuestStatus) {
-    try {
-      await updateStatus(guestId, status);
-      toast.success("상태가 변경되었습니다.");
-    } catch {
+  // 상태 변경
+  function handleStatusChange(entryId: string, status: VipGuestStatus) {
+    const ok = updateEntry(entryId, { status });
+    if (ok) {
+      toast.success(`상태가 "${STATUS_LABELS[status]}"(으)로 변경되었습니다.`);
+    } else {
       toast.error("상태 변경에 실패했습니다.");
     }
   }
@@ -256,12 +278,12 @@ export function VipGuestCard({
             <div className="flex items-center justify-between">
               <CollapsibleTrigger asChild>
                 <button className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity">
-                  <Crown className="h-4 w-4 text-yellow-500" />
+                  <Crown className="h-4 w-4 text-amber-500" />
                   <CardTitle className="text-sm font-semibold">
                     VIP 게스트 관리
                   </CardTitle>
-                  <Badge className="text-[10px] px-1.5 py-0 bg-yellow-100 text-yellow-800 border border-yellow-300">
-                    {stats.totalGuests}명
+                  <Badge className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-800 border border-amber-300">
+                    {stats.total}명
                   </Badge>
                   {isOpen ? (
                     <ChevronUp className="h-3 w-3 text-muted-foreground" />
@@ -284,48 +306,85 @@ export function VipGuestCard({
             </div>
 
             {/* 요약 통계 */}
-            {stats.totalGuests > 0 && (
-              <div className="mt-2 space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>확정률</span>
-                  <span className="font-medium text-foreground">
-                    {stats.confirmedGuests}/{stats.totalGuests} ({confirmRate}%)
+            {stats.total > 0 && (
+              <div className="mt-2 flex gap-2 flex-wrap">
+                {/* 등급별 */}
+                {TIER_OPTIONS.filter((t) => stats.byTier[t] > 0).map((t) => (
+                  <span
+                    key={t}
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${TIER_COLORS[t]}`}
+                  >
+                    {TIER_LABELS[t]} {stats.byTier[t]}
                   </span>
-                </div>
-                <Progress value={confirmRate} className="h-1.5" />
-                <div className="flex gap-2 flex-wrap">
-                  {(Object.entries(stats.categoryBreakdown) as [VipGuestCategory, number][])
-                    .filter(([, count]) => count > 0)
-                    .map(([cat, count]) => (
-                      <span
-                        key={cat}
-                        className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${CATEGORY_COLORS[cat]}`}
-                      >
-                        {CATEGORY_LABELS[cat]} {count}
-                      </span>
-                    ))}
-                </div>
+                ))}
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full border font-medium bg-green-100 text-green-700 border-green-300">
+                  참석 확정 {stats.confirmedCount}
+                </span>
+                {stats.seatedCount > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full border font-medium bg-indigo-100 text-indigo-700 border-indigo-300">
+                    좌석 배정 {stats.seatedCount}
+                  </span>
+                )}
               </div>
             )}
           </CardHeader>
 
           <CollapsibleContent>
             <CardContent className="pt-0">
-              {/* 상태 필터 */}
-              <div className="flex gap-1 flex-wrap mb-3">
-                {STATUS_FILTER_OPTIONS.map((opt) => (
+              {/* 필터 */}
+              <div className="space-y-1.5 mb-3">
+                {/* 등급 필터 */}
+                <div className="flex gap-1 flex-wrap">
                   <button
-                    key={opt.value}
-                    onClick={() => setStatusFilter(opt.value)}
+                    onClick={() => setTierFilter("all")}
                     className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
-                      statusFilter === opt.value
+                      tierFilter === "all"
                         ? "bg-foreground text-background border-foreground"
                         : "bg-background text-muted-foreground border-border hover:border-foreground/50"
                     }`}
                   >
-                    {opt.label}
+                    전체 등급
                   </button>
-                ))}
+                  {TIER_OPTIONS.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTierFilter(t)}
+                      className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                        tierFilter === t
+                          ? "bg-foreground text-background border-foreground"
+                          : "bg-background text-muted-foreground border-border hover:border-foreground/50"
+                      }`}
+                    >
+                      {TIER_LABELS[t]}
+                    </button>
+                  ))}
+                </div>
+                {/* 상태 필터 */}
+                <div className="flex gap-1 flex-wrap">
+                  <button
+                    onClick={() => setStatusFilter("all")}
+                    className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                      statusFilter === "all"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-background text-muted-foreground border-border hover:border-foreground/50"
+                    }`}
+                  >
+                    전체 상태
+                  </button>
+                  {STATUS_OPTIONS.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStatusFilter(s)}
+                      className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                        statusFilter === s
+                          ? "bg-foreground text-background border-foreground"
+                          : "bg-background text-muted-foreground border-border hover:border-foreground/50"
+                      }`}
+                    >
+                      {STATUS_LABELS[s]}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* 게스트 목록 */}
@@ -335,20 +394,20 @@ export function VipGuestCard({
                 </p>
               ) : filtered.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-4">
-                  {statusFilter === "all"
+                  {entries.length === 0
                     ? "등록된 VIP 게스트가 없습니다."
-                    : `${STATUS_LABELS[statusFilter as VipGuestStatus]} 상태의 게스트가 없습니다.`}
+                    : "필터 조건에 맞는 게스트가 없습니다."}
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {filtered.map((guest) => (
+                  {filtered.map((entry) => (
                     <GuestRow
-                      key={guest.id}
-                      guest={guest}
-                      onEdit={() => openEdit(guest)}
-                      onDelete={() => handleDelete(guest)}
+                      key={entry.id}
+                      entry={entry}
+                      onEdit={() => openEdit(entry)}
+                      onDelete={() => setDeleteTarget(entry)}
                       onStatusChange={(status) =>
-                        handleStatusChange(guest.id, status)
+                        handleStatusChange(entry.id, status)
                       }
                     />
                   ))}
@@ -369,6 +428,30 @@ export function VipGuestCard({
         saving={saving}
         isEdit={!!editTarget}
       />
+
+      {/* 삭제 확인 */}
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm">게스트 삭제</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
+              {deleteTarget?.name} 게스트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
+            <AlertDialogAction
+              className="h-7 text-xs bg-destructive hover:bg-destructive/90"
+              onClick={handleDeleteConfirm}
+            >
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
@@ -378,12 +461,12 @@ export function VipGuestCard({
 // ============================================================
 
 function GuestRow({
-  guest,
+  entry,
   onEdit,
   onDelete,
   onStatusChange,
 }: {
-  guest: VipGuestEntry;
+  entry: VipGuestEntry;
   onEdit: () => void;
   onDelete: () => void;
   onStatusChange: (status: VipGuestStatus) => void;
@@ -398,36 +481,46 @@ function GuestRow({
       {/* 정보 */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-xs font-semibold truncate">{guest.name}</span>
-          {guest.plusOne && (
-            <span className="text-[10px] px-1 py-0 rounded bg-violet-100 text-violet-700 border border-violet-200 font-medium">
-              +1
-            </span>
+          <span className="text-xs font-semibold truncate">{entry.name}</span>
+          {entry.title && (
+            <span className="text-[10px] text-muted-foreground">{entry.title}</span>
           )}
           <span
-            className={`text-[10px] px-1.5 py-0 rounded-full border font-medium ${CATEGORY_COLORS[guest.category]}`}
+            className={`text-[10px] px-1.5 py-0 rounded-full border font-medium ${TIER_COLORS[entry.tier]}`}
           >
-            {CATEGORY_LABELS[guest.category]}
+            {TIER_LABELS[entry.tier]}
           </span>
         </div>
 
-        {guest.organization && (
+        {entry.organization && (
           <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
-            {guest.organization}
+            {entry.organization}
           </p>
         )}
 
         <div className="flex items-center gap-2 mt-1 flex-wrap">
-          {guest.seatAssignment && (
+          {(entry.seatZone || entry.seatNumber) && (
             <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
               <MapPin className="h-2.5 w-2.5" />
-              {guest.seatAssignment}
+              {[entry.seatZone, entry.seatNumber].filter(Boolean).join(" - ")}
             </span>
           )}
-          {guest.email && (
+          {entry.email && (
             <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
               <Mail className="h-2.5 w-2.5" />
-              <span className="truncate max-w-[120px]">{guest.email}</span>
+              <span className="truncate max-w-[120px]">{entry.email}</span>
+            </span>
+          )}
+          {entry.phone && (
+            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+              <Phone className="h-2.5 w-2.5" />
+              {entry.phone}
+            </span>
+          )}
+          {entry.specialRequest && (
+            <span className="flex items-center gap-0.5 text-[10px] text-amber-600">
+              <StickyNote className="h-2.5 w-2.5" />
+              특별 요청
             </span>
           )}
         </div>
@@ -438,13 +531,13 @@ function GuestRow({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[guest.status]}`}
+              className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition-opacity ${STATUS_COLORS[entry.status]}`}
             >
-              {STATUS_LABELS[guest.status]}
+              {STATUS_LABELS[entry.status]}
               <ChevronRight className="h-2.5 w-2.5" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-28">
+          <DropdownMenuContent align="end" className="w-32">
             {STATUS_OPTIONS.map((s) => (
               <DropdownMenuItem
                 key={s}
@@ -452,13 +545,7 @@ function GuestRow({
                 onClick={() => onStatusChange(s)}
               >
                 <span
-                  className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${
-                    s === "confirmed" || s === "attended"
-                      ? "bg-green-500"
-                      : s === "declined" || s === "no_show"
-                      ? "bg-red-400"
-                      : "bg-blue-400"
-                  }`}
+                  className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${STATUS_DOT_COLORS[s]}`}
                 />
                 {STATUS_LABELS[s]}
               </DropdownMenuItem>
@@ -517,7 +604,7 @@ function GuestDialog({
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
-            <Crown className="h-4 w-4 text-yellow-500" />
+            <Crown className="h-4 w-4 text-amber-500" />
             {isEdit ? "VIP 게스트 수정" : "VIP 게스트 추가"}
           </DialogTitle>
         </DialogHeader>
@@ -536,28 +623,53 @@ function GuestDialog({
             />
           </div>
 
-          {/* 카테고리 + 상태 */}
+          {/* 직함 + 소속 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <Label className="text-xs">카테고리</Label>
+              <Label className="text-xs">직함</Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="예: 대표, 감독"
+                value={form.title}
+                onChange={(e) => set("title", e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">소속</Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="회사명, 기관명"
+                value={form.organization}
+                onChange={(e) => set("organization", e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* 등급 + 상태 */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs">등급</Label>
               <Select
-                value={form.category}
-                onValueChange={(v) => set("category", v as VipGuestCategory)}
+                value={form.tier}
+                onValueChange={(v) => set("tier", v as VipGuestTier)}
               >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORY_OPTIONS.map((c) => (
-                    <SelectItem key={c} value={c} className="text-xs">
-                      {CATEGORY_LABELS[c]}
+                  {TIER_OPTIONS.map((t) => (
+                    <SelectItem key={t} value={t} className="text-xs">
+                      <span className="flex items-center gap-1.5">
+                        <span className={`inline-block w-1.5 h-1.5 rounded-full ${TIER_DOT_COLORS[t]}`} />
+                        {TIER_LABELS[t]}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">상태</Label>
+              <Label className="text-xs">초대 상태</Label>
               <Select
                 value={form.status}
                 onValueChange={(v) => set("status", v as VipGuestStatus)}
@@ -568,7 +680,10 @@ function GuestDialog({
                 <SelectContent>
                   {STATUS_OPTIONS.map((s) => (
                     <SelectItem key={s} value={s} className="text-xs">
-                      {STATUS_LABELS[s]}
+                      <span className="flex items-center gap-1.5">
+                        <span className={`inline-block w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[s]}`} />
+                        {STATUS_LABELS[s]}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -576,104 +691,67 @@ function GuestDialog({
             </div>
           </div>
 
-          {/* 소속 */}
-          <div className="space-y-1">
-            <Label className="text-xs">소속/기관</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="회사명, 기관명 등"
-              value={form.organization}
-              onChange={(e) => set("organization", e.target.value)}
-            />
-          </div>
-
-          {/* 이메일 + 전화 */}
+          {/* 연락처 */}
           <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs flex items-center gap-1">
+                <Phone className="h-3 w-3" /> 연락처
+              </Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="010-0000-0000"
+                value={form.phone}
+                onChange={(e) => set("phone", e.target.value)}
+              />
+            </div>
             <div className="space-y-1">
               <Label className="text-xs flex items-center gap-1">
                 <Mail className="h-3 w-3" /> 이메일
               </Label>
               <Input
                 className="h-8 text-xs"
-                placeholder="이메일"
+                placeholder="이메일 주소"
                 type="email"
                 value={form.email}
                 onChange={(e) => set("email", e.target.value)}
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs flex items-center gap-1">
-                <Phone className="h-3 w-3" /> 전화번호
-              </Label>
-              <Input
-                className="h-8 text-xs"
-                placeholder="전화번호"
-                value={form.phone}
-                onChange={(e) => set("phone", e.target.value)}
-              />
-            </div>
           </div>
 
-          {/* 좌석 + 초대자 */}
+          {/* 좌석 배정 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-xs flex items-center gap-1">
-                <MapPin className="h-3 w-3" /> 좌석
+                <MapPin className="h-3 w-3" /> 좌석 구역
               </Label>
               <Input
                 className="h-8 text-xs"
-                placeholder="예: A-01, VIP석"
-                value={form.seatAssignment}
-                onChange={(e) => set("seatAssignment", e.target.value)}
+                placeholder="예: VIP존, A구역"
+                value={form.seatZone}
+                onChange={(e) => set("seatZone", e.target.value)}
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs flex items-center gap-1">
-                <Users className="h-3 w-3" /> 초대자{" "}
-                <span className="text-destructive">*</span>
-              </Label>
+              <Label className="text-xs">좌석 번호</Label>
               <Input
                 className="h-8 text-xs"
-                placeholder="초대한 멤버"
-                value={form.invitedBy}
-                onChange={(e) => set("invitedBy", e.target.value)}
+                placeholder="예: A-01, 3번"
+                value={form.seatNumber}
+                onChange={(e) => set("seatNumber", e.target.value)}
               />
             </div>
           </div>
 
-          {/* +1 동반인 */}
-          <div className="flex items-center justify-between rounded-md border p-2">
-            <div>
-              <p className="text-xs font-medium">동반인 (+1)</p>
-              <p className="text-[10px] text-muted-foreground">
-                1명 추가 동반 여부
-              </p>
-            </div>
-            <Switch
-              checked={form.plusOne}
-              onCheckedChange={(v) => set("plusOne", v)}
-            />
-          </div>
-
-          {/* 특별 요구사항 */}
+          {/* 특별 요청 사항 */}
           <div className="space-y-1">
-            <Label className="text-xs">특별 요구사항</Label>
+            <Label className="text-xs flex items-center gap-1">
+              <StickyNote className="h-3 w-3" /> 특별 요청 사항
+            </Label>
             <Textarea
-              className="text-xs min-h-[60px] resize-none"
-              placeholder="식이 제한, 접근성 필요 등"
-              value={form.specialRequirements}
-              onChange={(e) => set("specialRequirements", e.target.value)}
-            />
-          </div>
-
-          {/* 메모 */}
-          <div className="space-y-1">
-            <Label className="text-xs">메모</Label>
-            <Textarea
-              className="text-xs min-h-[60px] resize-none"
-              placeholder="기타 메모"
-              value={form.notes}
-              onChange={(e) => set("notes", e.target.value)}
+              className="text-xs min-h-[64px] resize-none"
+              placeholder="식이 제한, 접근성 요청, 기타 메모 등"
+              value={form.specialRequest}
+              onChange={(e) => set("specialRequest", e.target.value)}
             />
           </div>
         </div>

@@ -1352,4 +1352,16 @@ export const swrKeys = {
   // 공연 사후 분석 보고서 (localStorage 기반)
   postShowReport: (groupId: string, projectId: string) =>
     `post-show-report-${groupId}-${projectId}` as const,
+
+  // 그룹 멤버 출석 통계 대시보드 (localStorage 기반)
+  memberAttendanceStatsDashboard: (groupId: string) =>
+    `member-attendance-stats-dashboard-${groupId}` as const,
+
+  // 소셜 미디어 포스트 플래너 (localStorage 기반)
+  socialPostPlanner: (groupId: string, projectId: string) =>
+    `social-post-planner-${groupId}-${projectId}` as const,
+
+  // 댄스 부상 기록 (localStorage 기반)
+  danceInjuryLog: (memberId: string) =>
+    `dance-injury-log-${memberId}` as const,
 };
