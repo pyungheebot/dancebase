@@ -6191,19 +6191,35 @@ export type ContributionSummary = {
 // Practice Notes (연습 노트 공유)
 // ============================================
 
-export type PracticeNoteTag = "tip" | "correction" | "idea" | "reminder" | "question";
+export type PracticeNoteTag =
+  | "improvement"
+  | "issue"
+  | "achievement"
+  | "reminder"
+  | "technique"
+  | "general";
 
-export type SharedPracticeNote = {
+export type PracticeNoteComment = {
   id: string;
-  authorName: string;
+  author: string;
   content: string;
-  tags: PracticeNoteTag[];
-  sessionDate: string;
-  songTitle: string;
-  likes: number;
-  pinned: boolean;
   createdAt: string;
 };
+
+export type PracticeNoteEntry = {
+  id: string;
+  date: string;
+  title: string;
+  content: string;
+  author: string;
+  tags: PracticeNoteTag[];
+  comments: PracticeNoteComment[];
+  isPinned: boolean;
+  createdAt: string;
+};
+
+// 하위 호환 유지 (기존 컴포넌트에서 참조 가능)
+export type SharedPracticeNote = PracticeNoteEntry;
 
 // ============================================
 // Attendance Heatmap (출석 히트맵)
@@ -8787,6 +8803,112 @@ export type TechRequirementItem = {
   supplier?: string;
   estimatedCost?: number;
   assignedTo?: string;
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 그룹 공연 히스토리
+// ============================================================
+
+export type PerformanceHistoryType =
+  | "concert"
+  | "competition"
+  | "festival"
+  | "showcase"
+  | "flash_mob"
+  | "other";
+
+export type PerformanceHistoryRecord = {
+  id: string;
+  title: string;
+  type: PerformanceHistoryType;
+  date: string;
+  venue: string;
+  audienceCount?: number;
+  performers: string[];
+  setlist: string[];
+  awards?: string[];
+  rating?: number;
+  highlights?: string;
+  lessonsLearned?: string;
+  createdAt: string;
+};
+
+// ============================================
+// 멤버 체중/체형 추적
+// ============================================
+
+export type BodyTrackerEntry = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  weight?: number; // kg
+  bodyFat?: number; // %
+  muscleMass?: number; // kg
+  height?: number; // cm
+  waist?: number; // cm
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 무대 평면도
+// ============================================================
+
+export type StageLayoutItemType =
+  | "speaker"
+  | "light"
+  | "prop"
+  | "screen"
+  | "mic"
+  | "camera"
+  | "table"
+  | "chair"
+  | "other";
+
+export type StageLayoutItem = {
+  id: string;
+  type: StageLayoutItemType;
+  label: string;
+  x: number; // 0-100 (%)
+  y: number; // 0-100 (%)
+  width?: number; // 상대 너비 (기본 8)
+  height?: number; // 상대 높이 (기본 8)
+  rotation?: number; // 도(degree)
+  notes?: string;
+};
+
+export type StageLayoutPlan = {
+  id: string;
+  projectId: string;
+  planName: string;
+  items: StageLayoutItem[];
+  stageWidth?: number; // 단위: m
+  stageDepth?: number; // 단위: m
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 커튼콜 계획
+// ============================================================
+
+export type CurtainCallStep = {
+  id: string;
+  order: number;
+  description: string;
+  performers: string[];
+  position?: string;
+  durationSeconds?: number;
+  bowType?: "individual" | "group" | "lead" | "all";
+};
+
+export type CurtainCallPlan = {
+  id: string;
+  projectId: string;
+  planName: string;
+  steps: CurtainCallStep[];
+  musicTrack?: string;
+  totalDuration?: number;
   notes?: string;
   createdAt: string;
 };

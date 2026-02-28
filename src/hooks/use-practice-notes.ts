@@ -2,24 +2,24 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
-import type { SharedPracticeNote, PracticeNoteTag } from "@/types";
+import type { PracticeNoteEntry, PracticeNoteTag, PracticeNoteComment } from "@/types";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 
 const LS_KEY = (groupId: string) => `dancebase:practice-notes:${groupId}`;
 
-function loadNotes(groupId: string): SharedPracticeNote[] {
+function loadNotes(groupId: string): PracticeNoteEntry[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(LS_KEY(groupId));
     if (!raw) return [];
-    return JSON.parse(raw) as SharedPracticeNote[];
+    return JSON.parse(raw) as PracticeNoteEntry[];
   } catch {
     return [];
   }
 }
 
-function saveNotes(groupId: string, notes: SharedPracticeNote[]): void {
+function saveNotes(groupId: string, notes: PracticeNoteEntry[]): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(LS_KEY(groupId), JSON.stringify(notes));
@@ -37,11 +37,11 @@ export function usePracticeNotes(groupId: string) {
     { revalidateOnFocus: false }
   );
 
-  const notes: SharedPracticeNote[] = data ?? [];
+  const notes: PracticeNoteEntry[] = data ?? [];
 
   // ── 내부 업데이트 헬퍼 ───────────────────────────────────
 
-  function update(next: SharedPracticeNote[]): void {
+  function update(next: PracticeNoteEntry[]): void {
     saveNotes(groupId, next);
     mutate(next, false);
   }
@@ -49,26 +49,34 @@ export function usePracticeNotes(groupId: string) {
   // ── 노트 추가 ────────────────────────────────────────────
 
   function addNote(
-    authorName: string,
-    content: string,
-    tags: PracticeNoteTag[],
-    sessionDate: string,
-    songTitle: string
+    input: Omit<PracticeNoteEntry, "id" | "comments" | "isPinned" | "createdAt">
   ): boolean {
-    if (!authorName.trim() || !content.trim()) return false;
+    if (!input.author.trim() || !input.title.trim() || !input.content.trim()) return false;
     const stored = loadNotes(groupId);
-    const newNote: SharedPracticeNote = {
+    const newNote: PracticeNoteEntry = {
+      ...input,
       id: crypto.randomUUID(),
-      authorName: authorName.trim(),
-      content: content.trim(),
-      tags,
-      sessionDate,
-      songTitle: songTitle.trim(),
-      likes: 0,
-      pinned: false,
+      comments: [],
+      isPinned: false,
       createdAt: new Date().toISOString(),
     };
     update([newNote, ...stored]);
+    return true;
+  }
+
+  // ── 노트 수정 ────────────────────────────────────────────
+
+  function updateNote(
+    noteId: string,
+    changes: Partial<Pick<PracticeNoteEntry, "title" | "content" | "tags" | "date">>
+  ): boolean {
+    const stored = loadNotes(groupId);
+    const idx = stored.findIndex((n) => n.id === noteId);
+    if (idx === -1) return false;
+    const next = stored.map((n) =>
+      n.id === noteId ? { ...n, ...changes } : n
+    );
+    update(next);
     return true;
   }
 
@@ -82,19 +90,6 @@ export function usePracticeNotes(groupId: string) {
     return true;
   }
 
-  // ── 좋아요 (+1) ──────────────────────────────────────────
-
-  function likeNote(noteId: string): boolean {
-    const stored = loadNotes(groupId);
-    const idx = stored.findIndex((n) => n.id === noteId);
-    if (idx === -1) return false;
-    const next = stored.map((n) =>
-      n.id === noteId ? { ...n, likes: n.likes + 1 } : n
-    );
-    update(next);
-    return true;
-  }
-
   // ── 핀 토글 ──────────────────────────────────────────────
 
   function togglePin(noteId: string): boolean {
@@ -102,7 +97,43 @@ export function usePracticeNotes(groupId: string) {
     const idx = stored.findIndex((n) => n.id === noteId);
     if (idx === -1) return false;
     const next = stored.map((n) =>
-      n.id === noteId ? { ...n, pinned: !n.pinned } : n
+      n.id === noteId ? { ...n, isPinned: !n.isPinned } : n
+    );
+    update(next);
+    return true;
+  }
+
+  // ── 코멘트 추가 ──────────────────────────────────────────
+
+  function addComment(noteId: string, author: string, content: string): boolean {
+    if (!author.trim() || !content.trim()) return false;
+    const stored = loadNotes(groupId);
+    const idx = stored.findIndex((n) => n.id === noteId);
+    if (idx === -1) return false;
+    const newComment: PracticeNoteComment = {
+      id: crypto.randomUUID(),
+      author: author.trim(),
+      content: content.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    const next = stored.map((n) =>
+      n.id === noteId ? { ...n, comments: [...n.comments, newComment] } : n
+    );
+    update(next);
+    return true;
+  }
+
+  // ── 코멘트 삭제 ──────────────────────────────────────────
+
+  function deleteComment(noteId: string, commentId: string): boolean {
+    const stored = loadNotes(groupId);
+    const idx = stored.findIndex((n) => n.id === noteId);
+    if (idx === -1) return false;
+    const note = stored[idx];
+    const filteredComments = note.comments.filter((c) => c.id !== commentId);
+    if (filteredComments.length === note.comments.length) return false;
+    const next = stored.map((n) =>
+      n.id === noteId ? { ...n, comments: filteredComments } : n
     );
     update(next);
     return true;
@@ -110,68 +141,39 @@ export function usePracticeNotes(groupId: string) {
 
   // ── 태그 필터 ────────────────────────────────────────────
 
-  function filterByTag(tag: PracticeNoteTag | "all"): SharedPracticeNote[] {
-    if (tag === "all") return notes;
+  function getByTag(tag: PracticeNoteTag): PracticeNoteEntry[] {
     return notes.filter((n) => n.tags.includes(tag));
   }
 
-  // ── 곡명 필터 ────────────────────────────────────────────
+  // ── 고정 노트 ────────────────────────────────────────────
 
-  function filterBySong(songTitle: string): SharedPracticeNote[] {
-    if (!songTitle) return notes;
-    return notes.filter((n) => n.songTitle === songTitle);
-  }
-
-  // ── 내용 검색 ────────────────────────────────────────────
-
-  function searchNotes(query: string): SharedPracticeNote[] {
-    if (!query.trim()) return notes;
-    const q = query.trim().toLowerCase();
-    return notes.filter(
-      (n) =>
-        n.content.toLowerCase().includes(q) ||
-        n.authorName.toLowerCase().includes(q) ||
-        n.songTitle.toLowerCase().includes(q)
-    );
+  function getPinned(): PracticeNoteEntry[] {
+    return notes.filter((n) => n.isPinned);
   }
 
   // ── 통계 ─────────────────────────────────────────────────
 
   const totalNotes = notes.length;
+  const pinnedNotes = notes.filter((n) => n.isPinned).length;
+  const totalComments = notes.reduce((sum, n) => sum + n.comments.length, 0);
 
-  const pinnedCount = notes.filter((n) => n.pinned).length;
-
-  const topContributor = (() => {
-    if (notes.length === 0) return null;
-    const countMap: Record<string, number> = {};
-    for (const n of notes) {
-      countMap[n.authorName] = (countMap[n.authorName] ?? 0) + 1;
-    }
-    return Object.entries(countMap).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-  })();
-
-  // ── 고유 곡명 목록 ───────────────────────────────────────
-
-  const uniqueSongs = Array.from(
-    new Set(notes.map((n) => n.songTitle).filter(Boolean))
-  );
+  const stats = { totalNotes, pinnedNotes, totalComments };
 
   return {
     notes,
     // CRUD
     addNote,
+    updateNote,
     deleteNote,
-    likeNote,
     togglePin,
-    // 필터/검색
-    filterByTag,
-    filterBySong,
-    searchNotes,
+    // 코멘트
+    addComment,
+    deleteComment,
+    // 필터
+    getByTag,
+    getPinned,
     // 통계
-    totalNotes,
-    pinnedCount,
-    topContributor,
-    uniqueSongs,
+    stats,
     // SWR
     refetch: () => mutate(),
   };

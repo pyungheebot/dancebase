@@ -671,3 +671,7 @@ export function invalidateEquipmentRental(groupId: string) {
 export function invalidatePosterManagement(groupId: string, projectId: string) {
   mutate(swrKeys.posterManagement(groupId, projectId));
 }
+
+export function invalidateStageLayout(groupId: string, projectId: string) {
+  mutate(swrKeys.stageLayout(groupId, projectId));
+}

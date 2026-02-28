@@ -1144,4 +1144,19 @@ export const swrKeys = {
   // 공연 기술 요구사항 (localStorage 기반)
   techRequirements: (groupId: string, projectId: string) =>
     `tech-requirements-${groupId}-${projectId}` as const,
+
+  // 그룹 공연 히스토리 (localStorage 기반)
+  performanceHistory: (groupId: string) =>
+    `performance-history-${groupId}` as const,
+
+  // 멤버 체중/체형 추적 (localStorage 기반)
+  bodyTracker: (memberId: string) => `body-tracker-${memberId}` as const,
+
+  // 공연 무대 평면도 (localStorage 기반)
+  stageLayout: (groupId: string, projectId: string) =>
+    `stage-layout-${groupId}-${projectId}` as const,
+
+  // 공연 커튼콜 계획 (localStorage 기반)
+  curtainCall: (groupId: string, projectId: string) =>
+    `curtain-call-${groupId}-${projectId}` as const,
 };
