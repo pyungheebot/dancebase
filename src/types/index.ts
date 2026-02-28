@@ -15105,3 +15105,206 @@ export type AnonFeedbackData = {
   feedbacks: AnonFeedbackItem[];
   updatedAt: string;
 };
+
+// ─────────────────────────────────────────────
+// GroupSkillShareCard 타입 (localStorage 기반)
+// ─────────────────────────────────────────────
+
+/** 스킬 카테고리 */
+export type SkillShareCategory = "동작" | "리듬" | "표현" | "체력" | "기타";
+
+/** 스킬 난이도 */
+export type SkillShareDifficulty = "초급" | "중급" | "고급";
+
+/** 학습 요청 상태 */
+export type SkillShareRequestStatus = "요청" | "수락" | "완료";
+
+/** 스킬 항목 */
+export type SkillShareItem = {
+  id: string;
+  skillName: string;
+  category: SkillShareCategory;
+  difficulty: SkillShareDifficulty;
+  providerName: string;
+  description: string;
+  createdAt: string;
+};
+
+/** 학습 요청 항목 */
+export type SkillShareRequest = {
+  id: string;
+  skillId: string;
+  requesterName: string;
+  status: SkillShareRequestStatus;
+  createdAt: string;
+};
+
+/** GroupSkillShareCard 전체 데이터 (localStorage 기반) */
+export type SkillShareData = {
+  groupId: string;
+  skills: SkillShareItem[];
+  requests: SkillShareRequest[];
+  updatedAt: string;
+};
+
+// ─────────────────────────────────────────────
+// DanceMoodBoardCard 타입 (localStorage 기반)
+// ─────────────────────────────────────────────
+
+/** 무드보드 카테고리 */
+export type MoodBoardCategory =
+  | "안무영감"
+  | "의상"
+  | "무대연출"
+  | "음악"
+  | "감정표현"
+  | "기타";
+
+/** 무드보드 개별 항목 */
+export type MoodBoardItem = {
+  id: string;
+  /** 제목 */
+  title: string;
+  /** 메모 */
+  memo: string;
+  /** 카테고리 */
+  category: MoodBoardCategory;
+  /** 색상 코드 (hex) */
+  color: string;
+  /** 태그 목록 */
+  tags: string[];
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** DanceMoodBoardCard 전체 데이터 (localStorage 기반) */
+export type MoodBoardData = {
+  memberId: string;
+  items: MoodBoardItem[];
+  updatedAt: string;
+};
+
+// ============================================================
+// TicketSalesCard 타입 (localStorage 기반)
+// ============================================================
+
+/** 티켓 좌석 등급 */
+export type TicketSalesTier = {
+  id: string;
+  /** 등급명 (예: VIP, R석, S석, A석, 스탠딩) */
+  name: string;
+  /** 좌석 단가 (원) */
+  price: number;
+  /** 총 수량 */
+  totalQty: number;
+};
+
+/** 티켓 판매 기록 */
+export type TicketSalesRecord = {
+  id: string;
+  /** 구매자명 */
+  buyerName: string;
+  /** 등급 ID (TicketSalesTier.id 참조) */
+  tierId: string;
+  /** 구매 수량 */
+  qty: number;
+  /** 구매 날짜 (YYYY-MM-DD) */
+  date: string;
+};
+
+/** TicketSalesCard 전체 데이터 (localStorage 기반) */
+export type TicketSalesData = {
+  projectId: string;
+  /** 좌석 등급 목록 */
+  tiers: TicketSalesTier[];
+  /** 판매 기록 목록 */
+  records: TicketSalesRecord[];
+  updatedAt: string;
+};
+
+// ─────────────────────────────────────────────
+// StageAccessCard 타입 (localStorage 기반)
+// ─────────────────────────────────────────────
+
+/** 출입 패스 역할 */
+export type StageAccessRole =
+  | "출연진"
+  | "스태프"
+  | "VIP"
+  | "미디어"
+  | "기타";
+
+/** 출입 가능 구역 */
+export type StageAccessZone =
+  | "무대"
+  | "백스테이지"
+  | "관객석"
+  | "모든구역";
+
+/** 출입 패스 상태 */
+export type StageAccessStatus = "활성" | "비활성" | "분실";
+
+/** 출입 패스 항목 */
+export type StageAccessPass = {
+  id: string;
+  name: string;
+  role: StageAccessRole;
+  zone: StageAccessZone;
+  passNumber: string;
+  issuedAt: string;
+  expiresAt: string;
+  status: StageAccessStatus;
+  createdAt: string;
+};
+
+/** StageAccessCard 전체 데이터 (localStorage 기반) */
+export type StageAccessData = {
+  projectId: string;
+  passes: StageAccessPass[];
+  updatedAt: string;
+};
+
+// ─────────────────────────────────────────────
+// GroupPenaltyCard 타입 (localStorage 기반)
+// ─────────────────────────────────────────────
+
+/** 위반 사항 유형 */
+export type GroupPenaltyViolationType =
+  | "지각"
+  | "무단결석"
+  | "핸드폰사용"
+  | "비협조"
+  | "기타";
+
+/** 벌칙 규칙 */
+export type GroupPenaltyRule = {
+  id: string;
+  violationType: GroupPenaltyViolationType;
+  description: string;
+  penaltyContent: string;
+  demerits: number;
+  createdAt: string;
+};
+
+/** 벌칙 기록 */
+export type GroupPenaltyRecord = {
+  id: string;
+  memberName: string;
+  violationType: GroupPenaltyViolationType;
+  date: string;
+  demerits: number;
+  memo: string;
+  createdAt: string;
+};
+
+/** GroupPenaltyCard 전체 데이터 (localStorage 기반) */
+export type GroupPenaltyData = {
+  groupId: string;
+  rules: GroupPenaltyRule[];
+  records: GroupPenaltyRecord[];
+  monthlyResetEnabled: boolean;
+  lastResetAt: string | null;
+  updatedAt: string;
+};

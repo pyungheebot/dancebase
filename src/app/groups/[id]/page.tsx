@@ -56,6 +56,8 @@ import { GroupNoticeboardCard } from "@/components/groups/group-noticeboard-card
 import { GroupVotingCard } from "@/components/groups/group-voting-card";
 import { GroupCarPoolCard } from "@/components/groups/group-carpool-card";
 import { GroupFeedbackBoxCard } from "@/components/groups/group-feedback-box-card";
+import { GroupSkillShareCard } from "@/components/groups/group-skill-share-card";
+import { GroupPenaltyCard } from "@/components/groups/group-penalty-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -267,6 +269,10 @@ export default function GroupDetailPage({
           <GroupCarPoolCard groupId={ctx.groupId} />
 
           <GroupFeedbackBoxCard groupId={ctx.groupId} />
+
+          <GroupSkillShareCard groupId={ctx.groupId} />
+
+          <GroupPenaltyCard groupId={ctx.groupId} />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

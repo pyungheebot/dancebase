@@ -1602,4 +1602,19 @@ export const swrKeys = {
 
   // 카풀 매칭 (localStorage 기반)
   groupCarPool: (groupId: string) => `group-carpool-${groupId}` as const,
+
+  // 스킬 공유 (localStorage 기반)
+  groupSkillShare: (groupId: string) => `group-skill-share-${groupId}` as const,
+
+  // 댄스 무드보드 (localStorage 기반)
+  danceMoodBoard: (memberId: string) => `dance-mood-board-${memberId}` as const,
+
+  // 티켓 판매 현황 (localStorage 기반)
+  ticketSales: (projectId: string) => `ticket-sales-${projectId}` as const,
+
+  // 무대 출입 관리 (localStorage 기반)
+  stageAccess: (projectId: string) => `stage-access-${projectId}` as const,
+
+  // 벌칙/페널티 관리 (localStorage 기반)
+  groupPenalty: (groupId: string) => `group-penalty-${groupId}` as const,
 };

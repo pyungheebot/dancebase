@@ -937,3 +937,23 @@ export function invalidateGroupFeedbackBox(groupId: string) {
 export function invalidateGroupCarPool(groupId: string) {
   mutate(swrKeys.groupCarPool(groupId));
 }
+
+export function invalidateGroupSkillShare(groupId: string) {
+  mutate(swrKeys.groupSkillShare(groupId));
+}
+
+export function invalidateDanceMoodBoard(memberId: string) {
+  mutate(swrKeys.danceMoodBoard(memberId));
+}
+
+export function invalidateTicketSales(projectId: string) {
+  mutate(swrKeys.ticketSales(projectId));
+}
+
+export function invalidateStageAccess(projectId: string) {
+  mutate(swrKeys.stageAccess(projectId));
+}
+
+export function invalidateGroupPenalty(groupId: string) {
+  mutate(swrKeys.groupPenalty(groupId));
+}

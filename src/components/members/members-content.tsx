@@ -82,6 +82,7 @@ import { DanceDiaryCard } from "@/components/members/dance-diary-card";
 import { DanceCertificationCard } from "@/components/members/dance-certification-card";
 import { DancePlaylistCard } from "@/components/members/dance-playlist-card";
 import { DanceFlexibilityCard } from "@/components/members/dance-flexibility-card";
+import { DanceMoodBoardCard } from "@/components/members/dance-mood-board-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -735,6 +736,7 @@ function GroupMembersContent({
       <DanceCertificationCard memberId={currentUserId} />
       <DancePlaylistCard memberId={currentUserId} />
       <DanceFlexibilityCard memberId={currentUserId} />
+      <DanceMoodBoardCard memberId={currentUserId} />
     </>
   );
 }

@@ -49,6 +49,8 @@ import { IntercomCard } from "@/components/projects/intercom-card";
 import { StageWeatherCard } from "@/components/projects/stage-weather-card";
 import { StageRundownCard } from "@/components/projects/stage-rundown-card";
 import { ArtistRiderCard } from "@/components/projects/artist-rider-card";
+import { TicketSalesCard } from "@/components/projects/ticket-sales-card";
+import { StageAccessCard } from "@/components/projects/stage-access-card";
 
 export default function ProjectDetailPage({
   params,
@@ -280,6 +282,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <ArtistRiderCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <TicketSalesCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <StageAccessCard
               projectId={ctx.projectId}
             />
           )}
