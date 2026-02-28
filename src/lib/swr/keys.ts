@@ -1336,4 +1336,20 @@ export const swrKeys = {
   // 공연 관객 설문조사 (localStorage 기반)
   audienceSurvey: (groupId: string, projectId: string) =>
     `audience-survey-${groupId}-${projectId}` as const,
+
+  // 댄스 네트워킹 연락처 (localStorage 기반)
+  danceNetworking: (memberId: string) =>
+    `dance-networking-${memberId}` as const,
+
+  // 공연 실시간 피드 (localStorage 기반)
+  liveShowFeed: (groupId: string, projectId: string) =>
+    `live-show-feed-${groupId}-${projectId}` as const,
+
+  // 멤버 감사 카드 (localStorage 기반)
+  appreciationCard: (groupId: string) =>
+    `appreciation-card-${groupId}` as const,
+
+  // 공연 사후 분석 보고서 (localStorage 기반)
+  postShowReport: (groupId: string, projectId: string) =>
+    `post-show-report-${groupId}-${projectId}` as const,
 };

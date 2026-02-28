@@ -15,6 +15,8 @@ import { LightingCueCard } from "@/components/projects/lighting-cue-card";
 import { CostumeChangeCard } from "@/components/projects/costume-change-card";
 import { PhotoCallCard } from "@/components/projects/photo-call-card";
 import { StageBlockingCard } from "@/components/projects/stage-blocking-card";
+import { PostShowReportCard } from "@/components/projects/post-show-report-card";
+import { LiveShowFeedCard } from "@/components/projects/live-show-feed-card";
 
 export default function ProjectDetailPage({
   params,
@@ -68,6 +70,18 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <StageBlockingCard
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <LiveShowFeedCard
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <PostShowReportCard
               groupId={ctx.groupId}
               projectId={ctx.projectId}
             />

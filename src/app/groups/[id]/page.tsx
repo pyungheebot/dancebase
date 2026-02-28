@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { LeaderInfo } from "@/components/ui/leader-info";
 import { GroupPollsCard } from "@/components/groups/group-polls-card";
 import { MeetingMinutesCard } from "@/components/groups/meeting-minutes-card";
+import { TimeCapsuleCard } from "@/components/groups/time-capsule-card";
+import { AppreciationCardCard } from "@/components/groups/appreciation-card-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -146,6 +148,13 @@ export default function GroupDetailPage({
           <PerformanceRecordSection
             groupId={ctx.groupId}
             canEdit={ctx.permissions.canEdit || ctx.permissions.canManageMembers}
+          />
+
+          <TimeCapsuleCard groupId={ctx.groupId} />
+
+          <AppreciationCardCard
+            groupId={ctx.groupId}
+            memberNames={ctx.members.map((m) => m.nickname || m.profile.name)}
           />
 
           <EntityNav ctx={ctx} />

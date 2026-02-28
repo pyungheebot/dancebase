@@ -11281,3 +11281,263 @@ export type AudienceSurveyData = {
   entries: AudienceSurveyEntry[];
   updatedAt: string;
 };
+
+// ============================================================
+// 댄스 네트워킹 연락처 (Dance Networking Contacts)
+// ============================================================
+
+/** 관계 유형 */
+export type DanceNetworkingRole =
+  | "dancer"
+  | "choreographer"
+  | "dj"
+  | "videographer"
+  | "photographer"
+  | "instructor"
+  | "event_organizer"
+  | "other";
+
+/** SNS 계정 정보 */
+export type DanceNetworkingSns = {
+  platform: "instagram" | "youtube" | "tiktok" | "twitter" | "facebook" | "other";
+  handle: string;
+};
+
+/** 댄스 네트워킹 연락처 항목 */
+export type DanceNetworkingEntry = {
+  id: string;
+  /** 이름 */
+  name: string;
+  /** 소속 (팀/스튜디오) */
+  affiliation?: string;
+  /** 전문 장르 (예: 팝핀, 락킹, 힙합 등) */
+  genres: string[];
+  /** 전화번호 */
+  phone?: string;
+  /** 이메일 */
+  email?: string;
+  /** SNS 계정 목록 */
+  snsAccounts: DanceNetworkingSns[];
+  /** 만남 장소 */
+  metAt?: string;
+  /** 만난 날짜 (YYYY-MM-DD) */
+  metDate?: string;
+  /** 관계 유형 */
+  role: DanceNetworkingRole;
+  /** 메모 */
+  notes?: string;
+  /** 즐겨찾기 여부 */
+  isFavorite: boolean;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type DanceNetworkingData = {
+  memberId: string;
+  entries: DanceNetworkingEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 실시간 피드 (Live Show Feed)
+// ============================================================
+
+/** 피드 유형 */
+export type LiveShowFeedType =
+  | "stage"       // 무대상황
+  | "backstage"   // 백스테이지
+  | "audience"    // 관객반응
+  | "technical"   // 기술이슈
+  | "other";      // 기타
+
+/** 피드 중요도 */
+export type LiveShowFeedPriority =
+  | "normal"    // 일반
+  | "important" // 중요
+  | "urgent";   // 긴급
+
+/** 피드 엔트리 */
+export type LiveShowFeedEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 시각 (ISO 8601) */
+  timestamp: string;
+  /** 메시지 */
+  message: string;
+  /** 작성자 이름 */
+  author: string;
+  /** 피드 유형 */
+  type: LiveShowFeedType;
+  /** 중요도 */
+  priority: LiveShowFeedPriority;
+  /** 이미지 URL (선택) */
+  imageUrl?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type LiveShowFeedData = {
+  groupId: string;
+  projectId: string;
+  entries: LiveShowFeedEntry[];
+  updatedAt: string;
+};
+
+// ============================================
+// 멤버 감사 카드 (Member Appreciation Cards)
+// ============================================
+
+/** 감사 카드 카테고리 */
+export type AppreciationCardCategory =
+  | "leadership"   // 리더십
+  | "effort"       // 노력
+  | "growth"       // 성장
+  | "help"         // 도움
+  | "fun"          // 재미
+  | "other";       // 기타
+
+/** 감사 카드 단일 항목 */
+export type AppreciationCardEntry = {
+  id: string;
+  /** 발신자 멤버 이름 */
+  fromMember: string;
+  /** 수신자 멤버 이름 */
+  toMember: string;
+  /** 카테고리 */
+  category: AppreciationCardCategory;
+  /** 메시지 내용 */
+  message: string;
+  /** 이모지 (선택) */
+  emoji?: string;
+  /** 공개 여부 */
+  isPublic: boolean;
+  /** 좋아요 한 멤버 이름 목록 */
+  likes: string[];
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type AppreciationCardData = {
+  groupId: string;
+  entries: AppreciationCardEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 사후 분석 보고서 (Post-Show Analysis Report)
+// ============================================================
+
+/** 섹션별 평가 항목 */
+export type PostShowReportSection =
+  | "choreography"
+  | "staging"
+  | "sound"
+  | "lighting"
+  | "costume"
+  | "audience_reaction";
+
+/** 섹션별 평가 데이터 */
+export type PostShowReportSectionScore = {
+  /** 섹션 키 */
+  section: PostShowReportSection;
+  /** 점수 (1~5) */
+  score: number;
+  /** 코멘트 */
+  comment: string;
+};
+
+/** 사후 분석 보고서 단일 엔트리 */
+export type PostShowReportEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 보고서 제목 */
+  title: string;
+  /** 공연 날짜 */
+  performanceDate: string;
+  /** 총평 */
+  overallReview: string;
+  /** 섹션별 평가 */
+  sectionScores: PostShowReportSectionScore[];
+  /** 잘된 점 목록 */
+  highlights: string[];
+  /** 개선할 점 목록 */
+  improvements: string[];
+  /** 다음 공연 제안 목록 */
+  nextSuggestions: string[];
+  /** 관객 수 */
+  audienceCount?: number;
+  /** 매출 (원) */
+  revenue?: number;
+  /** 작성자 */
+  author: string;
+  /** 비고 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type PostShowReportData = {
+  groupId: string;
+  projectId: string;
+  entries: PostShowReportEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 연습 타임캡슐 확장 (Practice Time Capsule Extension)
+// ============================================================
+
+/** 타임캡슐 멤버별 메시지 (TimeCapsuleMessage 확장) */
+export type TimeCapsuleMemberMessage = {
+  /** 고유 ID */
+  id: string;
+  /** 작성자 이름 */
+  authorName: string;
+  /** 메시지 내용 */
+  content: string;
+  /** 작성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 타임캡슐 엔트리 - 특정 시점의 그룹 상태 스냅샷 */
+export type TimeCapsuleEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 캡슐 제목 */
+  title: string;
+  /** 작성 날짜 (YYYY-MM-DD) */
+  writtenAt: string;
+  /** 개봉 예정일 (YYYY-MM-DD) */
+  openDate: string;
+  /** 멤버별 메시지 목록 */
+  messages: TimeCapsuleMemberMessage[];
+  /** 현재 그룹 목표 */
+  currentGoal?: string;
+  /** 현재 레퍼토리 목록 */
+  currentRepertoire: string[];
+  /** 그룹 사진 URL */
+  photoUrl?: string;
+  /** 봉인 여부 (봉인 후 메시지 추가 불가) */
+  isSealed: boolean;
+  /** 개봉 여부 */
+  isOpened: boolean;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type TimeCapsuleStore = {
+  groupId: string;
+  entries: TimeCapsuleEntry[];
+  updatedAt: string;
+};

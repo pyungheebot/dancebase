@@ -147,6 +147,10 @@ export function invalidateDashboardSettings(entityId: string, memberTable: strin
   mutate(swrKeys.dashboardSettings(entityId, memberTable));
 }
 
+export function invalidateDanceNetworking(memberId: string) {
+  mutate(swrKeys.danceNetworking(memberId));
+}
+
 export function invalidateEntranceGate(groupId: string, projectId: string) {
   mutate(swrKeys.entranceGate(groupId, projectId));
 }
@@ -755,4 +759,8 @@ export function invalidateSafetyChecklist(groupId: string, projectId: string) {
 
 export function invalidateAudienceSurvey(groupId: string, projectId: string) {
   mutate(swrKeys.audienceSurvey(groupId, projectId));
+}
+
+export function invalidateLiveShowFeed(groupId: string, projectId: string) {
+  mutate(swrKeys.liveShowFeed(groupId, projectId));
 }

@@ -66,6 +66,7 @@ import { SkillTreeCard } from "@/components/members/skill-tree-card";
 import { DanceWorkshopCard } from "@/components/members/dance-workshop-card";
 import { DanceAuditionCard } from "@/components/members/dance-audition-card";
 import { DanceClassLogCard } from "@/components/members/dance-class-log-card";
+import { DanceNetworkingCard } from "@/components/members/dance-networking-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -693,6 +694,9 @@ function GroupMembersContent({
 
       {/* 댄스 수업 수강 기록 (그룹 내부/외부 수업 이력 관리) */}
       <DanceClassLogCard memberId={currentUserId} />
+
+      {/* 댄스 네트워킹 연락처 (댄스 업계 인맥 관리) */}
+      <DanceNetworkingCard memberId={currentUserId} />
     </>
   );
 }
