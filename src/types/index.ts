@@ -8404,13 +8404,15 @@ export type PosterProject = {
 
 // ─── 공연 음향 큐시트 ─────────────────────────────────────────
 
+/** 음향 큐 유형: BGM, 효과음, 나레이션, 라이브, 무음 */
 export type SoundCueType =
-  | "music"
+  | "bgm"
   | "sfx"
-  | "voiceover"
-  | "ambient"
+  | "narration"
+  | "live"
   | "silence";
 
+/** 음향 큐 액션 */
 export type SoundCueAction =
   | "play"
   | "stop"
@@ -8419,20 +8421,48 @@ export type SoundCueAction =
   | "crossfade"
   | "loop";
 
+/** 음향 큐 단일 항목 */
 export type SoundCueEntry = {
   id: string;
+  /** 큐 번호 (정렬 기준) */
   cueNumber: number;
+  /** 큐 이름 / 제목 */
   name: string;
+  /** 트랙명 */
+  trackName?: string;
+  /** 아티스트 */
+  artist?: string;
+  /** 유형 */
   type: SoundCueType;
+  /** 액션 */
   action: SoundCueAction;
-  triggerTime?: string;
-  duration?: string;
+  /** 시작 시간 (MM:SS) */
+  startTime?: string;
+  /** 종료 시간 (MM:SS) */
+  endTime?: string;
+  /** 볼륨 (0-100) */
   volume: number;
+  /** 페이드 인 시간 (초) */
+  fadeIn?: number;
+  /** 페이드 아웃 시간 (초) */
+  fadeOut?: number;
+  /** 연결된 장면/섹션 */
+  scene?: string;
+  /** 트리거 시각 (HH:MM:SS) */
+  triggerTime?: string;
+  /** 재생 길이 (예: "2:30") */
+  duration?: string;
+  /** 소스/파일명 */
   source?: string;
+  /** 메모 */
   notes?: string;
+  /** 활성화 여부 */
   isActive: boolean;
+  /** 체크 완료 여부 */
+  isChecked: boolean;
 };
 
+/** 음향 큐 시트 (그룹/세트 단위) */
 export type SoundCueSheet = {
   id: string;
   projectId: string;
@@ -8496,16 +8526,34 @@ export type InspirationMediaType = "video" | "image" | "article" | "quote" | "id
 
 export type InspirationTag = string;
 
+/** 댄스 영감 카테고리 */
+export type InspirationCategory =
+  | "choreography"
+  | "music"
+  | "fashion"
+  | "stage_design"
+  | "artwork"
+  | "other";
+
 export type InspirationBoardItem = {
   id: string;
   title: string;
   mediaType: InspirationMediaType;
+  /** 댄스 영감 카테고리 */
+  category: InspirationCategory;
   url?: string;
   content: string;
   tags: InspirationTag[];
   isFavorite: boolean;
   source?: string;
   createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type InspirationBoardData = {
+  memberId: string;
+  items: InspirationBoardItem[];
+  updatedAt: string;
 };
 
 // 공연 VIP 게스트 관리
@@ -8650,9 +8698,9 @@ export type MemberDanceStyleProfile = {
 };
 
 // ============================================================
-// 공연 무대 전환 계획
+// 공연 무대 전환 계획 (레거시 타입 - 내부 전용)
 
-export type StageTransitionTask = {
+type StageTransitionTaskLegacy = {
   id: string;
   description: string;
   assignee?: string;
@@ -8665,7 +8713,7 @@ export type StageTransitionEntry = {
   fromScene: string;
   toScene: string;
   transitionOrder: number;
-  tasks: StageTransitionTask[];
+  tasks: StageTransitionTaskLegacy[];
   totalDuration: number;
   notes?: string;
   lightingChange?: string;
@@ -8797,10 +8845,11 @@ export type SeatReservationLayout = {
 
 export type TeamBuildingCategory =
   | "ice_breaker"
-  | "game"
-  | "outing"
-  | "workshop"
-  | "dinner"
+  | "trust"
+  | "creativity"
+  | "communication"
+  | "party"
+  | "outdoor"
   | "other";
 
 export type TeamBuildingParticipant = {
@@ -8818,6 +8867,8 @@ export type TeamBuildingEvent = {
   location?: string;
   description?: string;
   organizer: string;
+  /** 소요 시간 (분) */
+  duration?: number;
   budget?: number;
   participants: TeamBuildingParticipant[];
   maxParticipants?: number;
@@ -12188,5 +12239,120 @@ export type GroupCalendarEvent = {
 export type GroupEventCalendarData = {
   groupId: string;
   events: GroupCalendarEvent[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 연습실 예약 (Practice Room Booking)
+// ============================================================
+
+/** 연습실 정보 */
+export type PracticeRoom = {
+  id: string;
+  /** 연습실 이름 */
+  name: string;
+  /** 주소 */
+  address: string;
+  /** 수용 인원 */
+  capacity: number;
+  /** 시간당 비용 (원) */
+  costPerHour: number;
+  /** 연락처 */
+  contact: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 예약 상태 */
+export type PracticeRoomBookingStatus =
+  | "예약됨"
+  | "확정됨"
+  | "취소됨"
+  | "완료됨";
+
+/** 연습실 예약 항목 */
+export type PracticeRoomBooking = {
+  id: string;
+  /** 연습실 ID */
+  roomId: string;
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 시작 시간 (HH:MM) */
+  startTime: string;
+  /** 종료 시간 (HH:MM) */
+  endTime: string;
+  /** 예약자 이름 */
+  bookedBy: string;
+  /** 예약 상태 */
+  status: PracticeRoomBookingStatus;
+  /** 메모 */
+  memo: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type PracticeRoomBookingData = {
+  groupId: string;
+  rooms: PracticeRoom[];
+  bookings: PracticeRoomBooking[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 무대 전환 계획 (Stage Transition Plan)
+// ============================================================
+
+/** 전환 유형 */
+export type StageTransitionType =
+  | "blackout"
+  | "light_fade"
+  | "curtain"
+  | "set_change"
+  | "costume_change"
+  | "other";
+
+/** 전환 할 일 항목 */
+export type StageTransitionTask = {
+  /** 고유 ID */
+  id: string;
+  /** 할 일 내용 */
+  text: string;
+  /** 완료 여부 */
+  done: boolean;
+};
+
+/** 무대 전환 항목 */
+export type StageTransitionItem = {
+  /** 고유 ID */
+  id: string;
+  /** 순서 (1-based) */
+  order: number;
+  /** 이전 장면 */
+  fromScene: string;
+  /** 다음 장면 */
+  toScene: string;
+  /** 전환 시간 (초) */
+  durationSec: number;
+  /** 전환 유형 */
+  transitionType: StageTransitionType;
+  /** 할 일 체크리스트 */
+  tasks: StageTransitionTask[];
+  /** 담당 스태프 */
+  assignedStaff: string;
+  /** 연습 완료 여부 */
+  rehearsed: boolean;
+  /** 메모 */
+  notes: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type StageTransitionData = {
+  projectId: string;
+  items: StageTransitionItem[];
   updatedAt: string;
 };

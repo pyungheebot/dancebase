@@ -181,11 +181,22 @@ export function useTeamBuilding(groupId: string) {
         ratedParticipants.length
       : 0;
 
+  // 가장 인기 카테고리 (활동 수 기준)
+  const categoryCounts = events.reduce<Record<string, number>>((acc, e) => {
+    acc[e.category] = (acc[e.category] ?? 0) + 1;
+    return acc;
+  }, {});
+  const topCategory =
+    Object.keys(categoryCounts).length > 0
+      ? (Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0][0] as TeamBuildingCategory)
+      : null;
+
   const stats = {
     totalEvents,
     completedEvents,
     upcomingEvents,
     averageRating: Math.round(averageRating * 10) / 10,
+    topCategory,
   };
 
   return {

@@ -2,7 +2,11 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
-import type { InspirationBoardItem, InspirationMediaType } from "@/types";
+import type {
+  InspirationBoardItem,
+  InspirationCategory,
+  InspirationMediaType,
+} from "@/types";
 
 function getStorageKey(memberId: string) {
   return `dancebase:inspiration-board:${memberId}`;
@@ -81,6 +85,11 @@ export function useInspirationBoard(memberId: string) {
     return items.filter((item) => item.tags.includes(tag));
   }
 
+  // 카테고리별 필터
+  function getByCategory(category: InspirationCategory): InspirationBoardItem[] {
+    return items.filter((item) => item.category === category);
+  }
+
   // 미디어 유형별 필터
   function getByMediaType(type: InspirationMediaType): InspirationBoardItem[] {
     return items.filter((item) => item.mediaType === type);
@@ -99,10 +108,27 @@ export function useInspirationBoard(memberId: string) {
     }
   }
 
+  // 카테고리별 분포
+  const categoryDistribution: Record<InspirationCategory, number> = {
+    choreography: 0,
+    music: 0,
+    fashion: 0,
+    stage_design: 0,
+    artwork: 0,
+    other: 0,
+  };
+  for (const item of items) {
+    if (item.category) {
+      categoryDistribution[item.category] =
+        (categoryDistribution[item.category] ?? 0) + 1;
+    }
+  }
+
   const stats = {
     totalItems: items.length,
     favoriteCount: items.filter((i) => i.isFavorite).length,
     tagCloud,
+    categoryDistribution,
   };
 
   return {
@@ -112,6 +138,7 @@ export function useInspirationBoard(memberId: string) {
     deleteItem,
     toggleFavorite,
     getByTag,
+    getByCategory,
     getByMediaType,
     getFavorites,
     stats,

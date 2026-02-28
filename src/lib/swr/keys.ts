@@ -1400,4 +1400,12 @@ export const swrKeys = {
   // 그룹 이벤트 캘린더 (localStorage 기반)
   groupEventCalendar: (groupId: string) =>
     `group-event-calendar-${groupId}` as const,
+
+  // 연습실 예약 (localStorage 기반)
+  practiceRoomBooking: (groupId: string) =>
+    `practice-room-booking-${groupId}` as const,
+
+  // 공연 무대 전환 계획 (localStorage 기반)
+  stageTransitionPlan: (projectId: string) =>
+    `stage-transition-plan-${projectId}` as const,
 };

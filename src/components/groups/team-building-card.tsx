@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   Circle,
   User,
-  Gamepad2,
   Utensils,
   TreePine,
   Lightbulb,
@@ -22,6 +21,10 @@ import {
   Sparkles,
   CalendarDays,
   MessageSquare,
+  MessageCircle,
+  Heart,
+  Timer,
+  BarChart2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,29 +63,32 @@ import type { TeamBuildingCategory, TeamBuildingEvent } from "@/types";
 // ============================================================
 
 const CATEGORY_LABEL: Record<TeamBuildingCategory, string> = {
-  ice_breaker: "아이스브레이커",
-  game: "게임",
-  outing: "야외활동",
-  workshop: "워크숍",
-  dinner: "식사",
+  ice_breaker: "아이스브레이킹",
+  trust: "신뢰 빌딩",
+  creativity: "창의력",
+  communication: "소통",
+  party: "회식/파티",
+  outdoor: "야외 활동",
   other: "기타",
 };
 
 const CATEGORY_COLOR: Record<TeamBuildingCategory, string> = {
   ice_breaker: "bg-cyan-100 text-cyan-700 hover:bg-cyan-100",
-  game: "bg-purple-100 text-purple-700 hover:bg-purple-100",
-  outing: "bg-green-100 text-green-700 hover:bg-green-100",
-  workshop: "bg-orange-100 text-orange-700 hover:bg-orange-100",
-  dinner: "bg-pink-100 text-pink-700 hover:bg-pink-100",
+  trust: "bg-blue-100 text-blue-700 hover:bg-blue-100",
+  creativity: "bg-orange-100 text-orange-700 hover:bg-orange-100",
+  communication: "bg-purple-100 text-purple-700 hover:bg-purple-100",
+  party: "bg-pink-100 text-pink-700 hover:bg-pink-100",
+  outdoor: "bg-green-100 text-green-700 hover:bg-green-100",
   other: "bg-gray-100 text-gray-600 hover:bg-gray-100",
 };
 
 const CATEGORY_ICON: Record<TeamBuildingCategory, React.ReactNode> = {
   ice_breaker: <Snowflake className="h-3 w-3" />,
-  game: <Gamepad2 className="h-3 w-3" />,
-  outing: <TreePine className="h-3 w-3" />,
-  workshop: <Lightbulb className="h-3 w-3" />,
-  dinner: <Utensils className="h-3 w-3" />,
+  trust: <Heart className="h-3 w-3" />,
+  creativity: <Lightbulb className="h-3 w-3" />,
+  communication: <MessageCircle className="h-3 w-3" />,
+  party: <Utensils className="h-3 w-3" />,
+  outdoor: <TreePine className="h-3 w-3" />,
   other: <Sparkles className="h-3 w-3" />,
 };
 
@@ -162,24 +168,26 @@ function AddEventDialog({
   memberNames,
 }: AddEventDialogProps) {
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<TeamBuildingCategory>("game");
+  const [category, setCategory] = useState<TeamBuildingCategory>("ice_breaker");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [organizer, setOrganizer] = useState(memberNames[0] ?? "");
+  const [duration, setDuration] = useState("");
   const [budget, setBudget] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
   const [saving, setSaving] = useState(false);
 
   function reset() {
     setTitle("");
-    setCategory("game");
+    setCategory("ice_breaker");
     setDate("");
     setTime("");
     setLocation("");
     setDescription("");
     setOrganizer(memberNames[0] ?? "");
+    setDuration("");
     setBudget("");
     setMaxParticipants("");
   }
@@ -207,6 +215,7 @@ function AddEventDialog({
         location: location.trim() || undefined,
         description: description.trim() || undefined,
         organizer: organizer.trim(),
+        duration: duration ? Number(duration) : undefined,
         budget: budget ? Number(budget) : undefined,
         maxParticipants: maxParticipants ? Number(maxParticipants) : undefined,
       });
@@ -312,7 +321,18 @@ function AddEventDialog({
               />
             )}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs">소요시간 (분)</Label>
+              <Input
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder="60"
+                className="h-8 text-xs"
+                min={1}
+              />
+            </div>
             <div className="space-y-1">
               <Label className="text-xs">예산 (원)</Label>
               <Input
@@ -616,6 +636,14 @@ function EventCard({
           {event.maxParticipants !== undefined &&
             ` / ${event.maxParticipants}명`}
         </span>
+        {event.duration !== undefined && (
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Timer className="h-2.5 w-2.5" />
+            {event.duration >= 60
+              ? `${Math.floor(event.duration / 60)}시간${event.duration % 60 > 0 ? ` ${event.duration % 60}분` : ""}`
+              : `${event.duration}분`}
+          </span>
+        )}
         {event.budget !== undefined && (
           <span className="text-[10px] text-muted-foreground">
             예산 {event.budget.toLocaleString()}원
@@ -815,25 +843,43 @@ export function TeamBuildingCard({
 
             {/* 통계 요약 */}
             {stats.totalEvents > 0 && (
-              <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-md bg-muted/40 p-2 text-center">
-                  <p className="text-xs font-semibold">{stats.totalEvents}</p>
-                  <p className="text-[10px] text-muted-foreground">전체</p>
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-md bg-muted/40 p-2 text-center">
+                    <p className="text-xs font-semibold">{stats.totalEvents}</p>
+                    <p className="text-[10px] text-muted-foreground">총 활동</p>
+                  </div>
+                  <div className="rounded-md bg-muted/40 p-2 text-center">
+                    <p className="text-xs font-semibold text-green-600">
+                      {stats.completedEvents}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">완료</p>
+                  </div>
+                  <div className="rounded-md bg-muted/40 p-2 text-center">
+                    <p className="text-xs font-semibold text-yellow-600">
+                      {stats.averageRating > 0
+                        ? `${stats.averageRating}점`
+                        : "-"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">평균 만족도</p>
+                  </div>
                 </div>
-                <div className="rounded-md bg-muted/40 p-2 text-center">
-                  <p className="text-xs font-semibold text-green-600">
-                    {stats.completedEvents}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">완료</p>
-                </div>
-                <div className="rounded-md bg-muted/40 p-2 text-center">
-                  <p className="text-xs font-semibold text-yellow-600">
-                    {stats.averageRating > 0
-                      ? `${stats.averageRating}점`
-                      : "-"}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">평균 평점</p>
-                </div>
+                {stats.topCategory && (
+                  <div className="flex items-center gap-1.5 rounded-md bg-muted/40 px-2.5 py-1.5">
+                    <BarChart2 className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span className="text-[10px] text-muted-foreground">인기 카테고리</span>
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        "ml-auto flex items-center gap-1 text-[10px] px-1.5 py-0",
+                        CATEGORY_COLOR[stats.topCategory]
+                      )}
+                    >
+                      {CATEGORY_ICON[stats.topCategory]}
+                      {CATEGORY_LABEL[stats.topCategory]}
+                    </Badge>
+                  </div>
+                )}
               </div>
             )}
 

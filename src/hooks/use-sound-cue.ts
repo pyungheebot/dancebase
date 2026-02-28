@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import type { SoundCueSheet, SoundCueEntry, SoundCueType, SoundCueAction } from "@/types";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import type { SoundCueSheet, SoundCueEntry, SoundCueType } from "@/types";
 
 // ============================================================
 // localStorage 헬퍼
@@ -31,18 +31,43 @@ function saveData(
   try {
     localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
   } catch {
-    // 무시
+    // 저장 실패 무시
   }
+}
+
+// ============================================================
+// 시간 문자열 파싱 유틸 (MM:SS -> 초)
+// ============================================================
+
+export function parseTimeToSeconds(time: string): number {
+  if (!time) return 0;
+  const parts = time.split(":").map(Number);
+  if (parts.length === 2) {
+    const [m, s] = parts;
+    return (m || 0) * 60 + (s || 0);
+  }
+  return 0;
 }
 
 // ============================================================
 // 통계 타입
 // ============================================================
 
+export type SoundCueTypeStats = {
+  type: SoundCueType;
+  count: number;
+};
+
 export type SoundCueStats = {
   totalSheets: number;
   totalCues: number;
   activeCues: number;
+  checkedCues: number;
+  typeDistribution: SoundCueTypeStats[];
+  /** 총 런타임 (초) */
+  totalRuntimeSec: number;
+  /** 총 런타임 표시 문자열 */
+  totalRuntimeLabel: string;
 };
 
 // ============================================================
@@ -117,7 +142,7 @@ export function useSoundCue(groupId: string, projectId: string) {
   const addCue = useCallback(
     (
       sheetId: string,
-      partial: Omit<SoundCueEntry, "id" | "isActive">
+      partial: Omit<SoundCueEntry, "id" | "isActive" | "isChecked">
     ): SoundCueEntry | null => {
       const sheetIdx = sheets.findIndex((s) => s.id === sheetId);
       if (sheetIdx === -1) return null;
@@ -125,6 +150,7 @@ export function useSoundCue(groupId: string, projectId: string) {
       const newCue: SoundCueEntry = {
         id: crypto.randomUUID(),
         isActive: true,
+        isChecked: false,
         ...partial,
       };
 
@@ -177,7 +203,49 @@ export function useSoundCue(groupId: string, projectId: string) {
     [sheets, persist]
   );
 
-  // ── 큐 순서 변경 ──────────────────────────────────────────
+  // ── 큐 순서 변경 (위/아래) ────────────────────────────────
+
+  const moveCueUp = useCallback(
+    (sheetId: string, cueId: string): boolean => {
+      const sheetIdx = sheets.findIndex((s) => s.id === sheetId);
+      if (sheetIdx === -1) return false;
+
+      const cues = [...sheets[sheetIdx].cues];
+      const cueIdx = cues.findIndex((c) => c.id === cueId);
+      if (cueIdx <= 0) return false;
+
+      // 배열 요소 교환
+      [cues[cueIdx - 1], cues[cueIdx]] = [cues[cueIdx], cues[cueIdx - 1]];
+      // cueNumber 재정렬
+      const renumbered = cues.map((c, i) => ({ ...c, cueNumber: i + 1 }));
+
+      const next = [...sheets];
+      next[sheetIdx] = { ...next[sheetIdx], cues: renumbered };
+      persist(next);
+      return true;
+    },
+    [sheets, persist]
+  );
+
+  const moveCueDown = useCallback(
+    (sheetId: string, cueId: string): boolean => {
+      const sheetIdx = sheets.findIndex((s) => s.id === sheetId);
+      if (sheetIdx === -1) return false;
+
+      const cues = [...sheets[sheetIdx].cues];
+      const cueIdx = cues.findIndex((c) => c.id === cueId);
+      if (cueIdx === -1 || cueIdx >= cues.length - 1) return false;
+
+      [cues[cueIdx], cues[cueIdx + 1]] = [cues[cueIdx + 1], cues[cueIdx]];
+      const renumbered = cues.map((c, i) => ({ ...c, cueNumber: i + 1 }));
+
+      const next = [...sheets];
+      next[sheetIdx] = { ...next[sheetIdx], cues: renumbered };
+      persist(next);
+      return true;
+    },
+    [sheets, persist]
+  );
 
   const reorderCues = useCallback(
     (sheetId: string, orderedIds: string[]): boolean => {
@@ -193,8 +261,9 @@ export function useSoundCue(groupId: string, projectId: string) {
 
       if (reordered.length !== sheets[sheetIdx].cues.length) return false;
 
+      const renumbered = reordered.map((c, i) => ({ ...c, cueNumber: i + 1 }));
       const next = [...sheets];
-      next[sheetIdx] = { ...next[sheetIdx], cues: reordered };
+      next[sheetIdx] = { ...next[sheetIdx], cues: renumbered };
       persist(next);
       return true;
     },
@@ -224,15 +293,73 @@ export function useSoundCue(groupId: string, projectId: string) {
     [sheets, persist]
   );
 
-  // ── 통계 ──────────────────────────────────────────────────
+  // ── 체크 완료 토글 ────────────────────────────────────────
 
-  const stats: SoundCueStats = (() => {
+  const toggleChecked = useCallback(
+    (sheetId: string, cueId: string): boolean => {
+      const sheetIdx = sheets.findIndex((s) => s.id === sheetId);
+      if (sheetIdx === -1) return false;
+
+      const cueIdx = sheets[sheetIdx].cues.findIndex((c) => c.id === cueId);
+      if (cueIdx === -1) return false;
+
+      const next = [...sheets];
+      const updatedCues = [...next[sheetIdx].cues];
+      updatedCues[cueIdx] = {
+        ...updatedCues[cueIdx],
+        isChecked: !updatedCues[cueIdx].isChecked,
+      };
+      next[sheetIdx] = { ...next[sheetIdx], cues: updatedCues };
+      persist(next);
+      return true;
+    },
+    [sheets, persist]
+  );
+
+  // ── 통계 (useMemo로 최적화) ───────────────────────────────
+
+  const stats: SoundCueStats = useMemo(() => {
     const totalSheets = sheets.length;
     const allCues = sheets.flatMap((s) => s.cues);
     const totalCues = allCues.length;
     const activeCues = allCues.filter((c) => c.isActive).length;
-    return { totalSheets, totalCues, activeCues };
-  })();
+    const checkedCues = allCues.filter((c) => c.isChecked).length;
+
+    // 유형별 분포
+    const typeCount = new Map<SoundCueType, number>();
+    for (const cue of allCues) {
+      typeCount.set(cue.type, (typeCount.get(cue.type) ?? 0) + 1);
+    }
+    const typeDistribution: SoundCueTypeStats[] = Array.from(
+      typeCount.entries()
+    ).map(([type, count]) => ({ type, count }));
+
+    // 총 런타임 계산 (startTime-endTime 차이 합산)
+    let totalRuntimeSec = 0;
+    for (const cue of allCues) {
+      if (cue.startTime && cue.endTime) {
+        const start = parseTimeToSeconds(cue.startTime);
+        const end = parseTimeToSeconds(cue.endTime);
+        if (end > start) totalRuntimeSec += end - start;
+      }
+    }
+    const runtimeMin = Math.floor(totalRuntimeSec / 60);
+    const runtimeSec = totalRuntimeSec % 60;
+    const totalRuntimeLabel =
+      totalRuntimeSec > 0
+        ? `${runtimeMin}분 ${runtimeSec}초`
+        : "-";
+
+    return {
+      totalSheets,
+      totalCues,
+      activeCues,
+      checkedCues,
+      typeDistribution,
+      totalRuntimeSec,
+      totalRuntimeLabel,
+    };
+  }, [sheets]);
 
   return {
     sheets,
@@ -243,8 +370,11 @@ export function useSoundCue(groupId: string, projectId: string) {
     addCue,
     updateCue,
     deleteCue,
+    moveCueUp,
+    moveCueDown,
     reorderCues,
     toggleActive,
+    toggleChecked,
     stats,
     refetch: reload,
   };

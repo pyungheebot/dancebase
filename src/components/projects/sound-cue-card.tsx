@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
@@ -41,7 +42,6 @@ import {
   Volume2,
   Music,
   Mic,
-  Wind,
   Radio,
   VolumeX,
   Play,
@@ -51,37 +51,54 @@ import {
   Layers,
   Clock,
   FileText,
+  ArrowUp,
+  ArrowDown,
+  CheckCircle2,
+  BarChart3,
+  Timer,
+  User,
+  ListMusic,
+  Clapperboard,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSoundCue } from "@/hooks/use-sound-cue";
-import type { SoundCueEntry, SoundCueType, SoundCueAction, SoundCueSheet } from "@/types";
-
-// ============================================================
-// 상수 & 레이블
-// ============================================================
+import type {
+  SoundCueEntry,
+  SoundCueType,
+  SoundCueAction,
+  SoundCueSheet,
+} from "@/types";
 
 const TYPE_LABELS: Record<SoundCueType, string> = {
-  music: "음악",
+  bgm: "BGM",
   sfx: "효과음",
-  voiceover: "보이스오버",
-  ambient: "앰비언트",
+  narration: "나레이션",
+  live: "라이브",
   silence: "무음",
 };
 
 const TYPE_ICONS: Record<SoundCueType, React.ReactNode> = {
-  music: <Music className="h-3 w-3" />,
+  bgm: <Music className="h-3 w-3" />,
   sfx: <Zap className="h-3 w-3" />,
-  voiceover: <Mic className="h-3 w-3" />,
-  ambient: <Wind className="h-3 w-3" />,
+  narration: <Mic className="h-3 w-3" />,
+  live: <Radio className="h-3 w-3" />,
   silence: <VolumeX className="h-3 w-3" />,
 };
 
 const TYPE_BADGE_COLORS: Record<SoundCueType, string> = {
-  music: "bg-blue-100 text-blue-700 border-blue-200",
+  bgm: "bg-blue-100 text-blue-700 border-blue-200",
   sfx: "bg-orange-100 text-orange-700 border-orange-200",
-  voiceover: "bg-purple-100 text-purple-700 border-purple-200",
-  ambient: "bg-teal-100 text-teal-700 border-teal-200",
+  narration: "bg-purple-100 text-purple-700 border-purple-200",
+  live: "bg-pink-100 text-pink-700 border-pink-200",
   silence: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
+const TYPE_TIMELINE_COLORS: Record<SoundCueType, string> = {
+  bgm: "bg-blue-400",
+  sfx: "bg-orange-400",
+  narration: "bg-purple-400",
+  live: "bg-pink-400",
+  silence: "bg-gray-300",
 };
 
 const ACTION_LABELS: Record<SoundCueAction, string> = {
@@ -111,20 +128,25 @@ const ACTION_BADGE_COLORS: Record<SoundCueAction, string> = {
   loop: "bg-amber-100 text-amber-700 border-amber-200",
 };
 
-const ALL_TYPES: SoundCueType[] = ["music", "sfx", "voiceover", "ambient", "silence"];
-const ALL_ACTIONS: SoundCueAction[] = ["play", "stop", "fade_in", "fade_out", "crossfade", "loop"];
+const ALL_TYPES: SoundCueType[] = ["bgm", "sfx", "narration", "live", "silence"];
+const ALL_ACTIONS: SoundCueAction[] = [
+  "play",
+  "stop",
+  "fade_in",
+  "fade_out",
+  "crossfade",
+  "loop",
+];
 
-// ============================================================
-// 큐 추가/편집 다이얼로그
-// ============================================================
+type CueFormData = Omit<SoundCueEntry, "id" | "isActive" | "isChecked">;
 
 interface CueDialogProps {
   open: boolean;
   mode: "add" | "edit";
-  initial?: Partial<Omit<SoundCueEntry, "id" | "isActive">>;
+  initial?: Partial<CueFormData>;
   nextCueNumber: number;
   onClose: () => void;
-  onSubmit: (data: Omit<SoundCueEntry, "id" | "isActive">) => void;
+  onSubmit: (data: CueFormData) => void;
 }
 
 function CueDialog({
@@ -139,11 +161,22 @@ function CueDialog({
     String(initial?.cueNumber ?? nextCueNumber)
   );
   const [name, setName] = useState(initial?.name ?? "");
-  const [type, setType] = useState<SoundCueType>(initial?.type ?? "music");
-  const [action, setAction] = useState<SoundCueAction>(initial?.action ?? "play");
+  const [trackName, setTrackName] = useState(initial?.trackName ?? "");
+  const [artist, setArtist] = useState(initial?.artist ?? "");
+  const [type, setType] = useState<SoundCueType>(initial?.type ?? "bgm");
+  const [action, setAction] = useState<SoundCueAction>(
+    initial?.action ?? "play"
+  );
+  const [startTime, setStartTime] = useState(initial?.startTime ?? "");
+  const [endTime, setEndTime] = useState(initial?.endTime ?? "");
   const [volume, setVolume] = useState(initial?.volume ?? 80);
-  const [triggerTime, setTriggerTime] = useState(initial?.triggerTime ?? "");
-  const [duration, setDuration] = useState(initial?.duration ?? "");
+  const [fadeIn, setFadeIn] = useState(
+    initial?.fadeIn !== undefined ? String(initial.fadeIn) : ""
+  );
+  const [fadeOut, setFadeOut] = useState(
+    initial?.fadeOut !== undefined ? String(initial.fadeOut) : ""
+  );
+  const [scene, setScene] = useState(initial?.scene ?? "");
   const [source, setSource] = useState(initial?.source ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
 
@@ -161,14 +194,25 @@ function CueDialog({
       toast.error("올바른 큐 번호를 입력해주세요.");
       return;
     }
+
+    const fadeInVal = fadeIn.trim() ? parseFloat(fadeIn) : undefined;
+    const fadeOutVal = fadeOut.trim() ? parseFloat(fadeOut) : undefined;
+
     onSubmit({
       cueNumber: num,
       name: name.trim(),
+      trackName: trackName.trim() || undefined,
+      artist: artist.trim() || undefined,
       type,
       action,
+      startTime: startTime.trim() || undefined,
+      endTime: endTime.trim() || undefined,
       volume,
-      triggerTime: triggerTime.trim() || undefined,
-      duration: duration.trim() || undefined,
+      fadeIn:
+        fadeInVal !== undefined && !isNaN(fadeInVal) ? fadeInVal : undefined,
+      fadeOut:
+        fadeOutVal !== undefined && !isNaN(fadeOutVal) ? fadeOutVal : undefined,
+      scene: scene.trim() || undefined,
       source: source.trim() || undefined,
       notes: notes.trim() || undefined,
     });
@@ -177,15 +221,15 @@ function CueDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">
-            {mode === "add" ? "큐 추가" : "큐 편집"}
+          <DialogTitle className="text-sm font-semibold flex items-center gap-2">
+            <Volume2 className="h-4 w-4 text-indigo-500" />
+            {mode === "add" ? "음향 큐 추가" : "음향 큐 편집"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
-          {/* 번호 + 이름 */}
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">큐 번호</Label>
@@ -199,7 +243,9 @@ function CueDialog({
               />
             </div>
             <div className="col-span-2 space-y-1">
-              <Label className="text-xs text-muted-foreground">큐 이름</Label>
+              <Label className="text-xs text-muted-foreground">
+                큐 이름 <span className="text-destructive">*</span>
+              </Label>
               <Input
                 className="h-8 text-xs"
                 placeholder="예: 오프닝 BGM"
@@ -209,11 +255,40 @@ function CueDialog({
             </div>
           </div>
 
-          {/* 유형 + 액션 */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                <ListMusic className="h-3 w-3 inline mr-0.5" />
+                트랙명
+              </Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="예: Beautiful Day"
+                value={trackName}
+                onChange={(e) => setTrackName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                <User className="h-3 w-3 inline mr-0.5" />
+                아티스트
+              </Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="예: U2"
+                value={artist}
+                onChange={(e) => setArtist(e.target.value)}
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">유형</Label>
-              <Select value={type} onValueChange={(v) => setType(v as SoundCueType)}>
+              <Select
+                value={type}
+                onValueChange={(v) => setType(v as SoundCueType)}
+              >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>
@@ -228,7 +303,10 @@ function CueDialog({
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">액션</Label>
-              <Select value={action} onValueChange={(v) => setAction(v as SoundCueAction)}>
+              <Select
+                value={action}
+                onValueChange={(v) => setAction(v as SoundCueAction)}
+              >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>
@@ -243,11 +321,39 @@ function CueDialog({
             </div>
           </div>
 
-          {/* 볼륨 슬라이더 */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                시작 시간 (MM:SS)
+              </Label>
+              <Input
+                className="h-8 text-xs font-mono"
+                placeholder="예: 01:30"
+                maxLength={5}
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                종료 시간 (MM:SS)
+              </Label>
+              <Input
+                className="h-8 text-xs font-mono"
+                placeholder="예: 04:00"
+                maxLength={5}
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-xs text-muted-foreground">볼륨</Label>
-              <span className="text-xs font-medium tabular-nums">{volume}%</span>
+              <span className="text-xs font-medium tabular-nums">
+                {volume}%
+              </span>
             </div>
             <Slider
               min={0}
@@ -259,37 +365,52 @@ function CueDialog({
             />
           </div>
 
-          {/* 트리거 시간 + 길이 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">
-                트리거 시간 (선택)
+                페이드 인 (초)
               </Label>
               <Input
                 className="h-8 text-xs"
-                placeholder="예: 0:30 또는 큐A 후"
-                value={triggerTime}
-                onChange={(e) => setTriggerTime(e.target.value)}
+                type="number"
+                min={0}
+                step={0.5}
+                placeholder="예: 2"
+                value={fadeIn}
+                onChange={(e) => setFadeIn(e.target.value)}
               />
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">
-                재생 길이 (선택)
+                페이드 아웃 (초)
               </Label>
               <Input
                 className="h-8 text-xs"
-                placeholder="예: 2:30 또는 무제한"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
+                type="number"
+                min={0}
+                step={0.5}
+                placeholder="예: 3"
+                value={fadeOut}
+                onChange={(e) => setFadeOut(e.target.value)}
               />
             </div>
           </div>
 
-          {/* 소스 */}
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">
-              소스/파일명 (선택)
+              <Clapperboard className="h-3 w-3 inline mr-0.5" />
+              장면/섹션 연결
             </Label>
+            <Input
+              className="h-8 text-xs"
+              placeholder="예: 1막 2장, 오프닝 씬"
+              value={scene}
+              onChange={(e) => setScene(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">소스/파일명</Label>
             <Input
               className="h-8 text-xs"
               placeholder="예: track01_opening.mp3"
@@ -298,9 +419,8 @@ function CueDialog({
             />
           </div>
 
-          {/* 메모 */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">메모 (선택)</Label>
+            <Label className="text-xs text-muted-foreground">메모</Label>
             <Textarea
               className="text-xs min-h-[52px] resize-none"
               placeholder="특이사항 또는 운영자 메모"
@@ -328,10 +448,6 @@ function CueDialog({
   );
 }
 
-// ============================================================
-// 시트 추가/편집 다이얼로그
-// ============================================================
-
 interface SheetDialogProps {
   open: boolean;
   mode: "add" | "edit";
@@ -340,7 +456,13 @@ interface SheetDialogProps {
   onSubmit: (title: string) => void;
 }
 
-function SheetDialog({ open, mode, initialTitle, onClose, onSubmit }: SheetDialogProps) {
+function SheetDialog({
+  open,
+  mode,
+  initialTitle,
+  onClose,
+  onSubmit,
+}: SheetDialogProps) {
   const [title, setTitle] = useState(initialTitle ?? "");
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -396,10 +518,6 @@ function SheetDialog({ open, mode, initialTitle, onClose, onSubmit }: SheetDialo
   );
 }
 
-// ============================================================
-// 볼륨 바
-// ============================================================
-
 function VolumeBar({ volume }: { volume: number }) {
   const pct = Math.max(0, Math.min(100, volume));
   const color =
@@ -426,15 +544,7 @@ function VolumeBar({ volume }: { volume: number }) {
   );
 }
 
-// ============================================================
-// 타임라인 시각화
-// ============================================================
-
-interface TimelineProps {
-  cues: SoundCueEntry[];
-}
-
-function Timeline({ cues }: TimelineProps) {
+function Timeline({ cues }: { cues: SoundCueEntry[] }) {
   const activeCues = cues.filter((c) => c.isActive);
   if (activeCues.length === 0) return null;
 
@@ -447,26 +557,14 @@ function Timeline({ cues }: TimelineProps) {
         </span>
       </div>
       <div className="relative h-8 bg-muted/30 rounded-md border overflow-hidden">
-        {/* 큐 블록 */}
         {activeCues.map((cue, idx) => {
           const segWidth = 100 / activeCues.length;
           const left = idx * segWidth;
-          const typeColor =
-            cue.type === "music"
-              ? "bg-blue-400"
-              : cue.type === "sfx"
-                ? "bg-orange-400"
-                : cue.type === "voiceover"
-                  ? "bg-purple-400"
-                  : cue.type === "ambient"
-                    ? "bg-teal-400"
-                    : "bg-gray-300";
           const heightPct = Math.max(20, cue.volume);
-
           return (
             <div
               key={cue.id}
-              className={`absolute bottom-0 ${typeColor} opacity-70 rounded-sm`}
+              className={`absolute bottom-0 ${TYPE_TIMELINE_COLORS[cue.type]} opacity-70 rounded-sm`}
               style={{
                 left: `calc(${left}% + 1px)`,
                 width: `calc(${segWidth}% - 2px)`,
@@ -476,7 +574,6 @@ function Timeline({ cues }: TimelineProps) {
             />
           );
         })}
-        {/* 큐 번호 레이블 */}
         {activeCues.map((cue, idx) => {
           const segWidth = 100 / activeCues.length;
           const left = idx * segWidth;
@@ -495,111 +592,228 @@ function Timeline({ cues }: TimelineProps) {
   );
 }
 
-// ============================================================
-// 큐 행 컴포넌트
-// ============================================================
+type StatsData = {
+  totalCues: number;
+  activeCues: number;
+  checkedCues: number;
+  typeDistribution: { type: SoundCueType; count: number }[];
+  totalRuntimeLabel: string;
+};
 
-interface CueRowProps {
-  cue: SoundCueEntry;
-  onEdit: () => void;
-  onDelete: () => void;
-  onToggleActive: () => void;
-}
-
-function CueRow({ cue, onEdit, onDelete, onToggleActive }: CueRowProps) {
+function StatsPanel({ stats }: { stats: StatsData }) {
   return (
-    <div
-      className={`flex items-center gap-2 px-2.5 py-2 rounded-md border group transition-colors ${
-        cue.isActive
-          ? "bg-white border-border"
-          : "bg-muted/20 border-dashed border-border opacity-60"
-      }`}
-    >
-      {/* 큐 번호 */}
-      <span className="text-[10px] font-mono font-bold text-muted-foreground w-6 flex-shrink-0 text-center">
-        Q{cue.cueNumber}
-      </span>
-
-      {/* 유형 아이콘 + 배지 */}
-      <Badge
-        variant="outline"
-        className={`text-[10px] px-1.5 py-0 flex items-center gap-0.5 flex-shrink-0 ${TYPE_BADGE_COLORS[cue.type]}`}
-      >
-        {TYPE_ICONS[cue.type]}
-        {TYPE_LABELS[cue.type]}
-      </Badge>
-
-      {/* 이름 */}
-      <span className="text-xs font-medium flex-1 min-w-0 truncate">{cue.name}</span>
-
-      {/* 액션 배지 */}
-      <Badge
-        variant="outline"
-        className={`text-[10px] px-1.5 py-0 flex items-center gap-0.5 flex-shrink-0 ${ACTION_BADGE_COLORS[cue.action]}`}
-      >
-        {ACTION_ICONS[cue.action]}
-        {ACTION_LABELS[cue.action]}
-      </Badge>
-
-      {/* 볼륨 바 */}
-      <div className="flex-shrink-0">
-        <VolumeBar volume={cue.volume} />
+    <div className="rounded-md border bg-muted/20 p-3 space-y-2.5">
+      <div className="flex items-center gap-1.5">
+        <BarChart3 className="h-3.5 w-3.5 text-indigo-500" />
+        <span className="text-xs font-medium">통계</span>
       </div>
-
-      {/* 트리거 시간 */}
-      {cue.triggerTime && (
-        <span className="text-[10px] text-muted-foreground flex-shrink-0 flex items-center gap-0.5">
-          <Clock className="h-2.5 w-2.5" />
-          {cue.triggerTime}
-        </span>
-      )}
-
-      {/* 소스 */}
-      {cue.source && (
-        <span className="text-[10px] text-muted-foreground flex-shrink-0 max-w-[80px] truncate hidden sm:block">
-          {cue.source}
-        </span>
-      )}
-
-      {/* 액션 버튼 */}
-      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`h-5 w-5 p-0 text-xs ${cue.isActive ? "text-muted-foreground" : "text-green-600"}`}
-          onClick={onToggleActive}
-          title={cue.isActive ? "비활성화" : "활성화"}
-        >
-          {cue.isActive ? (
-            <VolumeX className="h-3 w-3" />
-          ) : (
-            <Volume2 className="h-3 w-3" />
-          )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-5 w-5 p-0"
-          onClick={onEdit}
-        >
-          <Pencil className="h-3 w-3" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-5 w-5 p-0 text-destructive hover:text-destructive"
-          onClick={onDelete}
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
+      <div className="grid grid-cols-4 gap-2">
+        <div className="text-center">
+          <p className="text-base font-bold text-indigo-600">{stats.totalCues}</p>
+          <p className="text-[10px] text-muted-foreground">총 큐</p>
+        </div>
+        <div className="text-center">
+          <p className="text-base font-bold text-green-600">{stats.activeCues}</p>
+          <p className="text-[10px] text-muted-foreground">활성</p>
+        </div>
+        <div className="text-center">
+          <p className="text-base font-bold text-blue-600">{stats.checkedCues}</p>
+          <p className="text-[10px] text-muted-foreground">체크완료</p>
+        </div>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-0.5">
+            <Timer className="h-3 w-3 text-amber-500" />
+            <p className="text-xs font-bold text-amber-600">
+              {stats.totalRuntimeLabel}
+            </p>
+          </div>
+          <p className="text-[10px] text-muted-foreground">런타임</p>
+        </div>
       </div>
+      {stats.typeDistribution.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-[10px] font-medium text-muted-foreground">유형별 분포</p>
+          <div className="flex flex-wrap gap-1.5">
+            {stats.typeDistribution.map(({ type, count }) => (
+              <Badge
+                key={type}
+                variant="outline"
+                className={`text-[10px] px-1.5 py-0 flex items-center gap-0.5 ${TYPE_BADGE_COLORS[type]}`}
+              >
+                {TYPE_ICONS[type]}
+                {TYPE_LABELS[type]} {count}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// ============================================================
-// 메인 컴포넌트
-// ============================================================
+interface CueRowProps {
+  cue: SoundCueEntry;
+  isFirst: boolean;
+  isLast: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggleActive: () => void;
+  onToggleChecked: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+}
+
+function CueRow({
+  cue,
+  isFirst,
+  isLast,
+  onEdit,
+  onDelete,
+  onToggleActive,
+  onToggleChecked,
+  onMoveUp,
+  onMoveDown,
+}: CueRowProps) {
+  return (
+    <div
+      className={`flex items-start gap-2 px-2.5 py-2 rounded-md border group transition-colors ${
+        cue.isChecked
+          ? "bg-green-50/60 border-green-200"
+          : cue.isActive
+            ? "bg-white border-border"
+            : "bg-muted/20 border-dashed border-border opacity-60"
+      }`}
+    >
+      <Checkbox
+        checked={cue.isChecked}
+        onCheckedChange={onToggleChecked}
+        className="mt-0.5 h-3.5 w-3.5 flex-shrink-0"
+        title="체크 완료 표시"
+      />
+      <span className="text-[10px] font-mono font-bold text-muted-foreground w-6 flex-shrink-0 text-center mt-0.5">
+        Q{cue.cueNumber}
+      </span>
+      <div className="flex-1 min-w-0 space-y-1">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span
+            className={`text-xs font-medium ${cue.isChecked ? "line-through text-muted-foreground" : ""}`}
+          >
+            {cue.name}
+          </span>
+          <Badge
+            variant="outline"
+            className={`text-[10px] px-1.5 py-0 flex items-center gap-0.5 flex-shrink-0 ${TYPE_BADGE_COLORS[cue.type]}`}
+          >
+            {TYPE_ICONS[cue.type]}
+            {TYPE_LABELS[cue.type]}
+          </Badge>
+          <Badge
+            variant="outline"
+            className={`text-[10px] px-1.5 py-0 flex items-center gap-0.5 flex-shrink-0 ${ACTION_BADGE_COLORS[cue.action]}`}
+          >
+            {ACTION_ICONS[cue.action]}
+            {ACTION_LABELS[cue.action]}
+          </Badge>
+        </div>
+        {(cue.trackName || cue.artist) && (
+          <div className="flex items-center gap-2">
+            {cue.trackName && (
+              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                <ListMusic className="h-2.5 w-2.5" />
+                {cue.trackName}
+              </span>
+            )}
+            {cue.artist && (
+              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                <User className="h-2.5 w-2.5" />
+                {cue.artist}
+              </span>
+            )}
+          </div>
+        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {(cue.startTime || cue.endTime) && (
+            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 font-mono">
+              <Clock className="h-2.5 w-2.5" />
+              {cue.startTime ?? "--:--"} ~ {cue.endTime ?? "--:--"}
+            </span>
+          )}
+          {(cue.fadeIn !== undefined || cue.fadeOut !== undefined) && (
+            <span className="text-[10px] text-sky-600">
+              {cue.fadeIn !== undefined && `F.in ${cue.fadeIn}s`}
+              {cue.fadeIn !== undefined && cue.fadeOut !== undefined && " / "}
+              {cue.fadeOut !== undefined && `F.out ${cue.fadeOut}s`}
+            </span>
+          )}
+          {cue.scene && (
+            <span className="text-[10px] text-violet-600 flex items-center gap-0.5">
+              <Clapperboard className="h-2.5 w-2.5" />
+              {cue.scene}
+            </span>
+          )}
+        </div>
+        <VolumeBar volume={cue.volume} />
+      </div>
+      <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+            onClick={onMoveUp}
+            disabled={isFirst}
+            title="위로 이동"
+          >
+            <ArrowUp className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+            onClick={onMoveDown}
+            disabled={isLast}
+            title="아래로 이동"
+          >
+            <ArrowDown className="h-3 w-3" />
+          </Button>
+        </div>
+        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-5 w-5 p-0 ${cue.isActive ? "text-muted-foreground" : "text-green-600"}`}
+            onClick={onToggleActive}
+            title={cue.isActive ? "비활성화" : "활성화"}
+          >
+            {cue.isActive ? (
+              <VolumeX className="h-3 w-3" />
+            ) : (
+              <Volume2 className="h-3 w-3" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 w-5 p-0"
+            onClick={onEdit}
+            title="편집"
+          >
+            <Pencil className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 w-5 p-0 text-destructive hover:text-destructive"
+            onClick={onDelete}
+            title="삭제"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface SoundCueCardProps {
   groupId: string;
@@ -616,41 +830,38 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
     addCue,
     updateCue,
     deleteCue,
+    moveCueUp,
+    moveCueDown,
     toggleActive,
+    toggleChecked,
     stats,
   } = useSoundCue(groupId, projectId);
 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSheetId, setSelectedSheetId] = useState<string | null>(null);
+  const [showStats, setShowStats] = useState(false);
 
-  // 시트 다이얼로그 상태
   const [sheetDialogOpen, setSheetDialogOpen] = useState(false);
   const [sheetDialogMode, setSheetDialogMode] = useState<"add" | "edit">("add");
   const [editingSheet, setEditingSheet] = useState<SoundCueSheet | null>(null);
 
-  // 큐 다이얼로그 상태
   const [cueDialogOpen, setCueDialogOpen] = useState(false);
   const [cueDialogMode, setCueDialogMode] = useState<"add" | "edit">("add");
   const [editingCue, setEditingCue] = useState<SoundCueEntry | null>(null);
 
-  // 선택된 시트
   const selectedSheet = useMemo(() => {
     return sheets.find((s) => s.id === selectedSheetId) ?? sheets[0] ?? null;
   }, [sheets, selectedSheetId]);
 
-  // 번호순 정렬된 큐
   const sortedCues = useMemo(() => {
     if (!selectedSheet) return [];
     return [...selectedSheet.cues].sort((a, b) => a.cueNumber - b.cueNumber);
   }, [selectedSheet]);
 
-  // 다음 큐 번호
   const nextCueNumber = useMemo(() => {
     if (!selectedSheet || selectedSheet.cues.length === 0) return 1;
     return Math.max(...selectedSheet.cues.map((c) => c.cueNumber)) + 1;
   }, [selectedSheet]);
-
-  // ── 시트 핸들러 ───────────────────────────────────────────
 
   const handleAddSheetOpen = () => {
     setEditingSheet(null);
@@ -683,8 +894,6 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
     toast.success("큐시트가 삭제되었습니다.");
   };
 
-  // ── 큐 핸들러 ─────────────────────────────────────────────
-
   const handleAddCueOpen = () => {
     setEditingCue(null);
     setCueDialogMode("add");
@@ -697,9 +906,8 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
     setCueDialogOpen(true);
   };
 
-  const handleCueSubmit = (data: Omit<SoundCueEntry, "id" | "isActive">) => {
+  const handleCueSubmit = (data: CueFormData) => {
     if (!selectedSheet) return;
-
     if (cueDialogMode === "add") {
       addCue(selectedSheet.id, data);
       toast.success("큐가 추가되었습니다.");
@@ -718,6 +926,21 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
   const handleToggleActive = (cueId: string) => {
     if (!selectedSheet) return;
     toggleActive(selectedSheet.id, cueId);
+  };
+
+  const handleToggleChecked = (cueId: string) => {
+    if (!selectedSheet) return;
+    toggleChecked(selectedSheet.id, cueId);
+  };
+
+  const handleMoveUp = (cueId: string) => {
+    if (!selectedSheet) return;
+    moveCueUp(selectedSheet.id, cueId);
+  };
+
+  const handleMoveDown = (cueId: string) => {
+    if (!selectedSheet) return;
+    moveCueDown(selectedSheet.id, cueId);
   };
 
   return (
@@ -744,7 +967,7 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
                 <div className="flex items-center gap-2">
                   {stats.totalCues > 0 && (
                     <span className="text-[10px] text-muted-foreground">
-                      큐 {stats.activeCues}/{stats.totalCues}개 활성
+                      큐 {stats.checkedCues}/{stats.totalCues} 체크
                     </span>
                   )}
                   {isOpen ? (
@@ -760,10 +983,11 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
           <CollapsibleContent>
             <CardContent className="px-4 pb-4 pt-0 space-y-3">
               {loading ? (
-                <p className="text-xs text-muted-foreground py-2">불러오는 중...</p>
+                <p className="text-xs text-muted-foreground py-2">
+                  불러오는 중...
+                </p>
               ) : (
                 <>
-                  {/* 시트 탭 */}
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {sheets.map((sheet) => (
                       <button
@@ -790,10 +1014,8 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
                     </Button>
                   </div>
 
-                  {/* 선택된 시트 상세 */}
                   {selectedSheet ? (
                     <div className="space-y-3">
-                      {/* 시트 헤더 */}
                       <div className="flex items-center justify-between gap-2 p-2.5 rounded-md bg-muted/40 border">
                         <div className="flex items-center gap-2 min-w-0">
                           <FileText className="h-3.5 w-3.5 text-indigo-500 flex-shrink-0" />
@@ -806,8 +1028,27 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
                           >
                             큐 {selectedSheet.cues.length}개
                           </Badge>
+                          {selectedSheet.cues.some((c) => c.isChecked) && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0 flex-shrink-0 bg-green-50 text-green-600 border-green-200 flex items-center gap-0.5"
+                            >
+                              <CheckCircle2 className="h-2.5 w-2.5" />
+                              {selectedSheet.cues.filter((c) => c.isChecked).length}
+                              /{selectedSheet.cues.length} 완료
+                            </Badge>
+                          )}
                         </div>
                         <div className="flex items-center gap-0.5 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-6 w-6 p-0 ${showStats ? "text-indigo-600" : "text-muted-foreground"}`}
+                            onClick={() => setShowStats((v) => !v)}
+                            title="통계 보기"
+                          >
+                            <BarChart3 className="h-3 w-3" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -827,15 +1068,20 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
                         </div>
                       </div>
 
-                      {/* 타임라인 */}
+                      {showStats && stats.totalCues > 0 && (
+                        <StatsPanel stats={stats} />
+                      )}
+
                       {sortedCues.length > 0 && (
                         <Timeline cues={sortedCues} />
                       )}
 
-                      {/* 큐 목록 헤더 */}
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-muted-foreground">
-                          큐 목록 (번호순)
+                          큐 목록
+                          <span className="ml-1 text-[10px] text-muted-foreground/70">
+                            (호버 시 순서 변경 가능)
+                          </span>
                         </span>
                         <Button
                           variant="outline"
@@ -848,7 +1094,6 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
                         </Button>
                       </div>
 
-                      {/* 큐 목록 */}
                       {sortedCues.length === 0 ? (
                         <div className="py-6 text-center space-y-1.5">
                           <Volume2 className="h-6 w-6 text-muted-foreground mx-auto" />
@@ -858,19 +1103,23 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
                         </div>
                       ) : (
                         <div className="space-y-1.5">
-                          {sortedCues.map((cue) => (
+                          {sortedCues.map((cue, idx) => (
                             <CueRow
                               key={cue.id}
                               cue={cue}
+                              isFirst={idx === 0}
+                              isLast={idx === sortedCues.length - 1}
                               onEdit={() => handleEditCueOpen(cue)}
                               onDelete={() => handleDeleteCue(cue.id)}
                               onToggleActive={() => handleToggleActive(cue.id)}
+                              onToggleChecked={() => handleToggleChecked(cue.id)}
+                              onMoveUp={() => handleMoveUp(cue.id)}
+                              onMoveDown={() => handleMoveDown(cue.id)}
                             />
                           ))}
                         </div>
                       )}
 
-                      {/* 메모가 있는 큐 요약 */}
                       {sortedCues.some((c) => c.notes) && (
                         <div className="space-y-1.5">
                           <span className="text-[10px] font-medium text-muted-foreground">
@@ -909,7 +1158,6 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
         </Card>
       </Collapsible>
 
-      {/* 시트 다이얼로그 */}
       <SheetDialog
         open={sheetDialogOpen}
         mode={sheetDialogMode}
@@ -918,7 +1166,6 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
         onSubmit={handleSheetSubmit}
       />
 
-      {/* 큐 다이얼로그 */}
       <CueDialog
         open={cueDialogOpen}
         mode={cueDialogMode}
@@ -927,11 +1174,16 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
             ? {
                 cueNumber: editingCue.cueNumber,
                 name: editingCue.name,
+                trackName: editingCue.trackName,
+                artist: editingCue.artist,
                 type: editingCue.type,
                 action: editingCue.action,
+                startTime: editingCue.startTime,
+                endTime: editingCue.endTime,
                 volume: editingCue.volume,
-                triggerTime: editingCue.triggerTime,
-                duration: editingCue.duration,
+                fadeIn: editingCue.fadeIn,
+                fadeOut: editingCue.fadeOut,
+                scene: editingCue.scene,
                 source: editingCue.source,
                 notes: editingCue.notes,
               }

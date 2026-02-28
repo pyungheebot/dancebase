@@ -3,11 +3,6 @@
 import { useState } from "react";
 import {
   Lightbulb,
-  Video,
-  Image,
-  FileText,
-  Quote,
-  Sparkles,
   Heart,
   Plus,
   Trash2,
@@ -16,6 +11,13 @@ import {
   ChevronUp,
   Tag,
   X,
+  Music,
+  Palette,
+  Clapperboard,
+  Shirt,
+  MonitorPlay,
+  MoreHorizontal,
+  BarChart2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,34 +45,76 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspirationBoard } from "@/hooks/use-inspiration-board";
-import type { InspirationMediaType, InspirationBoardItem } from "@/types";
+import type { InspirationCategory, InspirationBoardItem } from "@/types";
 import { cn } from "@/lib/utils";
 
-// 미디어 유형 메타데이터
-const MEDIA_TYPE_META: Record<
-  InspirationMediaType,
-  { label: string; icon: React.ComponentType<{ className?: string }>; color: string }
-> = {
-  video: { label: "영상", icon: Video, color: "text-purple-500" },
-  image: { label: "이미지", icon: Image, color: "text-pink-500" },
-  article: { label: "아티클", icon: FileText, color: "text-blue-500" },
-  quote: { label: "명언", icon: Quote, color: "text-amber-500" },
-  idea: { label: "아이디어", icon: Sparkles, color: "text-green-500" },
+// ============================================================
+// 카테고리 메타데이터
+// ============================================================
+
+type CategoryMeta = {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  badgeClass: string;
 };
 
-const ALL_TYPES: Array<{ value: "all" | InspirationMediaType; label: string }> = [
+const CATEGORY_META: Record<InspirationCategory, CategoryMeta> = {
+  choreography: {
+    label: "안무 영상",
+    icon: Clapperboard,
+    color: "text-purple-500",
+    badgeClass: "bg-purple-100 text-purple-700 border-purple-200",
+  },
+  music: {
+    label: "음악",
+    icon: Music,
+    color: "text-pink-500",
+    badgeClass: "bg-pink-100 text-pink-700 border-pink-200",
+  },
+  fashion: {
+    label: "패션/스타일",
+    icon: Shirt,
+    color: "text-orange-500",
+    badgeClass: "bg-orange-100 text-orange-700 border-orange-200",
+  },
+  stage_design: {
+    label: "무대 디자인",
+    icon: MonitorPlay,
+    color: "text-cyan-500",
+    badgeClass: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  },
+  artwork: {
+    label: "아트워크",
+    icon: Palette,
+    color: "text-indigo-500",
+    badgeClass: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  },
+  other: {
+    label: "기타",
+    icon: MoreHorizontal,
+    color: "text-gray-500",
+    badgeClass: "bg-gray-100 text-gray-700 border-gray-200",
+  },
+};
+
+const ALL_CATEGORIES: Array<{ value: "all" | "favorites" | InspirationCategory; label: string }> = [
   { value: "all", label: "전체" },
-  { value: "video", label: "영상" },
-  { value: "image", label: "이미지" },
-  { value: "article", label: "아티클" },
-  { value: "quote", label: "명언" },
-  { value: "idea", label: "아이디어" },
+  { value: "choreography", label: "안무 영상" },
+  { value: "music", label: "음악" },
+  { value: "fashion", label: "패션/스타일" },
+  { value: "stage_design", label: "무대 디자인" },
+  { value: "artwork", label: "아트워크" },
+  { value: "other", label: "기타" },
+  { value: "favorites", label: "즐겨찾기" },
 ];
 
-// 태그 클라우드 크기 계산
+// ============================================================
+// 태그 클라우드 폰트 크기
+// ============================================================
+
 function tagFontSize(count: number, max: number): string {
   if (max === 0) return "text-xs";
   const ratio = count / max;
@@ -80,28 +124,85 @@ function tagFontSize(count: number, max: number): string {
   return "text-[10px]";
 }
 
+// ============================================================
+// 통계 패널
+// ============================================================
+
+function StatsPanel({
+  stats,
+}: {
+  stats: {
+    totalItems: number;
+    favoriteCount: number;
+    categoryDistribution: Record<InspirationCategory, number>;
+  };
+}) {
+  const categories = Object.entries(CATEGORY_META) as Array<
+    [InspirationCategory, CategoryMeta]
+  >;
+
+  return (
+    <div className="border rounded-md p-3 bg-muted/30 space-y-2">
+      <div className="flex items-center gap-1.5 mb-2">
+        <BarChart2 className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-xs font-medium text-muted-foreground">카테고리별 분포</span>
+      </div>
+      <div className="grid grid-cols-2 gap-1.5">
+        {categories.map(([key, meta]) => {
+          const count = stats.categoryDistribution[key] ?? 0;
+          const Icon = meta.icon;
+          return (
+            <div
+              key={key}
+              className="flex items-center justify-between gap-1.5 text-[11px]"
+            >
+              <span className={cn("flex items-center gap-1", meta.color)}>
+                <Icon className="h-3 w-3" />
+                {meta.label}
+              </span>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                {count}
+              </Badge>
+            </div>
+          );
+        })}
+      </div>
+      <div className="border-t pt-2 flex items-center justify-between text-[11px] text-muted-foreground">
+        <span>전체 {stats.totalItems}개</span>
+        <span className="flex items-center gap-0.5">
+          <Heart className="h-2.5 w-2.5 text-rose-400" />
+          즐겨찾기 {stats.favoriteCount}개
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // 아이템 추가 다이얼로그
+// ============================================================
+
 function AddItemDialog({
   onAdd,
 }: {
-  onAdd: (payload: Omit<InspirationBoardItem, "id" | "createdAt" | "isFavorite">) => Promise<InspirationBoardItem>;
+  onAdd: (
+    payload: Omit<InspirationBoardItem, "id" | "createdAt" | "isFavorite">
+  ) => Promise<InspirationBoardItem>;
 }) {
   const [open, setOpen] = useState(false);
-  const [mediaType, setMediaType] = useState<InspirationMediaType>("idea");
+  const [category, setCategory] = useState<InspirationCategory>("choreography");
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
-  const [content, setContent] = useState("");
-  const [source, setSource] = useState("");
+  const [memo, setMemo] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   function reset() {
-    setMediaType("idea");
+    setCategory("choreography");
     setTitle("");
     setUrl("");
-    setContent("");
-    setSource("");
+    setMemo("");
     setTagInput("");
     setTags([]);
   }
@@ -127,19 +228,15 @@ function AddItemDialog({
       toast.error("제목을 입력해 주세요.");
       return;
     }
-    if (!content.trim()) {
-      toast.error("내용을 입력해 주세요.");
-      return;
-    }
     setLoading(true);
     try {
       await onAdd({
-        mediaType,
+        category,
+        mediaType: "idea",
         title: title.trim(),
         url: url.trim() || undefined,
-        content: content.trim(),
+        content: memo.trim(),
         tags,
-        source: source.trim() || undefined,
       });
       toast.success("영감 아이템이 추가되었습니다.");
       reset();
@@ -164,24 +261,29 @@ function AddItemDialog({
           <DialogTitle className="text-sm">영감 아이템 추가</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3 mt-2">
-          {/* 유형 */}
+          {/* 카테고리 */}
           <div className="space-y-1">
-            <Label className="text-xs">유형</Label>
+            <Label className="text-xs">카테고리</Label>
             <Select
-              value={mediaType}
-              onValueChange={(v) => setMediaType(v as InspirationMediaType)}
+              value={category}
+              onValueChange={(v) => setCategory(v as InspirationCategory)}
             >
               <SelectTrigger className="h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.entries(MEDIA_TYPE_META) as Array<[InspirationMediaType, typeof MEDIA_TYPE_META[InspirationMediaType]]>).map(
-                  ([key, meta]) => (
-                    <SelectItem key={key} value={key} className="text-xs">
+                {(
+                  Object.entries(CATEGORY_META) as Array<
+                    [InspirationCategory, CategoryMeta]
+                  >
+                ).map(([key, meta]) => (
+                  <SelectItem key={key} value={key} className="text-xs">
+                    <span className="flex items-center gap-1.5">
+                      <meta.icon className={cn("h-3 w-3", meta.color)} />
                       {meta.label}
-                    </SelectItem>
-                  )
-                )}
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -197,9 +299,9 @@ function AddItemDialog({
             />
           </div>
 
-          {/* URL */}
+          {/* URL 링크 */}
           <div className="space-y-1">
-            <Label className="text-xs">URL (선택)</Label>
+            <Label className="text-xs">URL 링크 (선택)</Label>
             <Input
               className="h-8 text-xs"
               placeholder="https://..."
@@ -208,32 +310,21 @@ function AddItemDialog({
             />
           </div>
 
-          {/* 내용 */}
+          {/* 메모 */}
           <div className="space-y-1">
-            <Label className="text-xs">내용 *</Label>
+            <Label className="text-xs">메모 (선택)</Label>
             <Textarea
               className="text-xs resize-none"
               rows={3}
-              placeholder="영감을 준 내용이나 메모를 남겨보세요"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
-          </div>
-
-          {/* 출처 */}
-          <div className="space-y-1">
-            <Label className="text-xs">출처 (선택)</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="아티스트명, 영상 채널, 책 제목 등"
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
+              placeholder="영감을 준 내용이나 느낌을 메모해보세요"
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
             />
           </div>
 
           {/* 태그 */}
           <div className="space-y-1">
-            <Label className="text-xs">태그</Label>
+            <Label className="text-xs">태그 (선택)</Label>
             <div className="flex gap-1">
               <Input
                 className="h-8 text-xs flex-1"
@@ -287,7 +378,12 @@ function AddItemDialog({
             >
               취소
             </Button>
-            <Button type="submit" size="sm" className="h-7 text-xs" disabled={loading}>
+            <Button
+              type="submit"
+              size="sm"
+              className="h-7 text-xs"
+              disabled={loading}
+            >
               {loading ? "추가 중..." : "추가"}
             </Button>
           </div>
@@ -297,7 +393,10 @@ function AddItemDialog({
   );
 }
 
+// ============================================================
 // 단일 아이템 카드
+// ============================================================
+
 function InspirationItemCard({
   item,
   onToggleFavorite,
@@ -307,7 +406,7 @@ function InspirationItemCard({
   onToggleFavorite: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
-  const meta = MEDIA_TYPE_META[item.mediaType];
+  const meta = CATEGORY_META[item.category ?? "other"];
   const Icon = meta.icon;
 
   return (
@@ -330,7 +429,10 @@ function InspirationItemCard({
             aria-label={item.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
           >
             <Heart
-              className={cn("h-3.5 w-3.5", item.isFavorite && "fill-current")}
+              className={cn(
+                "h-3.5 w-3.5",
+                item.isFavorite && "fill-current"
+              )}
             />
           </button>
           <button
@@ -343,29 +445,32 @@ function InspirationItemCard({
         </div>
       </div>
 
-      {/* 내용 미리보기 */}
-      <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
-        {item.content}
-      </p>
+      {/* 카테고리 배지 */}
+      <Badge
+        variant="outline"
+        className={cn("text-[10px] px-1.5 py-0", meta.badgeClass)}
+      >
+        {meta.label}
+      </Badge>
 
-      {/* 출처 + URL */}
-      {(item.source || item.url) && (
-        <div className="flex items-center gap-2">
-          {item.source && (
-            <span className="text-[10px] text-muted-foreground">출처: {item.source}</span>
-          )}
-          {item.url && (
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[10px] text-blue-500 hover:underline flex items-center gap-0.5"
-            >
-              링크
-              <ExternalLink className="h-2.5 w-2.5" />
-            </a>
-          )}
-        </div>
+      {/* 메모 미리보기 */}
+      {item.content && (
+        <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+          {item.content}
+        </p>
+      )}
+
+      {/* URL 링크 */}
+      {item.url && (
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-blue-500 hover:underline flex items-center gap-0.5 w-fit"
+        >
+          링크 열기
+          <ExternalLink className="h-2.5 w-2.5" />
+        </a>
       )}
 
       {/* 태그 */}
@@ -391,29 +496,28 @@ function InspirationItemCard({
   );
 }
 
+// ============================================================
 // 메인 컴포넌트
+// ============================================================
+
 export function InspirationBoardCard({ memberId }: { memberId: string }) {
-  const {
-    items,
-    addItem,
-    deleteItem,
-    toggleFavorite,
-    stats,
-  } = useInspirationBoard(memberId);
+  const { items, addItem, deleteItem, toggleFavorite, stats } =
+    useInspirationBoard(memberId);
 
   const [isOpen, setIsOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<"all" | InspirationMediaType | "favorites">(
-    "all"
-  );
+  const [showStats, setShowStats] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<
+    "all" | "favorites" | InspirationCategory
+  >("all");
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
   // 필터 적용
   const filteredItems = (() => {
     let result = items;
-    if (activeTab === "favorites") {
+    if (activeFilter === "favorites") {
       result = result.filter((i) => i.isFavorite);
-    } else if (activeTab !== "all") {
-      result = result.filter((i) => i.mediaType === activeTab);
+    } else if (activeFilter !== "all") {
+      result = result.filter((i) => i.category === activeFilter);
     }
     if (activeTag) {
       result = result.filter((i) => i.tags.includes(activeTag));
@@ -440,8 +544,13 @@ export function InspirationBoardCard({ memberId }: { memberId: string }) {
             <CollapsibleTrigger asChild>
               <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <Lightbulb className="h-4 w-4 text-amber-500" />
-                <CardTitle className="text-sm font-semibold">댄스 영감 보드</CardTitle>
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                <CardTitle className="text-sm font-semibold">
+                  댄스 인스피레이션 보드
+                </CardTitle>
+                <Badge
+                  variant="secondary"
+                  className="text-[10px] px-1.5 py-0"
+                >
                   {stats.totalItems}
                 </Badge>
                 {isOpen ? (
@@ -451,56 +560,72 @@ export function InspirationBoardCard({ memberId }: { memberId: string }) {
                 )}
               </button>
             </CollapsibleTrigger>
-            <AddItemDialog onAdd={addItem} />
+            <div className="flex items-center gap-1">
+              {stats.totalItems > 0 && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => setShowStats((p) => !p)}
+                >
+                  <BarChart2 className="h-3 w-3" />
+                  통계
+                </Button>
+              )}
+              <AddItemDialog onAdd={addItem} />
+            </div>
           </div>
         </CardHeader>
 
         <CollapsibleContent>
           <CardContent className="px-4 pb-4 space-y-3">
-            {/* 통계 요약 */}
-            {stats.totalItems > 0 && (
-              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                <span>전체 {stats.totalItems}개</span>
-                <span>즐겨찾기 {stats.favoriteCount}개</span>
-              </div>
+            {/* 통계 패널 */}
+            {showStats && stats.totalItems > 0 && (
+              <StatsPanel stats={stats} />
             )}
 
-            {/* 미디어 유형 탭 */}
-            <Tabs
-              value={activeTab}
-              onValueChange={(v) =>
-                setActiveTab(v as "all" | InspirationMediaType | "favorites")
-              }
-            >
-              <TabsList className="h-7 text-xs gap-0.5 flex-wrap">
-                {ALL_TYPES.map((t) => (
-                  <TabsTrigger
-                    key={t.value}
-                    value={t.value}
-                    className="h-6 text-[10px] px-2"
-                  >
-                    {t.label}
-                  </TabsTrigger>
-                ))}
-                <TabsTrigger value="favorites" className="h-6 text-[10px] px-2">
-                  <Heart className="h-2.5 w-2.5 mr-0.5" />
-                  즐겨찾기
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {/* 카테고리 필터 버튼 */}
+            <div className="flex flex-wrap gap-1">
+              {ALL_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.value}
+                  onClick={() => {
+                    setActiveFilter(
+                      cat.value as "all" | "favorites" | InspirationCategory
+                    );
+                    setActiveTag(null);
+                  }}
+                  className={cn(
+                    "text-[10px] px-2 py-0.5 rounded-full border transition-colors",
+                    activeFilter === cat.value
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                  )}
+                >
+                  {cat.value === "favorites" ? (
+                    <span className="flex items-center gap-0.5">
+                      <Heart className="h-2.5 w-2.5" />
+                      {cat.label}
+                    </span>
+                  ) : (
+                    cat.label
+                  )}
+                </button>
+              ))}
+            </div>
 
             {/* 태그 클라우드 */}
             {Object.keys(stats.tagCloud).length > 0 && (
               <div className="border rounded-md p-2 bg-muted/30">
                 <p className="text-[10px] text-muted-foreground mb-1.5 flex items-center gap-1">
                   <Tag className="h-3 w-3" />
-                  태그 클라우드
+                  태그 필터
                   {activeTag && (
                     <button
                       onClick={() => setActiveTag(null)}
                       className="ml-auto text-[10px] text-primary hover:underline"
                     >
-                      필터 해제
+                      해제
                     </button>
                   )}
                 </p>
@@ -540,7 +665,7 @@ export function InspirationBoardCard({ memberId }: { memberId: string }) {
                 </p>
                 {items.length === 0 && (
                   <p className="mt-1 opacity-70">
-                    영상, 이미지, 명언 등 영감을 주는 것들을 기록해보세요.
+                    안무 영상, 음악, 패션 등 영감을 주는 것들을 기록해보세요.
                   </p>
                 )}
               </div>
