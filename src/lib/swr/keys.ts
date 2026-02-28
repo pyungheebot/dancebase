@@ -1500,4 +1500,24 @@ export const swrKeys = {
   // 그룹 기념일 (localStorage 기반)
   groupAnniversary: (groupId: string) =>
     `group-anniversary-${groupId}` as const,
+
+  // 그룹 회비 관리 (localStorage 기반)
+  membershipFee: (groupId: string) =>
+    `membership-fee-${groupId}` as const,
+
+  // 공연 세트리스트 (localStorage 기반)
+  performanceSetlist: (projectId: string) =>
+    `performance-setlist-${projectId}` as const,
+
+  // 공연 무대 소품 관리 v2 (localStorage 기반)
+  stagePropManagement: (projectId: string) =>
+    `stage-prop-management-${projectId}` as const,
+
+  // 멤버 댄스 대회 참가 기록 (localStorage 기반)
+  danceCompetition: (memberId: string) =>
+    `dance-competition-${memberId}` as const,
+
+  // 그룹 규정집 (localStorage 기반)
+  groupRulebook: (groupId: string) =>
+    `group-rulebook-${groupId}` as const,
 };

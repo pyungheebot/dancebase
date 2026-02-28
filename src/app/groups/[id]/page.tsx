@@ -42,6 +42,8 @@ import { MemberBirthdayCard } from "@/components/groups/member-birthday-card";
 import { SharedFilesCard } from "@/components/groups/shared-files-card";
 import { MediaGalleryCard } from "@/components/groups/media-gallery-card";
 import { GroupAnniversaryCard } from "@/components/groups/group-anniversary-card";
+import { GroupRulebookCard } from "@/components/groups/group-rulebook-card";
+import { MembershipFeeCard } from "@/components/groups/membership-fee-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -222,6 +224,13 @@ export default function GroupDetailPage({
           <MediaGalleryCard groupId={ctx.groupId} />
 
           <GroupAnniversaryCard groupId={ctx.groupId} />
+
+          <GroupRulebookCard groupId={ctx.groupId} />
+
+          <MembershipFeeCard
+            groupId={ctx.groupId}
+            memberNames={ctx.members.map((m) => m.nickname || m.profile.name)}
+          />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

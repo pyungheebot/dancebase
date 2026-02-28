@@ -13523,3 +13523,209 @@ export type GroupAnniversaryData = {
   /** 마지막 수정일 (ISO 8601) */
   updatedAt: string;
 };
+
+// ============================================================
+// 공연 무대 소품 관리 v2 (StagePropItem / StagePropData)
+// ============================================================
+
+/** 소품 카테고리 */
+export type StagePropCategory =
+  | "furniture"      // 가구/소품
+  | "decoration"     // 장식
+  | "handheld"       // 핸드헬드
+  | "backdrop"       // 배경막
+  | "lighting_prop"  // 조명 소품
+  | "other";         // 기타
+
+/** 소품 상태 (v2) */
+export type StagePropItemStatus =
+  | "available"  // 사용 가능
+  | "in_use"     // 사용 중
+  | "damaged"    // 손상됨
+  | "missing";   // 분실
+
+/** 무대 소품 단일 항목 (v2) */
+export type StagePropItem = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 소품 이름 */
+  name: string;
+  /** 카테고리 */
+  category: StagePropCategory;
+  /** 수량 */
+  quantity: number;
+  /** 사용 씬/장면 */
+  scene: string | null;
+  /** 배치 위치 */
+  placement: string | null;
+  /** 담당자 */
+  responsiblePerson: string | null;
+  /** 상태 */
+  status: StagePropItemStatus;
+  /** 메모 */
+  notes: string;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 무대 소품 전체 데이터 (localStorage 저장 단위, v2) */
+export type StagePropData = {
+  /** 프로젝트 ID */
+  projectId: string;
+  /** 소품 목록 */
+  props: StagePropItem[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// 공연 세트리스트 v2 (ShowSetlist - 곡 순서/전환 타이밍 관리)
+// ============================================
+
+/** 공연 세트리스트(v2) 개별 곡 항목 */
+export type ShowSetlistItem = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 순서 (1부터 시작) */
+  order: number;
+  /** 곡 제목 */
+  songTitle: string;
+  /** 아티스트 (선택) */
+  artist: string | null;
+  /** 장르 (선택) */
+  genre: string | null;
+  /** 재생 시간 - 예: "3:45" (선택) */
+  duration: string | null;
+  /** 다음 곡으로의 전환 메모 (선택) */
+  transitionNote: string | null;
+  /** 담당 퍼포머 목록 */
+  performers: string[];
+  /** 앙코르 여부 */
+  isEncore: boolean;
+  /** 비고 */
+  notes: string;
+};
+
+/** 공연 세트리스트(v2) 전체 데이터 (localStorage 저장 단위) */
+export type ShowSetlistData = {
+  /** 프로젝트 ID */
+  projectId: string;
+  /** 세트리스트 항목 목록 */
+  items: ShowSetlistItem[];
+  /** 공연 제목 */
+  showTitle: string;
+  /** 총 소요시간 (선택) */
+  totalDuration: string | null;
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** 멤버별 월 회비 납부 항목 */
+export type MembershipFeePayment = {
+  /** 고유 ID */
+  id: string;
+  /** 멤버 이름 */
+  memberName: string;
+  /** 대상 월 ("2024-01" 형식) */
+  month: string;
+  /** 납부 금액 */
+  amount: number;
+  /** 납부일 (ISO 8601, null이면 미납) */
+  paidAt: string | null;
+  /** 납부 상태 */
+  status: "paid" | "unpaid" | "partial" | "exempt";
+  /** 메모 */
+  notes: string | null;
+};
+
+/** 그룹 회비 전체 데이터 (localStorage 저장 단위) */
+export type MembershipFeeData = {
+  /** 그룹 ID */
+  groupId: string;
+  /** 납부 항목 목록 */
+  payments: MembershipFeePayment[];
+  /** 월 기본 회비 금액 */
+  monthlyFee: number;
+  /** 통화 단위 */
+  currency: string;
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// Dance Competition Record (댄스 대회 참가 기록)
+// ============================================
+
+/** 댄스 대회/컴피티션 참가 기록 */
+export type DanceCompetitionRecord = {
+  /** 고유 ID */
+  id: string;
+  /** 대회명 */
+  competitionName: string;
+  /** 대회 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 장소 */
+  location: string | null;
+  /** 참가 부문/카테고리 */
+  category: string | null;
+  /** 입상 결과 ("1위", "2위", "3위", "결선진출", "본선진출" 등) */
+  placement: string | null;
+  /** 참가 유형 */
+  teamOrSolo: "solo" | "team" | "duo";
+  /** 팀명 (팀/듀오 참가 시) */
+  teamName: string | null;
+  /** 장르 */
+  genre: string | null;
+  /** 메모 */
+  notes: string;
+  /** 수상 증명서 URL (선택) */
+  certificateUrl: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 댄스 대회 참가 데이터 (localStorage 저장 단위) */
+export type DanceCompetitionData = {
+  /** 멤버 ID */
+  memberId: string;
+  /** 참가 기록 목록 */
+  records: DanceCompetitionRecord[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// Group Rulebook (그룹 규정집 관리, localStorage 기반)
+// ============================================================
+
+/** 규정집 단일 섹션 항목 */
+export type GroupRuleSection = {
+  /** 고유 식별자 */
+  id: string;
+  /** 섹션 제목 */
+  title: string;
+  /** 섹션 내용 */
+  content: string;
+  /** 정렬 순서 (낮을수록 앞) */
+  order: number;
+  /** 중요 규정 여부 */
+  isImportant: boolean;
+  /** 마지막 편집자 이름 (없으면 null) */
+  lastEditedBy: string | null;
+  /** 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** 그룹 규정집 전체 데이터 (localStorage 저장 단위) */
+export type GroupRulebookData = {
+  /** 그룹 ID */
+  groupId: string;
+  /** 규정 섹션 목록 */
+  sections: GroupRuleSection[];
+  /** 규정집 버전 (예: "v1.0", "2026년 개정판") */
+  version: string;
+  /** 시행일 (YYYY-MM-DD, null이면 미정) */
+  effectiveDate: string | null;
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};

@@ -76,6 +76,7 @@ import { DanceGoalCard } from "@/components/members/dance-goal-card";
 import { DanceConditionJournalCard } from "@/components/members/dance-condition-journal-card";
 import { DanceVideoPortfolioCard } from "@/components/members/dance-video-portfolio-card";
 import { DanceClassReviewCard } from "@/components/members/dance-class-review-card";
+import { DanceCompetitionCard } from "@/components/members/dance-competition-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -721,6 +722,9 @@ function GroupMembersContent({
       <DanceConditionJournalCard memberId={currentUserId} />
       <DanceVideoPortfolioCard memberId={currentUserId} />
       <DanceClassReviewCard memberId={currentUserId} />
+
+      {/* 댄스 대회 참가 기록 (대회/컴피티션 참가 이력) */}
+      <DanceCompetitionCard memberId={currentUserId} />
     </>
   );
 }

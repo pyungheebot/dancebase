@@ -1,233 +1,189 @@
 "use client";
 
 import useSWR from "swr";
-import { useCallback } from "react";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
-import type { StagePropEntry, StagePropStatus } from "@/types";
+import type {
+  StagePropData,
+  StagePropItem,
+  StagePropCategory,
+  StagePropItemStatus,
+} from "@/types";
 
 // ============================================================
 // localStorage 유틸
 // ============================================================
 
-function getStorageKey(groupId: string, projectId: string): string {
-  return `dancebase:stage-prop:${groupId}:${projectId}`;
+const STORAGE_PREFIX = "dancebase:stage-prop-management";
+
+function getStorageKey(projectId: string): string {
+  return `${STORAGE_PREFIX}:${projectId}`;
 }
 
-function loadEntries(groupId: string, projectId: string): StagePropEntry[] {
-  if (typeof window === "undefined") return [];
+function loadData(projectId: string): StagePropData {
+  if (typeof window === "undefined") return createEmptyData(projectId);
   try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as StagePropEntry[]) : [];
+    const raw = localStorage.getItem(getStorageKey(projectId));
+    return raw ? (JSON.parse(raw) as StagePropData) : createEmptyData(projectId);
   } catch {
-    return [];
+    return createEmptyData(projectId);
   }
 }
 
-function saveEntries(
-  groupId: string,
-  projectId: string,
-  entries: StagePropEntry[]
-): void {
+function saveData(data: StagePropData): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(
-      getStorageKey(groupId, projectId),
-      JSON.stringify(entries)
-    );
+    localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
   } catch {
     // localStorage 쓰기 실패 무시
   }
+}
+
+function createEmptyData(projectId: string): StagePropData {
+  return {
+    projectId,
+    props: [],
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 // ============================================================
 // 입력 타입
 // ============================================================
 
-export type AddStagePropInput = {
+export type StagePropInput = {
   name: string;
-  scene?: string;
-  assignedTo?: string;
-  storageLocation?: string;
-  status: StagePropStatus;
+  category: StagePropCategory;
   quantity: number;
-  cost?: number;
-  photoUrl?: string;
-  memo?: string;
+  scene: string | null;
+  placement: string | null;
+  responsiblePerson: string | null;
+  status: StagePropItemStatus;
+  notes: string;
 };
-
-export type UpdateStagePropInput = Partial<AddStagePropInput>;
 
 // ============================================================
 // 훅
 // ============================================================
 
-export function useStageProp(groupId: string, projectId: string) {
+export function useStagePropManagement(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
-    groupId && projectId ? swrKeys.stageProp(groupId, projectId) : null,
-    async () => loadEntries(groupId, projectId)
+    projectId ? swrKeys.stagePropManagement(projectId) : null,
+    async () => loadData(projectId)
   );
 
-  const entries = data ?? [];
+  const store = data ?? createEmptyData(projectId);
+
+  /** 저장 후 SWR 캐시 업데이트 */
+  function persist(updated: StagePropData): void {
+    const withTimestamp: StagePropData = {
+      ...updated,
+      updatedAt: new Date().toISOString(),
+    };
+    saveData(withTimestamp);
+    mutate(withTimestamp, false);
+  }
 
   // ── 소품 추가 ──
-  const addProp = useCallback(
-    async (input: AddStagePropInput): Promise<boolean> => {
-      if (!input.name.trim()) {
-        toast.error("소품 이름을 입력해주세요");
-        return false;
-      }
-      if (input.quantity < 1) {
-        toast.error("수량은 1 이상이어야 합니다");
-        return false;
-      }
-
-      const now = new Date().toISOString();
-      const newEntry: StagePropEntry = {
-        id: crypto.randomUUID(),
-        groupId,
-        projectId,
-        name: input.name.trim(),
-        scene: input.scene?.trim() || undefined,
-        assignedTo: input.assignedTo?.trim() || undefined,
-        storageLocation: input.storageLocation?.trim() || undefined,
-        status: input.status,
-        quantity: input.quantity,
-        cost: input.cost,
-        photoUrl: input.photoUrl?.trim() || undefined,
-        memo: input.memo?.trim() || undefined,
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      const updated = [...entries, newEntry];
-      saveEntries(groupId, projectId, updated);
-      await mutate(updated, false);
-      toast.success("소품이 추가되었습니다");
-      return true;
-    },
-    [groupId, projectId, entries, mutate]
-  );
+  function addProp(input: StagePropInput): StagePropItem | null {
+    if (!input.name.trim()) {
+      toast.error("소품 이름을 입력해주세요");
+      return null;
+    }
+    if (input.quantity < 1) {
+      toast.error("수량은 1 이상이어야 합니다");
+      return null;
+    }
+    const item: StagePropItem = {
+      ...input,
+      id: crypto.randomUUID(),
+      name: input.name.trim(),
+      notes: input.notes.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    persist({ ...store, props: [...store.props, item] });
+    toast.success("소품이 추가되었습니다");
+    return item;
+  }
 
   // ── 소품 수정 ──
-  const updateProp = useCallback(
-    async (id: string, changes: UpdateStagePropInput): Promise<boolean> => {
-      const target = entries.find((e) => e.id === id);
-      if (!target) {
-        toast.error("소품을 찾을 수 없습니다");
-        return false;
-      }
-
-      const updated = entries.map((e) =>
-        e.id === id
-          ? {
-              ...e,
-              ...changes,
-              name:
-                changes.name !== undefined
-                  ? changes.name.trim()
-                  : e.name,
-              scene:
-                changes.scene !== undefined
-                  ? changes.scene.trim() || undefined
-                  : e.scene,
-              assignedTo:
-                changes.assignedTo !== undefined
-                  ? changes.assignedTo.trim() || undefined
-                  : e.assignedTo,
-              storageLocation:
-                changes.storageLocation !== undefined
-                  ? changes.storageLocation.trim() || undefined
-                  : e.storageLocation,
-              memo:
-                changes.memo !== undefined
-                  ? changes.memo.trim() || undefined
-                  : e.memo,
-              updatedAt: new Date().toISOString(),
-            }
-          : e
-      );
-
-      saveEntries(groupId, projectId, updated);
-      await mutate(updated, false);
-      toast.success("소품이 수정되었습니다");
-      return true;
-    },
-    [groupId, projectId, entries, mutate]
-  );
+  function updateProp(id: string, fields: Partial<StagePropInput>): boolean {
+    const target = store.props.find((p) => p.id === id);
+    if (!target) {
+      toast.error("소품을 찾을 수 없습니다");
+      return false;
+    }
+    const updated = store.props.map((p) =>
+      p.id === id
+        ? {
+            ...p,
+            ...fields,
+            name: fields.name !== undefined ? fields.name.trim() : p.name,
+            notes: fields.notes !== undefined ? fields.notes.trim() : p.notes,
+          }
+        : p
+    );
+    persist({ ...store, props: updated });
+    toast.success("소품이 수정되었습니다");
+    return true;
+  }
 
   // ── 소품 삭제 ──
-  const deleteProp = useCallback(
-    async (id: string): Promise<boolean> => {
-      const filtered = entries.filter((e) => e.id !== id);
-      saveEntries(groupId, projectId, filtered);
-      await mutate(filtered, false);
-      toast.success("소품이 삭제되었습니다");
-      return true;
-    },
-    [groupId, projectId, entries, mutate]
-  );
-
-  // ── 상태 변경 ──
-  const changeStatus = useCallback(
-    async (id: string, status: StagePropStatus): Promise<boolean> => {
-      const updated = entries.map((e) =>
-        e.id === id
-          ? { ...e, status, updatedAt: new Date().toISOString() }
-          : e
-      );
-      saveEntries(groupId, projectId, updated);
-      await mutate(updated, false);
-      return true;
-    },
-    [groupId, projectId, entries, mutate]
-  );
-
-  // ── 상태별 필터 ──
-  const filterByStatus = useCallback(
-    (status: StagePropStatus | "all"): StagePropEntry[] => {
-      if (status === "all") return entries;
-      return entries.filter((e) => e.status === status);
-    },
-    [entries]
-  );
-
-  // ── 담당자별 필터 ──
-  const filterByAssignee = useCallback(
-    (assignedTo: string | "all"): StagePropEntry[] => {
-      if (assignedTo === "all") return entries;
-      return entries.filter((e) => e.assignedTo === assignedTo);
-    },
-    [entries]
-  );
+  function deleteProp(id: string): boolean {
+    const filtered = store.props.filter((p) => p.id !== id);
+    persist({ ...store, props: filtered });
+    toast.success("소품이 삭제되었습니다");
+    return true;
+  }
 
   // ── 통계 ──
-  const stats = {
-    total: entries.length,
-    totalQuantity: entries.reduce((sum, e) => sum + e.quantity, 0),
-    totalCost: entries.reduce((sum, e) => sum + (e.cost ?? 0), 0),
-    byStatus: {
-      ready: entries.filter((e) => e.status === "ready").length,
-      in_use: entries.filter((e) => e.status === "in_use").length,
-      stored: entries.filter((e) => e.status === "stored").length,
-      repair: entries.filter((e) => e.status === "repair").length,
-      lost: entries.filter((e) => e.status === "lost").length,
-    },
-    assignees: [
-      ...new Set(entries.map((e) => e.assignedTo).filter(Boolean)),
-    ] as string[],
+  const totalProps = store.props.length;
+
+  const categoryBreakdown: Record<StagePropCategory, number> = {
+    furniture: 0,
+    decoration: 0,
+    handheld: 0,
+    backdrop: 0,
+    lighting_prop: 0,
+    other: 0,
   };
+  for (const p of store.props) {
+    categoryBreakdown[p.category] = (categoryBreakdown[p.category] ?? 0) + 1;
+  }
+
+  const statusSummary: Record<StagePropItemStatus, number> = {
+    available: 0,
+    in_use: 0,
+    damaged: 0,
+    missing: 0,
+  };
+  for (const p of store.props) {
+    statusSummary[p.status] = (statusSummary[p.status] ?? 0) + 1;
+  }
+
+  const sceneSet = new Set<string>();
+  for (const p of store.props) {
+    if (p.scene) sceneSet.add(p.scene);
+  }
+  const sceneDistribution: Record<string, number> = {};
+  for (const p of store.props) {
+    const key = p.scene ?? "(씬 없음)";
+    sceneDistribution[key] = (sceneDistribution[key] ?? 0) + 1;
+  }
 
   return {
-    entries,
+    props: store.props,
     loading: isLoading,
-    refetch: () => mutate(),
+    // CRUD
     addProp,
     updateProp,
     deleteProp,
-    changeStatus,
-    filterByStatus,
-    filterByAssignee,
-    stats,
+    // 통계
+    totalProps,
+    categoryBreakdown,
+    statusSummary,
+    sceneDistribution,
+    // SWR 갱신
+    refetch: () => mutate(),
   };
 }

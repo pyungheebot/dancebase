@@ -35,6 +35,8 @@ import { RehearsalScheduleCard } from "@/components/projects/rehearsal-schedule-
 import { AudienceFeedbackCard } from "@/components/projects/audience-feedback-card";
 import { StageSafetyCard } from "@/components/projects/stage-safety-card";
 import { CostumeFittingCard } from "@/components/projects/costume-fitting-card";
+import { PerformanceSetlistCard } from "@/components/projects/performance-setlist-card";
+import { StagePropCard } from "@/components/projects/stage-prop-card";
 
 export default function ProjectDetailPage({
   params,
@@ -196,6 +198,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <CostumeFittingCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <PerformanceSetlistCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <StagePropCard
               projectId={ctx.projectId}
             />
           )}

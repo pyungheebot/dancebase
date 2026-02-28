@@ -809,3 +809,11 @@ export function invalidateCostumeFitting(projectId: string) {
 export function invalidateGroupMediaGallery(groupId: string) {
   mutate(swrKeys.groupMediaGallery(groupId));
 }
+
+export function invalidateMembershipFee(groupId: string) {
+  mutate(swrKeys.membershipFee(groupId));
+}
+
+export function invalidatePerformanceSetlist(projectId: string) {
+  mutate(swrKeys.performanceSetlist(projectId));
+}
