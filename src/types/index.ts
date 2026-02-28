@@ -11744,3 +11744,235 @@ export type SocialPostPlannerData = {
   entries: SocialPostEntry[];
   updatedAt: string;
 };
+
+// ============================================================
+// 댄스 스타일 분석 (Dance Style Analysis)
+// ============================================================
+
+/** 댄스 스타일 특성 항목 키 */
+export type DanceStyleTrait =
+  | "power"
+  | "flexibility"
+  | "rhythm"
+  | "expression"
+  | "technique"
+  | "musicality";
+
+/** 특성별 점수 맵 (1-10) */
+export type DanceStyleTraitScores = Record<DanceStyleTrait, number>;
+
+/** 단일 분석 스냅샷 기록 */
+export type DanceStyleSnapshot = {
+  id: string;
+  /** 기록 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 주력 장르 목록 */
+  primaryGenres: string[];
+  /** 부력 장르 목록 */
+  secondaryGenres: string[];
+  /** 강점 태그 */
+  strengths: string[];
+  /** 약점 태그 */
+  weaknesses: string[];
+  /** 특성별 점수 */
+  traitScores: DanceStyleTraitScores;
+  /** 스타일 노트/코멘트 */
+  notes: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 멤버별 전체 분석 데이터 (localStorage 저장 단위) */
+export type DanceStyleAnalysisData = {
+  memberId: string;
+  /** 스냅샷 목록 (최신순) */
+  snapshots: DanceStyleSnapshot[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 엔딩 크레딧 (Show Ending Credits)
+// ============================================================
+
+/** 크레딧 섹션 유형 */
+export type CreditSectionType =
+  | "cast"
+  | "choreography"
+  | "music"
+  | "lighting"
+  | "costume"
+  | "stage"
+  | "planning"
+  | "special_thanks";
+
+/** 크레딧 멤버/스태프 항목 */
+export type CreditPerson = {
+  /** 고유 ID */
+  id: string;
+  /** 이름 */
+  name: string;
+  /** 역할/직함 */
+  role: string;
+};
+
+/** 크레딧 섹션 */
+export type CreditSection = {
+  /** 고유 ID */
+  id: string;
+  /** 섹션 유형 */
+  type: CreditSectionType;
+  /** 섹션 제목 (커스텀 가능) */
+  title: string;
+  /** 섹션 내 인원 목록 */
+  people: CreditPerson[];
+  /** 섹션 순서 (0부터 시작) */
+  order: number;
+};
+
+/** localStorage 저장 단위 */
+export type ShowCreditsData = {
+  groupId: string;
+  projectId: string;
+  sections: CreditSection[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 월간 하이라이트 (Monthly Highlights)
+// ============================================================
+
+/** 하이라이트 카테고리 */
+export type HighlightCategory =
+  | "best_practice"
+  | "best_performance"
+  | "mvp"
+  | "growth"
+  | "teamwork"
+  | "fun_moment";
+
+/** 월간 하이라이트 항목 */
+export type MonthlyHighlight = {
+  /** 고유 ID */
+  id: string;
+  /** YYYY-MM 형식 */
+  yearMonth: string;
+  /** 하이라이트 제목 */
+  title: string;
+  /** 카테고리 */
+  category: HighlightCategory;
+  /** 설명 */
+  description: string;
+  /** 관련 멤버 이름 목록 */
+  relatedMembers: string[];
+  /** 사진 URL (선택) */
+  photoUrl?: string;
+  /** 좋아요한 멤버 이름 목록 */
+  likes: string[];
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type MonthlyHighlightData = {
+  groupId: string;
+  highlights: MonthlyHighlight[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 무대 세팅 체크리스트 (Stage Setup Checklist)
+// ============================================================
+
+/** 무대 세팅 체크리스트 카테고리 */
+export type StageSetupCategory =
+  | "sound"
+  | "lighting"
+  | "floor"
+  | "props"
+  | "costume"
+  | "tech";
+
+/** 무대 세팅 체크리스트 항목 */
+export type StageSetupChecklistItem = {
+  /** 고유 ID */
+  id: string;
+  /** 카테고리 */
+  category: StageSetupCategory;
+  /** 항목 내용 */
+  content: string;
+  /** 완료 여부 */
+  completed: boolean;
+  /** 담당자 */
+  assignee?: string;
+  /** 완료 시각 (ISO 8601) */
+  completedAt?: string;
+  /** 비고 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type StageSetupChecklistData = {
+  groupId: string;
+  projectId: string;
+  items: StageSetupChecklistItem[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 멘탈 코칭 노트 (Mental Coaching Notes)
+// ============================================================
+
+/** 코칭 주제 카테고리 */
+export type MentalCoachingTopic =
+  | "자신감"
+  | "무대 공포증"
+  | "동기부여"
+  | "팀워크"
+  | "스트레스 관리"
+  | "목표 설정";
+
+/** 코칭 진행 상태 */
+export type MentalCoachingStatus = "진행중" | "개선됨" | "해결됨";
+
+/** 액션 아이템 */
+export type MentalCoachingActionItem = {
+  id: string;
+  text: string;
+  done: boolean;
+};
+
+/** 코칭 노트 단일 항목 */
+export type MentalCoachingNote = {
+  id: string;
+  /** 대상 멤버 이름 */
+  memberName: string;
+  /** 코치 이름 */
+  coachName: string;
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 주제 카테고리 */
+  topic: MentalCoachingTopic;
+  /** 노트 내용 */
+  content: string;
+  /** 기분/에너지 레벨 (1-5) */
+  energyLevel: number;
+  /** 액션 아이템 목록 */
+  actionItems: MentalCoachingActionItem[];
+  /** 진행 상태 */
+  status: MentalCoachingStatus;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type MentalCoachingData = {
+  groupId: string;
+  notes: MentalCoachingNote[];
+  updatedAt: string;
+};

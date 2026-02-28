@@ -1364,4 +1364,24 @@ export const swrKeys = {
   // 댄스 부상 기록 (localStorage 기반)
   danceInjuryLog: (memberId: string) =>
     `dance-injury-log-${memberId}` as const,
+
+  // 그룹 월간 하이라이트 (localStorage 기반)
+  monthlyHighlights: (groupId: string) =>
+    `monthly-highlights-${groupId}` as const,
+
+  // 공연 엔딩 크레딧 (localStorage 기반)
+  showCredits: (groupId: string, projectId: string) =>
+    `show-credits-${groupId}-${projectId}` as const,
+
+  // 댄스 스타일 분석 (localStorage 기반)
+  danceStyleAnalysis: (memberId: string) =>
+    `dance-style-analysis-${memberId}` as const,
+
+  // 공연 무대 세팅 체크리스트 (localStorage 기반)
+  stageSetupChecklist: (groupId: string, projectId: string) =>
+    `stage-setup-checklist-${groupId}-${projectId}` as const,
+
+  // 그룹 멘탈 코칭 노트 (localStorage 기반)
+  mentalCoaching: (groupId: string) =>
+    `mental-coaching-${groupId}` as const,
 };

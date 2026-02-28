@@ -68,6 +68,7 @@ import { DanceAuditionCard } from "@/components/members/dance-audition-card";
 import { DanceClassLogCard } from "@/components/members/dance-class-log-card";
 import { DanceNetworkingCard } from "@/components/members/dance-networking-card";
 import { InjuryLogCard } from "@/components/members/injury-log-card";
+import { DanceStyleAnalysisCard } from "@/components/members/dance-style-analysis-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -701,6 +702,9 @@ function GroupMembersContent({
 
       {/* 댄스 부상 기록 (부상 이력 및 재활 상태 추적) */}
       <InjuryLogCard memberId={currentUserId} />
+
+      {/* 댄스 스타일 분석 (개인 댄스 스타일 특성 기록) */}
+      <DanceStyleAnalysisCard memberId={currentUserId} />
     </>
   );
 }

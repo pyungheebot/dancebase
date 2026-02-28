@@ -19,6 +19,8 @@ import { PostShowReportCard } from "@/components/projects/post-show-report-card"
 import { LiveShowFeedCard } from "@/components/projects/live-show-feed-card";
 import { VipGuestCard } from "@/components/projects/vip-guest-card";
 import { SocialPostPlannerCard } from "@/components/projects/social-post-planner-card";
+import { StageSetupChecklistCard } from "@/components/projects/stage-setup-checklist-card";
+import { ShowCreditsCard } from "@/components/projects/show-credits-card";
 
 export default function ProjectDetailPage({
   params,
@@ -96,6 +98,18 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <SocialPostPlannerCard
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <StageSetupChecklistCard
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <ShowCreditsCard
               groupId={ctx.groupId}
               projectId={ctx.projectId}
             />
