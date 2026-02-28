@@ -51,6 +51,8 @@ import { StageRundownCard } from "@/components/projects/stage-rundown-card";
 import { ArtistRiderCard } from "@/components/projects/artist-rider-card";
 import { TicketSalesCard } from "@/components/projects/ticket-sales-card";
 import { StageAccessCard } from "@/components/projects/stage-access-card";
+import { SetChangeLogCard } from "@/components/projects/set-change-log-card";
+import { ShowDayChecklistCard } from "@/components/projects/show-day-checklist-card";
 
 export default function ProjectDetailPage({
   params,
@@ -292,6 +294,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <StageAccessCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <SetChangeLogCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <ShowDayChecklistCard
               projectId={ctx.projectId}
             />
           )}

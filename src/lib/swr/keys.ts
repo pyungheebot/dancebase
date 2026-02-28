@@ -1617,4 +1617,19 @@ export const swrKeys = {
 
   // 벌칙/페널티 관리 (localStorage 기반)
   groupPenalty: (groupId: string) => `group-penalty-${groupId}` as const,
+
+  // 댄서 영양 관리 (localStorage 기반)
+  danceNutrition: (memberId: string) => `dance-nutrition-${memberId}` as const,
+
+  // 세트 전환 기록 (localStorage 기반)
+  setChangeLog: (projectId: string) => `set-change-log-${projectId}` as const,
+
+  // 그룹 타임라인/연혁 (localStorage 기반)
+  groupTimeline: (groupId: string) => `group-timeline-${groupId}` as const,
+
+  // 분실물 관리 (localStorage 기반)
+  groupLostFound: (groupId: string) => `group-lost-found-${groupId}` as const,
+
+  // 공연 당일 체크리스트 (localStorage 기반)
+  showDayChecklist: (projectId: string) => `show-day-checklist-${projectId}` as const,
 };

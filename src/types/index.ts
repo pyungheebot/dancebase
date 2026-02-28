@@ -15308,3 +15308,158 @@ export type GroupPenaltyData = {
   lastResetAt: string | null;
   updatedAt: string;
 };
+
+// ─── SetChangeLogCard ────────────────────────────────────────────────────────
+
+/** 세트 전환 단일 항목 */
+export type SetChangeItem = {
+  id: string;
+  /** 전환 번호 (자동 부여, 표시용) */
+  order: number;
+  /** 이전 장면 */
+  fromScene: string;
+  /** 다음 장면 */
+  toScene: string;
+  /** 목표 시간 (초) */
+  targetSeconds: number;
+  /** 실제 시간 (초) */
+  actualSeconds: number | null;
+  /** 담당 스태프 목록 */
+  staffList: string[];
+  /** 필요 소품 목록 */
+  propList: string[];
+  /** 메모 */
+  memo: string;
+  /** 완료 여부 */
+  completed: boolean;
+  createdAt: string;
+};
+
+/** SetChangeLogCard 전체 데이터 (localStorage 기반) */
+export type SetChangeLogData = {
+  projectId: string;
+  items: SetChangeItem[];
+  updatedAt: string;
+};
+
+// ─── GroupTimelineCard ────────────────────────────────────────────────────────
+
+/** 그룹 타임라인 이벤트 카테고리 */
+export type GroupTimelineCategory =
+  | "창립"
+  | "공연"
+  | "대회"
+  | "합숙"
+  | "특별이벤트"
+  | "기타";
+
+/** 그룹 타임라인 이벤트 중요도 */
+export type GroupTimelineImportance = "일반" | "중요" | "매우중요";
+
+/** 그룹 타임라인 이벤트 항목 */
+export type GroupTimelineEvent = {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  category: GroupTimelineCategory;
+  importance: GroupTimelineImportance;
+  createdAt: string;
+};
+
+/** GroupTimelineCard 전체 데이터 (localStorage 기반) */
+export type GroupTimelineData = {
+  groupId: string;
+  events: GroupTimelineEvent[];
+  updatedAt: string;
+};
+
+/** 식사 시간 유형 */
+export type DanceNutritionMealTime = "breakfast" | "lunch" | "dinner" | "snack";
+
+/** 식단 기록 항목 */
+export type DanceNutritionEntry = {
+  id: string;
+  date: string;
+  mealTime: DanceNutritionMealTime;
+  menuName: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  water: number;
+  memo: string;
+  createdAt: string;
+};
+
+/** 영양 목표 설정 */
+export type DanceNutritionGoal = {
+  targetCalories: number;
+  targetWater: number;
+};
+
+/** DanceNutritionCard 전체 데이터 (localStorage 기반) */
+export type DanceNutritionData = {
+  memberId: string;
+  entries: DanceNutritionEntry[];
+  goal: DanceNutritionGoal;
+  updatedAt: string;
+};
+
+// ============================================================
+// GroupLostFoundCard 타입 (localStorage 기반)
+// ============================================================
+
+/** 분실물 상태 */
+export type LostFoundStatus = "분실" | "발견" | "반환완료";
+
+/** 분실물 항목 */
+export type LostFoundItem = {
+  id: string;
+  itemName: string;
+  description: string;
+  lostPlace: string;
+  lostDate: string;
+  reporterName: string;
+  status: LostFoundStatus;
+  finderName: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** GroupLostFoundCard 전체 데이터 (localStorage 기반) */
+export type LostFoundData = {
+  groupId: string;
+  items: LostFoundItem[];
+  updatedAt: string;
+};
+
+/** 공연 당일 체크리스트 시간대 */
+export type ShowDayTimeSlot =
+  | "entry"
+  | "rehearsal"
+  | "makeup"
+  | "standby"
+  | "preshow"
+  | "postshow"
+  | "teardown";
+
+/** 공연 당일 체크리스트 우선순위 */
+export type ShowDayPriority = "required" | "recommended" | "optional";
+
+/** 공연 당일 체크리스트 항목 */
+export type ShowDayChecklistItem = {
+  id: string;
+  timeSlot: ShowDayTimeSlot;
+  title: string;
+  assignedTo?: string;
+  completed: boolean;
+  priority: ShowDayPriority;
+  createdAt: string;
+};
+
+/** ShowDayChecklistCard 전체 데이터 (localStorage 기반) */
+export type ShowDayChecklistData = {
+  projectId: string;
+  items: ShowDayChecklistItem[];
+  updatedAt: string;
+};

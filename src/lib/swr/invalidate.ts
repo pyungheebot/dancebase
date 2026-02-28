@@ -957,3 +957,23 @@ export function invalidateStageAccess(projectId: string) {
 export function invalidateGroupPenalty(groupId: string) {
   mutate(swrKeys.groupPenalty(groupId));
 }
+
+export function invalidateDanceNutrition(memberId: string) {
+  mutate(swrKeys.danceNutrition(memberId));
+}
+
+export function invalidateSetChangeLog(projectId: string) {
+  mutate(swrKeys.setChangeLog(projectId));
+}
+
+export function invalidateGroupLostFound(groupId: string) {
+  mutate(swrKeys.groupLostFound(groupId));
+}
+
+export function invalidateGroupTimeline(groupId: string) {
+  mutate(swrKeys.groupTimeline(groupId));
+}
+
+export function invalidateShowDayChecklist(projectId: string) {
+  mutate(swrKeys.showDayChecklist(projectId));
+}

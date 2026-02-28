@@ -58,6 +58,8 @@ import { GroupCarPoolCard } from "@/components/groups/group-carpool-card";
 import { GroupFeedbackBoxCard } from "@/components/groups/group-feedback-box-card";
 import { GroupSkillShareCard } from "@/components/groups/group-skill-share-card";
 import { GroupPenaltyCard } from "@/components/groups/group-penalty-card";
+import { GroupTimelineCard } from "@/components/groups/group-timeline-card";
+import { GroupLostFoundCard } from "@/components/groups/group-lost-found-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -273,6 +275,10 @@ export default function GroupDetailPage({
           <GroupSkillShareCard groupId={ctx.groupId} />
 
           <GroupPenaltyCard groupId={ctx.groupId} />
+
+          <GroupTimelineCard groupId={ctx.groupId} />
+
+          <GroupLostFoundCard groupId={ctx.groupId} />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />
