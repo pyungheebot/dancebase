@@ -12803,3 +12803,213 @@ export type AttendanceBookData = {
   sheets: AttendanceSheet[];
   updatedAt: string; // ISO 8601
 };
+
+// ============================================================
+// 멤버 댄스 컨디션 일지 v2 (DanceConditionJournal)
+// ============================================================
+
+/** 기분 상태 */
+export type DanceConditionMood =
+  | "great"    // 최고
+  | "good"     // 좋음
+  | "neutral"  // 보통
+  | "tired"    // 피곤
+  | "bad";     // 나쁨
+
+/** 댄스 컨디션 일지 단건 기록 (v2) */
+export type DanceConditionJournalEntry = {
+  id: string;                // 고유 ID
+  date: string;              // 기록 날짜 (YYYY-MM-DD)
+  energyLevel: number;       // 에너지 레벨 (1~5)
+  mood: DanceConditionMood;  // 기분 상태
+  bodyParts: string[];       // 통증 부위 목록
+  sleepHours: number | null; // 수면 시간 (시간 단위)
+  practiceMinutes: number | null; // 연습 시간 (분 단위)
+  notes: string;             // 메모
+  createdAt: string;         // 생성일 (ISO datetime)
+};
+
+/** 댄스 컨디션 일지 전체 데이터 (localStorage 저장 단위, v2) */
+export type DanceConditionJournalData = {
+  memberId: string;                      // 멤버 ID
+  entries: DanceConditionJournalEntry[]; // 기록 목록 (최신순)
+  updatedAt: string;                     // 마지막 수정일 (ISO datetime)
+};
+
+// ============================================
+// Group Equipment (그룹 장비 관리, localStorage 기반)
+// ============================================
+
+/** 장비 카테고리 */
+export type EquipmentCategory = "audio" | "lighting" | "costume" | "prop" | "other";
+
+/** 그룹 장비 상태 (good/fair/poor/broken) */
+export type GroupEquipmentCondition = "good" | "fair" | "poor" | "broken";
+
+/** 장비 항목 */
+export type GroupEquipmentItem = {
+  id: string;
+  name: string;
+  category: EquipmentCategory;
+  quantity: number;
+  condition: GroupEquipmentCondition;
+  location: string | null;
+  notes: string;
+  createdAt: string; // ISO 8601
+};
+
+/** 장비 대여 기록 */
+export type EquipmentLoanRecord = {
+  id: string;
+  equipmentId: string;
+  borrowerName: string;
+  borrowedAt: string; // ISO 8601
+  returnedAt: string | null; // ISO 8601 or null (미반납)
+  quantity: number;
+  notes: string;
+};
+
+/** 그룹 장비 전체 데이터 (localStorage 저장 단위) */
+export type GroupEquipmentData = {
+  groupId: string;
+  items: GroupEquipmentItem[];
+  loans: EquipmentLoanRecord[];
+  updatedAt: string; // ISO 8601
+};
+
+// ============================================
+// Program Book Editor (공연 프로그램 북 편집기, localStorage 기반)
+// ============================================
+
+/** 프로그램 북 아이템 유형 */
+export type ProgramBookItemType =
+  | "performance"
+  | "intermission"
+  | "opening"
+  | "closing"
+  | "special";
+
+/** 프로그램 순서 아이템 */
+export type ProgramBookItem = {
+  id: string;
+  order: number;
+  type: ProgramBookItemType;
+  title: string;
+  performers: string[];
+  duration: string | null;
+  description: string;
+  musicTitle: string | null;
+};
+
+/** 출연진 소개 */
+export type ProgramBookCast = {
+  id: string;
+  name: string;
+  role: string;
+  bio: string | null;
+  photoUrl: string | null;
+};
+
+/** 프로그램 북 편집기 전체 데이터 (localStorage 저장 단위) */
+export type ProgramBookEditorData = {
+  projectId: string;
+  items: ProgramBookItem[];
+  cast: ProgramBookCast[];
+  showTitle: string;
+  showDate: string | null;
+  venue: string | null;
+  notes: string;
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 회의록 투표 (MeetingVoteAgenda)
+// ============================================================
+
+/** 회의 투표 안건 선택지 */
+export type MeetingVoteOption = {
+  id: string;
+  text: string;
+};
+
+/** 회의 투표 기록 */
+export type MeetingVoteRecord = {
+  optionId: string;
+  voterName: string;
+  votedAt: string; // ISO 8601
+};
+
+/** 회의 투표 안건 항목 */
+export type MeetingVoteAgendaItem = {
+  id: string;
+  meetingTitle: string;
+  question: string;
+  options: MeetingVoteOption[];
+  votes: MeetingVoteRecord[];
+  isMultiSelect: boolean;
+  isAnonymous: boolean;
+  isClosed: boolean;
+  deadline: string | null; // ISO 8601 or null
+  createdAt: string; // ISO 8601
+};
+
+/** 그룹 회의 투표 전체 데이터 (localStorage 저장 단위) */
+export type MeetingVoteData = {
+  groupId: string;
+  agendas: MeetingVoteAgendaItem[];
+  updatedAt: string; // ISO 8601
+};
+
+// ============================================
+// Marketing Campaign (공연 마케팅 캠페인 관리, localStorage 기반)
+// ============================================
+
+/** 마케팅 채널 유형 */
+export type MarketingChannel =
+  | "instagram"
+  | "youtube"
+  | "tiktok"
+  | "twitter"
+  | "facebook"
+  | "poster"
+  | "flyer"
+  | "email"
+  | "other";
+
+/** 마케팅 캠페인 태스크 단건 */
+export type MarketingCampaignTask = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 태스크 제목 */
+  title: string;
+  /** 마케팅 채널 */
+  channel: MarketingChannel;
+  /** 담당자 이름 (null = 미배정) */
+  assignee: string | null;
+  /** 마감일 (YYYY-MM-DD, null = 없음) */
+  dueDate: string | null;
+  /** 진행 상태 */
+  status: "todo" | "in_progress" | "done";
+  /** 콘텐츠 URL (SNS 게시물, 이미지 링크 등, null = 없음) */
+  contentUrl: string | null;
+  /** 메모 */
+  notes: string;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 공연 마케팅 캠페인 전체 데이터 (localStorage 저장 단위) */
+export type MarketingCampaignData = {
+  /** 연결된 프로젝트 ID */
+  projectId: string;
+  /** 태스크 목록 */
+  tasks: MarketingCampaignTask[];
+  /** 캠페인 이름 */
+  campaignName: string;
+  /** 타겟 관객 설명 (null = 미설정) */
+  targetAudience: string | null;
+  /** 예산 (원, null = 미설정) */
+  budget: number | null;
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};

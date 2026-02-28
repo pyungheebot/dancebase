@@ -1448,4 +1448,24 @@ export const swrKeys = {
   // 그룹 공지사항 보드 (localStorage 기반)
   groupAnnouncementBoard: (groupId: string) =>
     `group-announcement-board-${groupId}` as const,
+
+  // 그룹 장비 관리 (localStorage 기반)
+  groupEquipment: (groupId: string) =>
+    `group-equipment-${groupId}` as const,
+
+  // 멤버 댄스 컨디션 일지 (localStorage 기반)
+  danceConditionLog: (memberId: string) =>
+    `dance-condition-log-${memberId}` as const,
+
+  // 그룹 회의 안건 투표 (localStorage 기반)
+  meetingAgendaVote: (groupId: string) =>
+    `meeting-agenda-vote-${groupId}` as const,
+
+  // 공연 프로그램 북 편집기 (localStorage 기반)
+  programBookEditor: (projectId: string) =>
+    `program-book-editor-${projectId}` as const,
+
+  // 공연 마케팅 캠페인 (localStorage 기반)
+  marketingCampaign: (projectId: string) =>
+    `marketing-campaign-${projectId}` as const,
 };

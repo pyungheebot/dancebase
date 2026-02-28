@@ -784,3 +784,7 @@ export function invalidateDanceGoalTracker(memberId: string) {
 export function invalidateAttendanceBook(groupId: string) {
   mutate(swrKeys.attendanceBook(groupId));
 }
+
+export function invalidateDanceConditionLog(memberId: string) {
+  mutate(swrKeys.danceConditionLog(memberId));
+}

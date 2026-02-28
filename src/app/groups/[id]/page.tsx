@@ -36,6 +36,8 @@ import { QrCheckInCard } from "@/components/groups/qr-check-in-card";
 import { GroupBudgetCard } from "@/components/groups/group-budget-card";
 import { GroupAnnouncementCard } from "@/components/groups/group-announcement-card";
 import { AttendanceBookCard } from "@/components/groups/attendance-book-card";
+import { GroupEquipmentCard } from "@/components/groups/group-equipment-card";
+import { MeetingVoteCard } from "@/components/groups/meeting-vote-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -204,6 +206,10 @@ export default function GroupDetailPage({
             groupId={ctx.groupId}
             memberNames={ctx.members.map((m) => m.nickname || m.profile.name)}
           />
+
+          <GroupEquipmentCard groupId={ctx.groupId} />
+
+          <MeetingVoteCard groupId={ctx.groupId} />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

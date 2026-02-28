@@ -29,6 +29,8 @@ import { StageFormationCard } from "@/components/projects/stage-formation-card";
 import { PerformanceTicketCard } from "@/components/projects/performance-ticket-card";
 import { BackstageLogCard } from "@/components/projects/backstage-log-card";
 import { PerformanceSponsorCard } from "@/components/projects/performance-sponsor-card";
+import { ProgramBookEditorCard } from "@/components/projects/program-book-editor-card";
+import { MarketingCampaignCard } from "@/components/projects/marketing-campaign-card";
 
 export default function ProjectDetailPage({
   params,
@@ -160,6 +162,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <PerformanceSponsorCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <ProgramBookEditorCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <MarketingCampaignCard
               projectId={ctx.projectId}
             />
           )}
