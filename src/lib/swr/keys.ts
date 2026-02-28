@@ -1113,4 +1113,18 @@ export const swrKeys = {
 
   // 그룹 연습 음악 큐 (localStorage 기반)
   musicQueue: (groupId: string) => `music-queue-${groupId}` as const,
+
+  // 그룹 공유 자료실 (localStorage 기반)
+  sharedLibrary: (groupId: string) => `shared-library-${groupId}` as const,
+
+  // 멤버 댄스 스타일 프로필 (localStorage 기반)
+  danceStyleProfile: (memberId: string) => `dance-style-profile-${memberId}` as const,
+
+  // 공연 무대 전환 계획 (localStorage 기반)
+  stageTransition: (groupId: string, projectId: string) =>
+    `stage-transition-${groupId}-${projectId}` as const,
+
+  // 공연 협찬품 관리 (localStorage 기반)
+  sponsoredGoods: (groupId: string, projectId: string) =>
+    `sponsored-goods-${groupId}-${projectId}` as const,
 };

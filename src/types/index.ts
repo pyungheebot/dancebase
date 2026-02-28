@@ -8498,3 +8498,132 @@ export type MusicQueueSet = {
   isActive: boolean;
   createdAt: string;
 };
+
+// ─── 그룹 공유 자료실 ──────────────────────────────────────────
+
+export type SharedLibFileType =
+  | "document"
+  | "spreadsheet"
+  | "presentation"
+  | "video"
+  | "audio"
+  | "image"
+  | "link"
+  | "other";
+
+export type SharedLibItem = {
+  id: string;
+  title: string;
+  fileType: SharedLibFileType;
+  url?: string;
+  description?: string;
+  category: string;
+  uploadedBy: string;
+  tags: string[];
+  downloadCount: number;
+  isPinned: boolean;
+  createdAt: string;
+};
+
+// ============================================================
+// 멤버 댄스 스타일 프로필
+// ============================================================
+
+export type DanceStyleLevel = "beginner" | "intermediate" | "advanced" | "expert";
+
+export type DanceStyleEntry = {
+  style: string;
+  level: DanceStyleLevel;
+  yearsOfExperience: number;
+  isFavorite: boolean;
+};
+
+export type MemberDanceStyleProfile = {
+  id: string;
+  memberId: string;
+  styles: DanceStyleEntry[];
+  strengths: string[];
+  weaknesses: string[];
+  goals: string[];
+  influences: string[];
+  bio?: string;
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 무대 전환 계획
+
+export type StageTransitionTask = {
+  id: string;
+  description: string;
+  assignee?: string;
+  durationSeconds: number;
+  isCompleted: boolean;
+};
+
+export type StageTransitionEntry = {
+  id: string;
+  fromScene: string;
+  toScene: string;
+  transitionOrder: number;
+  tasks: StageTransitionTask[];
+  totalDuration: number;
+  notes?: string;
+  lightingChange?: string;
+  musicChange?: string;
+  propsNeeded: string[];
+  createdAt: string;
+};
+
+// ─── 그룹 연습 출석 예측 ───────────────────────────────────────
+
+export type AttendanceForecastIntent = "yes" | "maybe" | "no" | "pending";
+
+export type AttendanceForecastResponse = {
+  memberName: string;
+  intent: AttendanceForecastIntent;
+  reason?: string;
+  respondedAt: string;
+};
+
+export type AttendanceForecastSession = {
+  id: string;
+  date: string;
+  time?: string;
+  title: string;
+  location?: string;
+  responses: AttendanceForecastResponse[];
+  createdBy: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 협찬품 관리
+// ============================================================
+
+export type SponsoredGoodsStatus =
+  | "pending"
+  | "received"
+  | "distributed"
+  | "returned";
+
+export type SponsoredGoodsDistribution = {
+  memberName: string;
+  quantity: number;
+  distributedAt: string;
+};
+
+export type SponsoredGoodsItem = {
+  id: string;
+  itemName: string;
+  sponsor: string;
+  quantity: number;
+  status: SponsoredGoodsStatus;
+  estimatedValue?: number;
+  receivedDate?: string;
+  returnDueDate?: string;
+  distributions: SponsoredGoodsDistribution[];
+  category?: string;
+  notes?: string;
+  createdAt: string;
+};
