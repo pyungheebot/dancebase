@@ -9528,3 +9528,192 @@ export type PracticePlaylistEntry = {
   createdAt: string;                     // 생성일 (ISO datetime)
   updatedAt: string;                     // 수정일 (ISO datetime)
 };
+
+// ============================================================
+// 그룹 공지사항 템플릿 (Announcement Templates)
+// ============================================================
+
+/** 공지사항 템플릿 카테고리 */
+export type AnnouncementTemplateCategory =
+  | "practice"    // 연습
+  | "performance" // 공연
+  | "meeting"     // 회의
+  | "gathering"   // 모임
+  | "etc";        // 기타
+
+/** 공지사항 템플릿 변수 */
+export type AnnouncementTemplateVariable = {
+  key: string;       // 변수 키 (예: "날짜", "장소")
+  label: string;     // 표시 레이블
+  defaultValue?: string; // 기본값
+};
+
+/** 공지사항 템플릿 항목 */
+export type AnnouncementTemplateEntry = {
+  id: string;
+  groupId: string;
+  name: string;                          // 템플릿 이름
+  category: AnnouncementTemplateCategory; // 카테고리
+  titleTemplate: string;                 // 제목 템플릿 (변수 포함 가능)
+  bodyTemplate: string;                  // 본문 템플릿 (변수 포함 가능)
+  variables: AnnouncementTemplateVariable[]; // 치환 변수 목록
+  useCount: number;                      // 사용 횟수
+  createdAt: string;                     // 생성일 (ISO datetime)
+  updatedAt: string;                     // 수정일 (ISO datetime)
+};
+
+// ============================================================
+// 공연 타임라인 플래너 (Show Timeline Planner)
+// ============================================================
+
+/** 공연 타임라인 이벤트 유형 */
+export type ShowTimelineEventType =
+  | "arrival"        // 도착
+  | "soundcheck"     // 사운드체크
+  | "rehearsal"      // 리허설
+  | "makeup"         // 메이크업
+  | "door_open"      // 개장
+  | "show_start"     // 공연 시작
+  | "intermission"   // 인터미션
+  | "show_end"       // 공연 종료
+  | "teardown"       // 철수
+  | "custom";        // 기타
+
+/** 공연 타임라인 이벤트 상태 */
+export type ShowTimelineStatus =
+  | "scheduled"      // 예정
+  | "in_progress"    // 진행중
+  | "completed"      // 완료
+  | "cancelled";     // 취소
+
+/** 공연 타임라인 이벤트 */
+export type ShowTimelineEvent = {
+  id: string;
+  groupId: string;
+  projectId: string;
+  title: string;                         // 이벤트 제목
+  eventType: ShowTimelineEventType;      // 이벤트 유형
+  startTime: string;                     // 시작 시간 (HH:MM)
+  endTime?: string;                      // 종료 시간 (HH:MM, 선택)
+  assignedTo?: string;                   // 담당자
+  location?: string;                     // 장소
+  status: ShowTimelineStatus;            // 상태
+  notes?: string;                        // 메모
+  createdAt: string;                     // 생성일 (ISO datetime)
+  updatedAt: string;                     // 수정일 (ISO datetime)
+};
+
+// ============================================================
+// 공연 포토 콜 시트 (PhotoCall)
+// ============================================================
+
+/** 포토콜 촬영 유형 */
+export type PhotoCallType =
+  | "group"      // 단체
+  | "subgroup"   // 소그룹
+  | "individual" // 개인
+  | "scene";     // 장면
+
+/** 포토콜 항목 */
+export type PhotoCallEntry = {
+  id: string;
+  groupId: string;
+  projectId: string;
+  order: number;              // 촬영 순서
+  time?: string;              // 촬영 시간 (HH:MM)
+  type: PhotoCallType;        // 촬영 유형
+  participants: string[];     // 참여자 목록
+  location?: string;          // 촬영 위치
+  poseDescription?: string;   // 포즈/구도 설명
+  costume?: string;           // 의상 설명
+  props?: string;             // 소품 설명
+  photographer?: string;      // 촬영자 이름
+  completed: boolean;         // 완료 여부
+  memo?: string;              // 메모
+  createdAt: string;          // 생성일 (ISO datetime)
+  updatedAt: string;          // 수정일 (ISO datetime)
+};
+
+// ============================================================
+// 멤버 댄스 워크숍 이력 (Dance Workshop History)
+// ============================================================
+
+/** 워크숍 레벨 */
+export type DanceWorkshopLevel =
+  | "beginner"      // 입문
+  | "intermediate"  // 중급
+  | "advanced"      // 고급
+  | "all_levels";   // 전 레벨
+
+/** 워크숍 참석 이력 항목 */
+export type DanceWorkshopEntry = {
+  id: string;
+  memberId: string;
+  workshopName: string;         // 워크숍명
+  instructor: string;           // 강사
+  venue: string;                // 장소
+  date: string;                 // 날짜 (ISO date, YYYY-MM-DD)
+  genre: string;                // 장르 (힙합, 팝핀 등)
+  level: DanceWorkshopLevel;    // 레벨
+  cost: number;                 // 비용 (원)
+  rating: number;               // 평가 (1~5)
+  notes: string;                // 배운 내용 메모
+  createdAt: string;            // 생성일 (ISO datetime)
+  updatedAt: string;            // 수정일 (ISO datetime)
+};
+
+/** 워크숍 이력 저장 데이터 */
+export type DanceWorkshopData = {
+  entries: DanceWorkshopEntry[];
+};
+
+// ============================================================
+// 그룹 연습 파트너 매칭 (Practice Partner Matching)
+// ============================================================
+
+/** 스킬 레벨 */
+export type PracticePartnerSkillLevel =
+  | "beginner"     // 초급
+  | "intermediate" // 중급
+  | "advanced"     // 고급
+  | "expert";      // 전문가
+
+/** 매칭 상태 */
+export type PracticePartnerMatchStatus = "active" | "ended";
+
+/** 파트너 매칭 이력 항목 */
+export type PracticePartnerMatch = {
+  id: string;
+  memberAId: string;                    // 멤버 A ID
+  memberAName: string;                  // 멤버 A 이름
+  memberBId: string;                    // 멤버 B ID
+  memberBName: string;                  // 멤버 B 이름
+  status: PracticePartnerMatchStatus;   // 매칭 상태
+  matchedAt: string;                    // 매칭 생성일 (ISO datetime)
+  endedAt?: string;                     // 매칭 종료일 (ISO datetime)
+  ratingAtoB?: number;                  // A가 B에게 준 평점 (1~5)
+  ratingBtoA?: number;                  // B가 A에게 준 평점 (1~5)
+  noteAtoB?: string;                    // A가 B에게 남긴 코멘트
+  noteBtoA?: string;                    // B가 A에게 남긴 코멘트
+};
+
+/** 연습 파트너 멤버 등록 항목 */
+export type PracticePartnerMember = {
+  id: string;                            // 멤버 고유 ID
+  name: string;                          // 멤버 이름
+  skillLevel: PracticePartnerSkillLevel; // 스킬 레벨
+  availableTimes: string[];              // 연습 가능 시간대
+  preferredPartnerIds: string[];         // 선호 파트너 ID 목록
+  currentMatchId?: string;              // 현재 활성 매칭 ID
+  joinedAt: string;                      // 등록일 (ISO datetime)
+};
+
+/** 연습 파트너 매칭 전체 데이터 */
+export type PracticePartnerEntry = {
+  id: string;
+  groupId: string;
+  members: PracticePartnerMember[];     // 등록 멤버 목록
+  matches: PracticePartnerMatch[];      // 전체 매칭 이력
+  createdAt: string;                    // 생성일 (ISO datetime)
+  updatedAt: string;                    // 수정일 (ISO datetime)
+};

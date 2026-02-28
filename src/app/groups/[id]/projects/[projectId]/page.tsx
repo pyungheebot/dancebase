@@ -13,6 +13,7 @@ import { ProjectProgressOverview } from "@/components/projects/project-progress-
 import { RoleAssignmentBoard } from "@/components/projects/role-assignment-board";
 import { LightingCueCard } from "@/components/projects/lighting-cue-card";
 import { CostumeChangeCard } from "@/components/projects/costume-change-card";
+import { PhotoCallCard } from "@/components/projects/photo-call-card";
 
 export default function ProjectDetailPage({
   params,
@@ -54,6 +55,12 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <CostumeChangeCard
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <PhotoCallCard
               groupId={ctx.groupId}
               projectId={ctx.projectId}
             />

@@ -1213,4 +1213,18 @@ export const swrKeys = {
   // 공연 무대 소품 관리 (localStorage 기반)
   stageProp: (groupId: string, projectId: string) =>
     `stage-prop-${groupId}-${projectId}` as const,
+
+  // 그룹 공지사항 템플릿 (localStorage 기반)
+  announcementTemplate: (groupId: string) =>
+    `announcement-template-${groupId}` as const,
+
+  // 공연 포토 콜 시트 (localStorage 기반)
+  photoCall: (groupId: string, projectId: string) =>
+    `photo-call-${groupId}-${projectId}` as const,
+
+  // 멤버 댄스 워크숍 이력 (localStorage 기반)
+  danceWorkshop: (memberId: string) => `dance-workshop-${memberId}` as const,
+
+  // 그룹 연습 파트너 매칭 (localStorage 기반)
+  practicePartner: (groupId: string) => `practice-partner-${groupId}` as const,
 };

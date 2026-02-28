@@ -691,3 +691,7 @@ export function invalidateShowProgram(groupId: string, projectId: string) {
 export function invalidatePracticeRule(groupId: string) {
   mutate(swrKeys.practiceRule(groupId));
 }
+
+export function invalidateAnnouncementTemplate(groupId: string) {
+  mutate(swrKeys.announcementTemplate(groupId));
+}

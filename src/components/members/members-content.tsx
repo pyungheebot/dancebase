@@ -62,6 +62,7 @@ import { RewardPointsShop } from "@/components/members/reward-points-shop";
 import { DynamicTeamManager } from "@/components/members/dynamic-team-manager";
 import { PartnerMatchingPanel } from "@/components/members/partner-matching-panel";
 import { SkillTreeCard } from "@/components/members/skill-tree-card";
+import { DanceWorkshopCard } from "@/components/members/dance-workshop-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -677,6 +678,9 @@ function GroupMembersContent({
         userId={currentUserId}
         canEdit={ctx.permissions.canEdit}
       />
+
+      {/* 댄스 워크숍 이력 (개인 워크숍/마스터클래스 참석 이력) */}
+      <DanceWorkshopCard memberId={currentUserId} />
     </>
   );
 }

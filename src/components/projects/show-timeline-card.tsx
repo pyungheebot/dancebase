@@ -1,25 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -28,294 +20,394 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Flag,
-  ChevronDown,
-  ChevronUp,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Plus,
   Trash2,
-  Calendar,
-  User,
-  ArrowUp,
-  ArrowDown,
-  AlertTriangle,
-  CheckCircle2,
+  Pencil,
   Clock,
-  Loader2,
+  User,
+  MapPin,
+  MoreVertical,
+  CalendarClock,
+  CheckCircle2,
+  CircleDot,
+  Circle,
+  XCircle,
+  Mic,
+  Music,
+  Sparkles,
+  DoorOpen,
+  PlayCircle,
+  PauseCircle,
+  StopCircle,
+  PackageOpen,
 } from "lucide-react";
-import { toast } from "sonner";
 import { useShowTimeline } from "@/hooks/use-show-timeline";
-import type { ShowMilestone, ShowMilestoneStatus } from "@/types";
+import type { ShowTimelineEventType, ShowTimelineStatus, ShowTimelineEvent } from "@/types";
+import type { AddShowTimelineEventInput } from "@/hooks/use-show-timeline";
 
-// ================================================================
-// 유틸 함수
-// ================================================================
+// ============================================================
+// 상수: 이벤트 유형 설정
+// ============================================================
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  return `${year}. ${month}. ${day}.`;
-}
-
-function getDdayText(dueDate: string): string {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const due = new Date(dueDate);
-  due.setHours(0, 0, 0, 0);
-  const diff = Math.round((due.getTime() - today.getTime()) / 86400000);
-  if (diff === 0) return "D-Day";
-  if (diff > 0) return `D-${diff}`;
-  return `D+${Math.abs(diff)}`;
-}
-
-function getStatusLabel(status: ShowMilestoneStatus): string {
-  switch (status) {
-    case "pending":
-      return "대기";
-    case "in_progress":
-      return "진행중";
-    case "completed":
-      return "완료";
-    case "delayed":
-      return "지연";
-  }
-}
-
-function getStatusBadgeClass(status: ShowMilestoneStatus): string {
-  switch (status) {
-    case "pending":
-      return "bg-gray-100 text-gray-600";
-    case "in_progress":
-      return "bg-blue-100 text-blue-700";
-    case "completed":
-      return "bg-green-100 text-green-700";
-    case "delayed":
-      return "bg-red-100 text-red-600";
-  }
-}
-
-function getStatusIcon(status: ShowMilestoneStatus) {
-  switch (status) {
-    case "pending":
-      return <Clock className="h-3 w-3" />;
-    case "in_progress":
-      return <Loader2 className="h-3 w-3" />;
-    case "completed":
-      return <CheckCircle2 className="h-3 w-3" />;
-    case "delayed":
-      return <AlertTriangle className="h-3 w-3" />;
-  }
-}
-
-function getNodeColor(status: ShowMilestoneStatus): string {
-  switch (status) {
-    case "pending":
-      return "#94a3b8";
-    case "in_progress":
-      return "#3b82f6";
-    case "completed":
-      return "#22c55e";
-    case "delayed":
-      return "#ef4444";
-  }
-}
-
-// ================================================================
-// 타임라인 생성 다이얼로그
-// ================================================================
-
-type CreateTimelineDialogProps = {
-  onCreate: (showName: string, showDate: string) => void;
+const EVENT_TYPE_CONFIG: Record<
+  ShowTimelineEventType,
+  { label: string; icon: React.ReactNode; color: string; dotColor: string }
+> = {
+  arrival: {
+    label: "도착",
+    icon: <PackageOpen className="h-3 w-3" />,
+    color: "bg-slate-100 text-slate-700 border-slate-200",
+    dotColor: "bg-slate-400",
+  },
+  soundcheck: {
+    label: "사운드체크",
+    icon: <Mic className="h-3 w-3" />,
+    color: "bg-blue-100 text-blue-700 border-blue-200",
+    dotColor: "bg-blue-400",
+  },
+  rehearsal: {
+    label: "리허설",
+    icon: <Music className="h-3 w-3" />,
+    color: "bg-indigo-100 text-indigo-700 border-indigo-200",
+    dotColor: "bg-indigo-400",
+  },
+  makeup: {
+    label: "메이크업",
+    icon: <Sparkles className="h-3 w-3" />,
+    color: "bg-pink-100 text-pink-700 border-pink-200",
+    dotColor: "bg-pink-400",
+  },
+  door_open: {
+    label: "개장",
+    icon: <DoorOpen className="h-3 w-3" />,
+    color: "bg-cyan-100 text-cyan-700 border-cyan-200",
+    dotColor: "bg-cyan-400",
+  },
+  show_start: {
+    label: "공연 시작",
+    icon: <PlayCircle className="h-3 w-3" />,
+    color: "bg-green-100 text-green-700 border-green-200",
+    dotColor: "bg-green-500",
+  },
+  intermission: {
+    label: "인터미션",
+    icon: <PauseCircle className="h-3 w-3" />,
+    color: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    dotColor: "bg-yellow-400",
+  },
+  show_end: {
+    label: "공연 종료",
+    icon: <StopCircle className="h-3 w-3" />,
+    color: "bg-orange-100 text-orange-700 border-orange-200",
+    dotColor: "bg-orange-400",
+  },
+  teardown: {
+    label: "철수",
+    icon: <PackageOpen className="h-3 w-3" />,
+    color: "bg-stone-100 text-stone-700 border-stone-200",
+    dotColor: "bg-stone-400",
+  },
+  custom: {
+    label: "기타",
+    icon: <CircleDot className="h-3 w-3" />,
+    color: "bg-purple-100 text-purple-700 border-purple-200",
+    dotColor: "bg-purple-400",
+  },
 };
 
-function CreateTimelineDialog({ onCreate }: CreateTimelineDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [showName, setShowName] = useState("");
-  const [showDate, setShowDate] = useState(() => {
-    const d = new Date();
-    d.setMonth(d.getMonth() + 1);
-    return d.toISOString().split("T")[0];
-  });
+const STATUS_CONFIG: Record<
+  ShowTimelineStatus,
+  { label: string; icon: React.ReactNode; color: string }
+> = {
+  scheduled: {
+    label: "예정",
+    icon: <Circle className="h-3 w-3" />,
+    color: "bg-gray-100 text-gray-600 border-gray-200",
+  },
+  in_progress: {
+    label: "진행중",
+    icon: <CircleDot className="h-3 w-3" />,
+    color: "bg-blue-100 text-blue-700 border-blue-200",
+  },
+  completed: {
+    label: "완료",
+    icon: <CheckCircle2 className="h-3 w-3" />,
+    color: "bg-green-100 text-green-700 border-green-200",
+  },
+  cancelled: {
+    label: "취소",
+    icon: <XCircle className="h-3 w-3" />,
+    color: "bg-red-100 text-red-600 border-red-200",
+  },
+};
 
-  const handleSubmit = () => {
-    if (!showName.trim()) {
-      toast.error("공연명을 입력해주세요");
-      return;
-    }
-    if (!showDate) {
-      toast.error("공연일을 선택해주세요");
-      return;
-    }
-    onCreate(showName, showDate);
-    setShowName("");
-    setOpen(false);
-    toast.success("공연 타임라인을 생성했습니다");
-  };
+const EVENT_TYPE_OPTIONS: ShowTimelineEventType[] = [
+  "arrival",
+  "soundcheck",
+  "rehearsal",
+  "makeup",
+  "door_open",
+  "show_start",
+  "intermission",
+  "show_end",
+  "teardown",
+  "custom",
+];
 
+const STATUS_OPTIONS: ShowTimelineStatus[] = [
+  "scheduled",
+  "in_progress",
+  "completed",
+  "cancelled",
+];
+
+const EMPTY_FORM: AddShowTimelineEventInput = {
+  title: "",
+  eventType: "custom",
+  startTime: "09:00",
+  endTime: "",
+  assignedTo: "",
+  location: "",
+  status: "scheduled",
+  notes: "",
+};
+
+// ============================================================
+// 상태 배지
+// ============================================================
+
+function StatusBadge({ status }: { status: ShowTimelineStatus }) {
+  const cfg = STATUS_CONFIG[status];
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-7 text-xs gap-1">
-          <Plus className="h-3 w-3" />
-          타임라인 생성
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-sm">공연 타임라인 생성</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3 py-2">
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">공연명 *</label>
-            <Input
-              value={showName}
-              onChange={(e) => setShowName(e.target.value)}
-              placeholder="예: 2026 봄 정기공연"
-              className="h-8 text-xs"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSubmit();
-              }}
-              autoFocus
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">공연일 *</label>
-            <Input
-              type="date"
-              value={showDate}
-              onChange={(e) => setShowDate(e.target.value)}
-              className="h-8 text-xs"
-            />
-          </div>
-        </div>
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={() => setOpen(false)}
-          >
-            취소
-          </Button>
-          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-            생성
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0 text-[10px] font-medium ${cfg.color}`}
+    >
+      {cfg.icon}
+      {cfg.label}
+    </span>
   );
 }
 
-// ================================================================
-// 마일스톤 추가 다이얼로그
-// ================================================================
+// ============================================================
+// 이벤트 유형 배지
+// ============================================================
 
-type AddMilestoneDialogProps = {
-  onAdd: (
-    title: string,
-    description: string,
-    dueDate: string,
-    assignee: string
-  ) => void;
+function EventTypeBadge({ type }: { type: ShowTimelineEventType }) {
+  const cfg = EVENT_TYPE_CONFIG[type];
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0 text-[10px] font-medium ${cfg.color}`}
+    >
+      {cfg.icon}
+      {cfg.label}
+    </span>
+  );
+}
+
+// ============================================================
+// 이벤트 폼 다이얼로그
+// ============================================================
+
+type EventFormDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initial?: ShowTimelineEvent;
+  onSubmit: (input: AddShowTimelineEventInput) => Promise<boolean>;
+  title: string;
 };
 
-function AddMilestoneDialog({ onAdd }: AddMilestoneDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 7);
-    return d.toISOString().split("T")[0];
-  });
-  const [assignee, setAssignee] = useState("");
+function EventFormDialog({
+  open,
+  onOpenChange,
+  initial,
+  onSubmit,
+  title,
+}: EventFormDialogProps) {
+  const [form, setForm] = useState<AddShowTimelineEventInput>(
+    initial
+      ? {
+          title: initial.title,
+          eventType: initial.eventType,
+          startTime: initial.startTime,
+          endTime: initial.endTime ?? "",
+          assignedTo: initial.assignedTo ?? "",
+          location: initial.location ?? "",
+          status: initial.status,
+          notes: initial.notes ?? "",
+        }
+      : EMPTY_FORM
+  );
+  const [saving, setSaving] = useState(false);
 
-  const handleSubmit = () => {
-    if (!title.trim()) {
-      toast.error("마일스톤 제목을 입력해주세요");
-      return;
+  function setField<K extends keyof AddShowTimelineEventInput>(
+    key: K,
+    value: AddShowTimelineEventInput[K]
+  ) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSubmit() {
+    setSaving(true);
+    const ok = await onSubmit(form);
+    setSaving(false);
+    if (ok) {
+      setForm(EMPTY_FORM);
+      onOpenChange(false);
     }
-    if (!dueDate) {
-      toast.error("마감일을 선택해주세요");
-      return;
-    }
-    onAdd(title, description, dueDate, assignee);
-    setTitle("");
-    setDescription("");
-    setAssignee("");
-    setOpen(false);
-    toast.success("마일스톤을 추가했습니다");
-  };
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
-        >
-          <Plus className="h-3 w-3" />
-          마일스톤 추가
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-sm">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sm">마일스톤 추가</DialogTitle>
+          <DialogTitle className="text-sm">{title}</DialogTitle>
         </DialogHeader>
+
         <div className="space-y-3 py-2">
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">제목 *</label>
+          {/* 제목 */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">
+              이벤트 제목 <span className="text-red-500">*</span>
+            </Label>
             <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="예: 안무 완성"
-              className="h-8 text-xs"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSubmit();
-              }}
+              placeholder="예: 전체 리허설, 메이크업 시작"
+              value={form.title}
+              onChange={(e) => setField("title", e.target.value)}
+              className="h-8 text-sm"
               autoFocus
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">설명 (선택)</label>
+
+          {/* 이벤트 유형 */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">이벤트 유형</Label>
+            <Select
+              value={form.eventType}
+              onValueChange={(v) => setField("eventType", v as ShowTimelineEventType)}
+            >
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {EVENT_TYPE_OPTIONS.map((t) => (
+                  <SelectItem key={t} value={t} className="text-sm">
+                    {EVENT_TYPE_CONFIG[t].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 시작/종료 시간 */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">
+                시작 시간 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="time"
+                value={form.startTime}
+                onChange={(e) => setField("startTime", e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">종료 시간</Label>
+              <Input
+                type="time"
+                value={form.endTime}
+                onChange={(e) => setField("endTime", e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+          </div>
+
+          {/* 담당자 & 장소 */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">담당자</Label>
+              <Input
+                placeholder="담당자 이름"
+                value={form.assignedTo}
+                onChange={(e) => setField("assignedTo", e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">장소</Label>
+              <Input
+                placeholder="예: 메인 무대, 분장실"
+                value={form.location}
+                onChange={(e) => setField("location", e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+          </div>
+
+          {/* 상태 */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">상태</Label>
+            <Select
+              value={form.status}
+              onValueChange={(v) => setField("status", v as ShowTimelineStatus)}
+            >
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((s) => (
+                  <SelectItem key={s} value={s} className="text-sm">
+                    {STATUS_CONFIG[s].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 메모 */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">메모</Label>
             <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="마일스톤에 대한 설명을 입력하세요"
-              className="text-xs resize-none"
+              placeholder="추가 메모를 입력하세요"
+              value={form.notes}
+              onChange={(e) => setField("notes", e.target.value)}
               rows={2}
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">담당자 (선택)</label>
-            <Input
-              value={assignee}
-              onChange={(e) => setAssignee(e.target.value)}
-              placeholder="예: 홍길동"
-              className="h-8 text-xs"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">마감일 *</label>
-            <Input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="h-8 text-xs"
+              className="text-sm resize-none"
             />
           </div>
         </div>
+
         <DialogFooter className="gap-2">
           <Button
             variant="outline"
             size="sm"
             className="h-7 text-xs"
-            onClick={() => setOpen(false)}
+            onClick={() => onOpenChange(false)}
+            disabled={saving}
           >
             취소
           </Button>
-          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-            추가
+          <Button
+            size="sm"
+            className="h-7 text-xs"
+            onClick={handleSubmit}
+            disabled={saving || !form.title.trim() || !form.startTime}
+          >
+            {saving ? "저장 중..." : "저장"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -323,245 +415,156 @@ function AddMilestoneDialog({ onAdd }: AddMilestoneDialogProps) {
   );
 }
 
-// ================================================================
-// 수직 타임라인 노드 선
-// ================================================================
+// ============================================================
+// 타임라인 이벤트 아이템
+// ============================================================
 
-type TimelineConnectorProps = {
+type TimelineEventItemProps = {
+  event: ShowTimelineEvent;
   isLast: boolean;
-  status: ShowMilestoneStatus;
+  onEdit: (event: ShowTimelineEvent) => void;
+  onDelete: (id: string) => void;
+  onStatusChange: (id: string, status: ShowTimelineStatus) => void;
 };
 
-function TimelineConnector({ isLast, status }: TimelineConnectorProps) {
-  const color = getNodeColor(status);
-  return (
-    <div className="flex flex-col items-center">
-      {/* 원 노드 */}
-      <div
-        className="w-3 h-3 rounded-full border-2 shrink-0 z-10"
-        style={{
-          borderColor: color,
-          backgroundColor:
-            status === "completed" ? color : "hsl(var(--background))",
-        }}
-      />
-      {/* 연결선 */}
-      {!isLast && (
-        <div
-          className="w-0.5 flex-1 min-h-[24px]"
-          style={{ backgroundColor: "#e2e8f0" }}
-        />
-      )}
-    </div>
-  );
-}
-
-// ================================================================
-// 마일스톤 카드 아이템
-// ================================================================
-
-type MilestoneItemProps = {
-  milestone: ShowMilestone;
-  isLast: boolean;
-  isFirst: boolean;
-  onUpdateStatus: (id: string, status: ShowMilestoneStatus) => void;
-  onDelete: (id: string, title: string) => void;
-  onMoveUp: (id: string) => void;
-  onMoveDown: (id: string) => void;
-};
-
-function MilestoneItem({
-  milestone,
+function TimelineEventItem({
+  event,
   isLast,
-  isFirst,
-  onUpdateStatus,
+  onEdit,
   onDelete,
-  onMoveUp,
-  onMoveDown,
-}: MilestoneItemProps) {
-  const [expanded, setExpanded] = useState(false);
-
-  const ddayText = getDdayText(milestone.dueDate);
-  const isPastDue = (() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const due = new Date(milestone.dueDate);
-    due.setHours(0, 0, 0, 0);
-    return due < today && milestone.status !== "completed";
-  })();
+  onStatusChange,
+}: TimelineEventItemProps) {
+  const typeCfg = EVENT_TYPE_CONFIG[event.eventType];
+  const isCompleted = event.status === "completed";
+  const isCancelled = event.status === "cancelled";
 
   return (
-    <div className="flex gap-2 items-stretch">
-      {/* 수직 타임라인 선 + 노드 */}
-      <TimelineConnector isLast={isLast} status={milestone.status} />
+    <div className="flex gap-3">
+      {/* 수직 타임라인 선 + 점 */}
+      <div className="flex flex-col items-center shrink-0 pt-1">
+        <div
+          className={`w-2.5 h-2.5 rounded-full shrink-0 z-10 ${
+            isCompleted
+              ? "bg-green-500"
+              : isCancelled
+              ? "bg-gray-300"
+              : typeCfg.dotColor
+          }`}
+        />
+        {!isLast && (
+          <div className="w-px flex-1 min-h-[20px] bg-border mt-1" />
+        )}
+      </div>
 
-      {/* 마일스톤 카드 본문 */}
-      <div className="flex-1 pb-3">
-        <Collapsible open={expanded} onOpenChange={setExpanded}>
-          <div className="border rounded-md bg-card overflow-hidden">
-            {/* 헤더 */}
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="w-full flex items-start gap-2 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left"
-              >
-                <div className="flex-1 min-w-0 space-y-1">
-                  {/* 제목 + 상태 배지 */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span
-                      className={`text-xs font-medium ${
-                        milestone.status === "completed"
-                          ? "line-through text-muted-foreground"
-                          : ""
-                      }`}
-                    >
-                      {milestone.title}
-                    </span>
-                    <Badge
-                      variant="secondary"
-                      className={`text-[10px] px-1.5 py-0 shrink-0 gap-0.5 ${getStatusBadgeClass(
-                        milestone.status
-                      )}`}
-                    >
-                      {getStatusIcon(milestone.status)}
-                      {getStatusLabel(milestone.status)}
-                    </Badge>
-                  </div>
-                  {/* 담당자 + 마감일 + D-day */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {milestone.assignee && (
-                      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                        <User className="h-2.5 w-2.5" />
-                        {milestone.assignee}
-                      </span>
-                    )}
-                    <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                      <Calendar className="h-2.5 w-2.5" />
-                      {formatDate(milestone.dueDate)}
-                    </span>
-                    <Badge
-                      variant="secondary"
-                      className={`text-[10px] px-1.5 py-0 shrink-0 ${
-                        milestone.status === "completed"
-                          ? "bg-green-100 text-green-700"
-                          : isPastDue
-                          ? "bg-red-100 text-red-600"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {milestone.status === "completed"
-                        ? "완료"
-                        : ddayText}
-                    </Badge>
-                  </div>
-                </div>
-                <span className="mt-0.5 shrink-0 text-muted-foreground">
-                  {expanded ? (
-                    <ChevronUp className="h-3.5 w-3.5" />
-                  ) : (
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  )}
+      {/* 이벤트 내용 */}
+      <div className={`flex-1 pb-3 ${isLast ? "" : ""}`}>
+        <div
+          className={`rounded-lg border bg-card px-3 py-2.5 hover:shadow-sm transition-shadow ${
+            isCancelled ? "opacity-60" : ""
+          }`}
+        >
+          {/* 상단: 시간 + 제목 + 액션 */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              {/* 시간 */}
+              <div className="flex items-center gap-1 mb-1">
+                <Clock className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                <span className="text-[10px] font-mono text-muted-foreground">
+                  {event.startTime}
+                  {event.endTime && ` ~ ${event.endTime}`}
                 </span>
-              </button>
-            </CollapsibleTrigger>
-
-            {/* 펼쳐진 내용 */}
-            <CollapsibleContent>
-              <div className="px-3 pb-3 space-y-2.5 border-t pt-2.5">
-                {/* 설명 */}
-                {milestone.description && (
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    {milestone.description}
-                  </p>
-                )}
-
-                {/* 완료 시각 */}
-                {milestone.completedAt && (
-                  <p className="text-[10px] text-green-600">
-                    완료: {formatDate(milestone.completedAt.split("T")[0])}
-                  </p>
-                )}
-
-                {/* 상태 변경 셀렉트 */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground shrink-0">
-                    상태 변경
-                  </span>
-                  <Select
-                    value={milestone.status}
-                    onValueChange={(val) =>
-                      onUpdateStatus(
-                        milestone.id,
-                        val as ShowMilestoneStatus
-                      )
-                    }
-                  >
-                    <SelectTrigger className="h-7 text-xs flex-1 max-w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending" className="text-xs">
-                        대기
-                      </SelectItem>
-                      <SelectItem value="in_progress" className="text-xs">
-                        진행중
-                      </SelectItem>
-                      <SelectItem value="completed" className="text-xs">
-                        완료
-                      </SelectItem>
-                      <SelectItem value="delayed" className="text-xs">
-                        지연
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* 순서 변경 + 삭제 */}
-                <div className="flex items-center justify-between pt-0.5">
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                      onClick={() => onMoveUp(milestone.id)}
-                      disabled={isFirst}
-                      aria-label="위로 이동"
-                    >
-                      <ArrowUp className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                      onClick={() => onMoveDown(milestone.id)}
-                      disabled={isLast}
-                      aria-label="아래로 이동"
-                    >
-                      <ArrowDown className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-[11px] gap-1 text-muted-foreground hover:text-destructive px-2"
-                    onClick={() => onDelete(milestone.id, milestone.title)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    삭제
-                  </Button>
-                </div>
               </div>
-            </CollapsibleContent>
+              {/* 제목 */}
+              <span
+                className={`text-sm font-medium leading-tight block ${
+                  isCompleted ? "line-through text-muted-foreground" : ""
+                }`}
+              >
+                {event.title}
+              </span>
+            </div>
+
+            {/* 드롭다운 메뉴 */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 shrink-0"
+                >
+                  <MoreVertical className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="text-xs">
+                <DropdownMenuItem
+                  className="text-xs gap-1.5"
+                  onClick={() => onEdit(event)}
+                >
+                  <Pencil className="h-3 w-3" />
+                  수정
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {STATUS_OPTIONS.filter((s) => s !== event.status).map((s) => (
+                  <DropdownMenuItem
+                    key={s}
+                    className="text-xs gap-1.5"
+                    onClick={() => onStatusChange(event.id, s)}
+                  >
+                    {STATUS_CONFIG[s].icon}
+                    {STATUS_CONFIG[s].label}(으)로 변경
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-xs gap-1.5 text-red-600 focus:text-red-600"
+                  onClick={() => onDelete(event.id)}
+                >
+                  <Trash2 className="h-3 w-3" />
+                  삭제
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </Collapsible>
+
+          {/* 배지 행 */}
+          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+            <EventTypeBadge type={event.eventType} />
+            <StatusBadge status={event.status} />
+          </div>
+
+          {/* 담당자 & 장소 */}
+          {(event.assignedTo || event.location) && (
+            <div className="flex flex-wrap items-center gap-3 mt-1.5">
+              {event.assignedTo && (
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <User className="h-2.5 w-2.5 shrink-0" />
+                  {event.assignedTo}
+                </span>
+              )}
+              {event.location && (
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <MapPin className="h-2.5 w-2.5 shrink-0" />
+                  {event.location}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* 메모 */}
+          {event.notes && (
+            <p className="text-[10px] text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+              {event.notes}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-// ================================================================
-// 메인 카드 컴포넌트
-// ================================================================
+// ============================================================
+// 메인 컴포넌트
+// ============================================================
 
 type ShowTimelineCardProps = {
   groupId: string;
@@ -569,213 +572,165 @@ type ShowTimelineCardProps = {
 };
 
 export function ShowTimelineCard({ groupId, projectId }: ShowTimelineCardProps) {
-  const [open, setOpen] = useState(true);
-
   const {
-    timeline,
+    events,
     loading,
-    createTimeline,
-    deleteTimeline,
-    addMilestone,
-    updateMilestone,
-    deleteMilestone,
-    reorderMilestone,
-    totalMilestones,
-    completedCount,
-    delayedCount,
-    progressRate,
+    addEvent,
+    updateEvent,
+    deleteEvent,
+    changeStatus,
+    stats,
   } = useShowTimeline(groupId, projectId);
 
-  // ── 핸들러 ─────────────────────────────────────────────────
+  const [addOpen, setAddOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<ShowTimelineEvent | null>(null);
 
-  const handleUpdateStatus = (
-    milestoneId: string,
-    status: ShowMilestoneStatus
-  ) => {
-    updateMilestone(milestoneId, { status });
-    const label = getStatusLabel(status);
-    toast.success(`상태를 "${label}"(으)로 변경했습니다`);
-  };
+  function handleEdit(event: ShowTimelineEvent) {
+    setEditTarget(event);
+  }
 
-  const handleDeleteMilestone = (id: string, title: string) => {
-    deleteMilestone(id);
-    toast.success(`"${title}" 마일스톤을 삭제했습니다`);
-  };
+  async function handleUpdate(
+    input: AddShowTimelineEventInput
+  ): Promise<boolean> {
+    if (!editTarget) return false;
+    const ok = await updateEvent(editTarget.id, input);
+    if (ok) setEditTarget(null);
+    return ok;
+  }
 
-  const handleDeleteTimeline = () => {
-    deleteTimeline();
-    toast.success("타임라인을 삭제했습니다");
-  };
+  async function handleDelete(id: string) {
+    await deleteEvent(id);
+  }
 
-  // ── D-day to show ──────────────────────────────────────────
+  async function handleStatusChange(
+    id: string,
+    status: ShowTimelineStatus
+  ) {
+    await changeStatus(id, status);
+  }
 
-  const showDday = timeline?.showDate ? getDdayText(timeline.showDate) : null;
-
-  const milestones: ShowMilestone[] = timeline?.milestones ?? [];
-
-  // ── 렌더링 ─────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          불러오는 중...
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-2 pt-3 px-4">
-        <Collapsible open={open} onOpenChange={setOpen}>
-          <div className="flex items-center justify-between">
-            {/* 헤더 좌측 */}
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-1.5 group"
-              >
-                <Flag className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="text-xs font-medium">공연 타임라인</span>
-                {/* 진행률 배지 */}
-                {timeline && (
-                  <Badge
-                    variant="secondary"
-                    className={`text-[10px] px-1.5 py-0 shrink-0 ${
-                      progressRate === 100
-                        ? "bg-green-100 text-green-700"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {progressRate}%
-                  </Badge>
-                )}
-                {/* 지연 경고 배지 */}
-                {delayedCount > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="text-[10px] px-1.5 py-0 shrink-0 bg-red-100 text-red-600 gap-0.5"
-                  >
-                    <AlertTriangle className="h-2.5 w-2.5" />
-                    지연 {delayedCount}
-                  </Badge>
-                )}
-                <span className="text-muted-foreground ml-0.5">
-                  {open ? (
-                    <ChevronUp className="h-3.5 w-3.5" />
-                  ) : (
-                    <ChevronDown className="h-3.5 w-3.5" />
-                  )}
-                </span>
-              </button>
-            </CollapsibleTrigger>
-
-            {/* 헤더 우측 */}
-            <div className="flex items-center gap-1">
-              {!timeline && !loading && (
-                <CreateTimelineDialog onCreate={createTimeline} />
-              )}
-              {timeline && open && (
-                <AddMilestoneDialog onAdd={addMilestone} />
-              )}
+    <>
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <CalendarClock className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-semibold">
+                공연 타임라인
+              </CardTitle>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                {stats.total}개
+              </Badge>
             </div>
+            <Button
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => setAddOpen(true)}
+            >
+              <Plus className="h-3 w-3" />
+              이벤트 추가
+            </Button>
           </div>
 
-          {/* 카드 본문 */}
-          <CollapsibleContent>
-            <CardContent className="px-0 pb-0 pt-3">
-              {loading && (
-                <div className="flex items-center gap-2 py-4 px-2">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    불러오는 중...
-                  </span>
-                </div>
+          {/* 진행 현황 요약 */}
+          {stats.total > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {stats.byStatus.completed > 0 && (
+                <span className="text-[10px] text-green-700 bg-green-50 rounded px-2 py-0.5">
+                  완료 {stats.byStatus.completed}
+                </span>
               )}
-
-              {!loading && !timeline && (
-                <div className="py-6 text-center space-y-1.5">
-                  <Flag className="h-6 w-6 text-muted-foreground/40 mx-auto" />
-                  <p className="text-xs text-muted-foreground">
-                    아직 타임라인이 없습니다.
-                  </p>
-                  <p className="text-[11px] text-muted-foreground/70">
-                    위의 생성 버튼으로 공연 타임라인을 만들어보세요.
-                  </p>
-                </div>
+              {stats.byStatus.in_progress > 0 && (
+                <span className="text-[10px] text-blue-700 bg-blue-50 rounded px-2 py-0.5">
+                  진행중 {stats.byStatus.in_progress}
+                </span>
               )}
-
-              {!loading && timeline && (
-                <div className="space-y-3 px-2">
-                  {/* 공연 정보 요약 */}
-                  <div className="flex items-center justify-between px-1">
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-medium truncate max-w-[180px]">
-                        {timeline.showName}
-                      </p>
-                      <div className="flex items-center gap-1.5">
-                        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                          <Calendar className="h-2.5 w-2.5" />
-                          {formatDate(timeline.showDate)}
-                        </span>
-                        {showDday && (
-                          <Badge
-                            variant="secondary"
-                            className="text-[10px] px-1.5 py-0 bg-muted text-muted-foreground"
-                          >
-                            {showDday}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    {/* 타임라인 삭제 */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 text-[10px] gap-1 text-muted-foreground hover:text-destructive px-2 shrink-0"
-                      onClick={handleDeleteTimeline}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      초기화
-                    </Button>
-                  </div>
-
-                  {/* 전체 진행률 프로그레스 바 */}
-                  {totalMilestones > 0 && (
-                    <div className="space-y-1 px-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-muted-foreground">
-                          전체 진행률
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">
-                          {completedCount} / {totalMilestones} 완료
-                        </span>
-                      </div>
-                      <Progress value={progressRate} className="h-1.5" />
-                    </div>
-                  )}
-
-                  {/* 마일스톤 목록 (수직 타임라인) */}
-                  {milestones.length === 0 ? (
-                    <div className="py-4 text-center">
-                      <p className="text-[11px] text-muted-foreground">
-                        마일스톤이 없습니다. 추가 버튼으로 첫 마일스톤을
-                        만들어보세요.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="pt-1">
-                      {milestones.map((m, idx) => (
-                        <MilestoneItem
-                          key={m.id}
-                          milestone={m}
-                          isFirst={idx === 0}
-                          isLast={idx === milestones.length - 1}
-                          onUpdateStatus={handleUpdateStatus}
-                          onDelete={handleDeleteMilestone}
-                          onMoveUp={(id) => reorderMilestone(id, "up")}
-                          onMoveDown={(id) => reorderMilestone(id, "down")}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
+              {stats.byStatus.scheduled > 0 && (
+                <span className="text-[10px] text-muted-foreground bg-muted/50 rounded px-2 py-0.5">
+                  예정 {stats.byStatus.scheduled}
+                </span>
               )}
-            </CardContent>
-          </CollapsibleContent>
-        </Collapsible>
-      </CardHeader>
-    </Card>
+              {stats.byStatus.cancelled > 0 && (
+                <span className="text-[10px] text-red-600 bg-red-50 rounded px-2 py-0.5">
+                  취소 {stats.byStatus.cancelled}
+                </span>
+              )}
+              <span className="text-[10px] text-muted-foreground bg-muted/50 rounded px-2 py-0.5">
+                진행률 {stats.progress}%
+              </span>
+            </div>
+          )}
+        </CardHeader>
+
+        <CardContent>
+          {/* 빈 상태 */}
+          {events.length === 0 && (
+            <div className="py-10 text-center space-y-2">
+              <CalendarClock className="h-8 w-8 mx-auto text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">
+                등록된 타임라인 이벤트가 없습니다
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1"
+                onClick={() => setAddOpen(true)}
+              >
+                <Plus className="h-3 w-3" />
+                첫 번째 이벤트 추가
+              </Button>
+            </div>
+          )}
+
+          {/* 세로 타임라인 */}
+          {events.length > 0 && (
+            <div className="space-y-0">
+              {events.map((event, idx) => (
+                <TimelineEventItem
+                  key={event.id}
+                  event={event}
+                  isLast={idx === events.length - 1}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onStatusChange={handleStatusChange}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 추가 다이얼로그 */}
+      <EventFormDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onSubmit={addEvent}
+        title="이벤트 추가"
+      />
+
+      {/* 수정 다이얼로그 */}
+      {editTarget && (
+        <EventFormDialog
+          open={!!editTarget}
+          onOpenChange={(open) => {
+            if (!open) setEditTarget(null);
+          }}
+          initial={editTarget}
+          onSubmit={handleUpdate}
+          title="이벤트 수정"
+        />
+      )}
+    </>
   );
 }
