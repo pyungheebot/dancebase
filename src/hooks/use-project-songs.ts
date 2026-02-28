@@ -48,6 +48,7 @@ export function useProjectSongs(projectId: string) {
     title: string;
     artist?: string;
     youtube_url?: string;
+    spotify_url?: string;
   }): Promise<boolean> {
     const supabase = createClient();
     const {
@@ -66,6 +67,7 @@ export function useProjectSongs(projectId: string) {
       title: payload.title.trim(),
       artist: payload.artist?.trim() || null,
       youtube_url: payload.youtube_url?.trim() || null,
+      spotify_url: payload.spotify_url?.trim() || null,
       status: "not_started",
       created_by: user.id,
       sort_order: maxSortOrder,

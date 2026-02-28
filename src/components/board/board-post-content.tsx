@@ -2,6 +2,7 @@
 
 import { Fragment } from "react";
 import { YouTubeEmbed, extractYouTubeId } from "@/components/shared/youtube-embed";
+import { SpotifyEmbed, extractSpotifyInfo } from "@/components/shared/spotify-embed";
 
 interface BoardPostContentProps {
   content: string;
@@ -10,10 +11,13 @@ interface BoardPostContentProps {
 // 일반 URL 패턴
 const URL_PATTERN = /https?:\/\/[^\s<]+/;
 
-/** 줄에서 YouTube URL들을 추출 */
-function findYouTubeUrls(line: string): string[] {
+/** 줄에서 URL을 추출하고 타입별로 분류 */
+function findEmbedUrls(line: string): { youtube: string[]; spotify: string[] } {
   const urlMatches = line.match(new RegExp(URL_PATTERN, "g")) || [];
-  return urlMatches.filter((url) => extractYouTubeId(url) !== null);
+  return {
+    youtube: urlMatches.filter((url) => extractYouTubeId(url) !== null),
+    spotify: urlMatches.filter((url) => extractSpotifyInfo(url) !== null),
+  };
 }
 
 export function BoardPostContent({ content }: BoardPostContentProps) {
@@ -24,14 +28,18 @@ export function BoardPostContent({ content }: BoardPostContentProps) {
   return (
     <div className="space-y-2 text-sm whitespace-pre-wrap">
       {lines.map((line, lineIdx) => {
-        const ytUrls = findYouTubeUrls(line);
+        const embeds = findEmbedUrls(line);
+        const hasEmbeds = embeds.youtube.length > 0 || embeds.spotify.length > 0;
 
-        if (ytUrls.length > 0) {
+        if (hasEmbeds) {
           return (
             <Fragment key={lineIdx}>
               <p>{renderLineWithLinks(line)}</p>
-              {ytUrls.map((ytUrl, i) => (
+              {embeds.youtube.map((ytUrl, i) => (
                 <YouTubeEmbed key={`yt-${lineIdx}-${i}`} url={ytUrl} />
+              ))}
+              {embeds.spotify.map((spUrl, i) => (
+                <SpotifyEmbed key={`sp-${lineIdx}-${i}`} url={spUrl} />
               ))}
             </Fragment>
           );

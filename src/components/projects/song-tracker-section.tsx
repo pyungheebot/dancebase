@@ -14,6 +14,7 @@ import { SongPartAssignment } from "@/components/projects/song-part-assignment";
 import { RunthroughModeDialog } from "@/components/projects/runthrough-mode-dialog";
 import { SongReadinessVotePanel } from "@/components/projects/song-readiness-vote";
 import { useAuth } from "@/hooks/use-auth";
+import { SpotifyEmbed, extractSpotifyInfo } from "@/components/shared/spotify-embed";
 import {
   Music,
   Play,
@@ -28,6 +29,7 @@ import {
   StickyNote,
   Users,
   BarChart2,
+  Disc3,
 } from "lucide-react";
 
 interface SongTrackerSectionProps {
@@ -201,6 +203,20 @@ function SongItem({ song, onCycleStatus, onDelete, onOpenNotes, onOpenParts, can
           <StickyNote className="h-3 w-3 text-muted-foreground hover:text-foreground" />
         </Button>
 
+        {/* Spotify 링크 */}
+        {song.spotify_url && (
+          <a
+            href={song.spotify_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 text-green-500 hover:text-green-600 transition-colors"
+            title="Spotify에서 듣기"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Disc3 className="h-3.5 w-3.5" />
+          </a>
+        )}
+
         {/* YouTube 링크 */}
         {song.youtube_url && (
           <a
@@ -237,6 +253,13 @@ function SongItem({ song, onCycleStatus, onDelete, onOpenNotes, onOpenParts, can
           userName={userName}
         />
       )}
+
+      {/* Spotify 인라인 플레이어 */}
+      {song.spotify_url && extractSpotifyInfo(song.spotify_url) && (
+        <div className="ml-1 mt-1">
+          <SpotifyEmbed url={song.spotify_url} compact />
+        </div>
+      )}
     </div>
   );
 }
@@ -250,6 +273,7 @@ interface InlineAddFormProps {
     title: string;
     artist?: string;
     youtube_url?: string;
+    spotify_url?: string;
   }) => Promise<boolean>;
 }
 
@@ -257,6 +281,7 @@ function InlineAddForm({ onAdd }: InlineAddFormProps) {
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [spotifyUrl, setSpotifyUrl] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [adding, setAdding] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -269,11 +294,13 @@ function InlineAddForm({ onAdd }: InlineAddFormProps) {
       title: trimmedTitle,
       artist: artist.trim() || undefined,
       youtube_url: youtubeUrl.trim() || undefined,
+      spotify_url: spotifyUrl.trim() || undefined,
     });
     if (ok) {
       setTitle("");
       setArtist("");
       setYoutubeUrl("");
+      setSpotifyUrl("");
       setExpanded(false);
       titleRef.current?.focus();
     }
@@ -325,12 +352,20 @@ function InlineAddForm({ onAdd }: InlineAddFormProps) {
             className="h-7 text-xs border-dashed"
             disabled={adding}
           />
+          <Input
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="YouTube URL (선택)"
+            className="h-7 text-xs border-dashed"
+            disabled={adding}
+          />
           <div className="flex items-center gap-1.5">
             <Input
-              value={youtubeUrl}
-              onChange={(e) => setYoutubeUrl(e.target.value)}
+              value={spotifyUrl}
+              onChange={(e) => setSpotifyUrl(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="YouTube URL (선택)"
+              placeholder="Spotify URL (선택)"
               className="h-7 text-xs flex-1 border-dashed"
               disabled={adding}
             />

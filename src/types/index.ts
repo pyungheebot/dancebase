@@ -1221,6 +1221,7 @@ export type ProjectSong = {
   artist: string | null;
   status: 'not_started' | 'in_progress' | 'mastered';
   youtube_url: string | null;
+  spotify_url: string | null;
   sort_order: number;
   created_by: string;
   created_at: string;
