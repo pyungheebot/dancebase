@@ -675,3 +675,7 @@ export function invalidatePosterManagement(groupId: string, projectId: string) {
 export function invalidateStageLayout(groupId: string, projectId: string) {
   mutate(swrKeys.stageLayout(groupId, projectId));
 }
+
+export function invalidateVideoReview(groupId: string) {
+  mutate(swrKeys.videoReview(groupId));
+}

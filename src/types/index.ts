@@ -8912,3 +8912,137 @@ export type CurtainCallPlan = {
   notes?: string;
   createdAt: string;
 };
+
+export type MentalWellnessEntry = {
+  id: string;
+  date: string;
+  confidence: number; // 1-10 자신감
+  stress: number; // 1-10 스트레스
+  motivation: number; // 1-10 동기
+  anxiety: number; // 1-10 불안
+  overallMood: "great" | "good" | "okay" | "low" | "struggling";
+  journalNote?: string;
+  copingStrategies?: string[];
+  createdAt: string;
+};
+
+// ============================================================
+// 그룹 대회 준비 체크
+// ============================================================
+
+export type CompetitionPrepCategory =
+  | "registration"
+  | "choreography"
+  | "music"
+  | "costume"
+  | "travel"
+  | "documents"
+  | "other";
+
+export type CompetitionPrepItem = {
+  id: string;
+  category: CompetitionPrepCategory;
+  task: string;
+  assignee?: string;
+  dueDate?: string;
+  isCompleted: boolean;
+  notes?: string;
+};
+
+export type CompetitionPrepEvent = {
+  id: string;
+  competitionName: string;
+  date: string;
+  location: string;
+  category?: string;
+  items: CompetitionPrepItem[];
+  teamSize?: number;
+  registrationDeadline?: string;
+  notes?: string;
+  createdAt: string;
+};
+
+export type SoundcheckChannel = {
+  id: string;
+  channelNumber: number;
+  source: string;
+  type: "vocal" | "instrument" | "playback" | "sfx" | "monitor";
+  volume: number; // 0-100
+  pan?: number; // -100 ~ 100
+  eq?: string;
+  isChecked: boolean;
+  notes?: string;
+};
+
+export type SoundcheckSheet = {
+  id: string;
+  projectId: string;
+  sheetName: string;
+  channels: SoundcheckChannel[];
+  engineer?: string;
+  checkDate?: string;
+  overallNotes?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 앵콜 계획
+// ============================================================
+
+export type EncoreTriggerCondition =
+  | "audience_request"
+  | "standing_ovation"
+  | "time_available"
+  | "planned"
+  | "spontaneous";
+
+export type EncoreSong = {
+  id: string;
+  order: number;
+  songTitle: string;
+  artist?: string;
+  durationSeconds: number;
+  performers: string[];
+  notes?: string;
+};
+
+export type EncorePlan = {
+  id: string;
+  projectId: string;
+  planName: string;
+  songs: EncoreSong[];
+  triggerCondition: EncoreTriggerCondition;
+  maxEncores: number;
+  signalCue?: string;
+  lightingNotes?: string;
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 그룹 연습 비디오 리뷰
+// ============================================================
+
+export type VideoReviewTimestampType = "praise" | "correction" | "question" | "note";
+
+export type VideoReviewTimestamp = {
+  id: string;
+  time: string; // MM:SS 형식
+  comment: string;
+  author: string;
+  type: VideoReviewTimestampType;
+  createdAt: string;
+};
+
+export type VideoReviewEntry = {
+  id: string;
+  title: string;
+  videoUrl?: string;
+  date: string;
+  duration?: string;
+  description?: string;
+  timestamps: VideoReviewTimestamp[];
+  overallRating?: number; // 1-5
+  reviewedBy: string[];
+  createdAt: string;
+};

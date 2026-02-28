@@ -1159,4 +1159,23 @@ export const swrKeys = {
   // 공연 커튼콜 계획 (localStorage 기반)
   curtainCall: (groupId: string, projectId: string) =>
     `curtain-call-${groupId}-${projectId}` as const,
+
+  // 멤버 심리 상태 추적 (localStorage 기반)
+  mentalWellness: (memberId: string) =>
+    `mental-wellness-${memberId}` as const,
+
+  // 그룹 대회 준비 체크 (localStorage 기반)
+  competitionPrep: (groupId: string) =>
+    `competition-prep-${groupId}` as const,
+
+  // 공연 사운드체크 시트 (localStorage 기반)
+  soundcheckSheet: (groupId: string, projectId: string) =>
+    `soundcheck-sheet-${groupId}-${projectId}` as const,
+
+  // 공연 앵콜 계획 (localStorage 기반)
+  encorePlan: (groupId: string, projectId: string) =>
+    `encore-plan-${groupId}-${projectId}` as const,
+
+  // 그룹 연습 비디오 리뷰 (localStorage 기반)
+  videoReview: (groupId: string) => `video-review-${groupId}` as const,
 };
