@@ -1,35 +1,52 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { StageRiskItem, StageRiskMitigation, StageRiskLevel, StageRiskCategory } from "@/types";
+import { swrKeys } from "@/lib/swr/keys";
+import type {
+  StageRiskItem,
+  StageRiskData,
+  StageRiskCategory,
+  StageRiskLevel,
+  StageRiskResponseStatus,
+} from "@/types";
+
+// ============================================================
+// 리스크 점수 → 레벨 계산
+// ============================================================
+
+export function calcRiskLevel(score: number): StageRiskLevel {
+  if (score <= 4) return "low";
+  if (score <= 9) return "medium";
+  if (score <= 15) return "high";
+  return "critical";
+}
 
 // ============================================================
 // localStorage 헬퍼
 // ============================================================
 
-function storageKey(groupId: string, projectId: string): string {
-  return `dancebase:stage-risk:${groupId}:${projectId}`;
+function storageKey(projectId: string): string {
+  return swrKeys.stageRiskAssessment(projectId);
 }
 
-function loadData(groupId: string, projectId: string): StageRiskItem[] {
-  if (typeof window === "undefined") return [];
+function loadData(projectId: string): StageRiskData {
+  if (typeof window === "undefined") {
+    return { projectId, items: [], updatedAt: new Date().toISOString() };
+  }
   try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as StageRiskItem[];
+    const raw = localStorage.getItem(storageKey(projectId));
+    if (!raw)
+      return { projectId, items: [], updatedAt: new Date().toISOString() };
+    return JSON.parse(raw) as StageRiskData;
   } catch {
-    return [];
+    return { projectId, items: [], updatedAt: new Date().toISOString() };
   }
 }
 
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: StageRiskItem[]
-): void {
+function saveData(data: StageRiskData): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
+    localStorage.setItem(storageKey(data.projectId), JSON.stringify(data));
   } catch {
     // 무시
   }
@@ -40,211 +57,199 @@ function saveData(
 // ============================================================
 
 export type StageRiskStats = {
-  totalRisks: number;
-  unresolvedRisks: number;
-  criticalRisks: number;
-  mitigationCompletionRate: number;
+  /** 총 리스크 수 */
+  total: number;
+  /** 레벨별 분포 */
+  levelDistribution: { level: StageRiskLevel; count: number }[];
+  /** 미대응(pending) 수 */
+  pendingCount: number;
+  /** 대응중(in_progress) 수 */
+  inProgressCount: number;
+  /** 완료(done) 수 */
+  doneCount: number;
+  /** 평균 리스크 점수 */
+  avgScore: number;
+  /** 최고 위험 항목 */
+  topRiskItem: StageRiskItem | null;
 };
 
 // ============================================================
 // 훅
 // ============================================================
 
-export function useStageRisk(groupId: string, projectId: string) {
-  const [risks, setRisks] = useState<StageRiskItem[]>([]);
+export function useStageRisk(projectId: string) {
+  const [items, setItems] = useState<StageRiskItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
-    if (!groupId || !projectId) return;
-    const data = loadData(groupId, projectId);
-    setRisks(data);
+    if (!projectId) return;
+    const data = loadData(projectId);
+    setItems(data.items);
     setLoading(false);
-  }, [groupId, projectId]);
+  }, [projectId]);
 
   useEffect(() => {
     reload();
   }, [reload]);
 
   const persist = useCallback(
-    (next: StageRiskItem[]) => {
-      saveData(groupId, projectId, next);
-      setRisks(next);
+    (updated: StageRiskItem[]) => {
+      const data: StageRiskData = {
+        projectId,
+        items: updated,
+        updatedAt: new Date().toISOString(),
+      };
+      saveData(data);
+      setItems(updated);
     },
-    [groupId, projectId]
+    [projectId]
   );
 
-  // ── 리스크 CRUD ───────────────────────────────────────────
-
-  const addRisk = useCallback(
-    (
-      partial: Omit<StageRiskItem, "id" | "mitigations" | "isResolved" | "createdAt">
-    ): StageRiskItem => {
-      const newRisk: StageRiskItem = {
+  // 리스크 항목 추가
+  const addItem = useCallback(
+    (params: {
+      title: string;
+      category: StageRiskCategory;
+      likelihood: number;
+      impact: number;
+      mitigation: string;
+      responseStatus: StageRiskResponseStatus;
+    }): StageRiskItem => {
+      const score = params.likelihood * params.impact;
+      const level = calcRiskLevel(score);
+      const now = new Date().toISOString();
+      const newItem: StageRiskItem = {
         id: crypto.randomUUID(),
-        mitigations: [],
-        isResolved: false,
-        createdAt: new Date().toISOString(),
-        ...partial,
+        title: params.title,
+        category: params.category,
+        likelihood: params.likelihood,
+        impact: params.impact,
+        score,
+        level,
+        mitigation: params.mitigation,
+        responseStatus: params.responseStatus,
+        createdAt: now,
+        updatedAt: now,
       };
-      const next = [...risks, newRisk];
-      persist(next);
-      return newRisk;
+      persist([...items, newItem]);
+      return newItem;
     },
-    [risks, persist]
+    [items, persist]
   );
 
-  const updateRisk = useCallback(
+  // 리스크 항목 수정
+  const updateItem = useCallback(
     (
-      riskId: string,
-      partial: Partial<Omit<StageRiskItem, "id" | "mitigations" | "createdAt">>
+      itemId: string,
+      params: Partial<
+        Omit<StageRiskItem, "id" | "score" | "level" | "createdAt">
+      >
     ): boolean => {
-      const idx = risks.findIndex((r) => r.id === riskId);
+      const idx = items.findIndex((i) => i.id === itemId);
       if (idx === -1) return false;
-      const next = [...risks];
-      next[idx] = { ...next[idx], ...partial };
-      persist(next);
+
+      const existing = items[idx];
+      const likelihood = params.likelihood ?? existing.likelihood;
+      const impact = params.impact ?? existing.impact;
+      const score = likelihood * impact;
+      const level = calcRiskLevel(score);
+
+      const updated = items.map((i) =>
+        i.id === itemId
+          ? {
+              ...i,
+              ...params,
+              likelihood,
+              impact,
+              score,
+              level,
+              updatedAt: new Date().toISOString(),
+            }
+          : i
+      );
+      persist(updated);
       return true;
     },
-    [risks, persist]
+    [items, persist]
   );
 
-  const deleteRisk = useCallback(
-    (riskId: string): boolean => {
-      const next = risks.filter((r) => r.id !== riskId);
-      if (next.length === risks.length) return false;
-      persist(next);
+  // 리스크 항목 삭제
+  const deleteItem = useCallback(
+    (itemId: string): boolean => {
+      const exists = items.some((i) => i.id === itemId);
+      if (!exists) return false;
+      persist(items.filter((i) => i.id !== itemId));
       return true;
     },
-    [risks, persist]
+    [items, persist]
   );
 
-  const toggleResolved = useCallback(
-    (riskId: string): boolean => {
-      const idx = risks.findIndex((r) => r.id === riskId);
-      if (idx === -1) return false;
-      const next = [...risks];
-      next[idx] = { ...next[idx], isResolved: !next[idx].isResolved };
-      persist(next);
-      return true;
+  // 대응 상태 변경
+  const updateResponseStatus = useCallback(
+    (itemId: string, status: StageRiskResponseStatus): boolean => {
+      return updateItem(itemId, { responseStatus: status });
     },
-    [risks, persist]
+    [updateItem]
   );
 
-  // ── 대응 조치 CRUD ────────────────────────────────────────
-
-  const addMitigation = useCallback(
-    (
-      riskId: string,
-      partial: Omit<StageRiskMitigation, "id" | "isCompleted">
-    ): StageRiskMitigation | null => {
-      const riskIdx = risks.findIndex((r) => r.id === riskId);
-      if (riskIdx === -1) return null;
-
-      const newMitigation: StageRiskMitigation = {
-        id: crypto.randomUUID(),
-        isCompleted: false,
-        ...partial,
-      };
-
-      const next = [...risks];
-      next[riskIdx] = {
-        ...next[riskIdx],
-        mitigations: [...next[riskIdx].mitigations, newMitigation],
-      };
-      persist(next);
-      return newMitigation;
-    },
-    [risks, persist]
-  );
-
-  const updateMitigation = useCallback(
-    (
-      riskId: string,
-      mitigationId: string,
-      partial: Partial<Omit<StageRiskMitigation, "id">>
-    ): boolean => {
-      const riskIdx = risks.findIndex((r) => r.id === riskId);
-      if (riskIdx === -1) return false;
-
-      const mitIdx = risks[riskIdx].mitigations.findIndex((m) => m.id === mitigationId);
-      if (mitIdx === -1) return false;
-
-      const next = [...risks];
-      const updatedMitigations = [...next[riskIdx].mitigations];
-      updatedMitigations[mitIdx] = { ...updatedMitigations[mitIdx], ...partial };
-      next[riskIdx] = { ...next[riskIdx], mitigations: updatedMitigations };
-      persist(next);
-      return true;
-    },
-    [risks, persist]
-  );
-
-  const deleteMitigation = useCallback(
-    (riskId: string, mitigationId: string): boolean => {
-      const riskIdx = risks.findIndex((r) => r.id === riskId);
-      if (riskIdx === -1) return false;
-
-      const filtered = risks[riskIdx].mitigations.filter((m) => m.id !== mitigationId);
-      if (filtered.length === risks[riskIdx].mitigations.length) return false;
-
-      const next = [...risks];
-      next[riskIdx] = { ...next[riskIdx], mitigations: filtered };
-      persist(next);
-      return true;
-    },
-    [risks, persist]
-  );
-
-  const toggleMitigation = useCallback(
-    (riskId: string, mitigationId: string): boolean => {
-      const riskIdx = risks.findIndex((r) => r.id === riskId);
-      if (riskIdx === -1) return false;
-
-      const mitIdx = risks[riskIdx].mitigations.findIndex((m) => m.id === mitigationId);
-      if (mitIdx === -1) return false;
-
-      const next = [...risks];
-      const updatedMitigations = [...next[riskIdx].mitigations];
-      updatedMitigations[mitIdx] = {
-        ...updatedMitigations[mitIdx],
-        isCompleted: !updatedMitigations[mitIdx].isCompleted,
-      };
-      next[riskIdx] = { ...next[riskIdx], mitigations: updatedMitigations };
-      persist(next);
-      return true;
-    },
-    [risks, persist]
-  );
-
-  // ── 통계 ──────────────────────────────────────────────────
-
+  // 통계 계산
   const stats: StageRiskStats = (() => {
-    const totalRisks = risks.length;
-    const unresolvedRisks = risks.filter((r) => !r.isResolved).length;
-    const criticalRisks = risks.filter((r) => r.level === "critical" && !r.isResolved).length;
+    const LEVELS: StageRiskLevel[] = ["low", "medium", "high", "critical"];
 
-    const allMitigations = risks.flatMap((r) => r.mitigations);
-    const completedMitigations = allMitigations.filter((m) => m.isCompleted).length;
-    const mitigationCompletionRate =
-      allMitigations.length === 0
-        ? 0
-        : Math.round((completedMitigations / allMitigations.length) * 100);
+    if (items.length === 0) {
+      return {
+        total: 0,
+        levelDistribution: [],
+        pendingCount: 0,
+        inProgressCount: 0,
+        doneCount: 0,
+        avgScore: 0,
+        topRiskItem: null,
+      };
+    }
 
-    return { totalRisks, unresolvedRisks, criticalRisks, mitigationCompletionRate };
+    const levelDistribution = LEVELS.map((level) => ({
+      level,
+      count: items.filter((i) => i.level === level).length,
+    })).filter((l) => l.count > 0);
+
+    const pendingCount = items.filter(
+      (i) => i.responseStatus === "pending"
+    ).length;
+    const inProgressCount = items.filter(
+      (i) => i.responseStatus === "in_progress"
+    ).length;
+    const doneCount = items.filter((i) => i.responseStatus === "done").length;
+
+    const avgScore =
+      Math.round(
+        (items.reduce((acc, i) => acc + i.score, 0) / items.length) * 10
+      ) / 10;
+
+    const topRiskItem = items.reduce(
+      (top, i) => (i.score > (top?.score ?? 0) ? i : top),
+      null as StageRiskItem | null
+    );
+
+    return {
+      total: items.length,
+      levelDistribution,
+      pendingCount,
+      inProgressCount,
+      doneCount,
+      avgScore,
+      topRiskItem,
+    };
   })();
 
   return {
-    risks,
+    items,
     loading,
-    addRisk,
-    updateRisk,
-    deleteRisk,
-    toggleResolved,
-    addMitigation,
-    updateMitigation,
-    deleteMitigation,
-    toggleMitigation,
     stats,
+    addItem,
+    updateItem,
+    deleteItem,
+    updateResponseStatus,
     refetch: reload,
   };
 }

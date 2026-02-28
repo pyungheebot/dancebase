@@ -28,6 +28,8 @@ import { AppreciationCardCard } from "@/components/groups/appreciation-card-card
 import { MemberAttendanceStatsCard } from "@/components/groups/member-attendance-stats-card";
 import { MonthlyHighlightCard } from "@/components/groups/monthly-highlight-card";
 import { MentalCoachingCard } from "@/components/groups/mental-coaching-card";
+import { EventCalendarCard } from "@/components/groups/event-calendar-card";
+import { GrowthJournalCard } from "@/components/groups/growth-journal-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -165,6 +167,13 @@ export default function GroupDetailPage({
           <MonthlyHighlightCard groupId={ctx.groupId} />
 
           <MentalCoachingCard
+            groupId={ctx.groupId}
+            memberNames={ctx.members.map((m) => m.nickname || m.profile.name)}
+          />
+
+          <EventCalendarCard groupId={ctx.groupId} />
+
+          <GrowthJournalCard
             groupId={ctx.groupId}
             memberNames={ctx.members.map((m) => m.nickname || m.profile.name)}
           />

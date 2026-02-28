@@ -1384,4 +1384,20 @@ export const swrKeys = {
   // 그룹 멘탈 코칭 노트 (localStorage 기반)
   mentalCoaching: (groupId: string) =>
     `mental-coaching-${groupId}` as const,
+
+  // 댄스 루틴 빌더 (localStorage 기반)
+  danceRoutineBuilder: (memberId: string) =>
+    `dance-routine-builder-${memberId}` as const,
+
+  // 공연 드레스 리허설 노트 (localStorage 기반)
+  dressRehearsal: (projectId: string) =>
+    `dress-rehearsal-${projectId}` as const,
+
+  // 공연 무대 리스크 평가 (localStorage 기반)
+  stageRiskAssessment: (projectId: string) =>
+    `stage-risk-assessment-${projectId}` as const,
+
+  // 그룹 이벤트 캘린더 (localStorage 기반)
+  groupEventCalendar: (groupId: string) =>
+    `group-event-calendar-${groupId}` as const,
 };

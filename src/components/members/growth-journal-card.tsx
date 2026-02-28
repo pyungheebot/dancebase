@@ -792,11 +792,34 @@ export function GrowthJournalCard({
     addEntry,
     updateEntry,
     deleteEntry,
-    totalEntries,
-    averageSelfRating,
-    moodDistribution,
-    topSkillsPracticed,
   } = useGrowthJournal(groupId);
+
+  // 통계 직접 계산
+  const totalEntries = entries.length;
+  const averageSelfRating =
+    entries.length > 0
+      ? Math.round(
+          (entries.reduce((sum, e) => sum + e.selfRating, 0) / entries.length) *
+            10
+        ) / 10
+      : 0;
+  const moodDistribution = entries.reduce<Record<string, number>>(
+    (acc, e) => {
+      acc[e.mood] = (acc[e.mood] ?? 0) + 1;
+      return acc;
+    },
+    {}
+  ) as Record<GrowthJournalMood, number>;
+  const skillCountMap = entries
+    .flatMap((e) => e.skillsPracticed)
+    .reduce<Record<string, number>>((acc, skill) => {
+      acc[skill] = (acc[skill] ?? 0) + 1;
+      return acc;
+    }, {});
+  const topSkillsPracticed = Object.entries(skillCountMap)
+    .map(([skill, count]) => ({ skill, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
 
   // 멤버 필터 + 날짜순 정렬
   const displayed = [...entries]

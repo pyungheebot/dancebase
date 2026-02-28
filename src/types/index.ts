@@ -7211,6 +7211,15 @@ export type GrowthJournalMood =
   | "struggling"
   | "discouraged";
 
+/** 성장 영역 카테고리 */
+export type GrowthArea =
+  | "테크닉"
+  | "표현력"
+  | "체력"
+  | "리더십"
+  | "협동심"
+  | "자신감";
+
 /** 성장 일지 항목 */
 export type GrowthJournalEntry = {
   id: string;
@@ -7224,7 +7233,19 @@ export type GrowthJournalEntry = {
   challengesFaced: string[];
   nextGoals: string[];
   selfRating: number; // 1~5
+  /** 성장 영역 */
+  area?: GrowthArea;
+  /** 성장 수준 (1-5 별점) */
+  level?: number;
   createdAt: string;
+  updatedAt?: string;
+};
+
+/** localStorage 저장 단위 */
+export type GrowthJournalData = {
+  groupId: string;
+  entries: GrowthJournalEntry[];
+  updatedAt: string;
 };
 
 // ============================================
@@ -8420,37 +8441,54 @@ export type SoundCueSheet = {
   createdAt: string;
 };
 
-// 공연 무대 위험 평가
-export type StageRiskLevel = "critical" | "high" | "medium" | "low";
+// 공연 무대 리스크 평가 (Stage Risk Assessment)
 
+/** 리스크 카테고리 */
 export type StageRiskCategory =
-  | "physical"
-  | "electrical"
-  | "structural"
-  | "fire"
-  | "crowd"
+  | "stage_structure"
+  | "lighting_electric"
+  | "sound"
+  | "audience_safety"
+  | "performer_safety"
   | "weather"
   | "other";
 
-export type StageRiskMitigation = {
-  id: string;
-  action: string;
-  responsible: string;
-  isCompleted: boolean;
-  dueDate?: string;
-};
+/** 리스크 레벨 */
+export type StageRiskLevel = "low" | "medium" | "high" | "critical";
 
+/** 대응 상태 */
+export type StageRiskResponseStatus = "pending" | "in_progress" | "done";
+
+/** 리스크 항목 */
 export type StageRiskItem = {
   id: string;
+  /** 위험 요소 제목 */
   title: string;
+  /** 카테고리 */
   category: StageRiskCategory;
+  /** 발생 가능성 (1-5) */
+  likelihood: number;
+  /** 영향도 (1-5) */
+  impact: number;
+  /** 리스크 점수 (가능성 × 영향도) */
+  score: number;
+  /** 리스크 레벨 (자동 계산) */
   level: StageRiskLevel;
-  description: string;
-  location?: string;
-  mitigations: StageRiskMitigation[];
-  isResolved: boolean;
-  reportedBy: string;
+  /** 대응 방안 */
+  mitigation: string;
+  /** 대응 상태 */
+  responseStatus: StageRiskResponseStatus;
+  /** 생성 시각 (ISO 8601) */
   createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type StageRiskData = {
+  projectId: string;
+  items: StageRiskItem[];
+  updatedAt: string;
 };
 
 // 멤버 댄스 영감 보드
@@ -11974,5 +12012,181 @@ export type MentalCoachingNote = {
 export type MentalCoachingData = {
   groupId: string;
   notes: MentalCoachingNote[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 댄스 루틴 빌더 (Dance Routine Builder)
+// ============================================================
+
+/** 스텝 카테고리 */
+export type RoutineStepCategory =
+  | "warmup"
+  | "stretching"
+  | "technique"
+  | "choreography"
+  | "cooldown";
+
+/** 루틴 스텝 */
+export type RoutineStep = {
+  id: string;
+  /** 운동/동작 이름 */
+  name: string;
+  /** 카테고리 */
+  category: RoutineStepCategory;
+  /** 세트 수 */
+  sets: number;
+  /** 반복 횟수 (reps 또는 seconds) */
+  reps: number;
+  /** 반복 단위: 횟수 | 초 */
+  repUnit: "reps" | "seconds";
+  /** 메모 */
+  memo?: string;
+  /** 순서 (1-based) */
+  order: number;
+};
+
+/** 댄스 루틴 */
+export type DanceRoutine = {
+  id: string;
+  /** 루틴 제목 */
+  title: string;
+  /** 목적 */
+  purpose?: string;
+  /** 예상 소요시간 (분) */
+  estimatedMinutes: number;
+  /** 즐겨찾기 여부 */
+  favorited: boolean;
+  /** 스텝 목록 */
+  steps: RoutineStep[];
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type DanceRoutineData = {
+  memberId: string;
+  routines: DanceRoutine[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 드레스 리허설 노트 (Dress Rehearsal Notes)
+// ============================================================
+
+/** 이슈 카테고리 */
+export type DressRehearsalCategory =
+  | "안무"
+  | "음악"
+  | "조명"
+  | "의상"
+  | "동선"
+  | "소품"
+  | "기타";
+
+/** 이슈 심각도 */
+export type DressRehearsalSeverity = "높음" | "보통" | "낮음";
+
+/** 드레스 리허설 이슈 항목 */
+export type DressRehearsalIssue = {
+  /** 고유 ID */
+  id: string;
+  /** 장면/섹션 */
+  section: string;
+  /** 이슈 내용 */
+  content: string;
+  /** 카테고리 */
+  category: DressRehearsalCategory;
+  /** 심각도 */
+  severity: DressRehearsalSeverity;
+  /** 담당자 */
+  assignee?: string;
+  /** 해결 여부 */
+  resolved: boolean;
+  /** 해결 시각 (ISO 8601) */
+  resolvedAt?: string;
+};
+
+/** 드레스 리허설 회차 */
+export type DressRehearsalSession = {
+  /** 고유 ID */
+  id: string;
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 시간 (HH:mm) */
+  time: string;
+  /** 장소 */
+  venue: string;
+  /** 회차 이슈 목록 */
+  issues: DressRehearsalIssue[];
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type DressRehearsalData = {
+  projectId: string;
+  sessions: DressRehearsalSession[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 이벤트 캘린더 (Group Event Calendar)
+// ============================================================
+
+/** 이벤트 카테고리 */
+export type GroupEventCategory =
+  | "공연"
+  | "워크숍"
+  | "모임"
+  | "대회"
+  | "축제"
+  | "연습"
+  | "기타";
+
+/** RSVP 상태 */
+export type GroupEventRsvpStatus = "참석" | "미참석" | "미정";
+
+/** RSVP 항목 */
+export type GroupEventRsvp = {
+  /** 사용자 식별자 (브라우저 UUID) */
+  userId: string;
+  /** 참석 여부 */
+  status: GroupEventRsvpStatus;
+  /** 업데이트 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** 그룹 이벤트 캘린더 이벤트 항목 */
+export type GroupCalendarEvent = {
+  id: string;
+  /** 제목 */
+  title: string;
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 시작 시간 (HH:MM) */
+  time: string;
+  /** 종료 시간 (HH:MM) */
+  endTime: string;
+  /** 장소 */
+  location: string;
+  /** 카테고리 */
+  category: GroupEventCategory;
+  /** 설명 */
+  description: string;
+  /** RSVP 목록 */
+  rsvps: GroupEventRsvp[];
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type GroupEventCalendarData = {
+  groupId: string;
+  events: GroupCalendarEvent[];
   updatedAt: string;
 };

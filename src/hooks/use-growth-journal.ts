@@ -1,50 +1,104 @@
 "use client";
 
-import { useCallback } from "react";
-import useSWR from "swr";
+import { useState, useEffect, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
-import type { GrowthJournalEntry, GrowthJournalMood } from "@/types";
+import type {
+  GrowthJournalEntry,
+  GrowthJournalData,
+  GrowthArea,
+} from "@/types";
 
-// ============================================
-// localStorage 유틸
-// ============================================
+// ============================================================
+// 성장 영역 목록 (상수)
+// ============================================================
+
+export const GROWTH_AREAS: GrowthArea[] = [
+  "테크닉",
+  "표현력",
+  "체력",
+  "리더십",
+  "협동심",
+  "자신감",
+];
+
+// ============================================================
+// localStorage 헬퍼
+// ============================================================
 
 function storageKey(groupId: string): string {
-  return `dancebase:growth-journal:${groupId}`;
+  return swrKeys.growthJournal(groupId);
 }
 
-function loadEntries(groupId: string): GrowthJournalEntry[] {
-  if (typeof window === "undefined") return [];
+function loadData(groupId: string): GrowthJournalData {
+  if (typeof window === "undefined") {
+    return { groupId, entries: [], updatedAt: new Date().toISOString() };
+  }
   try {
     const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as GrowthJournalEntry[];
+    if (!raw) return { groupId, entries: [], updatedAt: new Date().toISOString() };
+    return JSON.parse(raw) as GrowthJournalData;
   } catch {
-    return [];
+    return { groupId, entries: [], updatedAt: new Date().toISOString() };
   }
 }
 
-function saveEntries(groupId: string, entries: GrowthJournalEntry[]): void {
+function saveData(data: GrowthJournalData): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(entries));
+    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
   } catch {
-    // localStorage 접근 실패 시 무시
+    // 무시
   }
 }
 
-// ============================================
+// ============================================================
+// 통계 타입
+// ============================================================
+
+export type GrowthJournalStats = {
+  /** 총 일지 수 */
+  totalEntries: number;
+  /** 영역별 평균 성장도 */
+  areaAvgLevel: { area: GrowthArea; avgLevel: number; count: number }[];
+  /** 멤버별 일지 수 */
+  memberEntryCount: { memberName: string; count: number }[];
+  /** 전체 평균 성장 수준 */
+  overallAvgLevel: number;
+};
+
+// ============================================================
 // 훅
-// ============================================
+// ============================================================
 
 export function useGrowthJournal(groupId: string) {
-  const { data, isLoading, mutate } = useSWR(
-    swrKeys.growthJournal(groupId),
-    () => loadEntries(groupId),
-    { fallbackData: [] }
-  );
+  const [entries, setEntries] = useState<GrowthJournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const entries = data ?? [];
+  // localStorage에서 데이터 불러오기
+  const reload = useCallback(() => {
+    if (!groupId) return;
+    const data = loadData(groupId);
+    setEntries(data.entries);
+    setLoading(false);
+  }, [groupId]);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  // 내부 저장 헬퍼
+  const persist = useCallback(
+    (updated: GrowthJournalEntry[]) => {
+      const data: GrowthJournalData = {
+        groupId,
+        entries: updated,
+        updatedAt: new Date().toISOString(),
+      };
+      saveData(data);
+      setEntries(updated);
+    },
+    [groupId]
+  );
 
   // 일지 추가
   const addEntry = useCallback(
@@ -53,124 +107,186 @@ export function useGrowthJournal(groupId: string) {
       date: string;
       title: string;
       content: string;
-      mood: GrowthJournalMood;
-      skillsPracticed: string[];
-      achievementsToday: string[];
-      challengesFaced: string[];
-      nextGoals: string[];
-      selfRating: number;
-    }): boolean => {
-      const current = loadEntries(groupId);
+      area?: GrowthArea;
+      level?: number;
+      // 레거시 필드 (members/growth-journal-card.tsx 호환)
+      mood?: GrowthJournalEntry["mood"];
+      skillsPracticed?: string[];
+      achievementsToday?: string[];
+      challengesFaced?: string[];
+      nextGoals?: string[];
+      selfRating?: number;
+    }): GrowthJournalEntry => {
+      const now = new Date().toISOString();
+      const resolvedLevel = params.level ?? params.selfRating ?? 3;
       const newEntry: GrowthJournalEntry = {
         id: crypto.randomUUID(),
         memberName: params.memberName,
         date: params.date,
         title: params.title,
         content: params.content,
-        mood: params.mood,
-        skillsPracticed: params.skillsPracticed,
-        achievementsToday: params.achievementsToday,
-        challengesFaced: params.challengesFaced,
-        nextGoals: params.nextGoals,
-        selfRating: params.selfRating,
-        createdAt: new Date().toISOString(),
+        area: params.area,
+        level: resolvedLevel,
+        mood: params.mood ?? "neutral",
+        skillsPracticed: params.skillsPracticed ?? [],
+        achievementsToday: params.achievementsToday ?? [],
+        challengesFaced: params.challengesFaced ?? [],
+        nextGoals: params.nextGoals ?? [],
+        selfRating: params.selfRating ?? resolvedLevel,
+        createdAt: now,
+        updatedAt: now,
       };
-      const updated = [newEntry, ...current];
-      saveEntries(groupId, updated);
-      mutate(updated, false);
-      return true;
+      persist([...entries, newEntry]);
+      return newEntry;
     },
-    [groupId, mutate]
+    [entries, persist]
   );
 
   // 일지 수정
   const updateEntry = useCallback(
-    (id: string, patch: Partial<Omit<GrowthJournalEntry, "id" | "createdAt">>): boolean => {
-      const current = loadEntries(groupId);
-      const idx = current.findIndex((e) => e.id === id);
+    (
+      entryId: string,
+      params: Partial<Omit<GrowthJournalEntry, "id" | "createdAt">>
+    ): boolean => {
+      const idx = entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
-      const updated = [...current];
-      updated[idx] = { ...updated[idx], ...patch };
-      saveEntries(groupId, updated);
-      mutate(updated, false);
+      const updated = entries.map((e) =>
+        e.id === entryId
+          ? { ...e, ...params, updatedAt: new Date().toISOString() }
+          : e
+      );
+      persist(updated);
       return true;
     },
-    [groupId, mutate]
+    [entries, persist]
   );
 
   // 일지 삭제
   const deleteEntry = useCallback(
-    (id: string): void => {
-      const current = loadEntries(groupId);
-      const updated = current.filter((e) => e.id !== id);
-      saveEntries(groupId, updated);
-      mutate(updated, false);
+    (entryId: string): boolean => {
+      const exists = entries.some((e) => e.id === entryId);
+      if (!exists) return false;
+      persist(entries.filter((e) => e.id !== entryId));
+      return true;
     },
-    [groupId, mutate]
+    [entries, persist]
   );
 
-  // 멤버별 필터
-  const getByMember = useCallback(
-    (memberName: string): GrowthJournalEntry[] => {
-      return entries.filter((e) => e.memberName === memberName);
+  // 이전 항목 조회 (같은 멤버 + 같은 영역 기준)
+  const getPreviousEntry = useCallback(
+    (
+      memberName: string,
+      area: GrowthArea,
+      currentDate: string,
+      currentId: string
+    ): GrowthJournalEntry | null => {
+      const prev = entries
+        .filter(
+          (e) =>
+            e.memberName === memberName &&
+            e.area === area &&
+            e.id !== currentId &&
+            e.date <= currentDate
+        )
+        .sort((a, b) => b.date.localeCompare(a.date));
+      return prev[0] ?? null;
     },
     [entries]
   );
 
-  // 기간별 필터
-  const getByDateRange = useCallback(
-    (start: string, end: string): GrowthJournalEntry[] => {
-      return entries.filter((e) => e.date >= start && e.date <= end);
-    },
-    [entries]
-  );
-
-  // ============================================
   // 통계 계산
-  // ============================================
+  const stats: GrowthJournalStats = (() => {
+    const levelEntries = entries.filter(
+      (e) => e.area !== undefined && e.level !== undefined
+    );
 
+    if (levelEntries.length === 0) {
+      return {
+        totalEntries: entries.length,
+        areaAvgLevel: [],
+        memberEntryCount: [],
+        overallAvgLevel: 0,
+      };
+    }
+
+    // 영역별 평균 성장도
+    const areaAvgLevel = GROWTH_AREAS.map((area) => {
+      const areaEntries = levelEntries.filter((e) => e.area === area);
+      if (areaEntries.length === 0) return null;
+      const avgLevel =
+        Math.round(
+          (areaEntries.reduce((acc, e) => acc + (e.level ?? 0), 0) /
+            areaEntries.length) *
+            10
+        ) / 10;
+      return { area, avgLevel, count: areaEntries.length };
+    }).filter(
+      (a): a is { area: GrowthArea; avgLevel: number; count: number } =>
+        a !== null
+    );
+
+    // 멤버별 일지 수
+    const memberMap = new Map<string, number>();
+    for (const e of entries) {
+      memberMap.set(e.memberName, (memberMap.get(e.memberName) ?? 0) + 1);
+    }
+    const memberEntryCount = Array.from(memberMap.entries())
+      .map(([memberName, count]) => ({ memberName, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // 전체 평균 성장 수준
+    const overallAvgLevel =
+      Math.round(
+        (levelEntries.reduce((acc, e) => acc + (e.level ?? 0), 0) /
+          levelEntries.length) *
+          10
+      ) / 10;
+
+    return {
+      totalEntries: entries.length,
+      areaAvgLevel,
+      memberEntryCount,
+      overallAvgLevel,
+    };
+  })();
+
+  // 기존 members/growth-journal-card.tsx 호환을 위한 레거시 통계
   const totalEntries = entries.length;
-
   const averageSelfRating =
     totalEntries > 0
-      ? entries.reduce((sum, e) => sum + e.selfRating, 0) / totalEntries
+      ? Math.round(
+          (entries.reduce((sum, e) => sum + e.selfRating, 0) / totalEntries) *
+            10
+        ) / 10
       : 0;
-
-  const moodDistribution: Record<GrowthJournalMood, number> = {
-    motivated: 0,
-    confident: 0,
-    neutral: 0,
-    struggling: 0,
-    discouraged: 0,
-  };
-  for (const e of entries) {
-    moodDistribution[e.mood] = (moodDistribution[e.mood] ?? 0) + 1;
-  }
-
-  // 연습한 스킬 빈도순 Top 5
-  const skillFrequency: Record<string, number> = {};
-  for (const e of entries) {
-    for (const skill of e.skillsPracticed) {
-      const normalized = skill.trim();
-      if (normalized) {
-        skillFrequency[normalized] = (skillFrequency[normalized] ?? 0) + 1;
-      }
-    }
-  }
-  const topSkillsPracticed = Object.entries(skillFrequency)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([skill, count]) => ({ skill, count }));
+  const moodDistribution = entries.reduce<Record<string, number>>(
+    (acc, e) => {
+      acc[e.mood] = (acc[e.mood] ?? 0) + 1;
+      return acc;
+    },
+    {}
+  );
+  const skillCountMap = entries
+    .flatMap((e) => e.skillsPracticed)
+    .reduce<Record<string, number>>((acc, skill) => {
+      acc[skill] = (acc[skill] ?? 0) + 1;
+      return acc;
+    }, {});
+  const topSkillsPracticed = Object.entries(skillCountMap)
+    .map(([skill, count]) => ({ skill, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
 
   return {
     entries,
-    loading: isLoading,
-    refetch: () => mutate(),
+    loading,
+    stats,
     addEntry,
     updateEntry,
     deleteEntry,
-    getByMember,
-    getByDateRange,
+    getPreviousEntry,
+    refetch: reload,
+    // 레거시 호환 필드
     totalEntries,
     averageSelfRating,
     moodDistribution,

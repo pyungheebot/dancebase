@@ -69,6 +69,7 @@ import { DanceClassLogCard } from "@/components/members/dance-class-log-card";
 import { DanceNetworkingCard } from "@/components/members/dance-networking-card";
 import { InjuryLogCard } from "@/components/members/injury-log-card";
 import { DanceStyleAnalysisCard } from "@/components/members/dance-style-analysis-card";
+import { RoutineBuilderCard } from "@/components/members/routine-builder-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -705,6 +706,9 @@ function GroupMembersContent({
 
       {/* 댄스 스타일 분석 (개인 댄스 스타일 특성 기록) */}
       <DanceStyleAnalysisCard memberId={currentUserId} />
+
+      {/* 댄스 루틴 빌더 (개인 연습 루틴 구성) */}
+      <RoutineBuilderCard memberId={currentUserId} />
     </>
   );
 }

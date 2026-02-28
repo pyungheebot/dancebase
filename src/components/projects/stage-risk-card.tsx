@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,18 +39,14 @@ import {
   ShieldAlert,
   ShieldCheck,
   AlertTriangle,
-  MapPin,
-  User,
-  CalendarClock,
-  CheckCircle2,
-  Circle,
   Zap,
-  Flame,
   Users,
   CloudRain,
   Wrench,
   HardHat,
+  Volume2,
   MoreHorizontal,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useStageRisk } from "@/hooks/use-stage-risk";
@@ -59,7 +54,7 @@ import type {
   StageRiskItem,
   StageRiskLevel,
   StageRiskCategory,
-  StageRiskMitigation,
+  StageRiskResponseStatus,
 } from "@/types";
 
 // ============================================================
@@ -67,7 +62,7 @@ import type {
 // ============================================================
 
 const LEVEL_LABELS: Record<StageRiskLevel, string> = {
-  critical: "심각",
+  critical: "위험",
   high: "높음",
   medium: "보통",
   low: "낮음",
@@ -87,245 +82,272 @@ const LEVEL_DOT_COLORS: Record<StageRiskLevel, string> = {
   low: "bg-green-500",
 };
 
+const LEVEL_MATRIX_BG: Record<StageRiskLevel, string> = {
+  critical: "bg-red-200 text-red-800",
+  high: "bg-orange-200 text-orange-800",
+  medium: "bg-yellow-100 text-yellow-800",
+  low: "bg-green-100 text-green-800",
+};
+
 const CATEGORY_LABELS: Record<StageRiskCategory, string> = {
-  physical: "신체적",
-  electrical: "전기",
-  structural: "구조물",
-  fire: "화재",
-  crowd: "군중",
-  weather: "날씨",
+  stage_structure: "무대 구조",
+  lighting_electric: "조명/전기",
+  sound: "음향",
+  audience_safety: "관객 안전",
+  performer_safety: "출연자 안전",
+  weather: "날씨(야외)",
   other: "기타",
 };
 
 const CATEGORY_ICONS: Record<StageRiskCategory, React.ReactNode> = {
-  physical: <HardHat className="h-3 w-3" />,
-  electrical: <Zap className="h-3 w-3" />,
-  structural: <Wrench className="h-3 w-3" />,
-  fire: <Flame className="h-3 w-3" />,
-  crowd: <Users className="h-3 w-3" />,
+  stage_structure: <Wrench className="h-3 w-3" />,
+  lighting_electric: <Zap className="h-3 w-3" />,
+  sound: <Volume2 className="h-3 w-3" />,
+  audience_safety: <Users className="h-3 w-3" />,
+  performer_safety: <HardHat className="h-3 w-3" />,
   weather: <CloudRain className="h-3 w-3" />,
   other: <MoreHorizontal className="h-3 w-3" />,
 };
 
 const CATEGORY_BADGE_COLORS: Record<StageRiskCategory, string> = {
-  physical: "bg-amber-50 text-amber-700 border-amber-200",
-  electrical: "bg-yellow-50 text-yellow-700 border-yellow-200",
-  structural: "bg-stone-100 text-stone-700 border-stone-200",
-  fire: "bg-red-50 text-red-700 border-red-200",
-  crowd: "bg-blue-50 text-blue-700 border-blue-200",
+  stage_structure: "bg-stone-100 text-stone-700 border-stone-200",
+  lighting_electric: "bg-yellow-50 text-yellow-700 border-yellow-200",
+  sound: "bg-blue-50 text-blue-700 border-blue-200",
+  audience_safety: "bg-purple-50 text-purple-700 border-purple-200",
+  performer_safety: "bg-amber-50 text-amber-700 border-amber-200",
   weather: "bg-sky-50 text-sky-700 border-sky-200",
   other: "bg-gray-100 text-gray-600 border-gray-200",
 };
 
+const RESPONSE_LABELS: Record<StageRiskResponseStatus, string> = {
+  pending: "미대응",
+  in_progress: "대응중",
+  done: "완료",
+};
+
+const RESPONSE_COLORS: Record<StageRiskResponseStatus, string> = {
+  pending: "bg-gray-100 text-gray-600 border-gray-300",
+  in_progress: "bg-blue-100 text-blue-700 border-blue-300",
+  done: "bg-green-100 text-green-700 border-green-300",
+};
+
 const ALL_LEVELS: StageRiskLevel[] = ["critical", "high", "medium", "low"];
 const ALL_CATEGORIES: StageRiskCategory[] = [
-  "physical",
-  "electrical",
-  "structural",
-  "fire",
-  "crowd",
+  "stage_structure",
+  "lighting_electric",
+  "sound",
+  "audience_safety",
+  "performer_safety",
   "weather",
   "other",
 ];
+const ALL_RESPONSE_STATUSES: StageRiskResponseStatus[] = [
+  "pending",
+  "in_progress",
+  "done",
+];
 
 // ============================================================
-// 위험 수준 요약 배지
+// 리스크 매트릭스 (5x5 CSS Grid)
 // ============================================================
 
-interface LevelSummaryProps {
-  risks: StageRiskItem[];
+interface RiskMatrixProps {
+  items: StageRiskItem[];
 }
 
-function LevelSummary({ risks }: LevelSummaryProps) {
-  const unresolved = risks.filter((r) => !r.isResolved);
-  const counts: Record<StageRiskLevel, number> = {
-    critical: unresolved.filter((r) => r.level === "critical").length,
-    high: unresolved.filter((r) => r.level === "high").length,
-    medium: unresolved.filter((r) => r.level === "medium").length,
-    low: unresolved.filter((r) => r.level === "low").length,
-  };
+function RiskMatrix({ items }: RiskMatrixProps) {
+  // 각 셀에 해당하는 항목 찾기
+  function getItemsAt(likelihood: number, impact: number): StageRiskItem[] {
+    return items.filter(
+      (i) => i.likelihood === likelihood && i.impact === impact
+    );
+  }
 
-  if (unresolved.length === 0) return null;
+  function getCellLevel(likelihood: number, impact: number): StageRiskLevel {
+    const score = likelihood * impact;
+    if (score <= 4) return "low";
+    if (score <= 9) return "medium";
+    if (score <= 15) return "high";
+    return "critical";
+  }
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
-      {ALL_LEVELS.map((level) =>
-        counts[level] > 0 ? (
-          <span
-            key={level}
-            className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${LEVEL_COLORS[level]}`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${LEVEL_DOT_COLORS[level]}`} />
-            {LEVEL_LABELS[level]} {counts[level]}
-          </span>
-        ) : null
-      )}
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-medium text-muted-foreground">
+          리스크 매트릭스
+        </span>
+        <div className="flex items-center gap-2">
+          {ALL_LEVELS.map((level) => (
+            <span
+              key={level}
+              className="flex items-center gap-1 text-[10px] text-muted-foreground"
+            >
+              <span
+                className={`w-2 h-2 rounded-sm ${LEVEL_DOT_COLORS[level]}`}
+              />
+              {LEVEL_LABELS[level]}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-1">
+        {/* Y축 레이블 */}
+        <div className="flex flex-col justify-between py-4 pr-1 w-8">
+          {[5, 4, 3, 2, 1].map((val) => (
+            <span
+              key={val}
+              className="text-[9px] text-muted-foreground text-right leading-none"
+            >
+              {val}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex-1 space-y-0.5">
+          {/* 그리드 행: 영향도 높을수록 위 */}
+          {[5, 4, 3, 2, 1].map((impact) => (
+            <div key={impact} className="grid grid-cols-5 gap-0.5">
+              {[1, 2, 3, 4, 5].map((likelihood) => {
+                const cellItems = getItemsAt(likelihood, impact);
+                const cellLevel = getCellLevel(likelihood, impact);
+                return (
+                  <div
+                    key={likelihood}
+                    className={`h-8 rounded-sm flex items-center justify-center text-[10px] font-medium transition-colors ${LEVEL_MATRIX_BG[cellLevel]} ${cellItems.length > 0 ? "ring-1 ring-inset ring-black/20" : "opacity-60"}`}
+                    title={
+                      cellItems.length > 0
+                        ? cellItems.map((i) => i.title).join(", ")
+                        : `점수: ${likelihood * impact}`
+                    }
+                  >
+                    {cellItems.length > 0 ? (
+                      <span className="font-bold">{cellItems.length}</span>
+                    ) : (
+                      <span className="opacity-40 text-[9px]">
+                        {likelihood * impact}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+
+          {/* X축 레이블 */}
+          <div className="grid grid-cols-5 gap-0.5 pt-0.5">
+            {[1, 2, 3, 4, 5].map((val) => (
+              <span
+                key={val}
+                className="text-[9px] text-muted-foreground text-center"
+              >
+                {val}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between text-[10px] text-muted-foreground px-9">
+        <span>가능성 낮음</span>
+        <span className="font-medium">발생 가능성 (X축)</span>
+        <span>가능성 높음</span>
+      </div>
+      <div className="text-[10px] text-muted-foreground text-center">
+        영향도 (Y축)
+      </div>
     </div>
   );
 }
 
 // ============================================================
-// 대응 조치 추가 다이얼로그
+// 리스크 등록/수정 다이얼로그
 // ============================================================
 
-interface MitigationDialogProps {
+interface RiskFormDialogProps {
   open: boolean;
-  riskTitle: string;
   onClose: () => void;
-  onSubmit: (data: Omit<StageRiskMitigation, "id" | "isCompleted">) => void;
+  onSubmit: (params: {
+    title: string;
+    category: StageRiskCategory;
+    likelihood: number;
+    impact: number;
+    mitigation: string;
+    responseStatus: StageRiskResponseStatus;
+  }) => void;
+  editItem?: StageRiskItem | null;
 }
 
-function MitigationDialog({
+function RiskFormDialog({
   open,
-  riskTitle,
   onClose,
   onSubmit,
-}: MitigationDialogProps) {
-  const [action, setAction] = useState("");
-  const [responsible, setResponsible] = useState("");
-  const [dueDate, setDueDate] = useState("");
-
-  const handleOpenChange = (next: boolean) => {
-    if (!next) onClose();
-  };
-
-  const handleSubmit = () => {
-    if (!action.trim()) {
-      toast.error("조치 내용을 입력해주세요.");
-      return;
-    }
-    if (!responsible.trim()) {
-      toast.error("담당자를 입력해주세요.");
-      return;
-    }
-    onSubmit({
-      action: action.trim(),
-      responsible: responsible.trim(),
-      dueDate: dueDate.trim() || undefined,
-    });
-    setAction("");
-    setResponsible("");
-    setDueDate("");
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">대응 조치 추가</DialogTitle>
-          <p className="text-xs text-muted-foreground truncate">{riskTitle}</p>
-        </DialogHeader>
-        <div className="space-y-3 py-2">
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">조치 내용</Label>
-            <Textarea
-              className="text-xs min-h-[60px] resize-none"
-              placeholder="예: 무대 바닥 미끄럼 방지 테이프 부착"
-              value={action}
-              onChange={(e) => setAction(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">담당자</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 안전 담당자"
-              value={responsible}
-              onChange={(e) => setResponsible(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">기한 (선택)</Label>
-            <Input
-              className="h-8 text-xs"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-            />
-          </div>
-        </div>
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={onClose}
-          >
-            취소
-          </Button>
-          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-            추가
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+  editItem,
+}: RiskFormDialogProps) {
+  const [title, setTitle] = useState(editItem?.title ?? "");
+  const [category, setCategory] = useState<StageRiskCategory>(
+    editItem?.category ?? "stage_structure"
   );
-}
+  const [likelihood, setLikelihood] = useState(editItem?.likelihood ?? 3);
+  const [impact, setImpact] = useState(editItem?.impact ?? 3);
+  const [mitigation, setMitigation] = useState(editItem?.mitigation ?? "");
+  const [responseStatus, setResponseStatus] =
+    useState<StageRiskResponseStatus>(editItem?.responseStatus ?? "pending");
 
-// ============================================================
-// 리스크 추가 다이얼로그
-// ============================================================
-
-interface RiskDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (
-    data: Omit<StageRiskItem, "id" | "mitigations" | "isResolved" | "createdAt">
-  ) => void;
-}
-
-function RiskDialog({ open, onClose, onSubmit }: RiskDialogProps) {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<StageRiskCategory>("physical");
-  const [level, setLevel] = useState<StageRiskLevel>("medium");
-  const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
-  const [reportedBy, setReportedBy] = useState("");
+  const previewScore = likelihood * impact;
+  const previewLevel = (() => {
+    if (previewScore <= 4) return "low";
+    if (previewScore <= 9) return "medium";
+    if (previewScore <= 15) return "high";
+    return "critical";
+  })() as StageRiskLevel;
 
   const handleOpenChange = (next: boolean) => {
-    if (!next) onClose();
+    if (next) {
+      setTitle(editItem?.title ?? "");
+      setCategory(editItem?.category ?? "stage_structure");
+      setLikelihood(editItem?.likelihood ?? 3);
+      setImpact(editItem?.impact ?? 3);
+      setMitigation(editItem?.mitigation ?? "");
+      setResponseStatus(editItem?.responseStatus ?? "pending");
+    } else {
+      onClose();
+    }
   };
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("위험 항목 제목을 입력해주세요.");
+      toast.error("위험 요소 제목을 입력해주세요.");
       return;
     }
-    if (!description.trim()) {
-      toast.error("위험 설명을 입력해주세요.");
-      return;
-    }
-    if (!reportedBy.trim()) {
-      toast.error("보고자를 입력해주세요.");
+    if (!mitigation.trim()) {
+      toast.error("대응 방안을 입력해주세요.");
       return;
     }
     onSubmit({
       title: title.trim(),
       category,
-      level,
-      description: description.trim(),
-      location: location.trim() || undefined,
-      reportedBy: reportedBy.trim(),
+      likelihood,
+      impact,
+      mitigation: mitigation.trim(),
+      responseStatus,
     });
-    setTitle("");
-    setCategory("physical");
-    setLevel("medium");
-    setDescription("");
-    setLocation("");
-    setReportedBy("");
-    onClose();
   };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">위험 항목 추가</DialogTitle>
+          <DialogTitle className="text-sm font-semibold">
+            {editItem ? "리스크 수정" : "리스크 등록"}
+          </DialogTitle>
         </DialogHeader>
-        <div className="space-y-3 py-2">
+
+        <div className="space-y-3 py-1">
+          {/* 위험 요소 제목 */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">제목</Label>
+            <Label className="text-xs text-muted-foreground">위험 요소</Label>
             <Input
               className="h-8 text-xs"
               placeholder="예: 무대 바닥 미끄러움"
@@ -334,76 +356,126 @@ function RiskDialog({ open, onClose, onSubmit }: RiskDialogProps) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          {/* 카테고리 */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">카테고리</Label>
+            <Select
+              value={category}
+              onValueChange={(v) => setCategory(v as StageRiskCategory)}
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_CATEGORIES.map((c) => (
+                  <SelectItem key={c} value={c} className="text-xs">
+                    {CATEGORY_LABELS[c]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 발생 가능성 + 영향도 */}
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">카테고리</Label>
-              <Select
-                value={category}
-                onValueChange={(v) => setCategory(v as StageRiskCategory)}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ALL_CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c} className="text-xs">
-                      {CATEGORY_LABELS[c]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-xs text-muted-foreground">
+                발생 가능성 (1-5)
+              </Label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setLikelihood(v)}
+                    className={`flex-1 h-7 rounded text-xs font-medium border transition-colors ${
+                      likelihood === v
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:bg-muted"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">위험 수준</Label>
-              <Select
-                value={level}
-                onValueChange={(v) => setLevel(v as StageRiskLevel)}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ALL_LEVELS.map((l) => (
-                    <SelectItem key={l} value={l} className="text-xs">
-                      {LEVEL_LABELS[l]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-xs text-muted-foreground">
+                영향도 (1-5)
+              </Label>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setImpact(v)}
+                    className={`flex-1 h-7 rounded text-xs font-medium border transition-colors ${
+                      impact === v
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:bg-muted"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
+          {/* 점수 미리보기 */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/40 border">
+            <span className="text-xs text-muted-foreground">리스크 점수</span>
+            <span className="text-sm font-bold tabular-nums">
+              {previewScore}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              ({likelihood} × {impact})
+            </span>
+            <Badge
+              variant="outline"
+              className={`text-[10px] px-1.5 py-0 ml-auto ${LEVEL_COLORS[previewLevel]}`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full mr-1 ${LEVEL_DOT_COLORS[previewLevel]}`}
+              />
+              {LEVEL_LABELS[previewLevel]}
+            </Badge>
+          </div>
+
+          {/* 대응 방안 */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">위험 설명</Label>
+            <Label className="text-xs text-muted-foreground">대응 방안</Label>
             <Textarea
               className="text-xs min-h-[60px] resize-none"
-              placeholder="위험 상황 및 발생 가능한 피해를 설명하세요."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              placeholder="예: 무대 바닥에 미끄럼 방지 테이프 부착 및 리허설 전 점검"
+              value={mitigation}
+              onChange={(e) => setMitigation(e.target.value)}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">위치 (선택)</Label>
-              <Input
-                className="h-8 text-xs"
-                placeholder="예: 무대 좌측 계단"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">보고자</Label>
-              <Input
-                className="h-8 text-xs"
-                placeholder="예: 홍길동"
-                value={reportedBy}
-                onChange={(e) => setReportedBy(e.target.value)}
-              />
-            </div>
+          {/* 대응 상태 */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">대응 상태</Label>
+            <Select
+              value={responseStatus}
+              onValueChange={(v) =>
+                setResponseStatus(v as StageRiskResponseStatus)
+              }
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_RESPONSE_STATUSES.map((s) => (
+                  <SelectItem key={s} value={s} className="text-xs">
+                    {RESPONSE_LABELS[s]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
+
         <DialogFooter className="gap-2">
           <Button
             variant="outline"
@@ -414,7 +486,7 @@ function RiskDialog({ open, onClose, onSubmit }: RiskDialogProps) {
             취소
           </Button>
           <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-            추가
+            {editItem ? "수정" : "등록"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -423,153 +495,96 @@ function RiskDialog({ open, onClose, onSubmit }: RiskDialogProps) {
 }
 
 // ============================================================
-// 대응 조치 행
+// 리스크 항목 행
 // ============================================================
 
-interface MitigationRowProps {
-  mitigation: StageRiskMitigation;
-  onToggle: () => void;
+interface RiskItemRowProps {
+  item: StageRiskItem;
+  onEdit: () => void;
   onDelete: () => void;
+  onChangeStatus: (status: StageRiskResponseStatus) => void;
 }
 
-function MitigationRow({ mitigation, onToggle, onDelete }: MitigationRowProps) {
-  return (
-    <div
-      className={`flex items-start gap-2 px-2.5 py-2 rounded-md border group transition-colors ${
-        mitigation.isCompleted
-          ? "bg-green-50/50 border-green-200"
-          : "bg-white border-border"
-      }`}
-    >
-      <Checkbox
-        checked={mitigation.isCompleted}
-        onCheckedChange={onToggle}
-        className="mt-0.5 flex-shrink-0"
-      />
-      <div className="flex-1 min-w-0 space-y-0.5">
-        <p
-          className={`text-xs leading-snug ${
-            mitigation.isCompleted
-              ? "line-through text-muted-foreground"
-              : "text-foreground"
-          }`}
-        >
-          {mitigation.action}
-        </p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-            <User className="h-2.5 w-2.5" />
-            {mitigation.responsible}
-          </span>
-          {mitigation.dueDate && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-              <CalendarClock className="h-2.5 w-2.5" />
-              {mitigation.dueDate}
-            </span>
-          )}
-        </div>
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-5 w-5 p-0 text-destructive hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-        onClick={onDelete}
-      >
-        <Trash2 className="h-3 w-3" />
-      </Button>
-    </div>
-  );
-}
-
-// ============================================================
-// 리스크 카드 행
-// ============================================================
-
-interface RiskRowProps {
-  risk: StageRiskItem;
-  onToggleResolved: () => void;
-  onDelete: () => void;
-  onAddMitigation: () => void;
-  onToggleMitigation: (mitigationId: string) => void;
-  onDeleteMitigation: (mitigationId: string) => void;
-}
-
-function RiskRow({
-  risk,
-  onToggleResolved,
+function RiskItemRow({
+  item,
+  onEdit,
   onDelete,
-  onAddMitigation,
-  onToggleMitigation,
-  onDeleteMitigation,
-}: RiskRowProps) {
+  onChangeStatus,
+}: RiskItemRowProps) {
   const [expanded, setExpanded] = useState(false);
-  const completedCount = risk.mitigations.filter((m) => m.isCompleted).length;
-  const totalCount = risk.mitigations.length;
 
   return (
     <div
-      className={`rounded-md border overflow-hidden transition-colors ${
-        risk.isResolved ? "opacity-60 bg-muted/20 border-dashed" : "bg-white"
+      className={`rounded-md border overflow-hidden ${
+        item.responseStatus === "done"
+          ? "opacity-70 bg-muted/20 border-dashed"
+          : "bg-background"
       }`}
     >
       {/* 헤더 행 */}
       <div className="flex items-start gap-2 px-3 py-2.5">
-        {/* 해결 토글 */}
-        <button
-          onClick={onToggleResolved}
-          className="mt-0.5 flex-shrink-0"
-          title={risk.isResolved ? "미해결로 변경" : "해결됨으로 표시"}
+        {/* 리스크 점수 뱃지 */}
+        <div
+          className={`flex-shrink-0 w-8 h-8 rounded flex items-center justify-center text-xs font-bold ${LEVEL_MATRIX_BG[item.level]}`}
+          title={`리스크 점수: ${item.score}`}
         >
-          {risk.isResolved ? (
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-          ) : (
-            <Circle className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
+          {item.score}
+        </div>
 
         <div className="flex-1 min-w-0 space-y-1">
-          {/* 제목 + 배지 */}
+          {/* 제목 + 레벨 배지 */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <span
               className={`text-xs font-medium ${
-                risk.isResolved ? "line-through text-muted-foreground" : ""
+                item.responseStatus === "done"
+                  ? "line-through text-muted-foreground"
+                  : ""
               }`}
             >
-              {risk.title}
+              {item.title}
             </span>
             <Badge
               variant="outline"
-              className={`text-[10px] px-1.5 py-0 flex-shrink-0 ${LEVEL_COLORS[risk.level]}`}
+              className={`text-[10px] px-1.5 py-0 flex-shrink-0 ${LEVEL_COLORS[item.level]}`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full mr-1 ${LEVEL_DOT_COLORS[risk.level]}`} />
-              {LEVEL_LABELS[risk.level]}
+              <span
+                className={`w-1.5 h-1.5 rounded-full mr-1 ${LEVEL_DOT_COLORS[item.level]}`}
+              />
+              {LEVEL_LABELS[item.level]}
             </Badge>
             <Badge
               variant="outline"
-              className={`text-[10px] px-1.5 py-0 flex items-center gap-0.5 flex-shrink-0 ${CATEGORY_BADGE_COLORS[risk.category]}`}
+              className={`text-[10px] px-1.5 py-0 flex items-center gap-0.5 flex-shrink-0 ${CATEGORY_BADGE_COLORS[item.category]}`}
             >
-              {CATEGORY_ICONS[risk.category]}
-              {CATEGORY_LABELS[risk.category]}
+              {CATEGORY_ICONS[item.category]}
+              {CATEGORY_LABELS[item.category]}
             </Badge>
           </div>
 
-          {/* 위치 + 보고자 */}
+          {/* 점수 세부 + 대응 상태 */}
           <div className="flex items-center gap-2 flex-wrap">
-            {risk.location && (
-              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                <MapPin className="h-2.5 w-2.5" />
-                {risk.location}
-              </span>
-            )}
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-              <User className="h-2.5 w-2.5" />
-              {risk.reportedBy}
+            <span className="text-[10px] text-muted-foreground">
+              가능성 {item.likelihood} × 영향도 {item.impact}
             </span>
-            {totalCount > 0 && (
-              <span className="text-[10px] text-muted-foreground">
-                대응 {completedCount}/{totalCount}
-              </span>
-            )}
+            <Select
+              value={item.responseStatus}
+              onValueChange={(v) =>
+                onChangeStatus(v as StageRiskResponseStatus)
+              }
+            >
+              <SelectTrigger
+                className={`h-5 text-[10px] px-1.5 py-0 border rounded-full w-auto gap-1 ${RESPONSE_COLORS[item.responseStatus]}`}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_RESPONSE_STATUSES.map((s) => (
+                  <SelectItem key={s} value={s} className="text-xs">
+                    {RESPONSE_LABELS[s]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -580,13 +595,22 @@ function RiskRow({
             size="sm"
             className="h-6 w-6 p-0"
             onClick={() => setExpanded((v) => !v)}
-            title="상세 보기"
+            title="대응 방안 보기"
           >
             {expanded ? (
               <ChevronUp className="h-3 w-3" />
             ) : (
               <ChevronDown className="h-3 w-3" />
             )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+            onClick={onEdit}
+            title="수정"
+          >
+            <Pencil className="h-3 w-3" />
           </Button>
           <Button
             variant="ghost"
@@ -600,67 +624,19 @@ function RiskRow({
         </div>
       </div>
 
-      {/* 상세 영역 */}
+      {/* 대응 방안 영역 */}
       {expanded && (
-        <div className="px-3 pb-3 space-y-2.5 border-t bg-muted/10">
-          {/* 설명 */}
-          <div className="pt-2.5">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {risk.description}
-            </p>
-          </div>
-
-          {/* 대응 조치 목록 */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-medium text-muted-foreground">
-                대응 조치 ({completedCount}/{totalCount} 완료)
+        <div className="px-3 pb-2.5 pt-2 border-t bg-muted/10">
+          <p className="text-[10px] font-medium text-muted-foreground mb-1">
+            대응 방안
+          </p>
+          <p className="text-xs text-foreground leading-relaxed">
+            {item.mitigation || (
+              <span className="text-muted-foreground italic">
+                대응 방안이 없습니다.
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-6 text-[10px] px-2"
-                onClick={onAddMitigation}
-              >
-                <Plus className="h-2.5 w-2.5 mr-0.5" />
-                조치 추가
-              </Button>
-            </div>
-
-            {risk.mitigations.length === 0 ? (
-              <p className="text-[10px] text-muted-foreground py-1.5 text-center">
-                대응 조치가 없습니다.
-              </p>
-            ) : (
-              <div className="space-y-1">
-                {risk.mitigations.map((m) => (
-                  <MitigationRow
-                    key={m.id}
-                    mitigation={m}
-                    onToggle={() => onToggleMitigation(m.id)}
-                    onDelete={() => onDeleteMitigation(m.id)}
-                  />
-                ))}
-              </div>
             )}
-          </div>
-
-          {/* 완료율 바 */}
-          {totalCount > 0 && (
-            <div className="space-y-0.5">
-              <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-green-400 rounded-full transition-all"
-                  style={{
-                    width: `${Math.round((completedCount / totalCount) * 100)}%`,
-                  }}
-                />
-              </div>
-              <p className="text-[10px] text-muted-foreground text-right">
-                {Math.round((completedCount / totalCount) * 100)}% 완료
-              </p>
-            </div>
-          )}
+          </p>
         </div>
       )}
     </div>
@@ -672,35 +648,18 @@ function RiskRow({
 // ============================================================
 
 interface StageRiskCardProps {
-  groupId: string;
   projectId: string;
 }
 
-export function StageRiskCard({ groupId, projectId }: StageRiskCardProps) {
-  const {
-    risks,
-    loading,
-    addRisk,
-    deleteRisk,
-    toggleResolved,
-    addMitigation,
-    deleteMitigation,
-    toggleMitigation,
-    stats,
-  } = useStageRisk(groupId, projectId);
+export function StageRiskCard({ projectId }: StageRiskCardProps) {
+  const { items, loading, stats, addItem, updateItem, deleteItem, updateResponseStatus } =
+    useStageRisk(projectId);
 
   const [isOpen, setIsOpen] = useState(false);
+  const [formDialogOpen, setFormDialogOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<StageRiskItem | null>(null);
 
-  // 리스크 추가 다이얼로그
-  const [riskDialogOpen, setRiskDialogOpen] = useState(false);
-
-  // 대응 조치 추가 다이얼로그
-  const [mitigationDialogOpen, setMitigationDialogOpen] = useState(false);
-  const [targetRiskId, setTargetRiskId] = useState<string | null>(null);
-
-  const targetRisk = risks.find((r) => r.id === targetRiskId) ?? null;
-
-  // 위험 수준 정렬 순서
+  // 레벨 정렬 순서
   const LEVEL_ORDER: Record<StageRiskLevel, number> = {
     critical: 0,
     high: 1,
@@ -708,53 +667,63 @@ export function StageRiskCard({ groupId, projectId }: StageRiskCardProps) {
     low: 3,
   };
 
-  const sortedRisks = [...risks].sort((a, b) => {
-    // 미해결 우선, 같으면 위험 수준 순
-    if (a.isResolved !== b.isResolved) return a.isResolved ? 1 : -1;
-    return LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level];
+  const sortedItems = [...items].sort((a, b) => {
+    // 미대응 우선, 같으면 리스크 점수 내림차순
+    if (a.responseStatus === "done" && b.responseStatus !== "done") return 1;
+    if (a.responseStatus !== "done" && b.responseStatus === "done") return -1;
+    if (a.level !== b.level) return LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level];
+    return b.score - a.score;
   });
 
-  const handleRiskSubmit = (
-    data: Omit<StageRiskItem, "id" | "mitigations" | "isResolved" | "createdAt">
-  ) => {
-    addRisk(data);
-    toast.success("위험 항목이 추가되었습니다.");
+  const handleOpenAdd = () => {
+    setEditTarget(null);
+    setFormDialogOpen(true);
   };
 
-  const handleDeleteRisk = (riskId: string) => {
-    deleteRisk(riskId);
-    toast.success("위험 항목이 삭제되었습니다.");
+  const handleOpenEdit = (item: StageRiskItem) => {
+    setEditTarget(item);
+    setFormDialogOpen(true);
   };
 
-  const handleToggleResolved = (riskId: string) => {
-    const risk = risks.find((r) => r.id === riskId);
-    toggleResolved(riskId);
-    if (risk) {
-      toast.success(risk.isResolved ? "미해결로 변경되었습니다." : "해결됨으로 표시되었습니다.");
+  const handleFormSubmit = (params: {
+    title: string;
+    category: StageRiskCategory;
+    likelihood: number;
+    impact: number;
+    mitigation: string;
+    responseStatus: StageRiskResponseStatus;
+  }) => {
+    if (editTarget) {
+      const ok = updateItem(editTarget.id, params);
+      if (ok) {
+        toast.success("리스크가 수정되었습니다.");
+      } else {
+        toast.error("수정에 실패했습니다.");
+      }
+    } else {
+      addItem(params);
+      toast.success("리스크가 등록되었습니다.");
+    }
+    setFormDialogOpen(false);
+    setEditTarget(null);
+  };
+
+  const handleDelete = (itemId: string) => {
+    const ok = deleteItem(itemId);
+    if (ok) {
+      toast.success("리스크가 삭제되었습니다.");
+    } else {
+      toast.error("삭제에 실패했습니다.");
     }
   };
 
-  const handleOpenMitigationDialog = (riskId: string) => {
-    setTargetRiskId(riskId);
-    setMitigationDialogOpen(true);
+  const handleChangeStatus = (itemId: string, status: StageRiskResponseStatus) => {
+    updateResponseStatus(itemId, status);
   };
 
-  const handleMitigationSubmit = (
-    data: Omit<StageRiskMitigation, "id" | "isCompleted">
-  ) => {
-    if (!targetRiskId) return;
-    addMitigation(targetRiskId, data);
-    toast.success("대응 조치가 추가되었습니다.");
-  };
-
-  const handleToggleMitigation = (riskId: string, mitigationId: string) => {
-    toggleMitigation(riskId, mitigationId);
-  };
-
-  const handleDeleteMitigation = (riskId: string, mitigationId: string) => {
-    deleteMitigation(riskId, mitigationId);
-    toast.success("대응 조치가 삭제되었습니다.");
-  };
+  // 헤더에 표시할 위험/높음 수
+  const criticalCount = items.filter((i) => i.level === "critical").length;
+  const highCount = items.filter((i) => i.level === "high").length;
 
   return (
     <>
@@ -763,126 +732,183 @@ export function StageRiskCard({ groupId, projectId }: StageRiskCardProps) {
           <CardHeader className="pb-2 pt-3 px-4">
             <CollapsibleTrigger asChild>
               <div className="flex items-center justify-between cursor-pointer">
-                <div className="flex items-center gap-2">
-                  <ShieldAlert className="h-4 w-4 text-red-500" />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <ShieldAlert className="h-4 w-4 text-red-500 flex-shrink-0" />
                   <CardTitle className="text-sm font-semibold">
-                    공연 무대 위험 평가
+                    무대 리스크 평가
                   </CardTitle>
-                  {stats.totalRisks > 0 && (
+                  {stats.total > 0 && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 bg-red-50 text-red-600 border-red-200"
+                      className="text-[10px] px-1.5 py-0 bg-muted text-muted-foreground"
                     >
-                      {stats.unresolvedRisks}개 미해결
+                      총 {stats.total}개
                     </Badge>
                   )}
-                  {stats.criticalRisks > 0 && (
+                  {criticalCount > 0 && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 bg-red-100 text-red-700 border-red-300 animate-pulse"
+                      className="text-[10px] px-1.5 py-0 bg-red-100 text-red-700 border-red-300"
                     >
                       <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
-                      심각 {stats.criticalRisks}
+                      위험 {criticalCount}
+                    </Badge>
+                  )}
+                  {highCount > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 bg-orange-100 text-orange-700 border-orange-300"
+                    >
+                      높음 {highCount}
+                    </Badge>
+                  )}
+                  {stats.pendingCount > 0 && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 bg-gray-100 text-gray-600 border-gray-300"
+                    >
+                      미대응 {stats.pendingCount}
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  {stats.totalRisks > 0 && (
-                    <span className="text-[10px] text-muted-foreground">
-                      대응 {stats.mitigationCompletionRate}% 완료
-                    </span>
-                  )}
-                  {isOpen ? (
-                    <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                  )}
-                </div>
+                {isOpen ? (
+                  <ChevronUp className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                )}
               </div>
             </CollapsibleTrigger>
           </CardHeader>
 
           <CollapsibleContent>
-            <CardContent className="px-4 pb-4 pt-0 space-y-3">
+            <CardContent className="px-4 pb-4 pt-0 space-y-4">
               {loading ? (
-                <p className="text-xs text-muted-foreground py-2">불러오는 중...</p>
+                <p className="text-xs text-muted-foreground py-2">
+                  불러오는 중...
+                </p>
               ) : (
                 <>
-                  {/* 위험 수준 요약 */}
-                  {risks.length > 0 && <LevelSummary risks={risks} />}
-
                   {/* 통계 요약 */}
-                  {risks.length > 0 && (
+                  {items.length > 0 && (
                     <div className="grid grid-cols-4 gap-2">
                       <div className="p-2 rounded-md bg-muted/40 border text-center">
                         <p className="text-[10px] text-muted-foreground">전체</p>
-                        <p className="text-sm font-bold tabular-nums">{stats.totalRisks}</p>
-                      </div>
-                      <div className="p-2 rounded-md bg-red-50 border border-red-200 text-center">
-                        <p className="text-[10px] text-red-600">심각</p>
-                        <p className="text-sm font-bold tabular-nums text-red-700">
-                          {risks.filter((r) => r.level === "critical" && !r.isResolved).length}
+                        <p className="text-sm font-bold tabular-nums">
+                          {stats.total}
                         </p>
                       </div>
-                      <div className="p-2 rounded-md bg-orange-50 border border-orange-200 text-center">
-                        <p className="text-[10px] text-orange-600">높음</p>
-                        <p className="text-sm font-bold tabular-nums text-orange-700">
-                          {risks.filter((r) => r.level === "high" && !r.isResolved).length}
+                      <div className="p-2 rounded-md bg-gray-50 border text-center">
+                        <p className="text-[10px] text-gray-500">미대응</p>
+                        <p className="text-sm font-bold tabular-nums text-gray-700">
+                          {stats.pendingCount}
+                        </p>
+                      </div>
+                      <div className="p-2 rounded-md bg-blue-50 border border-blue-200 text-center">
+                        <p className="text-[10px] text-blue-600">대응중</p>
+                        <p className="text-sm font-bold tabular-nums text-blue-700">
+                          {stats.inProgressCount}
                         </p>
                       </div>
                       <div className="p-2 rounded-md bg-green-50 border border-green-200 text-center">
-                        <p className="text-[10px] text-green-600">해결됨</p>
+                        <p className="text-[10px] text-green-600">완료</p>
                         <p className="text-sm font-bold tabular-nums text-green-700">
-                          {risks.filter((r) => r.isResolved).length}
+                          {stats.doneCount}
                         </p>
                       </div>
+                    </div>
+                  )}
+
+                  {/* 레벨별 분포 */}
+                  {items.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {ALL_LEVELS.map((level) => {
+                        const count = items.filter(
+                          (i) => i.level === level
+                        ).length;
+                        if (count === 0) return null;
+                        return (
+                          <span
+                            key={level}
+                            className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${LEVEL_COLORS[level]}`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${LEVEL_DOT_COLORS[level]}`}
+                            />
+                            {LEVEL_LABELS[level]} {count}
+                          </span>
+                        );
+                      })}
+                      {stats.avgScore > 0 && (
+                        <span className="text-[10px] text-muted-foreground ml-auto">
+                          평균 점수: {stats.avgScore}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 리스크 매트릭스 */}
+                  {items.length > 0 && (
+                    <div className="p-3 rounded-md border bg-muted/20">
+                      <RiskMatrix items={items} />
                     </div>
                   )}
 
                   {/* 리스크 목록 헤더 */}
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-muted-foreground">
-                      위험 항목 목록
+                      리스크 목록
                     </span>
                     <Button
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      onClick={() => setRiskDialogOpen(true)}
+                      onClick={handleOpenAdd}
                     >
                       <Plus className="h-3 w-3 mr-1" />
-                      위험 추가
+                      리스크 등록
                     </Button>
                   </div>
 
                   {/* 리스크 목록 */}
-                  {sortedRisks.length === 0 ? (
+                  {sortedItems.length === 0 ? (
                     <div className="py-8 text-center space-y-2">
                       <ShieldCheck className="h-7 w-7 text-muted-foreground mx-auto" />
                       <p className="text-xs text-muted-foreground">
-                        등록된 위험 항목이 없습니다.
+                        등록된 리스크 항목이 없습니다.
                       </p>
                       <p className="text-[10px] text-muted-foreground">
-                        무대 안전 점검을 위해 위험 항목을 추가하세요.
+                        공연 안전을 위해 리스크 항목을 등록하세요.
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {sortedRisks.map((risk) => (
-                        <RiskRow
-                          key={risk.id}
-                          risk={risk}
-                          onToggleResolved={() => handleToggleResolved(risk.id)}
-                          onDelete={() => handleDeleteRisk(risk.id)}
-                          onAddMitigation={() => handleOpenMitigationDialog(risk.id)}
-                          onToggleMitigation={(mId) =>
-                            handleToggleMitigation(risk.id, mId)
-                          }
-                          onDeleteMitigation={(mId) =>
-                            handleDeleteMitigation(risk.id, mId)
+                      {sortedItems.map((item) => (
+                        <RiskItemRow
+                          key={item.id}
+                          item={item}
+                          onEdit={() => handleOpenEdit(item)}
+                          onDelete={() => handleDelete(item.id)}
+                          onChangeStatus={(status) =>
+                            handleChangeStatus(item.id, status)
                           }
                         />
                       ))}
+                    </div>
+                  )}
+
+                  {/* 최고 위험 항목 강조 */}
+                  {stats.topRiskItem && stats.topRiskItem.level === "critical" && (
+                    <div className="flex items-start gap-2 p-2.5 rounded-md bg-red-50 border border-red-200">
+                      <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-medium text-red-700">
+                          최고 위험 항목
+                        </p>
+                        <p className="text-xs text-red-600 truncate">
+                          {stats.topRiskItem.title} (점수:{" "}
+                          {stats.topRiskItem.score})
+                        </p>
+                      </div>
                     </div>
                   )}
                 </>
@@ -892,22 +918,15 @@ export function StageRiskCard({ groupId, projectId }: StageRiskCardProps) {
         </Card>
       </Collapsible>
 
-      {/* 리스크 추가 다이얼로그 */}
-      <RiskDialog
-        open={riskDialogOpen}
-        onClose={() => setRiskDialogOpen(false)}
-        onSubmit={handleRiskSubmit}
-      />
-
-      {/* 대응 조치 추가 다이얼로그 */}
-      <MitigationDialog
-        open={mitigationDialogOpen}
-        riskTitle={targetRisk?.title ?? ""}
+      {/* 등록/수정 다이얼로그 */}
+      <RiskFormDialog
+        open={formDialogOpen}
         onClose={() => {
-          setMitigationDialogOpen(false);
-          setTargetRiskId(null);
+          setFormDialogOpen(false);
+          setEditTarget(null);
         }}
-        onSubmit={handleMitigationSubmit}
+        onSubmit={handleFormSubmit}
+        editItem={editTarget}
       />
     </>
   );

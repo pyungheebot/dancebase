@@ -21,6 +21,8 @@ import { VipGuestCard } from "@/components/projects/vip-guest-card";
 import { SocialPostPlannerCard } from "@/components/projects/social-post-planner-card";
 import { StageSetupChecklistCard } from "@/components/projects/stage-setup-checklist-card";
 import { ShowCreditsCard } from "@/components/projects/show-credits-card";
+import { DressRehearsalCard } from "@/components/projects/dress-rehearsal-card";
+import { StageRiskCard } from "@/components/projects/stage-risk-card";
 
 export default function ProjectDetailPage({
   params,
@@ -111,6 +113,16 @@ export default function ProjectDetailPage({
           {ctx.projectId && (
             <ShowCreditsCard
               groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <DressRehearsalCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <StageRiskCard
               projectId={ctx.projectId}
             />
           )}
