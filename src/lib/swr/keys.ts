@@ -85,6 +85,7 @@ export const swrKeys = {
   followStatus: (targetUserId: string) => `/follow-status/${targetUserId}` as const,
   followList: (userId: string, type: "followers" | "following") =>
     `/follow-list/${userId}/${type}` as const,
+  suggestedFollows: () => "/suggested-follows" as const,
 
   // 대시보드 설정
   dashboardSettings: (entityId: string, memberTable: string) =>
@@ -1632,4 +1633,10 @@ export const swrKeys = {
 
   // 공연 당일 체크리스트 (localStorage 기반)
   showDayChecklist: (projectId: string) => `show-day-checklist-${projectId}` as const,
+
+  // 정산 수단
+  paymentMethods: (groupId: string) => `/groups/${groupId}/payment-methods` as const,
+
+  // 정산 요청
+  settlementRequests: (groupId: string) => `/groups/${groupId}/settlement-requests` as const,
 };

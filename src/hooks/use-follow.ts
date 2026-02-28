@@ -4,7 +4,9 @@ import { useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { invalidateProfile, invalidateFollowList, invalidateSuggestedFollows } from "@/lib/swr/invalidate";
 import { useAuth } from "@/hooks/use-auth";
+import { createNotification } from "@/lib/notifications";
 import type { Profile } from "@/types";
 
 export function useFollow(targetUserId: string) {
@@ -73,9 +75,25 @@ export function useFollow(targetUserId: string) {
           follower_id: user.id,
           following_id: targetUserId,
         });
+
+        // 팔로우 알림 발송
+        createNotification({
+          userId: targetUserId,
+          type: "new_follow",
+          title: "새 팔로워",
+          message: `${user.user_metadata?.name ?? user.email ?? "누군가"}님이 회원님을 팔로우합니다.`,
+          link: `/users/${user.id}`,
+        });
       }
 
       await mutate();
+
+      // 캐시 무효화
+      invalidateProfile(targetUserId);
+      invalidateProfile(user.id);
+      invalidateFollowList(targetUserId);
+      invalidateFollowList(user.id);
+      invalidateSuggestedFollows();
     } catch {
       // 실패 시 롤백
       await mutate();
@@ -99,7 +117,7 @@ export function useFollowList(
       if (type === "followers") {
         const { data } = await supabase
           .from("follows")
-          .select("follower_id, profiles:follower_id(*)")
+          .select("follower_id, profiles:follower_id(id, name, avatar_url, dance_genre)")
           .eq("following_id", userId);
 
         return (data ?? []).map(
@@ -108,7 +126,7 @@ export function useFollowList(
       } else {
         const { data } = await supabase
           .from("follows")
-          .select("following_id, profiles:following_id(*)")
+          .select("following_id, profiles:following_id(id, name, avatar_url, dance_genre)")
           .eq("follower_id", userId);
 
         return (data ?? []).map(
@@ -120,6 +138,34 @@ export function useFollowList(
 
   return {
     profiles: data ?? [],
+    loading: isLoading,
+  };
+}
+
+type SuggestedFollow = {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+  dance_genre: string[];
+  shared_group_count: number;
+};
+
+export function useSuggestedFollows(limit: number = 5) {
+  const { user } = useAuth();
+
+  const { data, isLoading } = useSWR<SuggestedFollow[]>(
+    user ? swrKeys.suggestedFollows() : null,
+    async (): Promise<SuggestedFollow[]> => {
+      const supabase = createClient();
+      const { data } = await supabase.rpc("get_suggested_follows", {
+        limit_count: limit,
+      });
+      return (data ?? []) as SuggestedFollow[];
+    },
+  );
+
+  return {
+    suggestions: data ?? [],
     loading: isLoading,
   };
 }

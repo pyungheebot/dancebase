@@ -1,17 +1,20 @@
 "use client";
 
 import { Fragment } from "react";
+import { YouTubeEmbed, extractYouTubeId } from "@/components/shared/youtube-embed";
 
 interface BoardPostContentProps {
   content: string;
 }
 
-// YouTube URL 패턴
-const YOUTUBE_REGEX =
-  /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
-
 // 일반 URL 패턴
-const URL_REGEX = /(https?:\/\/[^\s<]+)/g;
+const URL_PATTERN = /https?:\/\/[^\s<]+/;
+
+/** 줄에서 YouTube URL들을 추출 */
+function findYouTubeUrls(line: string): string[] {
+  const urlMatches = line.match(new RegExp(URL_PATTERN, "g")) || [];
+  return urlMatches.filter((url) => extractYouTubeId(url) !== null);
+}
 
 export function BoardPostContent({ content }: BoardPostContentProps) {
   if (!content) return null;
@@ -21,24 +24,14 @@ export function BoardPostContent({ content }: BoardPostContentProps) {
   return (
     <div className="space-y-2 text-sm whitespace-pre-wrap">
       {lines.map((line, lineIdx) => {
-        // YouTube 임베드
-        const ytMatches = [...line.matchAll(YOUTUBE_REGEX)];
-        if (ytMatches.length > 0) {
+        const ytUrls = findYouTubeUrls(line);
+
+        if (ytUrls.length > 0) {
           return (
             <Fragment key={lineIdx}>
               <p>{renderLineWithLinks(line)}</p>
-              {ytMatches.map((match, i) => (
-                <div
-                  key={`yt-${lineIdx}-${i}`}
-                  className="relative w-full aspect-video rounded-lg overflow-hidden border"
-                >
-                  <iframe
-                    className="absolute inset-0 w-full h-full"
-                    src={`https://www.youtube.com/embed/${match[1]}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
+              {ytUrls.map((ytUrl, i) => (
+                <YouTubeEmbed key={`yt-${lineIdx}-${i}`} url={ytUrl} />
               ))}
             </Fragment>
           );
@@ -51,10 +44,10 @@ export function BoardPostContent({ content }: BoardPostContentProps) {
 }
 
 function renderLineWithLinks(line: string) {
-  const parts = line.split(URL_REGEX);
+  const parts = line.split(new RegExp(`(${URL_PATTERN.source})`, "g"));
   return parts.map((part, i) => {
-    if (URL_REGEX.test(part)) {
-      URL_REGEX.lastIndex = 0;
+    if (!part) return null;
+    if (new RegExp(`^${URL_PATTERN.source}$`).test(part)) {
       return (
         <a
           key={i}

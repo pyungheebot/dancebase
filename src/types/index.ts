@@ -667,7 +667,9 @@ export type NotificationType =
   | "join_approved"
   | "join_rejected"
   | "finance_unpaid"
-  | "action_item";
+  | "action_item"
+  | "new_follow"
+  | "settlement_request";
 
 export type Notification = {
   id: string;
@@ -766,7 +768,7 @@ export type ActivityLogWithProfile = ActivityLog & {
 };
 
 // ============================================
-// Message (쪽지)
+// Message (메시지)
 // ============================================
 
 export type Message = {
@@ -15462,4 +15464,52 @@ export type ShowDayChecklistData = {
   projectId: string;
   items: ShowDayChecklistItem[];
   updatedAt: string;
+};
+
+// ============================================
+// Settlement (정산 요청)
+// ============================================
+
+export type PaymentMethodType = "bank" | "toss" | "kakao";
+
+export type GroupPaymentMethod = {
+  id: string;
+  group_id: string;
+  type: PaymentMethodType;
+  label: string;
+  bank_name: string | null;
+  account_number: string | null;
+  account_holder: string | null;
+  toss_id: string | null;
+  kakao_link: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type SettlementStatus = "active" | "closed";
+
+export type SettlementMemberStatus = "pending" | "paid_pending" | "confirmed";
+
+export type SettlementRequest = {
+  id: string;
+  group_id: string;
+  title: string;
+  memo: string | null;
+  amount: number;
+  due_date: string | null;
+  payment_method_id: string | null;
+  status: SettlementStatus;
+  created_by: string;
+  created_at: string;
+};
+
+export type SettlementRequestMember = {
+  id: string;
+  request_id: string;
+  user_id: string;
+  status: SettlementMemberStatus;
+  paid_at: string | null;
+  confirmed_at: string | null;
 };

@@ -32,14 +32,19 @@ import {
 } from "@/components/ui/select";
 import { usePracticeVideos } from "@/hooks/use-practice-videos";
 import { VideoTimestampSection } from "@/components/projects/video-timestamp-section";
+import { YouTubeEmbed } from "@/components/shared/youtube-embed";
 import type { ProjectSong } from "@/types";
 
 // URL에서 플랫폼 자동 감지
 function detectPlatform(url: string): string {
-  const lower = url.toLowerCase();
-  if (lower.includes("youtube.com") || lower.includes("youtu.be")) return "youtube";
-  if (lower.includes("instagram.com")) return "instagram";
-  if (lower.includes("tiktok.com")) return "tiktok";
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) return "youtube";
+    if (hostname.includes("instagram.com")) return "instagram";
+    if (hostname.includes("tiktok.com")) return "tiktok";
+  } catch {
+    // URL 파싱 실패
+  }
   return "other";
 }
 
@@ -279,8 +284,15 @@ function VideoCard({
 }: VideoCardProps) {
   const [showTimestamps, setShowTimestamps] = useState(false);
 
+  const isYoutube = video.platform === "youtube";
+
   return (
     <div className="rounded-lg border bg-card p-3 space-y-1.5">
+      {/* YouTube 인라인 플레이어 */}
+      {isYoutube && (
+        <YouTubeEmbed url={video.url} />
+      )}
+
       {/* 상단: 플랫폼 배지 + 제목 + 링크 */}
       <div className="flex items-start gap-2">
         <Badge

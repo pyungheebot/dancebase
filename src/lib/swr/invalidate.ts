@@ -143,6 +143,10 @@ export function invalidateFollowList(userId: string) {
   mutate(swrKeys.followList(userId, "following"));
 }
 
+export function invalidateSuggestedFollows() {
+  mutate(swrKeys.suggestedFollows());
+}
+
 export function invalidateDashboardSettings(entityId: string, memberTable: string) {
   mutate(swrKeys.dashboardSettings(entityId, memberTable));
 }
@@ -976,4 +980,12 @@ export function invalidateGroupTimeline(groupId: string) {
 
 export function invalidateShowDayChecklist(projectId: string) {
   mutate(swrKeys.showDayChecklist(projectId));
+}
+
+export function invalidatePaymentMethods(groupId: string) {
+  mutate(swrKeys.paymentMethods(groupId));
+}
+
+export function invalidateSettlementRequests(groupId: string) {
+  mutate(swrKeys.settlementRequests(groupId));
 }

@@ -22,6 +22,9 @@ import { Loader2, X, Plus, Globe, Lock, Users, Camera } from "lucide-react";
 import { toast } from "sonner";
 import type { PrivacySettings, PrivacyField, PrivacyLevel } from "@/types";
 import { DEFAULT_PRIVACY_SETTINGS } from "@/types";
+import { useUserProfile } from "@/hooks/use-profile";
+import { SuggestedFollows } from "@/components/profile/suggested-follows";
+import Link from "next/link";
 
 const PRIVACY_OPTIONS: { value: PrivacyLevel; label: string; icon: typeof Globe }[] = [
   { value: "public", label: "전체 공개", icon: Globe },
@@ -82,6 +85,7 @@ function FieldLabel({
 
 export default function ProfilePage() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+  const { followerCount, followingCount } = useUserProfile(user?.id ?? "");
   const [name, setName] = useState("");
   const [genreInput, setGenreInput] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
@@ -308,6 +312,25 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              {user && (
+                <div className="flex items-center gap-4 text-sm">
+                  <Link
+                    href={`/users/${user.id}/followers`}
+                    className="hover:underline"
+                  >
+                    <span className="font-semibold">{followerCount}</span>{" "}
+                    <span className="text-muted-foreground">팔로워</span>
+                  </Link>
+                  <Link
+                    href={`/users/${user.id}/following`}
+                    className="hover:underline"
+                  >
+                    <span className="font-semibold">{followingCount}</span>{" "}
+                    <span className="text-muted-foreground">팔로잉</span>
+                  </Link>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">이메일</Label>
                 <Input id="email" value={user?.email || ""} disabled />
@@ -530,6 +553,10 @@ export default function ProfilePage() {
             </form>
           </CardContent>
         </Card>
+
+        <div className="mt-4">
+          <SuggestedFollows />
+        </div>
       </div>
     </AppLayout>
   );

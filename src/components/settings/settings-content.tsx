@@ -61,6 +61,7 @@ import { PermissionAuditSection } from "@/components/settings/permission-audit-s
 import { NotificationPreferencesSection } from "@/components/settings/notification-preferences-section";
 import { NotificationRulesBuilder } from "@/components/settings/notification-rules-builder";
 import { GroupRulesEditor } from "@/components/groups/group-rules-editor";
+import { PaymentMethodManager } from "@/components/finance/payment-method-manager";
 
 type SettingsContentProps = {
   ctx: EntityContext;
@@ -926,6 +927,23 @@ export function SettingsContent({
                     )}
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 정산 수단 관리 (리더 전용) */}
+          {isGroupLeader && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xs font-semibold flex items-center gap-1.5">
+                  정산 수단 관리
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[11px] text-muted-foreground mb-3">
+                  멤버에게 정산 요청 시 표시될 계좌 또는 간편결제 정보를 등록합니다.
+                </p>
+                <PaymentMethodManager groupId={ctx.groupId} />
               </CardContent>
             </Card>
           )}

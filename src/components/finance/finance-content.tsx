@@ -14,6 +14,9 @@ import { FinanceReminderSettings } from "@/components/finance/finance-reminder-s
 import { FinanceSplitSection } from "@/components/finance/finance-split-section";
 import { ProjectCostAnalytics } from "@/components/finance/project-cost-analytics";
 import { ExpenseTemplateManager } from "@/components/finance/expense-template-manager";
+import { CreateSettlementDialog } from "@/components/finance/create-settlement-dialog";
+import { SettlementRequestDashboard } from "@/components/finance/settlement-request-dashboard";
+import { MySettlementRequests } from "@/components/finance/my-settlement-requests";
 import { ReceiptShareDialog } from "@/components/finance/receipt-share-dialog";
 import { FinanceGoalCard } from "@/components/finance/finance-goal-card";
 import { BudgetScenarioCard } from "@/components/finance/budget-scenario-card";
@@ -372,7 +375,7 @@ export function FinanceContent({
       {/* 거래 내역 / 납부 현황 / 예산 / 분할 정산 / 비용 분석 탭 */}
       <div className="mt-3">
         <Tabs defaultValue="transactions">
-          <TabsList className="w-full h-7 mb-3">
+          <TabsList className="w-full h-7 mb-3 flex-wrap">
             <TabsTrigger value="transactions" className="flex-1 text-xs">
               거래 내역
             </TabsTrigger>
@@ -384,6 +387,9 @@ export function FinanceContent({
             </TabsTrigger>
             <TabsTrigger value="split" className="flex-1 text-xs">
               분할 정산
+            </TabsTrigger>
+            <TabsTrigger value="settlement" className="flex-1 text-xs">
+              정산 요청
             </TabsTrigger>
             {ctx.projectId && (
               <TabsTrigger value="cost-analytics" className="flex-1 text-xs">
@@ -696,6 +702,31 @@ export function FinanceContent({
               canManage={canManage}
               currentUserId={currentUserId}
             />
+          </TabsContent>
+
+          {/* 정산 요청 탭 */}
+          <TabsContent value="settlement" className="mt-0">
+            {canManage ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-medium text-muted-foreground">정산 요청 현황</h3>
+                  {groupMembers && (
+                    <CreateSettlementDialog
+                      groupId={ctx.groupId}
+                      groupMembers={groupMembers}
+                      nicknameMap={ctx.nicknameMap}
+                      currentUserId={currentUserId}
+                    />
+                  )}
+                </div>
+                <SettlementRequestDashboard
+                  groupId={ctx.groupId}
+                  nicknameMap={ctx.nicknameMap}
+                />
+              </div>
+            ) : (
+              <MySettlementRequests groupId={ctx.groupId} />
+            )}
           </TabsContent>
 
           {/* 비용 분석 탭 (프로젝트 컨텍스트에서만) */}

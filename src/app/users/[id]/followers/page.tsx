@@ -4,10 +4,12 @@ import { use } from "react";
 import Link from "next/link";
 import { AppLayout } from "@/components/layout/app-layout";
 import { useFollowList } from "@/hooks/use-follow";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/use-auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FollowButton } from "@/components/profile/follow-button";
 
 export default function FollowersPage({
   params,
@@ -15,6 +17,7 @@ export default function FollowersPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { user } = useAuth();
   const { profiles, loading } = useFollowList(id, "followers");
 
   return (
@@ -40,29 +43,37 @@ export default function FollowersPage({
         ) : (
           <div className="space-y-2">
             {profiles.map((profile) => (
-              <Link
+              <div
                 key={profile.id}
-                href={`/users/${profile.id}`}
                 className="flex items-center gap-2 px-2.5 py-1.5 rounded border hover:bg-accent transition-colors"
               >
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback className="text-[10px]">
-                    {profile.name?.charAt(0)?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium truncate">{profile.name}</p>
-                  {profile.dance_genre?.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {profile.dance_genre.map((genre) => (
-                        <Badge key={genre} variant="outline" className="text-xs">
-                          {genre}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </Link>
+                <Link
+                  href={`/users/${profile.id}`}
+                  className="flex items-center gap-2 min-w-0 flex-1"
+                >
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={profile.avatar_url ?? undefined} />
+                    <AvatarFallback className="text-[10px]">
+                      {profile.name?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">{profile.name}</p>
+                    {profile.dance_genre?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {profile.dance_genre.map((genre) => (
+                          <Badge key={genre} variant="outline" className="text-xs">
+                            {genre}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+                {user && user.id !== profile.id && (
+                  <FollowButton targetUserId={profile.id} />
+                )}
+              </div>
             ))}
           </div>
         )}
