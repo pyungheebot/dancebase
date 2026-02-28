@@ -1,153 +1,205 @@
 "use client";
 
+import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
-import { DanceCertification, DanceCertLevel } from "@/types";
+import type { DanceCertItem, DanceCertKind } from "@/types";
 
-// 레벨 한글 라벨
-export const CERT_LEVEL_LABELS: Record<DanceCertLevel, string> = {
-  beginner:     "입문",
-  elementary:   "초급",
-  intermediate: "중급",
-  advanced:     "상급",
-  master:       "마스터",
+// ─── 상수 ────────────────────────────────────────────────────
+
+export const DANCE_CERT_KIND_LABELS: Record<DanceCertKind, string> = {
+  certificate: "자격증",
+  completion: "수료증",
+  workshop: "워크숍",
+  award: "대회수상",
 };
 
-// 레벨 순서 (낮은 → 높은)
-export const CERT_LEVEL_ORDER: DanceCertLevel[] = [
-  "beginner",
-  "elementary",
-  "intermediate",
-  "advanced",
-  "master",
+export const DANCE_CERT_KIND_COLORS: Record<
+  DanceCertKind,
+  { badge: string; text: string; bar: string }
+> = {
+  certificate: {
+    badge: "bg-blue-100 text-blue-700 border-blue-300",
+    text: "text-blue-700",
+    bar: "bg-blue-500",
+  },
+  completion: {
+    badge: "bg-green-100 text-green-700 border-green-300",
+    text: "text-green-700",
+    bar: "bg-green-500",
+  },
+  workshop: {
+    badge: "bg-orange-100 text-orange-700 border-orange-300",
+    text: "text-orange-700",
+    bar: "bg-orange-500",
+  },
+  award: {
+    badge: "bg-purple-100 text-purple-700 border-purple-300",
+    text: "text-purple-700",
+    bar: "bg-purple-500",
+  },
+};
+
+export const DANCE_CERT_KINDS: DanceCertKind[] = [
+  "certificate",
+  "completion",
+  "workshop",
+  "award",
 ];
 
-// 레벨별 색상 (Tailwind CSS 클래스)
-export const CERT_LEVEL_COLORS: Record<
-  DanceCertLevel,
-  { badge: string; bar: string; text: string }
-> = {
-  beginner:     { badge: "bg-gray-100 text-gray-700 border-gray-300",   bar: "bg-gray-400",   text: "text-gray-600" },
-  elementary:   { badge: "bg-green-100 text-green-700 border-green-300", bar: "bg-green-500",  text: "text-green-700" },
-  intermediate: { badge: "bg-blue-100 text-blue-700 border-blue-300",   bar: "bg-blue-500",   text: "text-blue-700" },
-  advanced:     { badge: "bg-purple-100 text-purple-700 border-purple-300", bar: "bg-purple-500", text: "text-purple-700" },
-  master:       { badge: "bg-yellow-100 text-yellow-700 border-yellow-400", bar: "bg-yellow-500", text: "text-yellow-700" },
-};
+// ─── localStorage 헬퍼 ────────────────────────────────────────
 
-// localStorage 키
-function storageKey(groupId: string): string {
-  return `dancebase:dance-cert:${groupId}`;
-}
+const LS_KEY = (memberId: string) => `dancebase:dance-cert:${memberId}`;
 
-// localStorage에서 읽기
-function loadCertifications(groupId: string): DanceCertification[] {
+function loadItems(memberId: string): DanceCertItem[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(storageKey(groupId));
+    const raw = localStorage.getItem(LS_KEY(memberId));
     if (!raw) return [];
-    return JSON.parse(raw) as DanceCertification[];
+    return JSON.parse(raw) as DanceCertItem[];
   } catch {
     return [];
   }
 }
 
-// localStorage에 쓰기
-function saveCertifications(groupId: string, certs: DanceCertification[]) {
+function saveItems(memberId: string, items: DanceCertItem[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(storageKey(groupId), JSON.stringify(certs));
+  try {
+    localStorage.setItem(LS_KEY(memberId), JSON.stringify(items));
+  } catch {
+    /* ignore */
+  }
 }
 
-export function useDanceCertification(groupId: string) {
-  const { data, isLoading, mutate } = useSWR(
-    swrKeys.danceCertification(groupId),
-    () => loadCertifications(groupId),
+// ─── 만료 관련 유틸 ───────────────────────────────────────────
+
+/** 만료된 항목인지 여부 */
+export function isExpired(item: DanceCertItem): boolean {
+  if (!item.expiresAt) return false;
+  return new Date(item.expiresAt) < new Date();
+}
+
+/** 만료 임박(30일 이내) 항목인지 여부 */
+export function isExpiringSoon(item: DanceCertItem): boolean {
+  if (!item.expiresAt) return false;
+  const now = new Date();
+  const exp = new Date(item.expiresAt);
+  if (exp < now) return false;
+  const diff = (exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+  return diff <= 30;
+}
+
+// ─── 훅 ─────────────────────────────────────────────────────
+
+export function useDanceCertification(memberId: string) {
+  const { data, mutate, isLoading } = useSWR(
+    memberId ? swrKeys.danceCertification(memberId) : null,
+    () => loadItems(memberId),
     { revalidateOnFocus: false }
   );
 
-  const certifications: DanceCertification[] = data ?? [];
+  const items: DanceCertItem[] = data ?? [];
 
-  // 인증 발급 (같은 멤버+장르 조합이면 최신으로 교체)
-  async function issueCertification(
-    cert: Omit<DanceCertification, "id" | "certifiedAt">
-  ): Promise<void> {
-    const current = loadCertifications(groupId);
-    const newCert: DanceCertification = {
-      ...cert,
-      id: `cert-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      certifiedAt: new Date().toISOString(),
-    };
+  // ── 내부 업데이트 헬퍼 ───────────────────────────────────
 
-    // 같은 멤버 + 장르 조합이 있으면 교체, 없으면 추가
-    const idx = current.findIndex(
-      (c) => c.memberId === cert.memberId && c.genre === cert.genre
-    );
-    let updated: DanceCertification[];
-    if (idx !== -1) {
-      updated = [...current];
-      updated[idx] = newCert;
-    } else {
-      updated = [...current, newCert];
-    }
+  const persist = useCallback(
+    (next: DanceCertItem[]): void => {
+      saveItems(memberId, next);
+      mutate(next, false);
+    },
+    [memberId, mutate]
+  );
 
-    saveCertifications(groupId, updated);
-    await mutate(updated, false);
-  }
+  // ── 항목 추가 ────────────────────────────────────────────
 
-  // 인증 삭제
-  async function deleteCertification(certId: string): Promise<void> {
-    const current = loadCertifications(groupId);
-    const updated = current.filter((c) => c.id !== certId);
-    saveCertifications(groupId, updated);
-    await mutate(updated, false);
-  }
+  const addItem = useCallback(
+    (params: {
+      name: string;
+      issuer: string;
+      acquiredAt: string;
+      expiresAt?: string;
+      kind: DanceCertKind;
+      grade?: string;
+      memo?: string;
+    }): boolean => {
+      const { name, issuer, acquiredAt, expiresAt, kind, grade, memo } = params;
+      if (!name.trim() || !issuer.trim() || !acquiredAt) return false;
+      const stored = loadItems(memberId);
+      const newItem: DanceCertItem = {
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        issuer: issuer.trim(),
+        acquiredAt,
+        expiresAt: expiresAt || undefined,
+        kind,
+        grade: grade?.trim() || undefined,
+        memo: memo?.trim() || undefined,
+        createdAt: new Date().toISOString(),
+      };
+      persist([newItem, ...stored]);
+      return true;
+    },
+    [memberId, persist]
+  );
 
-  // 특정 멤버의 인증 목록
-  function getCertsByMember(memberId: string): DanceCertification[] {
-    return certifications.filter((c) => c.memberId === memberId);
-  }
+  // ── 항목 수정 ────────────────────────────────────────────
 
-  // 특정 장르의 인증 목록
-  function getCertsByGenre(genre: string): DanceCertification[] {
-    return certifications.filter((c) => c.genre === genre);
-  }
+  const updateItem = useCallback(
+    (
+      itemId: string,
+      partial: Partial<Omit<DanceCertItem, "id" | "createdAt">>
+    ): boolean => {
+      const stored = loadItems(memberId);
+      const idx = stored.findIndex((i) => i.id === itemId);
+      if (idx === -1) return false;
+      const next = [...stored];
+      next[idx] = {
+        ...next[idx],
+        ...partial,
+        updatedAt: new Date().toISOString(),
+      };
+      persist(next);
+      return true;
+    },
+    [memberId, persist]
+  );
 
-  // 레벨별 통계 (전체)
-  const levelStats: Record<DanceCertLevel, number> = {
-    beginner:     0,
-    elementary:   0,
-    intermediate: 0,
-    advanced:     0,
-    master:       0,
+  // ── 항목 삭제 ────────────────────────────────────────────
+
+  const deleteItem = useCallback(
+    (itemId: string): boolean => {
+      const stored = loadItems(memberId);
+      const next = stored.filter((i) => i.id !== itemId);
+      if (next.length === stored.length) return false;
+      persist(next);
+      return true;
+    },
+    [memberId, persist]
+  );
+
+  // ── 통계 ─────────────────────────────────────────────────
+
+  const stats = {
+    total: items.length,
+    valid: items.filter((i) => !isExpired(i)).length,
+    expired: items.filter((i) => isExpired(i)).length,
+    expiringSoon: items.filter((i) => isExpiringSoon(i)).length,
+    byKind: DANCE_CERT_KINDS.reduce<Record<DanceCertKind, number>>(
+      (acc, kind) => {
+        acc[kind] = items.filter((i) => i.kind === kind).length;
+        return acc;
+      },
+      { certificate: 0, completion: 0, workshop: 0, award: 0 }
+    ),
   };
-  for (const cert of certifications) {
-    levelStats[cert.level] = (levelStats[cert.level] ?? 0) + 1;
-  }
-
-  // 장르 목록 (중복 제거)
-  const genres: string[] = Array.from(
-    new Set(certifications.map((c) => c.genre))
-  ).sort();
-
-  // 멤버 목록 (중복 제거, {id, name} 형태)
-  const memberMap = new Map<string, string>();
-  for (const cert of certifications) {
-    memberMap.set(cert.memberId, cert.memberName);
-  }
-  const members = Array.from(memberMap.entries()).map(([id, name]) => ({
-    id,
-    name,
-  }));
 
   return {
-    certifications,
+    items,
     loading: isLoading,
-    issueCertification,
-    deleteCertification,
-    getCertsByMember,
-    getCertsByGenre,
-    levelStats,
-    genres,
-    members,
+    addItem,
+    updateItem,
+    deleteItem,
+    stats,
     refetch: () => mutate(),
   };
 }

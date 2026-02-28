@@ -1,121 +1,220 @@
 "use client";
 
 import { useCallback } from "react";
+import useSWR from "swr";
 import { toast } from "sonner";
-import { useEntitySettings } from "@/hooks/use-entity-settings";
+import { swrKeys } from "@/lib/swr/keys";
 import {
   GROUP_FAQ_SETTING_KEY,
   DEFAULT_GROUP_FAQ_SETTING,
+  GROUP_FAQ_CATEGORIES,
   type GroupFaq,
+  type GroupFaqCategory,
   type GroupFaqSettingValue,
 } from "@/types";
 
+function loadFromStorage(groupId: string): GroupFaqSettingValue {
+  if (typeof window === "undefined") return DEFAULT_GROUP_FAQ_SETTING;
+  try {
+    const raw = localStorage.getItem(`${GROUP_FAQ_SETTING_KEY}_${groupId}`);
+    if (!raw) return DEFAULT_GROUP_FAQ_SETTING;
+    const parsed = JSON.parse(raw) as GroupFaqSettingValue;
+    // 기존 데이터에 새 필드 없는 경우 기본값 보완
+    const faqs = (parsed.faqs ?? []).map((faq) => {
+      const defaults: GroupFaq = {
+        id: faq.id,
+        question: faq.question,
+        answer: faq.answer,
+        order: faq.order ?? 0,
+        category: (faq as GroupFaq).category ?? ("기타" as GroupFaqCategory),
+        authorName: (faq as GroupFaq).authorName ?? "",
+        createdAt: (faq as GroupFaq).createdAt ?? new Date().toISOString(),
+        pinned: (faq as GroupFaq).pinned ?? false,
+      };
+      return defaults;
+    });
+    return { faqs };
+  } catch {
+    return DEFAULT_GROUP_FAQ_SETTING;
+  }
+}
+
+async function saveToStorage(
+  groupId: string,
+  value: GroupFaqSettingValue
+): Promise<{ error: null | string }> {
+  try {
+    localStorage.setItem(
+      `${GROUP_FAQ_SETTING_KEY}_${groupId}`,
+      JSON.stringify(value)
+    );
+    return { error: null };
+  } catch {
+    return { error: "저장 실패" };
+  }
+}
+
 export function useGroupFaq(groupId: string) {
-  const {
-    value,
-    loading,
-    save,
-    refetch,
-  } = useEntitySettings<GroupFaqSettingValue>(
-    { entityType: "group", entityId: groupId, key: GROUP_FAQ_SETTING_KEY },
-    DEFAULT_GROUP_FAQ_SETTING
+  const swrKey = swrKeys.groupFaq(groupId);
+
+  const { data, isLoading, mutate } = useSWR(swrKey, () =>
+    loadFromStorage(groupId)
   );
 
-  const faqs = value.faqs ?? [];
+  const value = data ?? DEFAULT_GROUP_FAQ_SETTING;
+
+  // 고정 항목 먼저, 그 다음 order 순 정렬
+  const faqs = [...(value.faqs ?? [])].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    return a.order - b.order;
+  });
 
   const addFaq = useCallback(
-    async (faq: Omit<GroupFaq, "id" | "order">) => {
+    async (faq: {
+      question: string;
+      answer: string;
+      category: GroupFaqCategory;
+      authorName: string;
+    }) => {
+      const nonPinned = (value.faqs ?? []).filter((f) => !f.pinned);
       const newFaq: GroupFaq = {
         id: crypto.randomUUID(),
         question: faq.question,
         answer: faq.answer,
-        order: faqs.length,
+        category: faq.category,
+        authorName: faq.authorName,
+        createdAt: new Date().toISOString(),
+        pinned: false,
+        order: nonPinned.length,
       };
 
-      const newFaqs = [...faqs, newFaq];
-      const { error } = await save({ faqs: newFaqs });
+      const newValue: GroupFaqSettingValue = {
+        faqs: [...(value.faqs ?? []), newFaq],
+      };
 
+      const { error } = await saveToStorage(groupId, newValue);
       if (error) {
         toast.error("FAQ 추가에 실패했습니다");
         return false;
       }
 
+      await mutate(newValue);
       toast.success("FAQ가 추가되었습니다");
       return true;
     },
-    [faqs, save]
+    [value, groupId, mutate]
   );
 
   const updateFaq = useCallback(
-    async (id: string, updates: Partial<Omit<GroupFaq, "id" | "order">>) => {
-      const newFaqs = faqs.map((faq) =>
+    async (
+      id: string,
+      updates: Partial<Omit<GroupFaq, "id" | "order" | "createdAt">>
+    ) => {
+      const newFaqs = (value.faqs ?? []).map((faq) =>
         faq.id === id ? { ...faq, ...updates } : faq
       );
-      const { error } = await save({ faqs: newFaqs });
+      const newValue: GroupFaqSettingValue = { faqs: newFaqs };
 
+      const { error } = await saveToStorage(groupId, newValue);
       if (error) {
         toast.error("FAQ 수정에 실패했습니다");
         return false;
       }
 
+      await mutate(newValue);
       toast.success("FAQ가 수정되었습니다");
       return true;
     },
-    [faqs, save]
+    [value, groupId, mutate]
   );
 
   const deleteFaq = useCallback(
     async (id: string) => {
-      const newFaqs = faqs
+      const newFaqs = (value.faqs ?? [])
         .filter((faq) => faq.id !== id)
         .map((faq, index) => ({ ...faq, order: index }));
-      const { error } = await save({ faqs: newFaqs });
+      const newValue: GroupFaqSettingValue = { faqs: newFaqs };
 
+      const { error } = await saveToStorage(groupId, newValue);
       if (error) {
         toast.error("FAQ 삭제에 실패했습니다");
         return false;
       }
 
+      await mutate(newValue);
       toast.success("FAQ가 삭제되었습니다");
       return true;
     },
-    [faqs, save]
+    [value, groupId, mutate]
+  );
+
+  const togglePin = useCallback(
+    async (id: string) => {
+      const newFaqs = (value.faqs ?? []).map((faq) =>
+        faq.id === id ? { ...faq, pinned: !faq.pinned } : faq
+      );
+      const newValue: GroupFaqSettingValue = { faqs: newFaqs };
+
+      const { error } = await saveToStorage(groupId, newValue);
+      if (error) {
+        toast.error("고정 설정에 실패했습니다");
+        return false;
+      }
+
+      await mutate(newValue);
+      return true;
+    },
+    [value, groupId, mutate]
   );
 
   const moveFaq = useCallback(
     async (id: string, direction: "up" | "down") => {
-      const index = faqs.findIndex((faq) => faq.id === id);
+      // 비고정 항목만 순서 조정
+      const pinned = (value.faqs ?? []).filter((f) => f.pinned);
+      const unpinned = (value.faqs ?? []).filter((f) => !f.pinned);
+      const index = unpinned.findIndex((faq) => faq.id === id);
       if (index === -1) return false;
       if (direction === "up" && index === 0) return false;
-      if (direction === "down" && index === faqs.length - 1) return false;
+      if (direction === "down" && index === unpinned.length - 1) return false;
 
-      const newFaqs = [...faqs];
       const swapIndex = direction === "up" ? index - 1 : index + 1;
-      [newFaqs[index], newFaqs[swapIndex]] = [
-        newFaqs[swapIndex],
-        newFaqs[index],
+      [unpinned[index], unpinned[swapIndex]] = [
+        unpinned[swapIndex],
+        unpinned[index],
       ];
 
-      const reordered = newFaqs.map((faq, i) => ({ ...faq, order: i }));
-      const { error } = await save({ faqs: reordered });
+      const reordered = unpinned.map((faq, i) => ({ ...faq, order: i }));
+      const newValue: GroupFaqSettingValue = {
+        faqs: [...pinned, ...reordered],
+      };
 
+      const { error } = await saveToStorage(groupId, newValue);
       if (error) {
         toast.error("순서 변경에 실패했습니다");
         return false;
       }
 
+      await mutate(newValue);
       return true;
     },
-    [faqs, save]
+    [value, groupId, mutate]
   );
+
+  // 카테고리별 항목 수 통계
+  const categoryStats = GROUP_FAQ_CATEGORIES.map((cat) => ({
+    category: cat,
+    count: (value.faqs ?? []).filter((f) => f.category === cat).length,
+  }));
 
   return {
     faqs,
-    loading,
+    loading: isLoading,
     addFaq,
     updateFaq,
     deleteFaq,
+    togglePin,
     moveFaq,
-    refetch,
+    categoryStats,
+    refetch: () => mutate(),
   };
 }

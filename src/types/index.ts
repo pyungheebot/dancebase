@@ -879,11 +879,30 @@ export const GROUP_LINK_ICONS: { emoji: string; label: string }[] = [
 // Group FAQ (그룹 자주 묻는 질문)
 // ============================================
 
+/** FAQ 카테고리 */
+export type GroupFaqCategory = "가입" | "연습" | "공연" | "회비" | "기타";
+
+export const GROUP_FAQ_CATEGORIES: GroupFaqCategory[] = [
+  "가입",
+  "연습",
+  "공연",
+  "회비",
+  "기타",
+];
+
 export type GroupFaq = {
   id: string;
   question: string;
   answer: string;
   order: number;
+  /** 카테고리 */
+  category: GroupFaqCategory;
+  /** 작성자명 */
+  authorName: string;
+  /** 작성일 (ISO 8601) */
+  createdAt: string;
+  /** 고정 여부 */
+  pinned: boolean;
 };
 
 export type GroupFaqSettingValue = {
@@ -14451,4 +14470,161 @@ export type GroupWishItem = {
   createdAt: string;
   /** 상태 변경일 (ISO 8601, 선택) */
   updatedAt?: string;
+};
+
+// ============================================================
+// DanceCertification 타입
+// ============================================================
+
+/** 댄스 자격증 종류 */
+export type DanceCertKind =
+  | "certificate" // 자격증
+  | "completion"  // 수료증
+  | "workshop"    // 워크숍
+  | "award";      // 대회 수상
+
+/** 댄스 자격증 단일 항목 */
+export type DanceCertItem = {
+  id: string;
+  /** 자격증/수료증 이름 */
+  name: string;
+  /** 발급기관 */
+  issuer: string;
+  /** 취득일 (YYYY-MM-DD) */
+  acquiredAt: string;
+  /** 만료일 (YYYY-MM-DD, 선택) */
+  expiresAt?: string;
+  /** 종류 */
+  kind: DanceCertKind;
+  /** 등급 (선택) */
+  grade?: string;
+  /** 메모 (선택) */
+  memo?: string;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 수정일 (ISO 8601, 선택) */
+  updatedAt?: string;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DuesTracker — 그룹 회비 납부 추적기
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** 납부 상태: 납부완료 / 미납 / 면제 */
+export type DuesTrackPaymentStatus = "paid" | "unpaid" | "exempt";
+
+/** 멤버별 납부 정보 */
+export type DuesTrackMember = {
+  id: string;
+  /** 멤버 이름 */
+  name: string;
+  /** 납부 상태 */
+  status: DuesTrackPaymentStatus;
+  /** 납부일 (ISO 8601, paid일 때만) */
+  paidAt?: string;
+  /** 메모 (선택) */
+  memo?: string;
+};
+
+/** 월별 납부 기간 */
+export type DuesTrackPeriod = {
+  id: string;
+  /** 년도 */
+  year: number;
+  /** 월 (1~12) */
+  month: number;
+  /** 납부 금액 (원) */
+  amount: number;
+  /** 납부 기한 (YYYY-MM-DD) */
+  dueDate: string;
+  /** 멤버 납부 현황 */
+  members: DuesTrackMember[];
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 회비 납부 추적기 전체 데이터 */
+export type DuesTrackData = {
+  /** 그룹 ID */
+  groupId: string;
+  /** 납부 기간 목록 (최신순) */
+  periods: DuesTrackPeriod[];
+};
+
+// ============================================================
+// ShowCueSheet 타입 (공연 큐시트)
+// ============================================================
+
+/** 큐 항목 진행 상태 */
+export type ShowCueStatus = "대기" | "진행중" | "완료";
+
+/** 큐시트 단일 항목 */
+export type ShowCueItem = {
+  /** 고유 ID */
+  id: string;
+  /** 순서 (1-based, 자동 계산) */
+  order: number;
+  /** 시간 (HH:MM) */
+  time: string;
+  /** 항목명 */
+  title: string;
+  /** 담당자 */
+  assignee: string;
+  /** 내용 설명 */
+  description: string;
+  /** 비고 */
+  note: string;
+  /** 진행 상태 */
+  status: ShowCueStatus;
+};
+
+/** 큐시트 전체 데이터 (localStorage 기반) */
+export type ShowCueSheet = {
+  /** 프로젝트 ID */
+  projectId: string;
+  /** 큐 항목 목록 */
+  items: ShowCueItem[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// WardrobeTracker (의상 추적기)
+// ============================================================
+
+/** 의상 상태 */
+export type WardrobeTrackStatus =
+  | "preparing"  // 준비중
+  | "repairing"  // 수선중
+  | "ready"      // 완료
+  | "lost";      // 분실
+
+/** 의상 단일 항목 */
+export type WardrobeTrackItem = {
+  id: string;
+  /** 의상명 */
+  name: string;
+  /** 장면(Scene) 번호 */
+  scene: string;
+  /** 배정 멤버명 */
+  memberName: string;
+  /** 사이즈 */
+  size: string;
+  /** 색상 */
+  color: string;
+  /** 상태 */
+  status: WardrobeTrackStatus;
+  /** 반납 여부 */
+  returned: boolean;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 수정일 (ISO 8601, 선택) */
+  updatedAt?: string;
+};
+
+/** 의상 추적기 전체 데이터 */
+export type WardrobeTrackerData = {
+  projectId: string;
+  items: WardrobeTrackItem[];
+  updatedAt: string;
 };

@@ -1560,4 +1560,16 @@ export const swrKeys = {
 
   // 공연 비상 연락망 (localStorage 기반)
   showEmergencyContact: (projectId: string) => `show-emergency-contact-${projectId}` as const,
+
+  // 그룹 FAQ (localStorage 기반)
+  groupFaq: (groupId: string) => `group-faq-${groupId}` as const,
+
+  // 그룹 회비 납부 추적기 (localStorage 기반)
+  groupDuesTracker: (groupId: string) => `group-dues-tracker-${groupId}` as const,
+
+  // 공연 큐시트 (localStorage 기반)
+  showCueSheet: (projectId: string) => `show-cue-sheet-${projectId}` as const,
+
+  // 의상 추적기 (localStorage 기반)
+  wardrobeTracker: (projectId: string) => `wardrobe-tracker-${projectId}` as const,
 };

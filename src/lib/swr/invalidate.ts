@@ -881,3 +881,19 @@ export function invalidateGroupWishlistV2(groupId: string) {
 export function invalidateShowEmergencyContact(projectId: string) {
   mutate(swrKeys.showEmergencyContact(projectId));
 }
+
+export function invalidateGroupFaq(groupId: string) {
+  mutate(swrKeys.groupFaq(groupId));
+}
+
+export function invalidateGroupDuesTracker(groupId: string) {
+  mutate(swrKeys.groupDuesTracker(groupId));
+}
+
+export function invalidateShowCueSheet(projectId: string) {
+  mutate(swrKeys.showCueSheet(projectId));
+}
+
+export function invalidateWardrobeTracker(projectId: string) {
+  mutate(swrKeys.wardrobeTracker(projectId));
+}

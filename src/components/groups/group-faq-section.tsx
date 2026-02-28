@@ -68,6 +68,8 @@ export function GroupFaqSection({ groupId, canEdit }: GroupFaqSectionProps) {
     const ok = await addFaq({
       question: addForm.question.trim(),
       answer: addForm.answer.trim(),
+      category: "기타",
+      authorName: "",
     });
     setAddSubmitting(false);
 
@@ -100,6 +102,8 @@ export function GroupFaqSection({ groupId, canEdit }: GroupFaqSectionProps) {
     const ok = await updateFaq(id, {
       question: editForm.question.trim(),
       answer: editForm.answer.trim(),
+      category: "기타",
+      authorName: "",
     });
     setEditSubmitting(false);
 

@@ -50,6 +50,8 @@ import { GroupMentorCard } from "@/components/groups/group-mentor-card";
 import { GroupChallengeCard } from "@/components/groups/group-challenge-card";
 import { GroupWishlistCard } from "@/components/groups/group-wishlist-card";
 import { GroupStreakCard } from "@/components/groups/group-streak-card";
+import { GroupFaqCard } from "@/components/groups/group-faq-card";
+import { GroupDuesTrackerCard } from "@/components/groups/group-dues-tracker-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -249,6 +251,10 @@ export default function GroupDetailPage({
           <GroupWishlistCard groupId={ctx.groupId} />
 
           <GroupStreakCard groupId={ctx.groupId} />
+
+          <GroupFaqCard groupId={ctx.groupId} />
+
+          <GroupDuesTrackerCard groupId={ctx.groupId} />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

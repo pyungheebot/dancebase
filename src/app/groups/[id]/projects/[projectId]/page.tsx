@@ -43,6 +43,8 @@ import { VenueManagementCard } from "@/components/projects/venue-management-card
 import { MakeupHairCard } from "@/components/projects/makeup-hair-card";
 import { EmergencyContactCard } from "@/components/projects/emergency-contact-card";
 import { StageEffectCard } from "@/components/projects/stage-effect-card";
+import { CueSheetCard } from "@/components/projects/cue-sheet-card";
+import { WardrobeTrackerCard } from "@/components/projects/wardrobe-tracker-card";
 
 export default function ProjectDetailPage({
   params,
@@ -244,6 +246,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <StageEffectCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <CueSheetCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <WardrobeTrackerCard
               projectId={ctx.projectId}
             />
           )}
