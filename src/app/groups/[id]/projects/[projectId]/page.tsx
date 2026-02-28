@@ -41,6 +41,8 @@ import { ConsentFormCard } from "@/components/projects/consent-form-card";
 import { PhotoShootCard } from "@/components/projects/photo-shoot-card";
 import { VenueManagementCard } from "@/components/projects/venue-management-card";
 import { MakeupHairCard } from "@/components/projects/makeup-hair-card";
+import { EmergencyContactCard } from "@/components/projects/emergency-contact-card";
+import { StageEffectCard } from "@/components/projects/stage-effect-card";
 
 export default function ProjectDetailPage({
   params,
@@ -232,6 +234,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <MakeupHairCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <EmergencyContactCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <StageEffectCard
               projectId={ctx.projectId}
             />
           )}

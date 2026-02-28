@@ -1551,4 +1551,13 @@ export const swrKeys = {
 
   // 분장/헤어 관리 (localStorage 기반)
   makeupHair: (projectId: string) => `makeup-hair-${projectId}` as const,
+
+  // 그룹 스트릭 카드 (localStorage 기반)
+  groupStreak: (groupId: string) => `group-streak-${groupId}` as const,
+
+  // 그룹 위시리스트 v2 (localStorage 기반)
+  groupWishlistV2: (groupId: string) => `group-wishlist-v2-${groupId}` as const,
+
+  // 공연 비상 연락망 (localStorage 기반)
+  showEmergencyContact: (projectId: string) => `show-emergency-contact-${projectId}` as const,
 };

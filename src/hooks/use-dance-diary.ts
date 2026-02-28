@@ -1,208 +1,204 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import type { DanceDiaryEntry, DanceDiaryMood } from "@/types";
+import { useCallback } from "react";
+import useSWR from "swr";
+import { swrKeys } from "@/lib/swr/keys";
+import { DiaryCardData, DiaryCardEntry, DiaryCardEmotion } from "@/types";
 
-// ============================================================
-// localStorage 헬퍼
-// ============================================================
+// ─── 로컬스토리지 헬퍼 ──────────────────────────────────────────────────────────
 
-function storageKey(memberId: string): string {
-  return `dancebase:dance-diary:${memberId}`;
-}
-
-function loadData(memberId: string): DanceDiaryEntry[] {
-  if (typeof window === "undefined") return [];
+function loadDiaryData(memberId: string): DiaryCardData {
+  if (typeof window === "undefined") {
+    return { memberId, entries: [], updatedAt: new Date().toISOString() };
+  }
   try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw) return [];
-    return JSON.parse(raw) as DanceDiaryEntry[];
+    const raw = localStorage.getItem(`dance-diary-${memberId}`);
+    if (!raw) {
+      return { memberId, entries: [], updatedAt: new Date().toISOString() };
+    }
+    return JSON.parse(raw) as DiaryCardData;
   } catch {
-    return [];
+    return { memberId, entries: [], updatedAt: new Date().toISOString() };
   }
 }
 
-function saveData(memberId: string, data: DanceDiaryEntry[]): void {
+function saveDiaryData(data: DiaryCardData): void {
   if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
+  localStorage.setItem(`dance-diary-${data.memberId}`, JSON.stringify(data));
 }
 
-// ============================================================
-// 통계 타입
-// ============================================================
-
-export type DanceDiaryStats = {
-  totalEntries: number;
-  averageRating: number;
-  moodDistribution: Record<DanceDiaryMood, number>;
-  totalPracticeHours: number;
-  streakDays: number; // 연속 기록일
-};
-
-// ============================================================
-// 연속 기록일 계산
-// ============================================================
-
-function calcStreakDays(entries: DanceDiaryEntry[]): number {
-  if (entries.length === 0) return 0;
-
-  const dateSet = new Set(entries.map((e) => e.date));
-  const today = new Date();
-
-  let streak = 0;
-  let cursor = new Date(today);
-
-  // 오늘 포함 여부 확인, 없으면 어제부터 시작
-  const todayStr = cursor.toISOString().slice(0, 10);
-  if (!dateSet.has(todayStr)) {
-    cursor.setDate(cursor.getDate() - 1);
-  }
-
-  while (true) {
-    const dateStr = cursor.toISOString().slice(0, 10);
-    if (!dateSet.has(dateStr)) break;
-    streak++;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-
-  return streak;
+function generateId(): string {
+  return `diary-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-// ============================================================
-// 훅
-// ============================================================
+// ─── 훅 ─────────────────────────────────────────────────────────────────────────
 
 export function useDanceDiary(memberId: string) {
-  const [entries, setEntries] = useState<DanceDiaryEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const reload = useCallback(() => {
-    if (!memberId) return;
-    const data = loadData(memberId);
-    // 날짜 내림차순 정렬
-    data.sort((a, b) => b.date.localeCompare(a.date));
-    setEntries(data);
-    setLoading(false);
-  }, [memberId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  const persist = useCallback(
-    (next: DanceDiaryEntry[]) => {
-      const sorted = [...next].sort((a, b) => b.date.localeCompare(a.date));
-      saveData(memberId, sorted);
-      setEntries(sorted);
-    },
-    [memberId]
+  const { data, isLoading, mutate } = useSWR(
+    memberId ? swrKeys.danceDiary(memberId) : null,
+    () => loadDiaryData(memberId),
+    { revalidateOnFocus: false }
   );
 
-  // 항목 추가
+  const entries = data?.entries ?? [];
+
+  // 최신순 정렬된 항목
+  const sortedEntries = [...entries].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  // 감정별 필터
+  const getEntriesByEmotion = useCallback(
+    (emotion: DiaryCardEmotion | "all") => {
+      if (emotion === "all") return sortedEntries;
+      return sortedEntries.filter((e) => e.emotion === emotion);
+    },
+    [sortedEntries]
+  );
+
+  // 일기 추가
   const addEntry = useCallback(
     (
-      input: Omit<DanceDiaryEntry, "id" | "createdAt">
-    ): DanceDiaryEntry => {
-      const entry: DanceDiaryEntry = {
+      input: Omit<DiaryCardEntry, "id" | "memberId" | "createdAt" | "updatedAt">
+    ): DiaryCardEntry => {
+      const now = new Date().toISOString();
+      const newEntry: DiaryCardEntry = {
         ...input,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
+        id: generateId(),
+        memberId,
+        createdAt: now,
+        updatedAt: now,
       };
-      persist([...entries, entry]);
-      return entry;
+      const current = loadDiaryData(memberId);
+      const updated: DiaryCardData = {
+        ...current,
+        entries: [...current.entries, newEntry],
+        updatedAt: now,
+      };
+      saveDiaryData(updated);
+      mutate(updated);
+      return newEntry;
     },
-    [entries, persist]
+    [memberId, mutate]
   );
 
-  // 항목 수정
+  // 일기 수정
   const updateEntry = useCallback(
     (
       id: string,
-      patch: Partial<Omit<DanceDiaryEntry, "id" | "createdAt">>
-    ): boolean => {
-      const idx = entries.findIndex((e) => e.id === id);
-      if (idx === -1) return false;
-      const next = entries.map((e) =>
-        e.id === id ? { ...e, ...patch } : e
-      );
-      persist(next);
-      return true;
+      patch: Partial<Omit<DiaryCardEntry, "id" | "memberId" | "createdAt">>
+    ): void => {
+      const now = new Date().toISOString();
+      const current = loadDiaryData(memberId);
+      const updated: DiaryCardData = {
+        ...current,
+        entries: current.entries.map((e) =>
+          e.id === id ? { ...e, ...patch, updatedAt: now } : e
+        ),
+        updatedAt: now,
+      };
+      saveDiaryData(updated);
+      mutate(updated);
     },
-    [entries, persist]
+    [memberId, mutate]
   );
 
-  // 항목 삭제
+  // 일기 삭제
   const deleteEntry = useCallback(
-    (id: string): boolean => {
-      const next = entries.filter((e) => e.id !== id);
-      if (next.length === entries.length) return false;
-      persist(next);
-      return true;
+    (id: string): void => {
+      const now = new Date().toISOString();
+      const current = loadDiaryData(memberId);
+      const updated: DiaryCardData = {
+        ...current,
+        entries: current.entries.filter((e) => e.id !== id),
+        updatedAt: now,
+      };
+      saveDiaryData(updated);
+      mutate(updated);
     },
-    [entries, persist]
+    [memberId, mutate]
   );
 
-  // 월별 조회
-  const getEntriesByMonth = useCallback(
-    (year: number, month: number): DanceDiaryEntry[] => {
-      const prefix = `${year}-${String(month).padStart(2, "0")}`;
-      return entries.filter((e) => e.date.startsWith(prefix));
+  // 월별 히트맵 데이터: { [YYYY-MM-DD]: true }
+  const getMonthHeatmap = useCallback(
+    (year: number, month: number): Record<string, boolean> => {
+      const result: Record<string, boolean> = {};
+      entries.forEach((e) => {
+        const d = new Date(e.date);
+        if (d.getFullYear() === year && d.getMonth() + 1 === month) {
+          result[e.date] = true;
+        }
+      });
+      return result;
     },
     [entries]
   );
 
-  // 통계 계산
-  const stats: DanceDiaryStats = (() => {
-    const totalEntries = entries.length;
-    const totalPracticeHours = entries.reduce(
-      (s, e) => s + (e.practiceHours ?? 0),
-      0
-    );
-    const averageRating =
-      totalEntries > 0
-        ? Math.round(
-            (entries.reduce((s, e) => s + e.rating, 0) / totalEntries) * 10
-          ) / 10
-        : 0;
-
-    const allMoods: DanceDiaryMood[] = [
-      "great",
-      "good",
-      "neutral",
-      "tired",
-      "frustrated",
-    ];
-    const moodDistribution = allMoods.reduce(
-      (acc, mood) => {
-        acc[mood] = entries.filter((e) => e.mood === mood).length;
-        return acc;
-      },
-      {} as Record<DanceDiaryMood, number>
-    );
-
-    const streakDays = calcStreakDays(entries);
-
-    return {
-      totalEntries,
-      averageRating,
-      moodDistribution,
-      totalPracticeHours,
-      streakDays,
+  // 감정 통계: 감정별 카운트
+  const getEmotionStats = useCallback((): Record<DiaryCardEmotion, number> => {
+    const stats: Record<DiaryCardEmotion, number> = {
+      happy: 0,
+      neutral: 0,
+      sad: 0,
+      passionate: 0,
+      frustrated: 0,
     };
-  })();
+    entries.forEach((e) => {
+      stats[e.emotion] = (stats[e.emotion] ?? 0) + 1;
+    });
+    return stats;
+  }, [entries]);
+
+  // 최근 30일 일별 평균 컨디션
+  const getConditionTrend = useCallback((): { date: string; avg: number }[] => {
+    const today = new Date();
+    const result: { date: string; avg: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const dayEntries = entries.filter((e) => e.date === dateStr);
+      if (dayEntries.length > 0) {
+        const avg =
+          dayEntries.reduce((sum, e) => sum + e.condition, 0) / dayEntries.length;
+        result.push({ date: dateStr, avg: Math.round(avg * 10) / 10 });
+      } else {
+        result.push({ date: dateStr, avg: 0 });
+      }
+    }
+    return result;
+  }, [entries]);
+
+  // 연속 작성 스트릭 계산
+  const getStreak = useCallback((): number => {
+    if (entries.length === 0) return 0;
+    const writtenDates = new Set(entries.map((e) => e.date));
+    let streak = 0;
+    const today = new Date();
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      if (writtenDates.has(dateStr)) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }, [entries]);
 
   return {
-    entries,
-    loading,
+    entries: sortedEntries,
+    loading: isLoading,
+    refetch: () => mutate(),
     addEntry,
     updateEntry,
     deleteEntry,
-    getEntriesByMonth,
-    stats,
-    refetch: reload,
+    getEntriesByEmotion,
+    getMonthHeatmap,
+    getEmotionStats,
+    getConditionTrend,
+    getStreak,
   };
 }

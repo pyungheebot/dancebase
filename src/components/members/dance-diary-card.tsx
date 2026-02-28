@@ -7,15 +7,13 @@ import {
   ChevronUp,
   Plus,
   Trash2,
-  Star,
   Flame,
-  Clock,
-  Music,
   Tag,
   X,
   BarChart2,
   CalendarDays,
   Pencil,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,90 +33,37 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useDanceDiary } from "@/hooks/use-dance-diary";
-import type {
-  DanceDiaryMood,
-  DanceDiaryCondition,
-  DanceDiaryEntry,
-} from "@/types";
+import type { DiaryCardEntry, DiaryCardEmotion, DiaryCardEmotionMeta } from "@/types";
 
-// ============================================================
-// 상수 매핑
-// ============================================================
+// ─── 상수 ────────────────────────────────────────────────────────────────────
 
-const MOOD_EMOJI: Record<DanceDiaryMood, string> = {
-  great: "😄",
-  good: "😊",
-  neutral: "😐",
-  tired: "😴",
-  frustrated: "😤",
-};
-
-const MOOD_LABEL: Record<DanceDiaryMood, string> = {
-  great: "최고",
-  good: "좋음",
-  neutral: "보통",
-  tired: "피곤",
-  frustrated: "힘듦",
-};
-
-const MOOD_COLOR: Record<DanceDiaryMood, string> = {
-  great: "bg-green-500",
-  good: "bg-emerald-400",
-  neutral: "bg-yellow-400",
-  tired: "bg-orange-400",
-  frustrated: "bg-red-500",
-};
-
-const MOOD_RING: Record<DanceDiaryMood, string> = {
-  great: "ring-green-400",
-  good: "ring-emerald-400",
-  neutral: "ring-yellow-400",
-  tired: "ring-orange-400",
-  frustrated: "ring-red-400",
-};
-
-const MOOD_ORDER: DanceDiaryMood[] = [
-  "great",
-  "good",
-  "neutral",
-  "tired",
-  "frustrated",
+const EMOTION_LIST: DiaryCardEmotionMeta[] = [
+  { value: "happy", label: "행복", emoji: "😊", color: "bg-green-400" },
+  { value: "neutral", label: "보통", emoji: "😐", color: "bg-yellow-400" },
+  { value: "sad", label: "슬픔", emoji: "😢", color: "bg-blue-400" },
+  { value: "passionate", label: "열정", emoji: "🔥", color: "bg-orange-400" },
+  { value: "frustrated", label: "답답", emoji: "😤", color: "bg-red-400" },
 ];
 
-const CONDITION_EMOJI: Record<DanceDiaryCondition, string> = {
-  excellent: "💪",
-  good: "✅",
-  normal: "🙂",
-  sore: "😣",
-  injured: "🤕",
-};
+const EMOTION_MAP = Object.fromEntries(
+  EMOTION_LIST.map((e) => [e.value, e])
+) as Record<DiaryCardEmotion, DiaryCardEmotionMeta>;
 
-const CONDITION_LABEL: Record<DanceDiaryCondition, string> = {
-  excellent: "최상",
-  good: "좋음",
-  normal: "보통",
-  sore: "근육통",
-  injured: "부상",
-};
-
-const CONDITION_ORDER: DanceDiaryCondition[] = [
-  "excellent",
-  "good",
-  "normal",
-  "sore",
-  "injured",
+const CONDITION_LABELS = ["", "매우나쁨", "나쁨", "보통", "좋음", "최상"];
+const CONDITION_COLORS = [
+  "",
+  "bg-red-400",
+  "bg-orange-400",
+  "bg-yellow-400",
+  "bg-green-400",
+  "bg-emerald-500",
 ];
 
-// ============================================================
-// 날짜 유틸
-// ============================================================
+// ─── 날짜 유틸 ────────────────────────────────────────────────────────────────
 
 function getTodayStr(): string {
   const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  return now.toISOString().slice(0, 10);
 }
 
 function formatDateKor(dateStr: string): string {
@@ -136,35 +81,32 @@ function getFirstDayOfWeek(year: number, month: number): number {
   return new Date(year, month - 1, 1).getDay();
 }
 
-// ============================================================
-// 서브 컴포넌트: 기분 선택
-// ============================================================
+// ─── 서브 컴포넌트: 감정 선택 ─────────────────────────────────────────────────
 
-function MoodPicker({
+function EmotionPicker({
   value,
   onChange,
 }: {
-  value: DanceDiaryMood;
-  onChange: (v: DanceDiaryMood) => void;
+  value: DiaryCardEmotion;
+  onChange: (v: DiaryCardEmotion) => void;
 }) {
   return (
     <div className="flex gap-1.5 flex-wrap">
-      {MOOD_ORDER.map((mood) => (
+      {EMOTION_LIST.map((em) => (
         <button
-          key={mood}
+          key={em.value}
           type="button"
-          onClick={() => onChange(mood)}
+          onClick={() => onChange(em.value)}
           className={cn(
-            "flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 border text-center transition-all",
-            "hover:scale-105",
-            value === mood
-              ? `ring-2 ${MOOD_RING[mood]} border-transparent bg-muted`
+            "flex flex-col items-center gap-0.5 rounded-lg px-2.5 py-1.5 border text-center transition-all hover:scale-105",
+            value === em.value
+              ? "ring-2 ring-offset-1 border-transparent bg-muted ring-primary/60"
               : "border-border bg-background"
           )}
         >
-          <span className="text-lg leading-none">{MOOD_EMOJI[mood]}</span>
+          <span className="text-lg leading-none">{em.emoji}</span>
           <span className="text-[10px] text-muted-foreground leading-none mt-0.5">
-            {MOOD_LABEL[mood]}
+            {em.label}
           </span>
         </button>
       ))}
@@ -172,108 +114,65 @@ function MoodPicker({
   );
 }
 
-// ============================================================
-// 서브 컴포넌트: 컨디션 선택
-// ============================================================
+// ─── 서브 컴포넌트: 컨디션 슬라이더 ─────────────────────────────────────────
 
-function ConditionPicker({
-  value,
-  onChange,
-}: {
-  value: DanceDiaryCondition;
-  onChange: (v: DanceDiaryCondition) => void;
-}) {
-  return (
-    <div className="flex gap-1.5 flex-wrap">
-      {CONDITION_ORDER.map((cond) => (
-        <button
-          key={cond}
-          type="button"
-          onClick={() => onChange(cond)}
-          className={cn(
-            "flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 border text-center transition-all",
-            "hover:scale-105",
-            value === cond
-              ? "ring-2 ring-blue-400 border-transparent bg-muted"
-              : "border-border bg-background"
-          )}
-        >
-          <span className="text-base leading-none">{CONDITION_EMOJI[cond]}</span>
-          <span className="text-[10px] text-muted-foreground leading-none mt-0.5">
-            {CONDITION_LABEL[cond]}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ============================================================
-// 서브 컴포넌트: 별점
-// ============================================================
-
-function StarRating({
+function ConditionSlider({
   value,
   onChange,
 }: {
   value: number;
   onChange: (v: number) => void;
 }) {
-  const [hovered, setHovered] = useState(0);
   return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          onClick={() => onChange(star)}
-          onMouseEnter={() => setHovered(star)}
-          onMouseLeave={() => setHovered(0)}
-          className="transition-transform hover:scale-110"
-        >
-          <Star
+    <div className="space-y-1.5">
+      <div className="flex justify-between">
+        {[1, 2, 3, 4, 5].map((v) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => onChange(v)}
             className={cn(
-              "h-5 w-5",
-              (hovered || value) >= star
-                ? "fill-yellow-400 text-yellow-400"
-                : "fill-none text-muted-foreground"
+              "flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 border text-center transition-all hover:scale-105 flex-1 mx-0.5",
+              value === v
+                ? "ring-2 ring-primary/60 border-transparent bg-muted"
+                : "border-border bg-background"
             )}
-          />
-        </button>
-      ))}
+          >
+            <span className="text-xs font-bold leading-none">{v}</span>
+            <span className="text-[9px] text-muted-foreground leading-none mt-0.5">
+              {CONDITION_LABELS[v]}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
-// ============================================================
-// 서브 컴포넌트: 태그 입력 (성과 / 어려움 / 곡)
-// ============================================================
+// ─── 서브 컴포넌트: 태그 입력 ─────────────────────────────────────────────────
 
 function TagInput({
   tags,
   onAdd,
   onRemove,
   placeholder,
-  colorClass,
 }: {
   tags: string[];
   onAdd: (tag: string) => void;
   onRemove: (tag: string) => void;
   placeholder: string;
-  colorClass: string;
 }) {
   const [input, setInput] = useState("");
 
-  const handleAdd = useCallback(() => {
+  const handleAdd = () => {
     const trimmed = input.trim();
-    if (!trimmed) return;
-    if (tags.includes(trimmed)) {
+    if (!trimmed || tags.includes(trimmed)) {
       setInput("");
       return;
     }
     onAdd(trimmed);
     setInput("");
-  }, [input, tags, onAdd]);
+  };
 
   return (
     <div className="space-y-1.5">
@@ -305,7 +204,8 @@ function TagInput({
           {tags.map((tag) => (
             <Badge
               key={tag}
-              className={cn("text-[10px] px-1.5 py-0 gap-0.5", colorClass)}
+              variant="secondary"
+              className="text-[10px] px-1.5 py-0 gap-0.5"
             >
               {tag}
               <button
@@ -323,29 +223,33 @@ function TagInput({
   );
 }
 
-// ============================================================
-// 서브 컴포넌트: 미니 달력
-// ============================================================
+// ─── 서브 컴포넌트: 캘린더 히트맵 ───────────────────────────────────────────
 
-function MiniCalendar({
+function CalendarHeatmap({
   year,
   month,
+  heatmap,
   entries,
   selectedDate,
   onSelectDate,
 }: {
   year: number;
   month: number;
-  entries: DanceDiaryEntry[];
+  heatmap: Record<string, boolean>;
+  entries: DiaryCardEntry[];
   selectedDate: string;
   onSelectDate: (date: string) => void;
 }) {
   const daysInMonth = getDaysInMonth(year, month);
   const firstDow = getFirstDayOfWeek(year, month);
+  const today = getTodayStr();
 
-  const entryMap = new Map<string, DanceDiaryMood>();
+  // 날짜별 감정 맵
+  const emotionMap = new Map<string, DiaryCardEmotion>();
   for (const e of entries) {
-    entryMap.set(e.date, e.mood);
+    if (e.date.startsWith(`${year}-${String(month).padStart(2, "0")}`)) {
+      emotionMap.set(e.date, e.emotion);
+    }
   }
 
   const cells: (number | null)[] = [
@@ -373,9 +277,10 @@ function MiniCalendar({
             return <div key={`empty-${idx}`} className="aspect-square" />;
 
           const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-          const mood = entryMap.get(dateStr);
+          const hasEntry = heatmap[dateStr];
+          const emotion = emotionMap.get(dateStr);
           const isSelected = dateStr === selectedDate;
-          const isToday = dateStr === getTodayStr();
+          const isToday = dateStr === today;
 
           return (
             <button
@@ -383,19 +288,21 @@ function MiniCalendar({
               type="button"
               onClick={() => onSelectDate(dateStr)}
               className={cn(
-                "aspect-square rounded flex items-center justify-center text-[10px] relative transition-all",
-                "hover:bg-muted",
+                "aspect-square rounded flex items-center justify-center text-[10px] relative transition-all hover:bg-muted",
                 isSelected && "ring-2 ring-primary",
                 isToday && !isSelected && "font-bold text-primary"
               )}
             >
-              {mood && (
+              {hasEntry && emotion && (
                 <span
                   className={cn(
-                    "absolute inset-0.5 rounded opacity-30",
-                    MOOD_COLOR[mood]
+                    "absolute inset-0.5 rounded opacity-25",
+                    EMOTION_MAP[emotion].color
                   )}
                 />
+              )}
+              {hasEntry && !emotion && (
+                <span className="absolute inset-0.5 rounded opacity-20 bg-indigo-400" />
               )}
               <span className="relative z-10">{day}</span>
             </button>
@@ -406,15 +313,13 @@ function MiniCalendar({
   );
 }
 
-// ============================================================
-// 서브 컴포넌트: 기분 분포 차트 (div 기반)
-// ============================================================
+// ─── 서브 컴포넌트: 감정 통계 바 차트 ───────────────────────────────────────
 
-function MoodDistributionChart({
-  distribution,
+function EmotionBarChart({
+  stats,
   total,
 }: {
-  distribution: Record<DanceDiaryMood, number>;
+  stats: Record<DiaryCardEmotion, number>;
   total: number;
 }) {
   if (total === 0) {
@@ -427,23 +332,23 @@ function MoodDistributionChart({
 
   return (
     <div className="space-y-1.5">
-      {MOOD_ORDER.map((mood) => {
-        const count = distribution[mood];
+      {EMOTION_LIST.map((em) => {
+        const count = stats[em.value];
         const pct = total > 0 ? Math.round((count / total) * 100) : 0;
         return (
-          <div key={mood} className="flex items-center gap-2">
-            <span className="text-sm w-5">{MOOD_EMOJI[mood]}</span>
+          <div key={em.value} className="flex items-center gap-2">
+            <span className="text-sm w-5">{em.emoji}</span>
             <span className="text-[10px] text-muted-foreground w-8">
-              {MOOD_LABEL[mood]}
+              {em.label}
             </span>
             <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
               <div
-                className={cn("h-full rounded-full transition-all", MOOD_COLOR[mood])}
+                className={cn("h-full rounded-full transition-all", em.color)}
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <span className="text-[10px] text-muted-foreground w-8 text-right">
-              {count}회
+            <span className="text-[10px] text-muted-foreground w-12 text-right">
+              {count}회 ({pct}%)
             </span>
           </div>
         );
@@ -452,43 +357,151 @@ function MoodDistributionChart({
   );
 }
 
-// ============================================================
-// 서브 컴포넌트: 다이어리 항목 카드
-// ============================================================
+// ─── 서브 컴포넌트: 평균 컨디션 추이 라인 차트 ─────────────────────────────
+
+function ConditionTrendChart({
+  trend,
+}: {
+  trend: { date: string; avg: number }[];
+}) {
+  const hasData = trend.some((t) => t.avg > 0);
+  if (!hasData) {
+    return (
+      <p className="text-xs text-muted-foreground text-center py-2">
+        최근 30일 컨디션 데이터가 없습니다.
+      </p>
+    );
+  }
+
+  const maxVal = 5;
+  const chartHeight = 60;
+
+  // 실제 데이터가 있는 포인트만 연결선 표시
+  const points = trend.map((t, i) => ({
+    x: (i / (trend.length - 1)) * 100,
+    y: t.avg > 0 ? ((maxVal - t.avg) / maxVal) * chartHeight : null,
+    avg: t.avg,
+    date: t.date,
+  }));
+
+  // SVG 폴리라인 포인트 계산 (데이터 있는 것만)
+  const linePoints = points
+    .filter((p) => p.y !== null)
+    .map((p) => `${p.x},${p.y}`)
+    .join(" ");
+
+  return (
+    <div className="relative" style={{ height: chartHeight + 20 }}>
+      {/* Y축 레이블 */}
+      <div className="absolute left-0 top-0 bottom-5 flex flex-col justify-between">
+        {[5, 3, 1].map((v) => (
+          <span key={v} className="text-[9px] text-muted-foreground">
+            {v}
+          </span>
+        ))}
+      </div>
+      {/* 차트 영역 */}
+      <div className="ml-5 mr-1">
+        <svg
+          width="100%"
+          height={chartHeight}
+          viewBox={`0 0 100 ${chartHeight}`}
+          preserveAspectRatio="none"
+          className="overflow-visible"
+        >
+          {/* 가이드라인 */}
+          {[1, 2, 3, 4, 5].map((v) => {
+            const y = ((maxVal - v) / maxVal) * chartHeight;
+            return (
+              <line
+                key={v}
+                x1="0"
+                y1={y}
+                x2="100"
+                y2={y}
+                stroke="currentColor"
+                strokeOpacity={0.08}
+                strokeWidth="0.5"
+                className="text-foreground"
+              />
+            );
+          })}
+          {/* 추이 선 */}
+          {linePoints && (
+            <polyline
+              points={linePoints}
+              fill="none"
+              stroke="hsl(var(--primary))"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+          {/* 데이터 포인트 */}
+          {points
+            .filter((p) => p.y !== null)
+            .map((p, i) => (
+              <circle
+                key={i}
+                cx={p.x}
+                cy={p.y!}
+                r="1.5"
+                fill="hsl(var(--primary))"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+        </svg>
+        {/* X축: 시작/끝 날짜 */}
+        <div className="flex justify-between mt-1">
+          <span className="text-[9px] text-muted-foreground">
+            {trend[0]?.date.slice(5)}
+          </span>
+          <span className="text-[9px] text-muted-foreground">
+            {trend[trend.length - 1]?.date.slice(5)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── 서브 컴포넌트: 일기 항목 카드 ─────────────────────────────────────────
 
 function DiaryEntryItem({
   entry,
   onDelete,
   onEdit,
 }: {
-  entry: DanceDiaryEntry;
+  entry: DiaryCardEntry;
   onDelete: (id: string) => void;
-  onEdit: (entry: DanceDiaryEntry) => void;
+  onEdit: (entry: DiaryCardEntry) => void;
 }) {
+  const em = EMOTION_MAP[entry.emotion];
   return (
     <div className="rounded-lg border bg-card p-3 space-y-2">
       {/* 헤더 */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-base">{MOOD_EMOJI[entry.mood]}</span>
-          <span className="text-xs font-medium truncate">
-            {formatDateKor(entry.date)}
-          </span>
+          <span className="text-base shrink-0">{em.emoji}</span>
+          <div className="min-w-0">
+            <p className="text-xs font-medium truncate">
+              {entry.title || formatDateKor(entry.date)}
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              {formatDateKor(entry.date)}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          {/* 별점 */}
-          <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <Star
-                key={s}
-                className={cn(
-                  "h-3 w-3",
-                  s <= entry.rating
-                    ? "fill-yellow-400 text-yellow-400"
-                    : "fill-none text-muted-foreground"
-                )}
-              />
-            ))}
+          {/* 컨디션 배지 */}
+          <div
+            className={cn(
+              "rounded px-1.5 py-0.5 text-[10px] text-white font-medium",
+              CONDITION_COLORS[entry.condition]
+            )}
+          >
+            {CONDITION_LABELS[entry.condition]}
           </div>
           <Button
             size="sm"
@@ -509,92 +522,67 @@ function DiaryEntryItem({
         </div>
       </div>
 
-      {/* 컨디션 + 연습시간 */}
-      <div className="flex gap-2 flex-wrap">
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5">
-          <span>{CONDITION_EMOJI[entry.condition]}</span>
-          {CONDITION_LABEL[entry.condition]}
-        </Badge>
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0 gap-0.5">
-          <Clock className="h-2.5 w-2.5" />
-          {entry.practiceHours}시간
-        </Badge>
-      </div>
-
-      {/* 곡 목록 */}
-      {entry.songsPracticed.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {entry.songsPracticed.map((song) => (
-            <Badge
-              key={song}
-              className="text-[10px] px-1.5 py-0 bg-purple-100 text-purple-700 border-purple-200"
-            >
-              <Music className="h-2.5 w-2.5 mr-0.5" />
-              {song}
-            </Badge>
-          ))}
-        </div>
-      )}
-
-      {/* 성과 */}
-      {entry.achievements.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {entry.achievements.map((a) => (
-            <Badge
-              key={a}
-              className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 border-green-200"
-            >
-              {a}
-            </Badge>
-          ))}
-        </div>
-      )}
-
-      {/* 어려움 */}
-      {entry.struggles.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {entry.struggles.map((s) => (
-            <Badge
-              key={s}
-              className="text-[10px] px-1.5 py-0 bg-red-100 text-red-700 border-red-200"
-            >
-              {s}
-            </Badge>
-          ))}
-        </div>
-      )}
-
-      {/* 메모 */}
-      {entry.notes && (
+      {/* 내용 */}
+      {entry.content && (
         <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-          {entry.notes}
+          {entry.content}
         </p>
+      )}
+
+      {/* 오늘의 발견 */}
+      {entry.discovery && (
+        <div className="flex items-start gap-1.5 text-xs rounded bg-indigo-50 dark:bg-indigo-950/30 px-2 py-1.5">
+          <span className="text-indigo-500 shrink-0 mt-0.5">💡</span>
+          <span className="text-indigo-700 dark:text-indigo-300 text-[11px] leading-relaxed">
+            {entry.discovery}
+          </span>
+        </div>
+      )}
+
+      {/* 태그 */}
+      {entry.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {entry.tags.map((tag) => (
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="text-[10px] px-1.5 py-0"
+            >
+              <Tag className="h-2.5 w-2.5 mr-0.5" />
+              {tag}
+            </Badge>
+          ))}
+        </div>
       )}
     </div>
   );
 }
 
-// ============================================================
-// 폼 초기값
-// ============================================================
+// ─── 폼 초기값 ────────────────────────────────────────────────────────────────
 
-function getDefaultForm(date: string) {
+type DiaryForm = {
+  date: string;
+  title: string;
+  content: string;
+  emotion: DiaryCardEmotion;
+  condition: number;
+  discovery: string;
+  tags: string[];
+};
+
+function getDefaultForm(date: string): DiaryForm {
   return {
     date,
-    mood: "good" as DanceDiaryMood,
-    condition: "normal" as DanceDiaryCondition,
-    practiceHours: 1,
-    achievements: [] as string[],
-    struggles: [] as string[],
-    notes: "",
-    songsPracticed: [] as string[],
-    rating: 3,
+    title: "",
+    content: "",
+    emotion: "happy",
+    condition: 3,
+    discovery: "",
+    tags: [],
   };
 }
 
-// ============================================================
-// 메인 컴포넌트
-// ============================================================
+// ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 export function DanceDiaryCard({ memberId }: { memberId: string }) {
   const [open, setOpen] = useState(false);
@@ -605,12 +593,31 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
   const [selectedDate, setSelectedDate] = useState(today);
   const [formVisible, setFormVisible] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(getDefaultForm(today));
+  const [form, setForm] = useState<DiaryForm>(getDefaultForm(today));
+  const [activeTab, setActiveTab] = useState<"list" | "stats">("list");
 
-  const { entries, loading, addEntry, updateEntry, deleteEntry, getEntriesByMonth, stats } =
-    useDanceDiary(memberId);
+  const {
+    entries,
+    loading,
+    addEntry,
+    updateEntry,
+    deleteEntry,
+    getMonthHeatmap,
+    getEmotionStats,
+    getConditionTrend,
+    getStreak,
+  } = useDanceDiary(memberId);
 
-  const monthEntries = getEntriesByMonth(calYear, calMonth);
+  const heatmap = getMonthHeatmap(calYear, calMonth);
+  const emotionStats = getEmotionStats();
+  const conditionTrend = getConditionTrend();
+  const streak = getStreak();
+
+  const monthEntries = entries.filter((e) =>
+    e.date.startsWith(
+      `${calYear}-${String(calMonth).padStart(2, "0")}`
+    )
+  );
 
   // 폼 열기 (신규)
   const openNewForm = useCallback(() => {
@@ -620,17 +627,15 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
   }, [selectedDate]);
 
   // 폼 열기 (수정)
-  const openEditForm = useCallback((entry: DanceDiaryEntry) => {
+  const openEditForm = useCallback((entry: DiaryCardEntry) => {
     setForm({
       date: entry.date,
-      mood: entry.mood,
+      title: entry.title,
+      content: entry.content,
+      emotion: entry.emotion,
       condition: entry.condition,
-      practiceHours: entry.practiceHours,
-      achievements: [...entry.achievements],
-      struggles: [...entry.struggles],
-      notes: entry.notes,
-      songsPracticed: [...entry.songsPracticed],
-      rating: entry.rating,
+      discovery: entry.discovery,
+      tags: [...entry.tags],
     });
     setEditingId(entry.id);
     setFormVisible(true);
@@ -644,39 +649,34 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
 
   // 저장
   const handleSave = useCallback(() => {
-    if (form.practiceHours <= 0) {
-      toast.error("연습 시간을 입력하세요.");
+    if (!form.date) {
+      toast.error("날짜를 선택해주세요.");
+      return;
+    }
+    if (!form.title.trim() && !form.content.trim()) {
+      toast.error("제목 또는 내용을 입력해주세요.");
       return;
     }
     if (editingId) {
-      const ok = updateEntry(editingId, form);
-      if (ok) {
-        toast.success("다이어리가 수정되었습니다.");
-        closeForm();
-      } else {
-        toast.error("수정에 실패했습니다.");
-      }
+      updateEntry(editingId, form);
+      toast.success("일기가 수정되었습니다.");
     } else {
       addEntry(form);
-      toast.success("다이어리가 저장되었습니다.");
-      closeForm();
+      toast.success("일기가 저장되었습니다.");
     }
+    closeForm();
   }, [form, editingId, addEntry, updateEntry, closeForm]);
 
   // 삭제
   const handleDelete = useCallback(
     (id: string) => {
-      const ok = deleteEntry(id);
-      if (ok) {
-        toast.success("다이어리가 삭제되었습니다.");
-      } else {
-        toast.error("삭제에 실패했습니다.");
-      }
+      deleteEntry(id);
+      toast.success("일기가 삭제되었습니다.");
     },
     [deleteEntry]
   );
 
-  // 달력 이전/다음 달
+  // 이전/다음 달
   const prevMonth = useCallback(() => {
     if (calMonth === 1) {
       setCalYear((y) => y - 1);
@@ -695,7 +695,6 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
     }
   }, [calMonth]);
 
-  // 선택된 날의 기존 기록
   const selectedEntry = entries.find((e) => e.date === selectedDate);
 
   return (
@@ -706,15 +705,15 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-indigo-500" />
-                댄스 다이어리
+                댄스 일기
               </CardTitle>
               <div className="flex items-center gap-2">
-                {stats.totalEntries > 0 && (
+                {entries.length > 0 && (
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Flame className="h-3 w-3 text-orange-500" />
-                    <span>{stats.streakDays}일 연속</span>
+                    <span>{streak}일 연속</span>
                     <span className="text-muted-foreground/40">|</span>
-                    <span>총 {stats.totalEntries}건</span>
+                    <span>총 {entries.length}건</span>
                   </div>
                 )}
                 {open ? (
@@ -735,34 +734,40 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
               </p>
             ) : (
               <>
-                {/* ── 통계 요약 ── */}
+                {/* ── 통계 요약 배지 ── */}
                 <div className="grid grid-cols-3 gap-2">
                   <div className="rounded-lg bg-muted/50 p-2 text-center">
-                    <p className="text-lg font-bold text-orange-500">
-                      {stats.streakDays}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">연속 기록일</p>
+                    <p className="text-lg font-bold text-orange-500">{streak}</p>
+                    <p className="text-[10px] text-muted-foreground">연속 작성</p>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-2 text-center">
-                    <p className="text-lg font-bold text-yellow-500">
-                      {stats.averageRating.toFixed(1)}
+                    <p className="text-lg font-bold text-indigo-500">
+                      {entries.length}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">평균 별점</p>
+                    <p className="text-[10px] text-muted-foreground">총 일기</p>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-2 text-center">
-                    <p className="text-lg font-bold text-blue-500">
-                      {stats.totalPracticeHours}h
+                    <p className="text-lg font-bold text-green-500">
+                      {entries.length > 0
+                        ? (
+                            entries.reduce((s, e) => s + e.condition, 0) /
+                            entries.length
+                          ).toFixed(1)
+                        : "-"}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">총 연습시간</p>
+                    <p className="text-[10px] text-muted-foreground">평균 컨디션</p>
                   </div>
                 </div>
 
-                {/* ── 달력 미니뷰 ── */}
+                {/* ── 캘린더 히트맵 ── */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-medium">
                       <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
                       {calYear}년 {calMonth}월
+                      <span className="text-[10px] text-muted-foreground font-normal">
+                        ({monthEntries.length}건)
+                      </span>
                     </div>
                     <div className="flex gap-1">
                       <Button
@@ -783,21 +788,21 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
                       </Button>
                     </div>
                   </div>
-                  <MiniCalendar
+                  <CalendarHeatmap
                     year={calYear}
                     month={calMonth}
+                    heatmap={heatmap}
                     entries={monthEntries}
                     selectedDate={selectedDate}
                     onSelectDate={(date) => {
                       setSelectedDate(date);
-                      // 달력에서 날짜 선택 시 폼 자동 열기 해제
                       setFormVisible(false);
                       setEditingId(null);
                     }}
                   />
                 </div>
 
-                {/* ── 선택된 날짜 표시 + 신규 버튼 ── */}
+                {/* ── 선택 날짜 + 버튼 ── */}
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">
                     {formatDateKor(selectedDate)}
@@ -809,7 +814,7 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
                       onClick={openNewForm}
                     >
                       <Plus className="h-3 w-3" />
-                      기록 추가
+                      일기 쓰기
                     </Button>
                   )}
                   {!formVisible && selectedEntry && (
@@ -825,12 +830,12 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
                   )}
                 </div>
 
-                {/* ── 작성 폼 ── */}
+                {/* ── 작성/수정 폼 ── */}
                 {formVisible && (
                   <div className="rounded-lg border bg-muted/20 p-3 space-y-3">
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between">
                       <p className="text-xs font-medium">
-                        {editingId ? "다이어리 수정" : "새 다이어리"}
+                        {editingId ? "일기 수정" : "새 일기"}
                       </p>
                       <Button
                         size="sm"
@@ -857,23 +862,53 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
                       />
                     </div>
 
-                    {/* 기분 */}
+                    {/* 제목 */}
                     <div className="space-y-1">
                       <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                        오늘 기분
+                        제목
                       </label>
-                      <MoodPicker
-                        value={form.mood}
-                        onChange={(v) => setForm((f) => ({ ...f, mood: v }))}
+                      <Input
+                        value={form.title}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, title: e.target.value }))
+                        }
+                        placeholder="오늘의 연습 한 줄 요약"
+                        className="h-7 text-xs"
+                      />
+                    </div>
+
+                    {/* 내용 */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                        내용
+                      </label>
+                      <Textarea
+                        value={form.content}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, content: e.target.value }))
+                        }
+                        placeholder="오늘의 연습을 자유롭게 기록해보세요..."
+                        className="text-xs resize-none min-h-[72px]"
+                      />
+                    </div>
+
+                    {/* 감정 */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                        오늘 감정
+                      </label>
+                      <EmotionPicker
+                        value={form.emotion}
+                        onChange={(v) => setForm((f) => ({ ...f, emotion: v }))}
                       />
                     </div>
 
                     {/* 컨디션 */}
                     <div className="space-y-1">
                       <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                        몸 컨디션
+                        컨디션
                       </label>
-                      <ConditionPicker
+                      <ConditionSlider
                         value={form.condition}
                         onChange={(v) =>
                           setForm((f) => ({ ...f, condition: v }))
@@ -881,177 +916,127 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
                       />
                     </div>
 
-                    {/* 연습 시간 */}
+                    {/* 오늘의 발견 */}
                     <div className="space-y-1">
-                      <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                        연습 시간 (시간)
+                      <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide flex items-center gap-1">
+                        <span>💡</span>
+                        오늘의 발견
                       </label>
                       <Input
-                        type="number"
-                        min={0.5}
-                        max={24}
-                        step={0.5}
-                        value={form.practiceHours}
+                        value={form.discovery}
                         onChange={(e) =>
-                          setForm((f) => ({
-                            ...f,
-                            practiceHours: parseFloat(e.target.value) || 0,
-                          }))
+                          setForm((f) => ({ ...f, discovery: e.target.value }))
                         }
+                        placeholder="새롭게 깨달은 점이나 발견을 짧게..."
                         className="h-7 text-xs"
                       />
                     </div>
 
-                    {/* 연습한 곡 */}
+                    {/* 태그 */}
                     <div className="space-y-1">
                       <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide flex items-center gap-1">
-                        <Music className="h-3 w-3" />
-                        연습한 곡
+                        <Tag className="h-3 w-3" />
+                        태그
                       </label>
                       <TagInput
-                        tags={form.songsPracticed}
+                        tags={form.tags}
                         onAdd={(tag) =>
-                          setForm((f) => ({
-                            ...f,
-                            songsPracticed: [...f.songsPracticed, tag],
-                          }))
+                          setForm((f) => ({ ...f, tags: [...f.tags, tag] }))
                         }
                         onRemove={(tag) =>
                           setForm((f) => ({
                             ...f,
-                            songsPracticed: f.songsPracticed.filter(
-                              (t) => t !== tag
-                            ),
+                            tags: f.tags.filter((t) => t !== tag),
                           }))
                         }
-                        placeholder="곡 이름 입력 후 Enter"
-                        colorClass="bg-purple-100 text-purple-700 border-purple-200"
+                        placeholder="태그 입력 후 Enter (예: 웨이킹, 턴, 커버댄스)"
                       />
                     </div>
 
-                    {/* 성과 */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide flex items-center gap-1">
-                        <Tag className="h-3 w-3 text-green-500" />
-                        오늘의 성과
-                      </label>
-                      <TagInput
-                        tags={form.achievements}
-                        onAdd={(tag) =>
-                          setForm((f) => ({
-                            ...f,
-                            achievements: [...f.achievements, tag],
-                          }))
-                        }
-                        onRemove={(tag) =>
-                          setForm((f) => ({
-                            ...f,
-                            achievements: f.achievements.filter(
-                              (t) => t !== tag
-                            ),
-                          }))
-                        }
-                        placeholder="성과 입력 후 Enter"
-                        colorClass="bg-green-100 text-green-700 border-green-200"
-                      />
-                    </div>
-
-                    {/* 어려움 */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide flex items-center gap-1">
-                        <Tag className="h-3 w-3 text-red-500" />
-                        어려웠던 점
-                      </label>
-                      <TagInput
-                        tags={form.struggles}
-                        onAdd={(tag) =>
-                          setForm((f) => ({
-                            ...f,
-                            struggles: [...f.struggles, tag],
-                          }))
-                        }
-                        onRemove={(tag) =>
-                          setForm((f) => ({
-                            ...f,
-                            struggles: f.struggles.filter((t) => t !== tag),
-                          }))
-                        }
-                        placeholder="어려웠던 점 입력 후 Enter"
-                        colorClass="bg-red-100 text-red-700 border-red-200"
-                      />
-                    </div>
-
-                    {/* 자유 메모 */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                        자유 메모
-                      </label>
-                      <Textarea
-                        value={form.notes}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, notes: e.target.value }))
-                        }
-                        placeholder="오늘의 연습을 자유롭게 기록해보세요..."
-                        className="text-xs resize-none min-h-[72px]"
-                      />
-                    </div>
-
-                    {/* 별점 */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                        오늘 연습 평점
-                      </label>
-                      <StarRating
-                        value={form.rating}
-                        onChange={(v) => setForm((f) => ({ ...f, rating: v }))}
-                      />
-                    </div>
-
-                    <Button
-                      className="w-full h-8 text-xs"
-                      onClick={handleSave}
-                    >
+                    <Button className="w-full h-8 text-xs" onClick={handleSave}>
                       {editingId ? "수정 완료" : "저장"}
                     </Button>
                   </div>
                 )}
 
-                {/* ── 기분 분포 차트 ── */}
-                {stats.totalEntries > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium flex items-center gap-1.5">
-                      <BarChart2 className="h-3.5 w-3.5 text-muted-foreground" />
-                      기분 분포
-                    </p>
-                    <MoodDistributionChart
-                      distribution={stats.moodDistribution}
-                      total={stats.totalEntries}
-                    />
-                  </div>
-                )}
-
-                {/* ── 최근 기록 목록 ── */}
+                {/* ── 탭 전환: 목록 / 통계 ── */}
                 {entries.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium">최근 기록</p>
-                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                      {entries.map((entry) => (
-                        <DiaryEntryItem
-                          key={entry.id}
-                          entry={entry}
-                          onDelete={handleDelete}
-                          onEdit={openEditForm}
-                        />
-                      ))}
+                  <>
+                    <div className="flex gap-1 border-b">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("list")}
+                        className={cn(
+                          "text-xs pb-1.5 px-1 border-b-2 transition-colors",
+                          activeTab === "list"
+                            ? "border-primary text-primary font-medium"
+                            : "border-transparent text-muted-foreground"
+                        )}
+                      >
+                        최근 기록
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("stats")}
+                        className={cn(
+                          "text-xs pb-1.5 px-1 border-b-2 transition-colors",
+                          activeTab === "stats"
+                            ? "border-primary text-primary font-medium"
+                            : "border-transparent text-muted-foreground"
+                        )}
+                      >
+                        감정/컨디션 통계
+                      </button>
                     </div>
-                  </div>
+
+                    {/* 목록 탭 */}
+                    {activeTab === "list" && (
+                      <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                        {entries.map((entry) => (
+                          <DiaryEntryItem
+                            key={entry.id}
+                            entry={entry}
+                            onDelete={handleDelete}
+                            onEdit={openEditForm}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 통계 탭 */}
+                    {activeTab === "stats" && (
+                      <div className="space-y-4">
+                        {/* 감정 분포 */}
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium flex items-center gap-1.5">
+                            <BarChart2 className="h-3.5 w-3.5 text-muted-foreground" />
+                            감정별 비율
+                          </p>
+                          <EmotionBarChart
+                            stats={emotionStats}
+                            total={entries.length}
+                          />
+                        </div>
+
+                        {/* 컨디션 추이 */}
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium flex items-center gap-1.5">
+                            <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                            최근 30일 평균 컨디션
+                          </p>
+                          <ConditionTrendChart trend={conditionTrend} />
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
+                {/* ── 빈 상태 ── */}
                 {entries.length === 0 && !formVisible && (
                   <div className="text-center py-6 space-y-2">
                     <BookOpen className="h-8 w-8 text-muted-foreground/30 mx-auto" />
                     <p className="text-xs text-muted-foreground">
-                      아직 다이어리 기록이 없습니다.
+                      아직 작성된 댄스 일기가 없습니다.
                     </p>
                     <Button
                       size="sm"
@@ -1059,7 +1044,7 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
                       onClick={openNewForm}
                     >
                       <Plus className="h-3 w-3" />
-                      첫 기록 시작하기
+                      첫 일기 쓰기
                     </Button>
                   </div>
                 )}

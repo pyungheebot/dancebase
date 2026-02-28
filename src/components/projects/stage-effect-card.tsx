@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +54,9 @@ import {
   ShieldAlert,
   Shield,
   Sparkles,
+  BarChart2,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useStageEffect } from "@/hooks/use-stage-effect";
@@ -98,6 +102,38 @@ const EFFECT_TYPE_COLORS: Record<StageEffectType, string> = {
   other: "bg-slate-100 text-slate-600 border-slate-200",
 };
 
+/** 타임라인 바에 사용할 배경색 */
+const EFFECT_TYPE_BAR_COLORS: Record<StageEffectType, string> = {
+  smoke: "bg-gray-400",
+  flame: "bg-red-500",
+  laser: "bg-green-500",
+  confetti: "bg-pink-400",
+  bubble: "bg-cyan-400",
+  foam: "bg-blue-400",
+  snow: "bg-sky-300",
+  strobe: "bg-yellow-400",
+  pyro: "bg-orange-500",
+  co2: "bg-indigo-500",
+  uv: "bg-purple-500",
+  other: "bg-slate-400",
+};
+
+/** 통계 차트 바 색상 */
+const EFFECT_TYPE_CHART_COLORS: Record<StageEffectType, string> = {
+  smoke: "bg-gray-400",
+  flame: "bg-red-500",
+  laser: "bg-green-500",
+  confetti: "bg-pink-400",
+  bubble: "bg-cyan-400",
+  foam: "bg-blue-400",
+  snow: "bg-sky-300",
+  strobe: "bg-yellow-400",
+  pyro: "bg-orange-500",
+  co2: "bg-indigo-500",
+  uv: "bg-purple-500",
+  other: "bg-slate-400",
+};
+
 const INTENSITY_LABELS: Record<StageEffectIntensity, string> = {
   low: "약",
   medium: "중",
@@ -135,6 +171,25 @@ const EFFECT_TYPES: StageEffectType[] = [
   "smoke", "flame", "laser", "confetti", "bubble",
   "foam", "snow", "strobe", "pyro", "co2", "uv", "other",
 ];
+
+// ============================================================
+// 유틸: MM:SS -> 초 변환
+// ============================================================
+
+function mmssToSec(mmss: string): number {
+  const parts = mmss.split(":");
+  if (parts.length !== 2) return 0;
+  const m = parseInt(parts[0], 10);
+  const s = parseInt(parts[1], 10);
+  if (isNaN(m) || isNaN(s)) return 0;
+  return m * 60 + s;
+}
+
+function secToMmss(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
 
 // ============================================================
 // 폼 타입
@@ -284,7 +339,7 @@ function EntryDialog({
           {/* 트리거 시점 + 지속 시간 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <Label className="text-xs">트리거 시점 (MM:SS) *</Label>
+              <Label className="text-xs">시작 시간 (MM:SS) *</Label>
               <Input
                 value={form.triggerTime}
                 onChange={(e) => set("triggerTime", e.target.value)}
@@ -360,7 +415,7 @@ function EntryDialog({
 
           {/* 무대 위치 */}
           <div className="space-y-1">
-            <Label className="text-xs">무대 위치 *</Label>
+            <Label className="text-xs">위치 메모 *</Label>
             <Input
               value={form.position}
               onChange={(e) => set("position", e.target.value)}
@@ -371,7 +426,7 @@ function EntryDialog({
 
           {/* 안전 등급 */}
           <div className="space-y-1">
-            <Label className="text-xs">안전 등급 *</Label>
+            <Label className="text-xs">안전 확인 등급 *</Label>
             <Select
               value={form.safetyLevel}
               onValueChange={(v) => set("safetyLevel", v as StageEffectSafetyLevel)}
@@ -454,17 +509,35 @@ function EntryRow({
   entry,
   onEdit,
   onDelete,
+  onToggleSafety,
 }: {
   entry: StageEffectEntry;
   onEdit: (entry: StageEffectEntry) => void;
   onDelete: (entry: StageEffectEntry) => void;
+  onToggleSafety: (entry: StageEffectEntry) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const isSafe = entry.safetyLevel === "safe";
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger asChild>
         <div className="flex items-center gap-2 px-3 py-2 hover:bg-muted/40 cursor-pointer rounded-md border border-border/50 group">
+          {/* 안전 확인 체크박스 */}
+          <div
+            className="shrink-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSafety(entry);
+            }}
+          >
+            <Checkbox
+              checked={isSafe}
+              className="h-3.5 w-3.5"
+              aria-label="안전 확인"
+            />
+          </div>
+
           {/* 큐 번호 */}
           <span className="font-mono text-[11px] font-semibold text-muted-foreground w-10 shrink-0">
             #{entry.cueNumber}
@@ -593,30 +666,195 @@ function EntryRow({
 }
 
 // ============================================================
+// 효과 유형별 통계 가로 바 차트
+// ============================================================
+
+function TypeBarChart({ entries }: { entries: StageEffectEntry[] }) {
+  const breakdown = entries.reduce<Partial<Record<StageEffectType, number>>>(
+    (acc, e) => {
+      acc[e.effectType] = (acc[e.effectType] ?? 0) + 1;
+      return acc;
+    },
+    {}
+  );
+
+  const sorted = (Object.entries(breakdown) as [StageEffectType, number][]).sort(
+    (a, b) => b[1] - a[1]
+  );
+  const max = sorted[0]?.[1] ?? 1;
+
+  if (sorted.length === 0) return null;
+
+  return (
+    <div className="space-y-1.5">
+      {sorted.map(([type, count]) => (
+        <div key={type} className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground w-20 shrink-0 truncate">
+            {EFFECT_TYPE_LABELS[type]}
+          </span>
+          <div className="flex-1 h-4 bg-muted/40 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${EFFECT_TYPE_CHART_COLORS[type]}`}
+              style={{ width: `${(count / max) * 100}%` }}
+            />
+          </div>
+          <span className="text-[10px] font-medium text-foreground w-5 text-right shrink-0">
+            {count}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// 안전 확인 완료율 프로그레스 바
+// ============================================================
+
+function SafetyProgressBar({ entries }: { entries: StageEffectEntry[] }) {
+  const total = entries.length;
+  if (total === 0) return null;
+
+  const safeCount = entries.filter((e) => e.safetyLevel === "safe").length;
+  const pct = Math.round((safeCount / total) * 100);
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <CheckCircle2 className="h-3 w-3 text-green-600" />
+          <span className="text-[10px] font-medium text-foreground">안전 확인 완료율</span>
+        </div>
+        <span className="text-[10px] font-semibold text-green-700">
+          {safeCount}/{total} ({pct}%)
+        </span>
+      </div>
+      <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-green-500 rounded-full transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 타임라인 뷰
+// ============================================================
+
+function TimelineView({ entries }: { entries: StageEffectEntry[] }) {
+  if (entries.length === 0) return null;
+
+  const sorted = entries
+    .slice()
+    .sort((a, b) => mmssToSec(a.triggerTime) - mmssToSec(b.triggerTime));
+
+  const maxEndSec = Math.max(
+    ...sorted.map((e) => mmssToSec(e.triggerTime) + e.durationSec)
+  );
+  const totalSec = Math.max(maxEndSec, 10);
+
+  // 눈금 간격: 전체 길이를 5~10개 구간으로 나눔
+  const rawStep = Math.ceil(totalSec / 6);
+  // 가독성 있는 스텝으로 올림 (10, 15, 30, 60, 120 등)
+  const nicesteps = [5, 10, 15, 30, 60, 90, 120, 180, 240, 300];
+  const tickStep = nicesteps.find((s) => s >= rawStep) ?? rawStep;
+  const tickCount = Math.floor(totalSec / tickStep) + 1;
+
+  return (
+    <div className="space-y-1">
+      {/* 시간 눈금 */}
+      <div className="relative h-4 ml-20">
+        {Array.from({ length: tickCount }).map((_, i) => {
+          const sec = i * tickStep;
+          const pct = (sec / totalSec) * 100;
+          return (
+            <span
+              key={sec}
+              className="absolute text-[9px] text-muted-foreground"
+              style={{ left: `${pct}%`, transform: "translateX(-50%)" }}
+            >
+              {secToMmss(sec)}
+            </span>
+          );
+        })}
+      </div>
+
+      {/* 타임라인 행들 */}
+      <div className="space-y-1">
+        {sorted.map((entry) => {
+          const startSec = mmssToSec(entry.triggerTime);
+          const leftPct = (startSec / totalSec) * 100;
+          const widthPct = Math.max((entry.durationSec / totalSec) * 100, 1);
+
+          return (
+            <div key={entry.id} className="flex items-center gap-2">
+              {/* 레이블 */}
+              <div className="w-20 shrink-0 flex items-center justify-end gap-1">
+                <span className="font-mono text-[9px] text-muted-foreground">
+                  #{entry.cueNumber}
+                </span>
+                <Badge
+                  variant="outline"
+                  className={`text-[9px] px-1 py-0 hidden sm:inline-flex ${EFFECT_TYPE_COLORS[entry.effectType]}`}
+                >
+                  {EFFECT_TYPE_LABELS[entry.effectType]}
+                </Badge>
+              </div>
+
+              {/* 타임라인 영역 */}
+              <div className="flex-1 h-5 relative bg-muted/30 rounded">
+                <div
+                  className={`absolute top-0.5 bottom-0.5 rounded ${EFFECT_TYPE_BAR_COLORS[entry.effectType]} opacity-80`}
+                  style={{
+                    left: `${leftPct}%`,
+                    width: `${widthPct}%`,
+                    minWidth: "4px",
+                  }}
+                  title={`${entry.triggerTime} ~ +${entry.durationSec}초 | ${EFFECT_TYPE_LABELS[entry.effectType]}`}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 하단 시간 축 */}
+      <div className="relative h-px bg-border ml-20 mt-1" />
+    </div>
+  );
+}
+
+// ============================================================
+// 탭 타입
+// ============================================================
+
+type ViewTab = "list" | "chart" | "timeline";
+
+// ============================================================
 // 메인 카드
 // ============================================================
 
 export function StageEffectCard({
-  groupId,
   projectId,
 }: {
-  groupId: string;
   projectId: string;
 }) {
   const { entries, loading, addEntry, updateEntry, deleteEntry, stats } =
-    useStageEffect(groupId, projectId);
+    useStageEffect("project", projectId);
 
   // 다이얼로그 상태
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<StageEffectEntry | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<StageEffectEntry | null>(null);
 
-  // 필터
+  // 탭
+  const [activeTab, setActiveTab] = useState<ViewTab>("list");
+
+  // 필터 (목록 탭 전용)
   const [filterType, setFilterType] = useState<StageEffectType | "all">("all");
   const [filterSafety, setFilterSafety] = useState<StageEffectSafetyLevel | "all">("all");
-
-  // 통계 패널
-  const [statsOpen, setStatsOpen] = useState(false);
 
   // 필터링
   const filtered = entries.filter((e) => {
@@ -686,6 +924,16 @@ export function StageEffectCard({
     setDeleteTarget(null);
   }
 
+  // 안전 확인 토글 핸들러 (safe <-> caution 토글)
+  function handleToggleSafety(entry: StageEffectEntry) {
+    const nextLevel: StageEffectSafetyLevel =
+      entry.safetyLevel === "safe" ? "caution" : "safe";
+    updateEntry(entry.id, { safetyLevel: nextLevel });
+    toast.success(
+      nextLevel === "safe" ? "안전 확인 완료로 변경했습니다." : "안전 확인 해제했습니다."
+    );
+  }
+
   return (
     <>
       <Card>
@@ -694,7 +942,7 @@ export function StageEffectCard({
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-purple-500" />
               <CardTitle className="text-sm font-semibold">
-                무대 효과 큐시트
+                무대 특수효과
               </CardTitle>
               {stats.totalCount > 0 && (
                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
@@ -702,58 +950,59 @@ export function StageEffectCard({
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-1.5">
-              {stats.totalCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs px-2"
-                  onClick={() => setStatsOpen((v) => !v)}
-                >
-                  {statsOpen ? "통계 닫기" : "통계"}
-                </Button>
-              )}
-              <Button
-                size="sm"
-                className="h-7 text-xs gap-1"
-                onClick={() => setAddOpen(true)}
-              >
-                <Plus className="h-3 w-3" />
-                큐 추가
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => setAddOpen(true)}
+            >
+              <Plus className="h-3 w-3" />
+              큐 추가
+            </Button>
           </div>
 
-          {/* 통계 패널 */}
-          {statsOpen && stats.totalCount > 0 && (
-            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-md bg-green-50 border border-green-100 py-2">
-                <div className="flex items-center justify-center gap-1 mb-0.5">
-                  <ShieldCheck className="h-3 w-3 text-green-600" />
-                  <span className="text-[10px] text-green-700 font-medium">안전</span>
-                </div>
-                <p className="text-lg font-bold text-green-700">{stats.safeCount}</p>
-              </div>
-              <div className="rounded-md bg-yellow-50 border border-yellow-100 py-2">
-                <div className="flex items-center justify-center gap-1 mb-0.5">
-                  <Shield className="h-3 w-3 text-yellow-600" />
-                  <span className="text-[10px] text-yellow-700 font-medium">주의</span>
-                </div>
-                <p className="text-lg font-bold text-yellow-700">{stats.cautionCount}</p>
-              </div>
-              <div className="rounded-md bg-red-50 border border-red-100 py-2">
-                <div className="flex items-center justify-center gap-1 mb-0.5">
-                  <ShieldAlert className="h-3 w-3 text-red-600" />
-                  <span className="text-[10px] text-red-700 font-medium">위험</span>
-                </div>
-                <p className="text-lg font-bold text-red-700">{stats.dangerCount}</p>
-              </div>
+          {/* 안전 확인 완료율 프로그레스 바 */}
+          {entries.length > 0 && (
+            <div className="mt-3">
+              <SafetyProgressBar entries={entries} />
             </div>
           )}
 
-          {/* 필터 */}
+          {/* 탭 버튼 */}
           {entries.length > 0 && (
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex items-center gap-1 border-b border-border/50 pb-2">
+              <Button
+                variant={activeTab === "list" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-6 text-xs px-2 gap-1"
+                onClick={() => setActiveTab("list")}
+              >
+                <Zap className="h-3 w-3" />
+                목록
+              </Button>
+              <Button
+                variant={activeTab === "chart" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-6 text-xs px-2 gap-1"
+                onClick={() => setActiveTab("chart")}
+              >
+                <BarChart2 className="h-3 w-3" />
+                통계
+              </Button>
+              <Button
+                variant={activeTab === "timeline" ? "secondary" : "ghost"}
+                size="sm"
+                className="h-6 text-xs px-2 gap-1"
+                onClick={() => setActiveTab("timeline")}
+              >
+                <Clock className="h-3 w-3" />
+                타임라인
+              </Button>
+            </div>
+          )}
+
+          {/* 목록 탭 필터 */}
+          {activeTab === "list" && entries.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               <Select
                 value={filterType}
                 onValueChange={(v) => setFilterType(v as StageEffectType | "all")}
@@ -814,7 +1063,7 @@ export function StageEffectCard({
             <div className="py-8 text-center space-y-2">
               <Zap className="h-8 w-8 text-muted-foreground/30 mx-auto" />
               <p className="text-xs text-muted-foreground">
-                등록된 무대 효과 큐가 없습니다.
+                등록된 무대 특수효과 큐가 없습니다.
               </p>
               <Button
                 variant="outline"
@@ -826,31 +1075,75 @@ export function StageEffectCard({
                 첫 큐 추가하기
               </Button>
             </div>
-          ) : filtered.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted-foreground">
-              조건에 맞는 큐가 없습니다.
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {/* 헤더 */}
-              <div className="flex items-center gap-2 px-3 py-1 text-[10px] text-muted-foreground font-medium border-b border-border/50 mb-1">
-                <span className="w-10 shrink-0">큐</span>
-                <span className="w-16 shrink-0">유형</span>
-                <span className="w-14 shrink-0">시점</span>
-                <span className="w-12 shrink-0">지속</span>
-                <span className="w-12 shrink-0">강도</span>
-                <span className="flex-1 min-w-0">위치</span>
-                <span className="shrink-0">안전</span>
+          ) : activeTab === "list" ? (
+            filtered.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                조건에 맞는 큐가 없습니다.
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {/* 헤더 */}
+                <div className="flex items-center gap-2 px-3 py-1 text-[10px] text-muted-foreground font-medium border-b border-border/50 mb-1">
+                  <span className="w-4 shrink-0" />
+                  <span className="w-10 shrink-0">큐</span>
+                  <span className="w-16 shrink-0">유형</span>
+                  <span className="w-14 shrink-0">시점</span>
+                  <span className="w-12 shrink-0">지속</span>
+                  <span className="w-12 shrink-0">강도</span>
+                  <span className="flex-1 min-w-0">위치</span>
+                  <span className="shrink-0">안전</span>
+                </div>
+
+                {filtered.map((entry) => (
+                  <EntryRow
+                    key={entry.id}
+                    entry={entry}
+                    onEdit={setEditTarget}
+                    onDelete={setDeleteTarget}
+                    onToggleSafety={handleToggleSafety}
+                  />
+                ))}
+              </div>
+            )
+          ) : activeTab === "chart" ? (
+            <div className="space-y-4 py-2">
+              {/* 안전 등급 요약 */}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-md bg-green-50 border border-green-100 py-2">
+                  <div className="flex items-center justify-center gap-1 mb-0.5">
+                    <ShieldCheck className="h-3 w-3 text-green-600" />
+                    <span className="text-[10px] text-green-700 font-medium">안전</span>
+                  </div>
+                  <p className="text-lg font-bold text-green-700">{stats.safeCount}</p>
+                </div>
+                <div className="rounded-md bg-yellow-50 border border-yellow-100 py-2">
+                  <div className="flex items-center justify-center gap-1 mb-0.5">
+                    <Shield className="h-3 w-3 text-yellow-600" />
+                    <span className="text-[10px] text-yellow-700 font-medium">주의</span>
+                  </div>
+                  <p className="text-lg font-bold text-yellow-700">{stats.cautionCount}</p>
+                </div>
+                <div className="rounded-md bg-red-50 border border-red-100 py-2">
+                  <div className="flex items-center justify-center gap-1 mb-0.5">
+                    <ShieldAlert className="h-3 w-3 text-red-600" />
+                    <span className="text-[10px] text-red-700 font-medium">위험</span>
+                  </div>
+                  <p className="text-lg font-bold text-red-700">{stats.dangerCount}</p>
+                </div>
               </div>
 
-              {filtered.map((entry) => (
-                <EntryRow
-                  key={entry.id}
-                  entry={entry}
-                  onEdit={setEditTarget}
-                  onDelete={setDeleteTarget}
-                />
-              ))}
+              {/* 유형별 바 차트 */}
+              <div>
+                <p className="text-[10px] font-medium text-muted-foreground mb-2">
+                  효과 유형별 큐 수
+                </p>
+                <TypeBarChart entries={entries} />
+              </div>
+            </div>
+          ) : (
+            /* 타임라인 탭 */
+            <div className="py-2 overflow-x-auto">
+              <TimelineView entries={entries} />
             </div>
           )}
         </CardContent>

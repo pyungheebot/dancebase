@@ -14262,3 +14262,193 @@ export type MakeupHairData = {
   /** 마지막 수정일 (ISO 8601) */
   updatedAt: string;
 };
+
+// ─── DanceDiaryCard 타입 ───────────────────────────────────────────────────────
+
+/** 댄스 일기 카드 감정 종류 */
+export type DiaryCardEmotion = "happy" | "neutral" | "sad" | "passionate" | "frustrated";
+
+/** 댄스 일기 카드 감정 메타데이터 */
+export type DiaryCardEmotionMeta = {
+  value: DiaryCardEmotion;
+  label: string;
+  emoji: string;
+  color: string;
+};
+
+/** 댄스 일기 카드 단일 항목 */
+export type DiaryCardEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 멤버 ID */
+  memberId: string;
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 제목 */
+  title: string;
+  /** 내용 */
+  content: string;
+  /** 감정 */
+  emotion: DiaryCardEmotion;
+  /** 컨디션 (1~5) */
+  condition: number;
+  /** 오늘의 발견 (짧은 메모) */
+  discovery: string;
+  /** 태그 목록 */
+  tags: string[];
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** 댄스 일기 카드 전체 데이터 (localStorage 저장 단위) */
+export type DiaryCardData = {
+  /** 멤버 ID */
+  memberId: string;
+  /** 일기 목록 */
+  entries: DiaryCardEntry[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ─── GroupStreakCard 타입 ──────────────────────────────────────────────────────
+
+/** 스트릭 출석 기록 단일 항목 */
+export type StreakTrackRecord = {
+  /** 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 출석 여부 */
+  attended: boolean;
+};
+
+/** 멤버별 스트릭 데이터 */
+export type StreakTrackMember = {
+  /** 고유 ID (UUID) */
+  id: string;
+  /** 멤버명 */
+  name: string;
+  /** 출석 기록 목록 */
+  records: StreakTrackRecord[];
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 마일스톤 종류 */
+export type StreakTrackMilestone = 7 | 30 | 100;
+
+/** 스트릭 리더보드 항목 */
+export type StreakTrackLeaderboardEntry = {
+  memberId: string;
+  memberName: string;
+  currentStreak: number;
+  longestStreak: number;
+  monthlyRate: number;
+};
+
+/** GroupStreakCard 전체 데이터 (localStorage 저장 단위) */
+export type StreakTrackData = {
+  /** 그룹 ID */
+  groupId: string;
+  /** 멤버 스트릭 목록 */
+  members: StreakTrackMember[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+
+// ─── EmergencyContactCard 타입 ────────────────────────────────────────────────
+
+/** 비상 연락처 역할 */
+export type EmergencyContactRole =
+  | "총감독"
+  | "무대감독"
+  | "음향감독"
+  | "조명감독"
+  | "의료진"
+  | "보안"
+  | "기타";
+
+/** 비상 연락처 긴급도 레벨 */
+export type EmergencyContactPriority = 1 | 2 | 3;
+
+/** 비상 연락처 단일 항목 */
+export type EmergencyContact = {
+  /** 고유 ID (UUID) */
+  id: string;
+  /** 이름 */
+  name: string;
+  /** 역할 */
+  role: EmergencyContactRole;
+  /** 전화번호 */
+  phone: string;
+  /** 이메일 (선택) */
+  email: string;
+  /** 비고 (선택) */
+  note: string;
+  /** 긴급도 레벨 (1=1순위, 2=2순위, 3=3순위) */
+  priority: EmergencyContactPriority;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** 비상 연락망 전체 데이터 (localStorage 저장 단위) */
+export type EmergencyContactData = {
+  /** 프로젝트 ID */
+  projectId: string;
+  /** 연락처 목록 */
+  contacts: EmergencyContact[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// GroupWishlistCard (그룹 위시리스트)
+// ============================================
+
+/** 위시 카테고리: 연습곡 / 장비 / 의상 / 장소 / 이벤트 / 기타 */
+export type GroupWishCategory =
+  | "practice_song"
+  | "equipment"
+  | "costume"
+  | "venue"
+  | "event"
+  | "other";
+
+/** 위시 우선순위: 높음 / 중간 / 낮음 */
+export type GroupWishPriority = "high" | "medium" | "low";
+
+/** 위시 상태: 제안 / 검토중 / 승인 / 완료 / 반려 */
+export type GroupWishStatus =
+  | "proposed"
+  | "reviewing"
+  | "approved"
+  | "completed"
+  | "rejected";
+
+/** 위시리스트 단일 항목 */
+export type GroupWishItem = {
+  id: string;
+  /** 제목 */
+  title: string;
+  /** 설명 (선택) */
+  description: string;
+  /** 카테고리 */
+  category: GroupWishCategory;
+  /** 우선순위 */
+  priority: GroupWishPriority;
+  /** 상태 */
+  status: GroupWishStatus;
+  /** 예상 비용 (원, 0이면 미지정) */
+  estimatedCost: number;
+  /** 좋아요(추천) 수 */
+  likes: number;
+  /** 제안자 */
+  proposedBy: string;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 상태 변경일 (ISO 8601, 선택) */
+  updatedAt?: string;
+};
