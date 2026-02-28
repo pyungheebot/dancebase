@@ -994,4 +994,23 @@ export const swrKeys = {
   // 멤버 기술 인증 (localStorage 기반)
   skillCertification: (groupId: string) =>
     `skill-certification-${groupId}` as const,
+
+  // 댄스 배틀 토너먼트 (localStorage 기반)
+  battleTournament: (groupId: string) =>
+    `battle-tournament-${groupId}` as const,
+
+  // 멤버 체력 테스트 (localStorage 기반)
+  fitnessTest: (groupId: string) => `fitness-test-${groupId}` as const,
+
+  // 공연 프로그램 북 (localStorage 기반)
+  programBook: (groupId: string, projectId: string) =>
+    `program-book-${groupId}-${projectId}` as const,
+
+  // 그룹 통합 캘린더 (localStorage 기반)
+  unifiedCalendar: (groupId: string) =>
+    `unified-calendar-${groupId}` as const,
+
+  // 의상 디자인 보드 (localStorage 기반)
+  costumeDesign: (groupId: string, projectId: string) =>
+    `costume-design-${groupId}-${projectId}` as const,
 };

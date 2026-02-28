@@ -1,0 +1,229 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import type {
+  CostumeDesignEntry,
+  CostumeDesignStatus,
+} from "@/types";
+
+// ============================================================
+// localStorage 헬퍼
+// ============================================================
+
+function storageKey(groupId: string, projectId: string): string {
+  return `dancebase:costume-design:${groupId}:${projectId}`;
+}
+
+function loadData(groupId: string, projectId: string): CostumeDesignEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(storageKey(groupId, projectId));
+    if (!raw) return [];
+    return JSON.parse(raw) as CostumeDesignEntry[];
+  } catch {
+    return [];
+  }
+}
+
+function saveData(
+  groupId: string,
+  projectId: string,
+  data: CostumeDesignEntry[]
+): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(
+      storageKey(groupId, projectId),
+      JSON.stringify(data)
+    );
+  } catch {
+    // 무시
+  }
+}
+
+// ============================================================
+// 통계 타입
+// ============================================================
+
+export type CostumeDesignStats = {
+  totalDesigns: number;
+  approvedCount: number;
+  totalEstimatedCost: number;
+  topVotedDesign: CostumeDesignEntry | null;
+};
+
+// ============================================================
+// 훅
+// ============================================================
+
+export function useCostumeDesign(groupId: string, projectId: string) {
+  const [designs, setDesigns] = useState<CostumeDesignEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = useCallback(() => {
+    if (!groupId || !projectId) return;
+    const data = loadData(groupId, projectId);
+    setDesigns(data);
+    setLoading(false);
+  }, [groupId, projectId]);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  const persist = useCallback(
+    (next: CostumeDesignEntry[]) => {
+      saveData(groupId, projectId, next);
+      setDesigns(next);
+    },
+    [groupId, projectId]
+  );
+
+  // 디자인 추가
+  const addDesign = useCallback(
+    (
+      title: string,
+      description: string,
+      designedBy: string,
+      category: string,
+      colorScheme: string[],
+      materialNotes?: string,
+      estimatedCost?: number
+    ): CostumeDesignEntry => {
+      const entry: CostumeDesignEntry = {
+        id: crypto.randomUUID(),
+        title,
+        description,
+        designedBy,
+        category,
+        colorScheme,
+        materialNotes,
+        estimatedCost,
+        status: "idea",
+        votes: [],
+        comments: [],
+        createdAt: new Date().toISOString(),
+      };
+      persist([...designs, entry]);
+      return entry;
+    },
+    [designs, persist]
+  );
+
+  // 디자인 수정
+  const updateDesign = useCallback(
+    (id: string, patch: Partial<CostumeDesignEntry>): boolean => {
+      const idx = designs.findIndex((d) => d.id === id);
+      if (idx === -1) return false;
+      const next = [...designs];
+      next[idx] = { ...next[idx], ...patch };
+      persist(next);
+      return true;
+    },
+    [designs, persist]
+  );
+
+  // 디자인 삭제
+  const deleteDesign = useCallback(
+    (id: string): boolean => {
+      const next = designs.filter((d) => d.id !== id);
+      if (next.length === designs.length) return false;
+      persist(next);
+      return true;
+    },
+    [designs, persist]
+  );
+
+  // 상태 변경
+  const changeStatus = useCallback(
+    (id: string, status: CostumeDesignStatus): boolean => {
+      return updateDesign(id, { status });
+    },
+    [updateDesign]
+  );
+
+  // 투표 토글
+  const toggleVote = useCallback(
+    (id: string, memberName: string): boolean => {
+      const idx = designs.findIndex((d) => d.id === id);
+      if (idx === -1) return false;
+      const target = designs[idx];
+      const alreadyVoted = target.votes.includes(memberName);
+      const updatedVotes = alreadyVoted
+        ? target.votes.filter((v) => v !== memberName)
+        : [...target.votes, memberName];
+      return updateDesign(id, { votes: updatedVotes });
+    },
+    [designs, updateDesign]
+  );
+
+  // 댓글 추가
+  const addComment = useCallback(
+    (designId: string, author: string, text: string): boolean => {
+      const idx = designs.findIndex((d) => d.id === designId);
+      if (idx === -1) return false;
+      const newComment = {
+        id: crypto.randomUUID(),
+        author,
+        text,
+        createdAt: new Date().toISOString(),
+      };
+      const updatedComments = [...designs[idx].comments, newComment];
+      return updateDesign(designId, { comments: updatedComments });
+    },
+    [designs, updateDesign]
+  );
+
+  // 댓글 삭제
+  const deleteComment = useCallback(
+    (designId: string, commentId: string): boolean => {
+      const idx = designs.findIndex((d) => d.id === designId);
+      if (idx === -1) return false;
+      const updatedComments = designs[idx].comments.filter(
+        (c) => c.id !== commentId
+      );
+      return updateDesign(designId, { comments: updatedComments });
+    },
+    [designs, updateDesign]
+  );
+
+  // 통계
+  const stats: CostumeDesignStats = (() => {
+    const approvedCount = designs.filter(
+      (d) => d.status === "approved" || d.status === "in_production" || d.status === "completed"
+    ).length;
+
+    const totalEstimatedCost = designs.reduce(
+      (sum, d) => sum + (d.estimatedCost ?? 0),
+      0
+    );
+
+    const topVotedDesign =
+      designs.length === 0
+        ? null
+        : designs.reduce((best, d) =>
+            d.votes.length > best.votes.length ? d : best
+          );
+
+    return {
+      totalDesigns: designs.length,
+      approvedCount,
+      totalEstimatedCost,
+      topVotedDesign: topVotedDesign?.votes.length === 0 ? null : topVotedDesign ?? null,
+    };
+  })();
+
+  return {
+    designs,
+    loading,
+    addDesign,
+    updateDesign,
+    deleteDesign,
+    changeStatus,
+    toggleVote,
+    addComment,
+    deleteComment,
+    stats,
+    refetch: reload,
+  };
+}

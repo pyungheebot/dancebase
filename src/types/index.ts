@@ -7440,3 +7440,159 @@ export type RehearsalScheduleEntry = {
   status: "scheduled" | "completed" | "cancelled";
   createdAt: string;
 };
+
+// ─── 댄스 배틀 토너먼트 ───────────────────────────────────────
+
+export type TournamentFormat =
+  | "single_elimination"
+  | "double_elimination"
+  | "round_robin";
+
+export type TournamentStatus = "upcoming" | "in_progress" | "completed";
+
+export type TournamentMatch = {
+  id: string;
+  round: number;
+  player1: string;
+  player2: string;
+  winner?: string;
+  score1?: number;
+  score2?: number;
+  notes?: string;
+};
+
+export type BattleTournamentEntry = {
+  id: string;
+  name: string;
+  format: TournamentFormat;
+  status: TournamentStatus;
+  participants: string[];
+  matches: TournamentMatch[];
+  champion?: string;
+  createdBy: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 멤버 체력 테스트
+// ============================================================
+
+export type FitnessTestCategory =
+  | "flexibility"
+  | "endurance"
+  | "strength"
+  | "balance"
+  | "agility"
+  | "rhythm";
+
+export type FitnessTestItem = {
+  name: string;
+  category: FitnessTestCategory;
+  unit: string;
+  higherIsBetter: boolean;
+};
+
+export type FitnessTestResult = {
+  id: string;
+  memberName: string;
+  date: string;
+  testItems: {
+    itemName: string;
+    value: number;
+    category: FitnessTestCategory;
+  }[];
+  overallScore?: number;
+  notes?: string;
+  createdAt: string;
+};
+
+// ─── 공연 프로그램 북 ──────────────────────────────────────────
+
+export type ProgramSectionType =
+  | "cover"
+  | "greeting"
+  | "program_list"
+  | "performer_intro"
+  | "sponsor"
+  | "notes"
+  | "credits";
+
+export type ProgramBookSection = {
+  id: string;
+  type: ProgramSectionType;
+  title: string;
+  content: string;
+  order: number;
+  imageUrl?: string;
+  createdAt: string;
+};
+
+export type ProgramBookData = {
+  id: string;
+  showTitle: string;
+  showDate: string;
+  venue: string;
+  sections: ProgramBookSection[];
+  createdAt: string;
+};
+
+// ─── 그룹 통합 캘린더 ───────────────────────────────────────────
+
+export type UnifiedEventType =
+  | "practice"
+  | "performance"
+  | "meeting"
+  | "social"
+  | "competition"
+  | "workshop"
+  | "other";
+
+export type UnifiedCalendarEvent = {
+  id: string;
+  title: string;
+  type: UnifiedEventType;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:MM
+  endTime: string; // HH:MM
+  location?: string;
+  description?: string;
+  participants: string[];
+  isAllDay: boolean;
+  color?: string;
+  reminder?: boolean;
+  createdBy: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 의상 디자인 보드
+// ============================================================
+
+export type CostumeDesignStatus =
+  | "idea"
+  | "sketched"
+  | "approved"
+  | "in_production"
+  | "completed";
+
+export type CostumeDesignComment = {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
+};
+
+export type CostumeDesignEntry = {
+  id: string;
+  title: string;
+  description: string;
+  designedBy: string;
+  category: string;
+  colorScheme: string[];
+  materialNotes?: string;
+  estimatedCost?: number;
+  status: CostumeDesignStatus;
+  votes: string[];
+  comments: CostumeDesignComment[];
+  createdAt: string;
+};
