@@ -1572,4 +1572,19 @@ export const swrKeys = {
 
   // 의상 추적기 (localStorage 기반)
   wardrobeTracker: (projectId: string) => `wardrobe-tracker-${projectId}` as const,
+
+  // 개인 댄스 플레이리스트 (localStorage 기반)
+  dancePlaylist: (memberId: string) => `dance-playlist-${memberId}` as const,
+
+  // 그룹 게시판 (localStorage 기반)
+  groupNoticeboard: (groupId: string) => `group-noticeboard-${groupId}` as const,
+
+  // 그룹 투표 (localStorage 기반)
+  groupVoting: (groupId: string) => `group-voting-${groupId}` as const,
+
+  // 인터컴/통신 체계 (localStorage 기반)
+  showIntercom: (projectId: string) => `show-intercom-${projectId}` as const,
+
+  // 야외 공연 날씨 관리 (localStorage 기반)
+  stageWeather: (projectId: string) => `stage-weather-${projectId}` as const,
 };

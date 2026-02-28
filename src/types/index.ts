@@ -14628,3 +14628,276 @@ export type WardrobeTrackerData = {
   items: WardrobeTrackItem[];
   updatedAt: string;
 };
+
+// ─────────────────────────────────────────────
+// 그룹 게시판 (GroupNoticeboard) - localStorage 기반
+// ─────────────────────────────────────────────
+
+/** 게시글 카테고리 */
+export const NOTICEBOARD_POST_CATEGORIES = ["자유", "질문", "정보공유", "후기"] as const;
+export type NoticeboardPostCategory = (typeof NOTICEBOARD_POST_CATEGORIES)[number];
+
+/** 게시글 댓글 (localStorage) */
+export type NoticeboardComment = {
+  /** 댓글 고유 ID */
+  id: string;
+  /** 작성자명 */
+  authorName: string;
+  /** 댓글 내용 */
+  content: string;
+  /** 작성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 게시글 (localStorage) */
+export type NoticeboardPost = {
+  /** 게시글 고유 ID */
+  id: string;
+  /** 제목 */
+  title: string;
+  /** 내용 */
+  content: string;
+  /** 작성자명 */
+  authorName: string;
+  /** 작성일 (ISO 8601) */
+  createdAt: string;
+  /** 카테고리 */
+  category: NoticeboardPostCategory;
+  /** 댓글 목록 */
+  comments: NoticeboardComment[];
+};
+
+/** localStorage에 저장되는 게시판 데이터 */
+export type NoticeboardData = {
+  posts: NoticeboardPost[];
+};
+
+/** localStorage 키 접두사 */
+export const NOTICEBOARD_STORAGE_KEY = "group-noticeboard" as const;
+
+/** 기본값 */
+export const DEFAULT_NOTICEBOARD_DATA: NoticeboardData = {
+  posts: [],
+};
+
+// ============================================================
+// 개인 댄스 플레이리스트 (MyPlaylist*)
+// ============================================================
+
+/** 플레이리스트 내 곡 용도 */
+export type MyPlaylistSongPurpose =
+  | "warmup"
+  | "main"
+  | "cooldown"
+  | "performance";
+
+/** 플레이리스트 내 곡 */
+export type MyPlaylistSong = {
+  /** 고유 ID */
+  id: string;
+  /** 곡명 */
+  title: string;
+  /** 아티스트 */
+  artist: string;
+  /** BPM (선택) */
+  bpm: number | null;
+  /** 장르 (선택) */
+  genre: string;
+  /** 용도 */
+  purpose: MyPlaylistSongPurpose;
+  /** 순서 (0-based) */
+  order: number;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 개인 플레이리스트 */
+export type MyPlaylist = {
+  /** 고유 ID */
+  id: string;
+  /** 플레이리스트 이름 */
+  name: string;
+  /** 설명 (선택) */
+  description: string;
+  /** 곡 목록 */
+  songs: MyPlaylistSong[];
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 개인 댄스 플레이리스트 전체 데이터 */
+export type MyPlaylistData = {
+  memberId: string;
+  playlists: MyPlaylist[];
+  updatedAt: string;
+};
+
+// ============================================================
+// GroupVotingCard (그룹 투표)
+// ============================================================
+
+/** 투표 선택지 */
+export type GroupVoteCardOption = {
+  id: string;
+  /** 선택지 텍스트 */
+  label: string;
+  /** 투표한 사용자 ID 목록 */
+  voterIds: string[];
+};
+
+/** 투표 단일 항목 */
+export type GroupVoteCardItem = {
+  id: string;
+  /** 투표 제목 */
+  title: string;
+  /** 투표 설명 (선택) */
+  description?: string;
+  /** 선택지 목록 (2~6개) */
+  options: GroupVoteCardOption[];
+  /** 마감일 (ISO 8601, 선택) */
+  deadline?: string;
+  /** 복수선택 허용 여부 */
+  multipleChoice: boolean;
+  /** 익명 투표 여부 */
+  anonymous: boolean;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 생성자 ID */
+  createdBy: string;
+};
+
+/** 그룹 투표 전체 데이터 (localStorage 기반) */
+export type GroupVotingCardData = {
+  groupId: string;
+  votes: GroupVoteCardItem[];
+  updatedAt: string;
+};
+
+// ============================================================
+// ShowIntercom (인터컴/통신 체계)
+// ============================================================
+
+/** 담당 영역 */
+export type ShowIntercomZone =
+  | "stage"        // 무대
+  | "sound"        // 음향
+  | "lighting"     // 조명
+  | "backstage"    // 백스테이지
+  | "overall"      // 총괄
+  | "other";       // 기타
+
+/** 채널에 배정된 인원 */
+export type ShowIntercomPerson = {
+  /** 인원 고유 ID */
+  id: string;
+  /** 이름 */
+  name: string;
+  /** 호출부호 (콜사인) */
+  callSign: string;
+};
+
+/** 인터컴 채널 */
+export type ShowIntercomChannel = {
+  /** 채널 고유 ID */
+  id: string;
+  /** 채널명 */
+  name: string;
+  /** 주파수 또는 채널 번호 */
+  frequency: string;
+  /** 담당 영역 */
+  zone: ShowIntercomZone;
+  /** 비상 채널 여부 */
+  isEmergency: boolean;
+  /** 배정 인원 목록 */
+  persons: ShowIntercomPerson[];
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 수정일 (ISO 8601, 선택) */
+  updatedAt?: string;
+};
+
+/** 인터컴 전체 데이터 (localStorage 기반) */
+export type ShowIntercomData = {
+  /** 프로젝트 ID */
+  projectId: string;
+  /** 채널 목록 */
+  channels: ShowIntercomChannel[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// StageWeather (야외 공연 날씨 관리)
+// ============================================================
+
+/** 날씨 상태 */
+export type StageWeatherCondition =
+  | "sunny"   // 맑음
+  | "cloudy"  // 흐림
+  | "rainy"   // 비
+  | "snowy"   // 눈
+  | "windy";  // 바람
+
+/** 공연 가능 여부 판정 */
+export type StageWeatherSafety = "safe" | "caution" | "danger";
+
+/** 날씨 체크리스트 항목 */
+export type StageWeatherCheckItem = {
+  id: string;
+  label: string;
+  done: boolean;
+};
+
+/** 날씨별 대응 플랜 */
+export type StageWeatherPlan = {
+  id: string;
+  /** 해당 날씨 조건 */
+  condition: StageWeatherCondition;
+  /** 대응 내용 */
+  action: string;
+  /** 필요 장비 목록 */
+  equipment: string[];
+};
+
+/** 우천 시 대체 계획 */
+export type StageWeatherRainPlan = {
+  /** 장소 변경 여부 */
+  venueChange: boolean;
+  /** 대체 장소 */
+  alternativeVenue: string;
+  /** 우비 준비 여부 */
+  raincoatReady: boolean;
+  /** 텐트 준비 여부 */
+  tentReady: boolean;
+};
+
+/** 날씨 예보 + 체크리스트 (공연일 단위) */
+export type StageWeatherForecast = {
+  id: string;
+  /** 공연 날짜 (ISO 8601) */
+  date: string;
+  /** 예상 날씨 */
+  condition: StageWeatherCondition;
+  /** 기온 (°C) */
+  temperature: number;
+  /** 습도 (%) */
+  humidity: number;
+  /** 풍속 메모 */
+  windNote: string;
+  /** 공연 가능 여부 판정 */
+  safety: StageWeatherSafety;
+  /** 체크리스트 항목 */
+  checklist: StageWeatherCheckItem[];
+};
+
+/** StageWeatherCard 전체 데이터 (localStorage 기반) */
+export type StageWeatherData = {
+  projectId: string;
+  /** 공연일 날씨 예보 목록 */
+  forecasts: StageWeatherForecast[];
+  /** 날씨별 대응 플랜 목록 */
+  plans: StageWeatherPlan[];
+  /** 우천 시 대체 계획 */
+  rainPlan: StageWeatherRainPlan;
+  updatedAt: string;
+};

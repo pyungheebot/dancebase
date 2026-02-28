@@ -52,6 +52,8 @@ import { GroupWishlistCard } from "@/components/groups/group-wishlist-card";
 import { GroupStreakCard } from "@/components/groups/group-streak-card";
 import { GroupFaqCard } from "@/components/groups/group-faq-card";
 import { GroupDuesTrackerCard } from "@/components/groups/group-dues-tracker-card";
+import { GroupNoticeboardCard } from "@/components/groups/group-noticeboard-card";
+import { GroupVotingCard } from "@/components/groups/group-voting-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -255,6 +257,10 @@ export default function GroupDetailPage({
           <GroupFaqCard groupId={ctx.groupId} />
 
           <GroupDuesTrackerCard groupId={ctx.groupId} />
+
+          <GroupNoticeboardCard groupId={ctx.groupId} />
+
+          <GroupVotingCard groupId={ctx.groupId} />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

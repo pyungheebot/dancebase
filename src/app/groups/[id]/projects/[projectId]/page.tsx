@@ -45,6 +45,8 @@ import { EmergencyContactCard } from "@/components/projects/emergency-contact-ca
 import { StageEffectCard } from "@/components/projects/stage-effect-card";
 import { CueSheetCard } from "@/components/projects/cue-sheet-card";
 import { WardrobeTrackerCard } from "@/components/projects/wardrobe-tracker-card";
+import { IntercomCard } from "@/components/projects/intercom-card";
+import { StageWeatherCard } from "@/components/projects/stage-weather-card";
 
 export default function ProjectDetailPage({
   params,
@@ -256,6 +258,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <WardrobeTrackerCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <IntercomCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <StageWeatherCard
               projectId={ctx.projectId}
             />
           )}

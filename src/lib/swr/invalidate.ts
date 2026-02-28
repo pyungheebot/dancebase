@@ -897,3 +897,23 @@ export function invalidateShowCueSheet(projectId: string) {
 export function invalidateWardrobeTracker(projectId: string) {
   mutate(swrKeys.wardrobeTracker(projectId));
 }
+
+export function invalidateDancePlaylist(memberId: string) {
+  mutate(swrKeys.dancePlaylist(memberId));
+}
+
+export function invalidateGroupNoticeboard(groupId: string) {
+  mutate(swrKeys.groupNoticeboard(groupId));
+}
+
+export function invalidateGroupVoting(groupId: string) {
+  mutate(swrKeys.groupVoting(groupId));
+}
+
+export function invalidateShowIntercom(projectId: string) {
+  mutate(swrKeys.showIntercom(projectId));
+}
+
+export function invalidateStageWeather(projectId: string) {
+  mutate(swrKeys.stageWeather(projectId));
+}
