@@ -10170,3 +10170,287 @@ export type AudienceCountSheet = {
   records: AudienceCountRecord[];
   updatedAt: string;
 };
+
+// ============================================================
+// 멤버 댄스 수업 수강 기록
+// ============================================================
+
+/** 수업 출처 (그룹 내부 / 외부 개인 수강) */
+export type DanceClassLogSource = "internal" | "external";
+
+/** 수업 레벨 */
+export type DanceClassLogLevel =
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+  | "all_levels";
+
+/** 댄스 수업 수강 기록 단건 */
+export type DanceClassLogEntry = {
+  id: string;
+  memberId: string;
+
+  /** 수업명 */
+  className: string;
+
+  /** 강사명 */
+  instructor: string;
+
+  /** 수업 날짜 (YYYY-MM-DD) */
+  date: string;
+
+  /** 수업 시간 (HH:MM) */
+  startTime?: string;
+
+  /** 수업 시간 (분) */
+  durationMin?: number;
+
+  /** 출처 (내부/외부) */
+  source: DanceClassLogSource;
+
+  /** 장르 */
+  genre: string;
+
+  /** 레벨 */
+  level: DanceClassLogLevel;
+
+  /** 내용 요약 */
+  summary?: string;
+
+  /** 배운 기술 (쉼표 구분 태그) */
+  skills: string[];
+
+  /** 자가 평가 (1-5) */
+  selfRating: number;
+
+  /** 추가 메모 */
+  notes?: string;
+
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** 댄스 수업 수강 기록 전체 (localStorage 저장 단위) */
+export type DanceClassLogData = {
+  memberId: string;
+  entries: DanceClassLogEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 미디어 보도 자료 (Media Press Kit)
+// ============================================================
+
+/** 보도자료 배포 상태 */
+export type MediaPressKitStatus = "draft" | "review" | "published";
+
+/** 배포 매체 유형 */
+export type MediaPressKitOutletType =
+  | "newspaper"
+  | "magazine"
+  | "online"
+  | "broadcast"
+  | "sns"
+  | "other";
+
+/** 배포 매체 */
+export type MediaPressKitOutlet = {
+  id: string;
+  name: string;
+  type: MediaPressKitOutletType;
+  contactName?: string;
+  contactEmail?: string;
+  published: boolean;
+  publishedAt?: string;
+  publishedUrl?: string;
+  note?: string;
+};
+
+/** 보도자료 항목 */
+export type MediaPressKitEntry = {
+  id: string;
+  title: string;
+  writtenAt: string;
+  content: string;
+  contactName: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  attachmentUrls: string[];
+  outlets: MediaPressKitOutlet[];
+  status: MediaPressKitStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** 보도자료 전체 데이터 (localStorage 저장 단위) */
+export type MediaPressKitSheet = {
+  groupId: string;
+  projectId: string;
+  entries: MediaPressKitEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 입장 게이트 관리
+// ============================================================
+
+/** 게이트 상태 */
+export type EntranceGateStatus = "open" | "closed" | "standby";
+
+/** 입장 유형 */
+export type EntranceGateType = "general" | "vip" | "staff" | "disabled";
+
+/** 게이트 항목 */
+export type EntranceGateEntry = {
+  /** 게이트 ID */
+  id: string;
+  /** 게이트 번호 (예: 1, 2, 3) */
+  gateNumber: number;
+  /** 게이트 이름 (예: 메인 게이트, VIP 전용) */
+  gateName: string;
+  /** 위치 설명 (예: 1층 정문, 2층 좌측) */
+  location?: string;
+  /** 담당 스태프 이름 */
+  staffName?: string;
+  /** 개방 시작 시간 (HH:mm) */
+  openTime?: string;
+  /** 개방 종료 시간 (HH:mm) */
+  closeTime?: string;
+  /** 허용 입장 유형 목록 */
+  allowedTypes: EntranceGateType[];
+  /** 현재 게이트 상태 */
+  status: EntranceGateStatus;
+  /** 현재 입장 카운트 */
+  count: number;
+  /** 메모 */
+  note?: string;
+  /** 생성 시각 */
+  createdAt: string;
+  /** 수정 시각 */
+  updatedAt: string;
+};
+
+/** 게이트 전체 시트 */
+export type EntranceGateSheet = {
+  groupId: string;
+  projectId: string;
+  gates: EntranceGateEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 연습 장비 체크리스트
+// ============================================================
+
+/** 체크리스트 단계 (연습 전 / 연습 후) */
+export type EquipmentChecklistPhase = "before" | "after";
+
+/** 체크리스트 템플릿 항목 */
+export type EquipmentChecklistItem = {
+  id: string;
+  name: string;
+  phase: EquipmentChecklistPhase;
+  category: string;
+  order: number;
+};
+
+/** 날짜별 기록의 항목 체크 상태 */
+export type EquipmentChecklistEntry = {
+  itemId: string;
+  checked: boolean;
+  checkedBy?: string;
+  checkedAt?: string;
+  note?: string;
+};
+
+/** 날짜별 체크리스트 기록 */
+export type EquipmentChecklistRecord = {
+  id: string;
+  date: string;
+  phase: EquipmentChecklistPhase;
+  assignee?: string;
+  entries: EquipmentChecklistEntry[];
+  completedAt?: string;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** 그룹 장비 체크리스트 전체 데이터 */
+export type EquipmentChecklistSheet = {
+  groupId: string;
+  items: EquipmentChecklistItem[];
+  records: EquipmentChecklistRecord[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 연습 피드백 수집
+// ============================================================
+
+/** 카테고리별 평가 점수 (1-5) */
+export type PracticeFeedbackRating = {
+  /** 안무 평가 */
+  choreography: number;
+  /** 음악 평가 */
+  music: number;
+  /** 환경 평가 */
+  environment: number;
+  /** 분위기 평가 */
+  atmosphere: number;
+};
+
+/** 개별 피드백 응답 */
+export type PracticeFeedbackResponse = {
+  id: string;
+  sessionId: string;
+  /** 작성자 이름 (익명이면 "익명") */
+  authorName: string;
+  /** 익명 여부 */
+  isAnonymous: boolean;
+  /** 전체 만족도 (1-5) */
+  overallRating: number;
+  /** 카테고리별 평가 */
+  categoryRatings: PracticeFeedbackRating;
+  /** 좋았던 점 */
+  goodPoints?: string;
+  /** 개선할 점 */
+  improvements?: string;
+  createdAt: string;
+};
+
+/** 피드백 세션 (연습 날짜 단위) */
+export type PracticeFeedbackSession = {
+  id: string;
+  groupId: string;
+  /** 연습 날짜 (YYYY-MM-DD) */
+  practiceDate: string;
+  /** 세션 제목 (선택) */
+  title?: string;
+  /** 피드백 목록 */
+  responses: PracticeFeedbackResponse[];
+  createdAt: string;
+};
+
+/** 세션별 집계 결과 */
+export type PracticeFeedbackAggregate = {
+  sessionId: string;
+  practiceDate: string;
+  title?: string;
+  totalResponses: number;
+  /** 전체 만족도 평균 */
+  averageOverall: number;
+  /** 카테고리별 평균 */
+  averageCategories: PracticeFeedbackRating;
+  /** 좋았던 점 목록 */
+  goodPointsList: string[];
+  /** 개선할 점 목록 */
+  improvementsList: string[];
+};
+
+/** localStorage 저장 단위 */
+export type PracticeFeedbackData = {
+  groupId: string;
+  sessions: PracticeFeedbackSession[];
+  updatedAt: string;
+};
