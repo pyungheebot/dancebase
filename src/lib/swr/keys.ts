@@ -959,4 +959,20 @@ export const swrKeys = {
   // 멤버 스케줄 선호도 (localStorage 기반)
   schedulePreference: (groupId: string) =>
     `schedule-preference-${groupId}` as const,
+
+  // 멤버 성장 일지 (localStorage 기반)
+  growthJournal: (groupId: string) =>
+    `growth-journal-${groupId}` as const,
+
+  // 댄스 용어 사전 v2 (localStorage + SWR 기반)
+  danceGlossaryEntries: (groupId: string) =>
+    `dance-glossary-${groupId}` as const,
+
+  // 공연 세트리스트 (localStorage 기반)
+  setList: (groupId: string, projectId: string) =>
+    `set-list-${groupId}-${projectId}` as const,
+
+  // 그룹 회의록 메모 (localStorage 기반)
+  meetingMinutesMemo: (groupId: string) =>
+    `meeting-minutes-${groupId}` as const,
 };

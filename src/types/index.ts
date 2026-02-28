@@ -7147,3 +7147,153 @@ export type OptimalSlotResult = {
   preferredCount: number;
   score: number;
 };
+
+// ============================================
+// 멤버 성장 일지
+// ============================================
+
+/** 성장 일지 무드 */
+export type GrowthJournalMood =
+  | "motivated"
+  | "confident"
+  | "neutral"
+  | "struggling"
+  | "discouraged";
+
+/** 성장 일지 항목 */
+export type GrowthJournalEntry = {
+  id: string;
+  memberName: string;
+  date: string;
+  title: string;
+  content: string;
+  mood: GrowthJournalMood;
+  skillsPracticed: string[];
+  achievementsToday: string[];
+  challengesFaced: string[];
+  nextGoals: string[];
+  selfRating: number; // 1~5
+  createdAt: string;
+};
+
+// ============================================
+// Dance Glossary Entry (댄스 용어 사전 - SWR+localStorage)
+// ============================================
+
+export type GlossaryCategoryNew =
+  | "basic"
+  | "technique"
+  | "formation"
+  | "rhythm"
+  | "style"
+  | "stage"
+  | "other";
+
+export type DanceGlossaryEntry = {
+  id: string;
+  term: string;
+  definition: string;
+  category: GlossaryCategoryNew;
+  relatedTerms: string[];
+  example?: string;
+  addedBy: string;
+  createdAt: string;
+};
+
+// ============================================
+// 연습 장소 리뷰 (VenueReviewEntry)
+// ============================================
+
+/** 연습 장소 리뷰 항목 */
+export type VenueReviewEntry = {
+  id: string;
+  venueName: string;
+  address?: string;
+  rating: number;           // 1~5 종합 별점
+  floorRating: number;      // 1~5 바닥 평점
+  mirrorRating: number;     // 1~5 거울 평점
+  soundRating: number;      // 1~5 음향 평점
+  accessRating: number;     // 1~5 접근성 평점
+  pricePerHour?: number;    // 시간당 가격 (원)
+  capacity?: number;        // 수용 인원
+  pros: string[];           // 장점 목록
+  cons: string[];           // 단점 목록
+  comment?: string;         // 추가 코멘트
+  reviewedBy: string;       // 작성자
+  visitDate: string;        // 방문일 (YYYY-MM-DD)
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 세트리스트
+// ============================================================
+
+/** 세트리스트 항목 유형 */
+export type SetListItemType =
+  | "performance"
+  | "mc_talk"
+  | "intermission"
+  | "opening"
+  | "closing"
+  | "encore";
+
+/** 세트리스트 항목 */
+export type SetListItem = {
+  id: string;
+  order: number;
+  type: SetListItemType;
+  title: string;
+  artist?: string;
+  /** 재생/수행 시간 (초) */
+  duration: number;
+  performers: string[];
+  notes?: string;
+  transitionNote?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 그룹 회의록
+// ============================================================
+
+/** 회의 유형 */
+export type MeetingMinutesType =
+  | "regular"
+  | "emergency"
+  | "planning"
+  | "review"
+  | "other";
+
+/** 안건 실행과제 */
+export type MeetingActionItem = {
+  assignee: string;
+  task: string;
+  deadline?: string;
+};
+
+/** 안건 항목 */
+export type MeetingAgendaItem = {
+  id: string;
+  title: string;
+  discussion: string;
+  decision?: string;
+  actionItems: MeetingActionItem[];
+};
+
+/** 회의록 항목 */
+export type MeetingMinutesEntry = {
+  id: string;
+  title: string;
+  type: MeetingMinutesType;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location?: string;
+  attendees: string[];
+  absentees: string[];
+  recorder: string;
+  agendaItems: MeetingAgendaItem[];
+  generalNotes?: string;
+  nextMeetingDate?: string;
+  createdAt: string;
+};

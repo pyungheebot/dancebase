@@ -5,19 +5,20 @@ import { toast } from "sonner";
 import {
   MapPin,
   Star,
-  ThumbsUp,
-  DollarSign,
   ChevronDown,
   ChevronUp,
   Plus,
   Trash2,
-  MessageSquarePlus,
   Trophy,
-  SlidersHorizontal,
+  Users,
+  DollarSign,
+  LayoutList,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -29,497 +30,626 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useVenueReview, type VenueSortType } from "@/hooks/use-venue-review";
-import type { VenueEntry, VenueFeature } from "@/types";
+import { useVenueReview } from "@/hooks/use-venue-review";
+import type { VenueReviewEntry } from "@/types";
 
-// ─── 시설 설정 ────────────────────────────────────────────────
+// ─── 별점 색상 헬퍼 ───────────────────────────────────────────
 
-const FEATURE_META: Record<VenueFeature, { label: string; emoji: string }> = {
-  mirror:  { label: "거울",    emoji: "🪞" },
-  sound:   { label: "음향",    emoji: "🔊" },
-  parking: { label: "주차",    emoji: "🅿️" },
-  aircon:  { label: "에어컨",  emoji: "❄️" },
-  floor:   { label: "바닥",    emoji: "🟫" },
-  shower:  { label: "샤워",    emoji: "🚿" },
-  wifi:    { label: "와이파이", emoji: "📶" },
-  storage: { label: "보관함",  emoji: "🗄️" },
-};
+function ratingColor(rating: number): string {
+  if (rating <= 2) return "text-red-500 fill-red-500";
+  if (rating === 3) return "text-yellow-500 fill-yellow-500";
+  return "text-green-500 fill-green-500";
+}
 
-const ALL_FEATURES: VenueFeature[] = [
-  "mirror", "sound", "parking", "aircon", "floor", "shower", "wifi", "storage",
-];
+function ratingBgClass(rating: number): string {
+  if (rating <= 2) return "bg-red-50 text-red-700 border-red-200";
+  if (rating === 3) return "bg-yellow-50 text-yellow-700 border-yellow-200";
+  return "bg-green-50 text-green-700 border-green-200";
+}
 
-// ─── 별점 컴포넌트 ────────────────────────────────────────────
+// ─── 별점 표시 컴포넌트 ───────────────────────────────────────
 
-function StarRating({
+function StarDisplay({
   value,
-  onChange,
-  readOnly = false,
   size = "md",
 }: {
   value: number;
-  onChange?: (v: number) => void;
-  readOnly?: boolean;
   size?: "sm" | "md";
 }) {
-  const [hovered, setHovered] = useState(0);
   const iconSize = size === "sm" ? "h-3 w-3" : "h-4 w-4";
-
+  const colorClass = ratingColor(value);
   return (
     <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => {
-        const filled = readOnly ? n <= value : n <= (hovered || value);
-        return (
-          <button
-            key={n}
-            type="button"
-            disabled={readOnly}
-            onMouseEnter={() => !readOnly && setHovered(n)}
-            onMouseLeave={() => !readOnly && setHovered(0)}
-            onClick={() => !readOnly && onChange?.(n)}
-            className={readOnly ? "cursor-default" : "cursor-pointer"}
-          >
-            <Star
-              className={`${iconSize} transition-colors ${
-                filled ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-              }`}
-            />
-          </button>
-        );
-      })}
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star
+          key={n}
+          className={`${iconSize} transition-colors ${
+            n <= value ? colorClass : "text-gray-200 fill-gray-200"
+          }`}
+        />
+      ))}
     </div>
   );
 }
 
-// ─── 시설 배지 ────────────────────────────────────────────────
+// ─── 별점 입력 컴포넌트 ───────────────────────────────────────
 
-function FeatureBadge({ feature }: { feature: VenueFeature }) {
-  const { label, emoji } = FEATURE_META[feature];
+function StarInput({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const [hovered, setHovered] = useState(0);
+  const active = hovered || value;
   return (
-    <Badge className="bg-blue-50 text-[10px] px-1.5 py-0 text-blue-700 hover:bg-blue-50 border border-blue-200">
-      {emoji} {label}
-    </Badge>
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          onMouseEnter={() => setHovered(n)}
+          onMouseLeave={() => setHovered(0)}
+          onClick={() => onChange(n)}
+          className="cursor-pointer"
+        >
+          <Star
+            className={`h-5 w-5 transition-colors ${
+              n <= active
+                ? ratingColor(active)
+                : "text-gray-300 fill-gray-300"
+            }`}
+          />
+        </button>
+      ))}
+      {value > 0 && (
+        <span className="ml-1 text-xs text-gray-500">{value}점</span>
+      )}
+    </div>
   );
 }
 
-// ─── 장소 추가 폼 ─────────────────────────────────────────────
+// ─── 세부 별점 행 ─────────────────────────────────────────────
 
-function AddVenueForm({
-  onAdd,
+function DetailRatingRow({
+  label,
+  value,
 }: {
-  onAdd: (v: Omit<VenueEntry, "id" | "createdAt">) => boolean;
+  label: string;
+  value: number;
 }) {
-  const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
-  const [hourlyRate, setHourlyRate] = useState("");
-  const [features, setFeatures] = useState<VenueFeature[]>([]);
-  const [note, setNote] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  const toggleFeature = (f: VenueFeature) => {
-    setFeatures((prev) =>
-      prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]
-    );
-  };
-
-  const handleSubmit = () => {
-    if (!name.trim()) {
-      toast.error("장소 이름을 입력해주세요.");
-      return;
-    }
-    if (!address.trim()) {
-      toast.error("주소를 입력해주세요.");
-      return;
-    }
-    const rate = Number(hourlyRate);
-    if (isNaN(rate) || rate < 0) {
-      toast.error("시간당 비용을 올바르게 입력해주세요.");
-      return;
-    }
-    setSubmitting(true);
-    const ok = onAdd({
-      name: name.trim(),
-      address: address.trim(),
-      hourlyRate: rate,
-      features,
-      note: note.trim(),
-    });
-    setSubmitting(false);
-    if (ok) {
-      toast.success("장소가 등록되었습니다.");
-      setName("");
-      setAddress("");
-      setHourlyRate("");
-      setFeatures([]);
-      setNote("");
-    } else {
-      toast.error("장소 등록에 실패했습니다.");
-    }
-  };
-
   return (
-    <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3 space-y-2">
-      <p className="text-xs font-medium text-gray-600">새 장소 등록</p>
-
-      <div className="grid grid-cols-2 gap-2">
-        <Input
-          placeholder="장소 이름"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="h-8 text-xs"
-        />
-        <Input
-          placeholder="주소"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          className="h-8 text-xs"
-        />
-      </div>
-
-      <div className="flex items-center gap-2">
-        <DollarSign className="h-3 w-3 text-gray-400 shrink-0" />
-        <Input
-          placeholder="시간당 비용 (원)"
-          type="number"
-          min="0"
-          value={hourlyRate}
-          onChange={(e) => setHourlyRate(e.target.value)}
-          className="h-8 text-xs"
-        />
-      </div>
-
-      {/* 시설 체크박스 */}
-      <div>
-        <p className="mb-1.5 text-[10px] text-gray-500">시설 선택</p>
-        <div className="flex flex-wrap gap-1.5">
-          {ALL_FEATURES.map((f) => {
-            const { label, emoji } = FEATURE_META[f];
-            const selected = features.includes(f);
-            return (
-              <button
-                key={f}
-                type="button"
-                onClick={() => toggleFeature(f)}
-                className={`flex items-center gap-0.5 rounded-full border px-2 py-0.5 text-[10px] transition-colors ${
-                  selected
-                    ? "border-blue-400 bg-blue-50 text-blue-700"
-                    : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
-                }`}
-              >
-                {emoji} {label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 메모 */}
-      <Input
-        placeholder="메모 (선택)"
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        className="h-8 text-xs"
-      />
-
-      <Button
-        size="sm"
-        className="h-7 w-full text-xs"
-        onClick={handleSubmit}
-        disabled={submitting}
+    <div className="flex items-center gap-2">
+      <span className="w-14 text-[10px] text-gray-500 shrink-0">{label}</span>
+      <StarDisplay value={value} size="sm" />
+      <span
+        className={`text-[10px] font-medium ${
+          value <= 2 ? "text-red-500" : value === 3 ? "text-yellow-600" : "text-green-600"
+        }`}
       >
-        <Plus className="mr-1 h-3 w-3" />
-        장소 등록
-      </Button>
+        {value.toFixed(1)}
+      </span>
     </div>
   );
 }
 
-// ─── 리뷰 작성 폼 ─────────────────────────────────────────────
+// ─── 리뷰 작성 다이얼로그 ────────────────────────────────────
 
-function AddReviewForm({
-  venueId,
-  onAdd,
-  onClose,
-}: {
-  venueId: string;
-  onAdd: (params: {
-    venueId: string;
-    reviewerName: string;
-    rating: number;
-    pros: string;
-    cons: string;
-  }) => boolean;
-  onClose: () => void;
-}) {
-  const [reviewerName, setReviewerName] = useState("");
+interface AddReviewDialogProps {
+  onAdd: (params: Omit<VenueReviewEntry, "id" | "createdAt">) => void;
+  prefillVenueName?: string;
+}
+
+function AddReviewDialog({ onAdd, prefillVenueName = "" }: AddReviewDialogProps) {
+  const [open, setOpen] = useState(false);
+
+  const [venueName, setVenueName] = useState(prefillVenueName);
+  const [address, setAddress] = useState("");
   const [rating, setRating] = useState(0);
-  const [pros, setPros] = useState("");
-  const [cons, setCons] = useState("");
+  const [floorRating, setFloorRating] = useState(0);
+  const [mirrorRating, setMirrorRating] = useState(0);
+  const [soundRating, setSoundRating] = useState(0);
+  const [accessRating, setAccessRating] = useState(0);
+  const [pricePerHour, setPricePerHour] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [prosText, setProsText] = useState("");
+  const [consText, setConsText] = useState("");
+  const [comment, setComment] = useState("");
+  const [reviewedBy, setReviewedBy] = useState("");
+  const [visitDate, setVisitDate] = useState(
+    new Date().toISOString().slice(0, 10)
+  );
+
+  const resetForm = () => {
+    setVenueName(prefillVenueName);
+    setAddress("");
+    setRating(0);
+    setFloorRating(0);
+    setMirrorRating(0);
+    setSoundRating(0);
+    setAccessRating(0);
+    setPricePerHour("");
+    setCapacity("");
+    setProsText("");
+    setConsText("");
+    setComment("");
+    setReviewedBy("");
+    setVisitDate(new Date().toISOString().slice(0, 10));
+  };
 
   const handleSubmit = () => {
-    if (rating === 0) {
-      toast.error("별점을 선택해주세요.");
+    if (!venueName.trim()) {
+      toast.error("장소명을 입력해주세요.");
       return;
     }
-    const ok = onAdd({
-      venueId,
-      reviewerName: reviewerName.trim() || "익명",
-      rating,
-      pros: pros.trim(),
-      cons: cons.trim(),
-    });
-    if (ok) {
-      toast.success("리뷰가 등록되었습니다.");
-      onClose();
-    } else {
-      toast.error("리뷰 등록에 실패했습니다.");
+    if (rating === 0) {
+      toast.error("종합 별점을 선택해주세요.");
+      return;
     }
+    if (floorRating === 0 || mirrorRating === 0 || soundRating === 0 || accessRating === 0) {
+      toast.error("모든 세부 별점을 선택해주세요.");
+      return;
+    }
+    if (!reviewedBy.trim()) {
+      toast.error("작성자를 입력해주세요.");
+      return;
+    }
+    if (!visitDate) {
+      toast.error("방문일을 입력해주세요.");
+      return;
+    }
+
+    const price = pricePerHour.trim() ? Number(pricePerHour) : undefined;
+    const cap = capacity.trim() ? Number(capacity) : undefined;
+
+    if (price !== undefined && (isNaN(price) || price < 0)) {
+      toast.error("시간당 가격을 올바르게 입력해주세요.");
+      return;
+    }
+    if (cap !== undefined && (isNaN(cap) || cap < 0)) {
+      toast.error("수용 인원을 올바르게 입력해주세요.");
+      return;
+    }
+
+    const pros = prosText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const cons = consText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    onAdd({
+      venueName: venueName.trim(),
+      address: address.trim() || undefined,
+      rating,
+      floorRating,
+      mirrorRating,
+      soundRating,
+      accessRating,
+      pricePerHour: price,
+      capacity: cap,
+      pros,
+      cons,
+      comment: comment.trim() || undefined,
+      reviewedBy: reviewedBy.trim(),
+      visitDate,
+    });
+
+    toast.success("리뷰가 등록되었습니다.");
+    setOpen(false);
+    resetForm();
   };
 
   return (
-    <div className="mt-2 rounded-lg border border-dashed border-purple-200 bg-purple-50 p-3 space-y-2">
-      <p className="text-xs font-medium text-purple-700">리뷰 작성</p>
-
-      <div className="flex items-center gap-2">
-        <Input
-          placeholder="작성자 (선택)"
-          value={reviewerName}
-          onChange={(e) => setReviewerName(e.target.value)}
-          className="h-8 text-xs"
-        />
-        <StarRating value={rating} onChange={setRating} />
-      </div>
-
-      <Input
-        placeholder="장점"
-        value={pros}
-        onChange={(e) => setPros(e.target.value)}
-        className="h-8 text-xs"
-      />
-      <Input
-        placeholder="단점"
-        value={cons}
-        onChange={(e) => setCons(e.target.value)}
-        className="h-8 text-xs"
-      />
-
-      <div className="flex gap-2">
-        <Button
-          size="sm"
-          className="h-7 flex-1 text-xs"
-          onClick={handleSubmit}
-        >
-          등록
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="h-7 text-xs">
+          <Plus className="mr-1 h-3 w-3" />
+          리뷰 작성
         </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 text-xs"
-          onClick={onClose}
-        >
-          취소
-        </Button>
-      </div>
-    </div>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-sm">연습 장소 리뷰 작성</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          {/* 장소 기본 정보 */}
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-gray-700">장소 정보</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-[10px] text-gray-500">장소명 *</Label>
+                <Input
+                  placeholder="예: 홍대 댄스 스튜디오"
+                  value={venueName}
+                  onChange={(e) => setVenueName(e.target.value)}
+                  className="mt-0.5 h-8 text-xs"
+                />
+              </div>
+              <div>
+                <Label className="text-[10px] text-gray-500">주소 (선택)</Label>
+                <Input
+                  placeholder="예: 서울 마포구 홍대로 12"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="mt-0.5 h-8 text-xs"
+                />
+              </div>
+              <div>
+                <Label className="text-[10px] text-gray-500">시간당 가격 (원)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="예: 30000"
+                  value={pricePerHour}
+                  onChange={(e) => setPricePerHour(e.target.value)}
+                  className="mt-0.5 h-8 text-xs"
+                />
+              </div>
+              <div>
+                <Label className="text-[10px] text-gray-500">수용 인원 (명)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="예: 20"
+                  value={capacity}
+                  onChange={(e) => setCapacity(e.target.value)}
+                  className="mt-0.5 h-8 text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* 별점 */}
+          <div className="space-y-3">
+            <Label className="text-xs font-medium text-gray-700">별점 평가</Label>
+            <div>
+              <Label className="text-[10px] text-gray-500">종합 별점 *</Label>
+              <div className="mt-1">
+                <StarInput value={rating} onChange={setRating} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-[10px] text-gray-500">바닥 상태 *</Label>
+                <div className="mt-1">
+                  <StarInput value={floorRating} onChange={setFloorRating} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-[10px] text-gray-500">거울 상태 *</Label>
+                <div className="mt-1">
+                  <StarInput value={mirrorRating} onChange={setMirrorRating} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-[10px] text-gray-500">음향 시설 *</Label>
+                <div className="mt-1">
+                  <StarInput value={soundRating} onChange={setSoundRating} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-[10px] text-gray-500">접근성 *</Label>
+                <div className="mt-1">
+                  <StarInput value={accessRating} onChange={setAccessRating} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* 장단점 & 코멘트 */}
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-gray-700">장단점 & 코멘트</Label>
+            <div>
+              <Label className="text-[10px] text-gray-500">장점 (쉼표로 구분)</Label>
+              <Input
+                placeholder="예: 거울 크다, 주차 편리, 청결함"
+                value={prosText}
+                onChange={(e) => setProsText(e.target.value)}
+                className="mt-0.5 h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-[10px] text-gray-500">단점 (쉼표로 구분)</Label>
+              <Input
+                placeholder="예: 환기 부족, 주변 소음"
+                value={consText}
+                onChange={(e) => setConsText(e.target.value)}
+                className="mt-0.5 h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-[10px] text-gray-500">추가 코멘트 (선택)</Label>
+              <Textarea
+                placeholder="자유롭게 작성해주세요."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className="mt-0.5 text-xs resize-none"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* 작성자 & 방문일 */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-[10px] text-gray-500">작성자 *</Label>
+              <Input
+                placeholder="이름 또는 닉네임"
+                value={reviewedBy}
+                onChange={(e) => setReviewedBy(e.target.value)}
+                className="mt-0.5 h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-[10px] text-gray-500">방문일 *</Label>
+              <Input
+                type="date"
+                value={visitDate}
+                onChange={(e) => setVisitDate(e.target.value)}
+                className="mt-0.5 h-8 text-xs"
+              />
+            </div>
+          </div>
+
+          <Button className="w-full h-8 text-xs" onClick={handleSubmit}>
+            리뷰 등록
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-// ─── 장소 카드 아이템 ─────────────────────────────────────────
+// ─── 개별 리뷰 카드 ───────────────────────────────────────────
 
-function VenueItem({
-  venue,
-  averageRating,
-  reviewCount,
-  reviews,
-  isRecommended,
+function ReviewCard({
+  review,
   onDelete,
-  onAddReview,
-  onDeleteReview,
 }: {
-  venue: VenueEntry;
-  averageRating: number;
-  reviewCount: number;
-  reviews: ReturnType<typeof useVenueReview>["reviews"];
-  isRecommended: boolean;
+  review: VenueReviewEntry;
   onDelete: (id: string) => void;
-  onAddReview: (params: {
-    venueId: string;
-    reviewerName: string;
-    rating: number;
-    pros: string;
-    cons: string;
-  }) => boolean;
-  onDeleteReview: (reviewId: string) => void;
 }) {
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [showReviews, setShowReviews] = useState(false);
-
-  const venueReviews = reviews.filter((r) => r.venueId === venue.id);
-
   return (
-    <div
-      className={`rounded-lg border p-3 ${
-        isRecommended
-          ? "border-yellow-400 bg-yellow-50 ring-1 ring-yellow-300"
-          : "border-gray-200 bg-white"
-      }`}
-    >
-      {/* 헤더 */}
+    <div className="rounded-lg border border-gray-100 bg-white p-3 shadow-sm space-y-2">
+      {/* 헤더: 장소명 + 종합 별점 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            {isRecommended && (
-              <Trophy className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
-            )}
-            <span className="text-sm font-semibold text-gray-800 truncate">
-              {venue.name}
-            </span>
-            {isRecommended && (
-              <Badge className="bg-yellow-100 text-[10px] px-1.5 py-0 text-yellow-700 hover:bg-yellow-100 border border-yellow-300">
-                추천
-              </Badge>
-            )}
-          </div>
-
-          <div className="mt-0.5 flex items-center gap-1 text-[10px] text-gray-500">
-            <MapPin className="h-3 w-3 shrink-0" />
-            <span className="truncate">{venue.address}</span>
-          </div>
-
-          <div className="mt-1 flex items-center gap-2 flex-wrap">
-            {/* 평점 */}
-            <div className="flex items-center gap-1">
-              <StarRating value={Math.round(averageRating)} readOnly size="sm" />
-              <span className="text-[10px] text-gray-500">
-                {averageRating > 0 ? averageRating.toFixed(1) : "-"}
-                <span className="ml-0.5 text-gray-400">({reviewCount})</span>
-              </span>
-            </div>
-
-            {/* 시간당 비용 */}
-            <span className="flex items-center gap-0.5 text-[10px] text-green-700">
-              <DollarSign className="h-3 w-3" />
-              {venue.hourlyRate.toLocaleString()}원/h
+            <MapPin className="h-3 w-3 text-green-600 shrink-0" />
+            <span className="text-xs font-semibold text-gray-800 truncate">
+              {review.venueName}
             </span>
           </div>
-        </div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 text-gray-300 hover:text-red-500 shrink-0"
-          onClick={() => {
-            onDelete(venue.id);
-            toast.success("장소가 삭제되었습니다.");
-          }}
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
-      </div>
-
-      {/* 시설 배지 */}
-      {venue.features.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {venue.features.map((f) => (
-            <FeatureBadge key={f} feature={f} />
-          ))}
-        </div>
-      )}
-
-      {/* 메모 */}
-      {venue.note && (
-        <p className="mt-1.5 text-[10px] text-gray-500 italic">
-          {venue.note}
-        </p>
-      )}
-
-      {/* 리뷰 목록 토글 */}
-      <div className="mt-2 flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 px-2 text-[10px] text-gray-500"
-          onClick={() => setShowReviews((v) => !v)}
-        >
-          <ThumbsUp className="mr-1 h-3 w-3" />
-          리뷰 {reviewCount}개
-          {showReviews ? (
-            <ChevronUp className="ml-1 h-3 w-3" />
-          ) : (
-            <ChevronDown className="ml-1 h-3 w-3" />
+          {review.address && (
+            <p className="mt-0.5 text-[10px] text-gray-400 truncate">
+              {review.address}
+            </p>
           )}
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 px-2 text-[10px] text-purple-600 hover:text-purple-700"
-          onClick={() => setShowReviewForm((v) => !v)}
-        >
-          <MessageSquarePlus className="mr-1 h-3 w-3" />
-          리뷰 작성
-        </Button>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1">
+            <StarDisplay value={review.rating} size="sm" />
+            <span
+              className={`text-[10px] font-bold ${
+                review.rating <= 2
+                  ? "text-red-500"
+                  : review.rating === 3
+                  ? "text-yellow-600"
+                  : "text-green-600"
+              }`}
+            >
+              {review.rating}.0
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 w-5 p-0 text-gray-300 hover:text-red-500"
+            onClick={() => {
+              onDelete(review.id);
+              toast.success("리뷰가 삭제되었습니다.");
+            }}
+          >
+            <Trash2 className="h-2.5 w-2.5" />
+          </Button>
+        </div>
       </div>
 
-      {/* 리뷰 목록 */}
-      {showReviews && venueReviews.length > 0 && (
-        <div className="mt-2 space-y-2">
-          {venueReviews.map((r) => (
-            <div
-              key={r.id}
-              className="rounded-md border border-gray-100 bg-gray-50 p-2"
+      {/* 세부 별점 */}
+      <div className="grid grid-cols-2 gap-1">
+        <DetailRatingRow label="바닥" value={review.floorRating} />
+        <DetailRatingRow label="거울" value={review.mirrorRating} />
+        <DetailRatingRow label="음향" value={review.soundRating} />
+        <DetailRatingRow label="접근성" value={review.accessRating} />
+      </div>
+
+      {/* 부가 정보 */}
+      {(review.pricePerHour !== undefined || review.capacity !== undefined) && (
+        <div className="flex items-center gap-3">
+          {review.pricePerHour !== undefined && (
+            <span className="flex items-center gap-0.5 text-[10px] text-green-700">
+              <DollarSign className="h-2.5 w-2.5" />
+              {review.pricePerHour.toLocaleString()}원/h
+            </span>
+          )}
+          {review.capacity !== undefined && (
+            <span className="flex items-center gap-0.5 text-[10px] text-blue-600">
+              <Users className="h-2.5 w-2.5" />
+              최대 {review.capacity}명
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* 장단점 칩 */}
+      {(review.pros.length > 0 || review.cons.length > 0) && (
+        <div className="flex flex-wrap gap-1">
+          {review.pros.map((p, i) => (
+            <Badge
+              key={`pro-${i}`}
+              className="bg-green-50 text-[10px] px-1.5 py-0 text-green-700 border border-green-200 hover:bg-green-50"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium text-gray-700">
-                    {r.reviewerName}
-                  </span>
-                  <StarRating value={r.rating} readOnly size="sm" />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-5 w-5 p-0 text-gray-300 hover:text-red-500"
-                  onClick={() => {
-                    onDeleteReview(r.id);
-                    toast.success("리뷰가 삭제되었습니다.");
-                  }}
-                >
-                  <Trash2 className="h-2.5 w-2.5" />
-                </Button>
-              </div>
-              {r.pros && (
-                <p className="mt-1 text-[10px] text-green-700">
-                  <span className="font-medium">장점: </span>
-                  {r.pros}
-                </p>
-              )}
-              {r.cons && (
-                <p className="mt-0.5 text-[10px] text-red-600">
-                  <span className="font-medium">단점: </span>
-                  {r.cons}
-                </p>
-              )}
-            </div>
+              + {p}
+            </Badge>
+          ))}
+          {review.cons.map((c, i) => (
+            <Badge
+              key={`con-${i}`}
+              className="bg-red-50 text-[10px] px-1.5 py-0 text-red-600 border border-red-200 hover:bg-red-50"
+            >
+              - {c}
+            </Badge>
           ))}
         </div>
       )}
 
-      {showReviews && venueReviews.length === 0 && (
-        <p className="mt-2 text-center text-[10px] text-gray-400">
-          아직 리뷰가 없습니다.
+      {/* 코멘트 */}
+      {review.comment && (
+        <p className="text-[10px] text-gray-500 italic border-l-2 border-gray-200 pl-2">
+          &ldquo;{review.comment}&rdquo;
         </p>
       )}
 
-      {/* 리뷰 작성 폼 */}
-      {showReviewForm && (
-        <AddReviewForm
-          venueId={venue.id}
-          onAdd={onAddReview}
-          onClose={() => setShowReviewForm(false)}
-        />
-      )}
+      {/* 작성자 & 방문일 */}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-gray-400">
+          {review.reviewedBy}
+        </span>
+        <span className="text-[10px] text-gray-400">{review.visitDate}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── 장소 랭킹 뷰 ─────────────────────────────────────────────
+
+function VenueRankingView({
+  groupId,
+}: {
+  groupId: string;
+}) {
+  const { getVenueRanking, getVenueStats } = useVenueReview(groupId);
+  const ranking = getVenueRanking();
+
+  if (ranking.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-1 py-8 text-gray-400">
+        <Trophy className="h-8 w-8 opacity-30" />
+        <p className="text-xs">장소 랭킹 데이터가 없습니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {ranking.map((item, idx) => {
+        const stats = getVenueStats(item.venueName);
+        return (
+          <div
+            key={item.venueName}
+            className={`rounded-lg border p-3 ${
+              idx === 0
+                ? "border-yellow-300 bg-yellow-50 ring-1 ring-yellow-200"
+                : "border-gray-100 bg-white"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className={`text-xs font-bold shrink-0 w-5 text-center ${
+                    idx === 0
+                      ? "text-yellow-600"
+                      : idx === 1
+                      ? "text-gray-500"
+                      : idx === 2
+                      ? "text-orange-500"
+                      : "text-gray-400"
+                  }`}
+                >
+                  {idx === 0 ? "1" : idx === 1 ? "2" : idx === 2 ? "3" : `${idx + 1}`}
+                </span>
+                {idx === 0 && <Trophy className="h-3.5 w-3.5 text-yellow-500 shrink-0" />}
+                <span className="text-xs font-semibold text-gray-800 truncate">
+                  {item.venueName}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <StarDisplay value={Math.round(item.avgRating)} size="sm" />
+                <Badge
+                  className={`text-[10px] px-1.5 py-0 border ${ratingBgClass(item.avgRating)}`}
+                >
+                  {item.avgRating.toFixed(1)}
+                </Badge>
+                <span className="text-[10px] text-gray-400">
+                  ({item.count}개)
+                </span>
+              </div>
+            </div>
+
+            {/* 세부 평균 */}
+            <div className="mt-2 grid grid-cols-4 gap-1">
+              {[
+                { label: "바닥", val: stats.avgFloor },
+                { label: "거울", val: stats.avgMirror },
+                { label: "음향", val: stats.avgSound },
+                { label: "접근성", val: stats.avgAccess },
+              ].map(({ label, val }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center rounded bg-gray-50 py-1"
+                >
+                  <span className="text-[9px] text-gray-400">{label}</span>
+                  <span
+                    className={`text-[10px] font-medium ${
+                      val <= 2
+                        ? "text-red-500"
+                        : val === 3
+                        ? "text-yellow-600"
+                        : "text-green-600"
+                    }`}
+                  >
+                    {val.toFixed(1)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {item.avgPrice !== null && (
+              <p className="mt-1.5 flex items-center gap-0.5 text-[10px] text-green-700">
+                <DollarSign className="h-2.5 w-2.5" />
+                평균 {item.avgPrice.toLocaleString()}원/h
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -532,22 +662,27 @@ interface VenueReviewCardProps {
 
 export function VenueReviewCard({ groupId }: VenueReviewCardProps) {
   const [open, setOpen] = useState(true);
-  const [sort, setSort] = useState<VenueSortType>("rating");
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "ranking">("list");
+  const [venueFilter, setVenueFilter] = useState<string>("all");
 
   const {
     reviews,
-    addVenue,
-    deleteVenue,
     addReview,
     deleteReview,
-    getAverageRating,
-    getReviewCount,
-    recommendedVenues,
-    sortedVenues,
+    uniqueVenues,
+    totalReviews,
+    topRatedVenue,
+    averagePrice,
   } = useVenueReview(groupId);
 
-  const sorted = sortedVenues(sort);
+  const filteredReviews =
+    venueFilter === "all"
+      ? reviews
+      : reviews.filter(
+          (r) =>
+            r.venueName.trim().toLowerCase() ===
+            venueFilter.trim().toLowerCase()
+        );
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -558,15 +693,14 @@ export function VenueReviewCard({ groupId }: VenueReviewCardProps) {
           <span className="text-sm font-semibold text-gray-800">
             연습 장소 리뷰
           </span>
-          {sorted.length > 0 && (
+          {totalReviews > 0 && (
             <Badge className="bg-green-100 text-[10px] px-1.5 py-0 text-green-700 hover:bg-green-100">
-              {sorted.length}
+              {totalReviews}
             </Badge>
           )}
-          {recommendedVenues.length > 0 && (
-            <Badge className="bg-yellow-100 text-[10px] px-1.5 py-0 text-yellow-700 hover:bg-yellow-100 border border-yellow-300">
-              <Trophy className="mr-0.5 h-2.5 w-2.5" />
-              추천 {recommendedVenues.length}
+          {uniqueVenues.length > 0 && (
+            <Badge className="bg-blue-50 text-[10px] px-1.5 py-0 text-blue-700 hover:bg-blue-50 border border-blue-200">
+              {uniqueVenues.length}개 장소
             </Badge>
           )}
         </div>
@@ -585,78 +719,105 @@ export function VenueReviewCard({ groupId }: VenueReviewCardProps) {
       <CollapsibleContent>
         <Card className="rounded-t-none border-t-0 shadow-none">
           <CardHeader className="px-4 pb-2 pt-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-xs text-gray-500 font-normal">
-                그룹에서 사용하는 연습 장소를 등록하고 리뷰를 남겨보세요.
+                사용해본 연습 장소에 대한 리뷰를 남겨보세요.
               </CardTitle>
-              <div className="flex items-center gap-1">
-                {/* 정렬 토글 */}
+              <div className="flex items-center gap-1 shrink-0">
+                {/* 뷰 모드 토글 */}
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-7 text-xs gap-1"
                   onClick={() =>
-                    setSort((s) => (s === "rating" ? "price" : "rating"))
+                    setViewMode((v) => (v === "list" ? "ranking" : "list"))
                   }
                 >
-                  <SlidersHorizontal className="h-3 w-3" />
-                  {sort === "rating" ? "평점순" : "가격순"}
+                  {viewMode === "list" ? (
+                    <>
+                      <BarChart3 className="h-3 w-3" />
+                      랭킹
+                    </>
+                  ) : (
+                    <>
+                      <LayoutList className="h-3 w-3" />
+                      목록
+                    </>
+                  )}
                 </Button>
-                {/* 장소 추가 토글 */}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs"
-                  onClick={() => setShowAddForm((v) => !v)}
-                >
-                  <Plus className="mr-1 h-3 w-3" />
-                  장소 추가
-                </Button>
+                <AddReviewDialog onAdd={addReview} />
               </div>
             </div>
+
+            {/* 통계 요약 */}
+            {totalReviews > 0 && (
+              <div className="mt-2 flex items-center gap-3 flex-wrap">
+                {topRatedVenue && (
+                  <span className="flex items-center gap-1 text-[10px] text-yellow-700">
+                    <Trophy className="h-2.5 w-2.5" />
+                    최고: {topRatedVenue}
+                  </span>
+                )}
+                {averagePrice !== null && (
+                  <span className="flex items-center gap-1 text-[10px] text-green-700">
+                    <DollarSign className="h-2.5 w-2.5" />
+                    평균 {averagePrice.toLocaleString()}원/h
+                  </span>
+                )}
+              </div>
+            )}
           </CardHeader>
 
           <CardContent className="px-4 pb-4 space-y-3">
-            {/* 장소 추가 폼 */}
-            {showAddForm && (
-              <AddVenueForm
-                onAdd={(params) => {
-                  const ok = addVenue(params);
-                  if (ok) setShowAddForm(false);
-                  return ok;
-                }}
-              />
-            )}
+            {viewMode === "list" ? (
+              <>
+                {/* 장소 필터 */}
+                {uniqueVenues.length > 1 && (
+                  <Select value={venueFilter} onValueChange={setVenueFilter}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="장소 필터" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">
+                        전체 장소
+                      </SelectItem>
+                      {uniqueVenues.map((v) => (
+                        <SelectItem key={v} value={v} className="text-xs">
+                          {v}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
 
-            <Separator />
+                <Separator />
 
-            {/* 장소 목록 */}
-            {sorted.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-1 py-8 text-gray-400">
-                <MapPin className="h-8 w-8 opacity-30" />
-                <p className="text-xs">등록된 연습 장소가 없습니다.</p>
-                <p className="text-[10px] text-gray-300">
-                  위 &apos;장소 추가&apos; 버튼을 눌러 첫 장소를 등록해보세요.
-                </p>
-              </div>
+                {/* 리뷰 목록 */}
+                {filteredReviews.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-1 py-8 text-gray-400">
+                    <MapPin className="h-8 w-8 opacity-30" />
+                    <p className="text-xs">등록된 리뷰가 없습니다.</p>
+                    <p className="text-[10px] text-gray-300">
+                      위 &apos;리뷰 작성&apos; 버튼을 눌러 첫 리뷰를 남겨보세요.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredReviews.map((review) => (
+                      <ReviewCard
+                        key={review.id}
+                        review={review}
+                        onDelete={deleteReview}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="space-y-2">
-                {sorted.map((venue) => (
-                  <VenueItem
-                    key={venue.id}
-                    venue={venue}
-                    averageRating={getAverageRating(venue.id)}
-                    reviewCount={getReviewCount(venue.id)}
-                    reviews={reviews}
-                    isRecommended={recommendedVenues.some(
-                      (v) => v.id === venue.id
-                    )}
-                    onDelete={deleteVenue}
-                    onAddReview={addReview}
-                    onDeleteReview={deleteReview}
-                  />
-                ))}
-              </div>
+              <>
+                <Separator />
+                <VenueRankingView groupId={groupId} />
+              </>
             )}
           </CardContent>
         </Card>
