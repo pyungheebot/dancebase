@@ -7596,3 +7596,139 @@ export type CostumeDesignEntry = {
   comments: CostumeDesignComment[];
   createdAt: string;
 };
+
+export type CarpoolRideStatus =
+  | "open"
+  | "full"
+  | "departed"
+  | "completed"
+  | "cancelled";
+
+export type CarpoolRide = {
+  id: string;
+  driverName: string;
+  date: string;
+  departureTime: string;
+  departureLocation: string;
+  destination: string;
+  totalSeats: number;
+  passengers: string[];
+  notes?: string;
+  status: CarpoolRideStatus;
+  createdAt: string;
+};
+
+// ============================================================
+// 부상 추적 (Injury Tracker)
+// ============================================================
+
+export type InjuryTrackerSeverity = "minor" | "moderate" | "severe";
+
+export type InjuryBodyPart =
+  | "ankle"
+  | "knee"
+  | "hip"
+  | "back"
+  | "shoulder"
+  | "wrist"
+  | "neck"
+  | "foot"
+  | "other";
+
+export type InjuryTrackerEntry = {
+  id: string;
+  memberName: string;
+  bodyPart: InjuryBodyPart;
+  description: string;
+  severity: InjuryTrackerSeverity;
+  injuryDate: string;
+  expectedRecoveryDate?: string;
+  recoveredDate?: string;
+  status: "active" | "recovering" | "recovered";
+  restrictions: string[];
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 그룹 미션 보드 (Mission Board)
+// ============================================================
+
+export type MissionDifficulty = "easy" | "medium" | "hard" | "extreme";
+
+export type MissionCompletion = {
+  memberName: string;
+  completedAt: string;
+};
+
+export type MissionBoardEntry = {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: MissionDifficulty;
+  points: number;
+  deadline?: string;
+  completedBy: MissionCompletion[];
+  maxCompletions?: number;
+  createdBy: string;
+  isActive: boolean;
+  createdAt: string;
+};
+
+
+// ============================================================
+// 공연 사진 갤러리
+// ============================================================
+
+export type ShowGalleryCategory =
+  | "rehearsal"
+  | "backstage"
+  | "performance"
+  | "group_photo"
+  | "poster"
+  | "other";
+
+export type ShowGalleryPhoto = {
+  id: string;
+  title: string;
+  description?: string;
+  category: ShowGalleryCategory;
+  photographer?: string;
+  tags: string[];
+  likes: string[];
+  isFavorite: boolean;
+  uploadedAt: string;
+  createdAt: string;
+};
+
+export type ShowGalleryAlbum = {
+  id: string;
+  name: string;
+  description?: string;
+  photos: ShowGalleryPhoto[];
+  coverPhotoId?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 연습 타이머 기록 (Practice Timer Log)
+// ============================================================
+
+export type PracticeTimerCategory =
+  | "warmup"
+  | "technique"
+  | "choreography"
+  | "freestyle"
+  | "cooldown"
+  | "other";
+
+export type PracticeTimerLogEntry = {
+  id: string;
+  date: string;
+  category: PracticeTimerCategory;
+  durationMinutes: number;
+  memberName?: string;
+  description?: string;
+  intensity: number; // 1~5
+  createdAt: string;
+};

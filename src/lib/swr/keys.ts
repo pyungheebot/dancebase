@@ -1013,4 +1013,22 @@ export const swrKeys = {
   // 의상 디자인 보드 (localStorage 기반)
   costumeDesign: (groupId: string, projectId: string) =>
     `costume-design-${groupId}-${projectId}` as const,
+
+  // 교통 카풀 관리 (localStorage 기반)
+  carpoolManagement: (groupId: string) =>
+    `carpool-management-${groupId}` as const,
+
+  // 멤버 부상 추적 (localStorage 기반)
+  injuryTracker: (groupId: string) => `injury-tracker-${groupId}` as const,
+
+  // 그룹 미션 보드 (localStorage 기반)
+  missionBoard: (groupId: string) => `mission-board-${groupId}` as const,
+
+  // 공연 사진 갤러리 (localStorage 기반)
+  showGallery: (groupId: string, projectId: string) =>
+    `show-gallery-${groupId}-${projectId}` as const,
+
+  // 연습 타이머 기록 (localStorage 기반)
+  practiceTimerLog: (groupId: string) =>
+    `practice-timer-log-${groupId}` as const,
 };
