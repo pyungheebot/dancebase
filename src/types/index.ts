@@ -8376,3 +8376,125 @@ export type SoundCueSheet = {
   cues: SoundCueEntry[];
   createdAt: string;
 };
+
+// 공연 무대 위험 평가
+export type StageRiskLevel = "critical" | "high" | "medium" | "low";
+
+export type StageRiskCategory =
+  | "physical"
+  | "electrical"
+  | "structural"
+  | "fire"
+  | "crowd"
+  | "weather"
+  | "other";
+
+export type StageRiskMitigation = {
+  id: string;
+  action: string;
+  responsible: string;
+  isCompleted: boolean;
+  dueDate?: string;
+};
+
+export type StageRiskItem = {
+  id: string;
+  title: string;
+  category: StageRiskCategory;
+  level: StageRiskLevel;
+  description: string;
+  location?: string;
+  mitigations: StageRiskMitigation[];
+  isResolved: boolean;
+  reportedBy: string;
+  createdAt: string;
+};
+
+// 멤버 댄스 영감 보드
+export type InspirationMediaType = "video" | "image" | "article" | "quote" | "idea";
+
+export type InspirationTag = string;
+
+export type InspirationBoardItem = {
+  id: string;
+  title: string;
+  mediaType: InspirationMediaType;
+  url?: string;
+  content: string;
+  tags: InspirationTag[];
+  isFavorite: boolean;
+  source?: string;
+  createdAt: string;
+};
+
+// 공연 VIP 게스트 관리
+export type VipGuestCategory =
+  | "sponsor"
+  | "media"
+  | "celebrity"
+  | "judge"
+  | "family"
+  | "other";
+
+export type VipGuestStatus =
+  | "invited"
+  | "confirmed"
+  | "declined"
+  | "attended"
+  | "no_show";
+
+export type VipGuestEntry = {
+  id: string;
+  name: string;
+  category: VipGuestCategory;
+  status: VipGuestStatus;
+  organization?: string;
+  email?: string;
+  phone?: string;
+  seatAssignment?: string;
+  plusOne: boolean;
+  specialRequirements?: string;
+  invitedBy: string;
+  notes?: string;
+  createdAt: string;
+};
+
+// 그룹 출석 통계 대시보드
+export type AttendanceDashStatus = "present" | "late" | "absent" | "excused";
+
+export type AttendanceDashRecord = {
+  id: string;
+  memberName: string;
+  date: string;
+  status: AttendanceDashStatus;
+  notes?: string;
+};
+
+export type AttendanceDashSummary = {
+  memberName: string;
+  presentCount: number;
+  lateCount: number;
+  absentCount: number;
+  excusedCount: number;
+  attendanceRate: number;
+};
+
+// 그룹 연습 음악 큐
+export type MusicQueueTrack = {
+  id: string;
+  title: string;
+  artist?: string;
+  durationSeconds: number;
+  bpm?: number;
+  genre?: string;
+  notes?: string;
+};
+
+export type MusicQueueSet = {
+  id: string;
+  setName: string;
+  tracks: MusicQueueTrack[];
+  totalDuration: number;
+  isActive: boolean;
+  createdAt: string;
+};

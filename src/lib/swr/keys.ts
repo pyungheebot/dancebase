@@ -1095,4 +1095,22 @@ export const swrKeys = {
   // 공연 포스터 관리 (localStorage 기반)
   posterManagement: (groupId: string, projectId: string) =>
     `poster-management-${groupId}-${projectId}` as const,
+
+  // 멤버 댄스 영감 보드 (localStorage 기반)
+  inspirationBoard: (memberId: string) => `inspiration-board-${memberId}` as const,
+
+  // 공연 무대 위험 평가 (localStorage 기반)
+  stageRisk: (groupId: string, projectId: string) =>
+    `stage-risk-${groupId}-${projectId}` as const,
+
+  // 공연 VIP 게스트 관리 (localStorage 기반)
+  vipGuest: (groupId: string, projectId: string) =>
+    `vip-guest-${groupId}-${projectId}` as const,
+
+  // 그룹 출석 통계 대시보드 (localStorage 기반)
+  attendanceDashboard: (groupId: string) =>
+    `attendance-dashboard-${groupId}` as const,
+
+  // 그룹 연습 음악 큐 (localStorage 기반)
+  musicQueue: (groupId: string) => `music-queue-${groupId}` as const,
 };
