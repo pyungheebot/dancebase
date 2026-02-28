@@ -732,3 +732,11 @@ export function invalidateAudienceCount(groupId: string, projectId: string) {
 export function invalidatePracticeFeedbackSession(groupId: string) {
   mutate(swrKeys.practiceFeedbackSession(groupId));
 }
+
+export function invalidateMemberAvailabilitySchedule(groupId: string) {
+  mutate(swrKeys.memberAvailabilitySchedule(groupId));
+}
+
+export function invalidateCatering(groupId: string, projectId: string) {
+  mutate(swrKeys.catering(groupId, projectId));
+}

@@ -1300,4 +1300,20 @@ export const swrKeys = {
   // 그룹 멤버 기술 매트릭스 (localStorage 기반)
   skillMatrixData: (groupId: string) =>
     `skill-matrix-data-${groupId}` as const,
+
+  // 멤버 댄스 챌린지 참여 기록 (localStorage 기반)
+  memberDanceChallenge: (memberId: string) =>
+    `member-dance-challenge-${memberId}` as const,
+
+  // 그룹 멤버 가용 시간표 (localStorage 기반)
+  memberAvailabilitySchedule: (groupId: string) =>
+    `member-availability-${groupId}` as const,
+
+  // 공연 케이터링 관리 (localStorage 기반)
+  catering: (groupId: string, projectId: string) =>
+    `catering-${groupId}-${projectId}` as const,
+
+  // 공연 무대 효과 큐시트 (localStorage 기반)
+  stageEffect: (groupId: string, projectId: string) =>
+    `stage-effect-${groupId}-${projectId}` as const,
 };

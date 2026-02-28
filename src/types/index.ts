@@ -10711,3 +10711,323 @@ export type PerformanceFeeData = {
   entries: PerformanceFeeEntry[];
   updatedAt: string;
 };
+
+// ============================================
+// Practice Goal Board v2 (그룹 연습 목표 보드)
+// ============================================
+
+/** 연습 목표 카테고리 */
+export type PracticeGoalCategory =
+  | "choreography"
+  | "fitness"
+  | "sync"
+  | "technique"
+  | "other";
+
+/** 연습 목표 상태 */
+export type PracticeGoalStatus = "active" | "completed" | "paused";
+
+/** 하위 목표 (체크리스트 항목) */
+export type PracticeGoalSubTask = {
+  id: string;
+  title: string;
+  done: boolean;
+};
+
+/** 연습 목표 항목 */
+export type PracticeGoalEntry = {
+  id: string;
+  /** 목표 제목 */
+  title: string;
+  /** 목표 설명 */
+  description?: string;
+  /** 카테고리 */
+  category: PracticeGoalCategory;
+  /** 기한 (YYYY-MM-DD) */
+  dueDate?: string;
+  /** 진행률 (0–100) */
+  progress: number;
+  /** 상태 */
+  status: PracticeGoalStatus;
+  /** 담당자 목록 */
+  assignees: string[];
+  /** 하위 목표 */
+  subTasks: PracticeGoalSubTask[];
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type PracticeGoalBoardData = {
+  groupId: string;
+  entries: PracticeGoalEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 댄스 챌린지 참여 기록 (Dance Challenge Participation)
+// ============================================================
+
+/** 챌린지 플랫폼 */
+export type DanceChallengePlatform =
+  | "instagram"
+  | "tiktok"
+  | "youtube"
+  | "offline"
+  | "other";
+
+/** 챌린지 결과 */
+export type DanceChallengeResult =
+  | "completed"
+  | "in_progress"
+  | "abandoned";
+
+/** 댄스 챌린지 참여 기록 단건 */
+export type DanceChallengeEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 챌린지명 */
+  challengeName: string;
+  /** 플랫폼 */
+  platform: DanceChallengePlatform;
+  /** 참여 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 곡명 */
+  songTitle?: string;
+  /** 영상 URL */
+  videoUrl?: string;
+  /** 조회수 */
+  viewCount?: number;
+  /** 좋아요 수 */
+  likeCount?: number;
+  /** 결과 */
+  result: DanceChallengeResult;
+  /** 메모 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type DanceChallengeData = {
+  memberId: string;
+  entries: DanceChallengeEntry[];
+  updatedAt: string;
+};
+
+// ============================================
+// 그룹 멤버 가용 시간표 (Member Availability Schedule)
+// ============================================
+
+/** 가용 수준: available=가능, difficult=어려움, unavailable=불가 */
+export type MemberAvailabilityLevel = "available" | "difficult" | "unavailable";
+
+/** 요일 (월~일) */
+export type MemberAvailabilityDay =
+  | "mon"
+  | "tue"
+  | "wed"
+  | "thu"
+  | "fri"
+  | "sat"
+  | "sun";
+
+/** 시간대 슬롯 */
+export type MemberAvailabilitySlot = {
+  /** 시작 시각 (HH:MM 형식) */
+  startTime: string;
+  /** 종료 시각 (HH:MM 형식) */
+  endTime: string;
+  /** 가용 수준 */
+  level: MemberAvailabilityLevel;
+  /** 메모 */
+  note?: string;
+};
+
+/** 멤버 한 명의 주간 가용 시간 엔트리 */
+export type MemberAvailabilityEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 멤버 이름 */
+  memberName: string;
+  /** 요일별 슬롯 목록 */
+  slots: Partial<Record<MemberAvailabilityDay, MemberAvailabilitySlot[]>>;
+  /** 전반적인 메모 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** 겹치는 시간대 정보 */
+export type MemberAvailabilityOverlap = {
+  /** 요일 */
+  day: MemberAvailabilityDay;
+  /** 시작 시각 */
+  startTime: string;
+  /** 종료 시각 */
+  endTime: string;
+  /** 해당 시간대에 가능한 멤버 이름 목록 */
+  availableMembers: string[];
+  /** 어려움 멤버 이름 목록 */
+  difficultMembers: string[];
+};
+
+/** localStorage 저장 단위 */
+export type MemberAvailabilityData = {
+  groupId: string;
+  entries: MemberAvailabilityEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 케이터링 관리 (Catering Management)
+// ============================================================
+
+/** 식이 제한 유형 */
+export type CateringDietaryRestriction =
+  | "none"
+  | "vegetarian"
+  | "vegan"
+  | "halal"
+  | "kosher"
+  | "gluten_free"
+  | "nut_allergy"
+  | "dairy_free"
+  | "seafood_allergy"
+  | "other";
+
+/** 케이터링 상태 */
+export type CateringStatus =
+  | "pending"
+  | "confirmed"
+  | "delivering"
+  | "delivered"
+  | "cancelled";
+
+/** 케이터링 식사 유형 */
+export type CateringMealType =
+  | "breakfast"
+  | "lunch"
+  | "dinner"
+  | "snack"
+  | "beverage";
+
+/** 케이터링 단건 항목 */
+export type CateringEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 식사 유형 */
+  mealType: CateringMealType;
+  /** 식사 시간 (HH:MM) */
+  mealTime: string;
+  /** 메뉴 설명 */
+  menuDescription: string;
+  /** 총 인원 수 */
+  headcount: number;
+  /** 식이 제한 목록 */
+  dietaryRestrictions: CateringDietaryRestriction[];
+  /** 식이 제한 상세 메모 */
+  dietaryNotes?: string;
+  /** 업체명 */
+  vendorName?: string;
+  /** 업체 연락처 */
+  vendorContact?: string;
+  /** 총 비용 (원) */
+  totalCost?: number;
+  /** 배달 예정 시간 (HH:MM) */
+  deliveryTime?: string;
+  /** 배치 장소 */
+  deliveryLocation?: string;
+  /** 상태 */
+  status: CateringStatus;
+  /** 추가 메모 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type CateringData = {
+  groupId: string;
+  projectId: string;
+  entries: CateringEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 무대 효과 큐시트 (Stage Effects Cue Sheet)
+// ============================================================
+
+/** 무대 효과 유형 */
+export type StageEffectType =
+  | "smoke"      // 연기
+  | "flame"      // 불꽃
+  | "laser"      // 레이저
+  | "confetti"   // 컨페티
+  | "bubble"     // 버블
+  | "foam"       // 폼
+  | "snow"       // 스노우
+  | "strobe"     // 스트로브
+  | "pyro"       // 파이로테크닉
+  | "co2"        // CO2 제트
+  | "uv"         // UV/블랙라이트
+  | "other";     // 기타
+
+/** 효과 강도 */
+export type StageEffectIntensity = "low" | "medium" | "high" | "custom";
+
+/** 효과 트리거 방식 */
+export type StageEffectTrigger = "manual" | "timecode" | "dmx" | "midi";
+
+/** 안전 등급 */
+export type StageEffectSafetyLevel = "safe" | "caution" | "danger";
+
+/** 무대 효과 큐 단일 항목 */
+export type StageEffectEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 큐 번호 (예: 1, 2, 2.5, 3A) */
+  cueNumber: string;
+  /** 효과 유형 */
+  effectType: StageEffectType;
+  /** 트리거 시점 (MM:SS 형식) */
+  triggerTime: string;
+  /** 지속 시간 (초 단위) */
+  durationSec: number;
+  /** 강도 */
+  intensity: StageEffectIntensity;
+  /** 강도 커스텀 값 (intensity가 custom일 때) */
+  intensityCustom?: string;
+  /** 트리거 방식 */
+  trigger: StageEffectTrigger;
+  /** 무대 위치 (예: 무대 좌측, 중앙, 전체) */
+  position: string;
+  /** 안전 등급 */
+  safetyLevel: StageEffectSafetyLevel;
+  /** 안전 주의사항 */
+  safetyNotes?: string;
+  /** 담당 운영자 */
+  operator?: string;
+  /** 메모 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type StageEffectData = {
+  groupId: string;
+  projectId: string;
+  entries: StageEffectEntry[];
+  updatedAt: string;
+};
