@@ -29,6 +29,7 @@ import { BoardBookmarkButton } from "@/components/board/board-bookmark-button";
 import { BoardPostRevisionsSheet } from "@/components/board/board-post-revisions-sheet";
 import { PollDecisionLog } from "@/components/board/poll-decision-log";
 import { ArrowLeft, Loader2, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
+import { ShareButton } from "@/components/shared/share-button";
 import { toast } from "sonner";
 
 export default function BoardPostPage({
@@ -148,47 +149,54 @@ export default function BoardPostPage({
           <div className="flex items-start justify-between">
             <h1 className="text-base font-semibold">{post.title}</h1>
             <div className="flex items-center gap-1 shrink-0 ml-2">
-              {/* 북마크 버튼 (모든 유저) */}
+              <ShareButton
+                title={post.title}
+                text={post.content?.slice(0, 100)}
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                label=""
+              />
               <BoardBookmarkButton postId={postId} groupId={id} />
-            {canEditOrDelete && (
-              <>
-                {canPin && (
+              {canEditOrDelete && (
+                <>
+                  {canPin && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`h-7 w-7 ${post.pinned_at !== null ? "text-primary" : "text-muted-foreground"}`}
+                      onClick={handleTogglePin}
+                      disabled={pinning}
+                      aria-label={post.pinned_at !== null ? "고정 해제" : "상단 고정"}
+                    >
+                      {post.pinned_at !== null ? (
+                        <Pin className="h-3.5 w-3.5 fill-current" />
+                      ) : (
+                        <PinOff className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-7 w-7 ${post.pinned_at !== null ? "text-primary" : "text-muted-foreground"}`}
-                    onClick={handleTogglePin}
-                    disabled={pinning}
-                    aria-label={post.pinned_at !== null ? "고정 해제" : "상단 고정"}
+                    className="h-7 w-7"
+                    onClick={() => setEditOpen(true)}
+                    aria-label="글 수정"
                   >
-                    {post.pinned_at !== null ? (
-                      <Pin className="h-3.5 w-3.5 fill-current" />
-                    ) : (
-                      <PinOff className="h-3.5 w-3.5" />
-                    )}
+                    <Pencil className="h-3.5 w-3.5" />
                   </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setEditOpen(true)}
-                  aria-label="글 수정"
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-destructive"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={deleting}
-                  aria-label="글 삭제"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </>
-            )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={deleting}
+                    aria-label="글 삭제"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 mt-2">

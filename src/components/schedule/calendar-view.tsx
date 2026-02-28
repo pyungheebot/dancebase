@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
 import { scheduleToIcs, schedulesToIcs, downloadIcs, buildGoogleCalendarUrl } from "@/lib/ics";
+import { ShareButton } from "@/components/shared/share-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -898,6 +899,10 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                <ShareButton
+                  title={detailSchedule.title}
+                  text={`${format(new Date(detailSchedule.starts_at), "M월 d일 (EEE) HH:mm", { locale: ko })}${detailSchedule.location ? ` | ${detailSchedule.location}` : ""}`}
+                />
                 {groupId && canEdit && (
                   <ScheduleBroadcastDialog
                     schedule={detailSchedule}

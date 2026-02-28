@@ -62,6 +62,7 @@ import { NotificationPreferencesSection } from "@/components/settings/notificati
 import { NotificationRulesBuilder } from "@/components/settings/notification-rules-builder";
 import { GroupRulesEditor } from "@/components/groups/group-rules-editor";
 import { PaymentMethodManager } from "@/components/finance/payment-method-manager";
+import { ShareButton } from "@/components/shared/share-button";
 
 type SettingsContentProps = {
   ctx: EntityContext;
@@ -719,6 +720,14 @@ export function SettingsContent({
                     )}
                     <span className="ml-2">재생성</span>
                   </Button>
+                  {inviteCodeEnabled && (
+                    <ShareButton
+                      title={`${group.name} 그룹 초대`}
+                      text={`DanceBase에서 "${group.name}" 그룹에 참여하세요!`}
+                      url={`${typeof window !== "undefined" ? window.location.origin : ""}/join/${group.invite_code}`}
+                      label="초대 공유"
+                    />
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   재생성하면 기존 초대 코드는 무효화되며 만료일이 초기화됩니다

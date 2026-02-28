@@ -26,6 +26,7 @@ import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { BoardPostRevisionsSheet } from "@/components/board/board-post-revisions-sheet";
 import { ArrowLeft, Loader2, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
+import { ShareButton } from "@/components/shared/share-button";
 import { toast } from "sonner";
 import { PollStatisticsCard } from "@/components/board/poll-statistics-card";
 
@@ -124,45 +125,55 @@ export default function ProjectBoardPostPage({
           </div>
           <div className="flex items-start justify-between">
             <h1 className="text-base font-semibold">{post.title}</h1>
-            {canEditOrDelete && (
-              <div className="flex items-center gap-1 shrink-0 ml-2">
-                {canPin && (
+            <div className="flex items-center gap-1 shrink-0 ml-2">
+              <ShareButton
+                title={post.title}
+                text={post.content?.slice(0, 100)}
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                label=""
+              />
+              {canEditOrDelete && (
+                <>
+                  {canPin && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`h-7 w-7 ${post.is_pinned ? "text-primary" : "text-muted-foreground"}`}
+                      onClick={handleTogglePin}
+                      disabled={pinning}
+                      aria-label={post.is_pinned ? "고정 해제" : "공지 고정"}
+                    >
+                      {post.is_pinned ? (
+                        <Pin className="h-3.5 w-3.5 fill-current" />
+                      ) : (
+                        <PinOff className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`h-7 w-7 ${post.is_pinned ? "text-primary" : "text-muted-foreground"}`}
-                    onClick={handleTogglePin}
-                    disabled={pinning}
-                    aria-label={post.is_pinned ? "고정 해제" : "공지 고정"}
+                    className="h-7 w-7"
+                    onClick={() => setEditOpen(true)}
+                    aria-label="글 수정"
                   >
-                    {post.is_pinned ? (
-                      <Pin className="h-3.5 w-3.5 fill-current" />
-                    ) : (
-                      <PinOff className="h-3.5 w-3.5" />
-                    )}
+                    <Pencil className="h-3.5 w-3.5" />
                   </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setEditOpen(true)}
-                  aria-label="글 수정"
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-destructive"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={deleting}
-                  aria-label="글 삭제"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={deleting}
+                    aria-label="글 삭제"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2 mt-2">
             <Avatar className="h-6 w-6">
