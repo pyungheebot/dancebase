@@ -52,6 +52,7 @@ import { MemberComparisonDashboard } from "@/components/members/member-compariso
 import { MemberActivityReport } from "@/components/members/member-activity-report";
 import { MemberActivityTrendChart } from "@/components/members/member-activity-trend-chart";
 import { SkillMatrixSection } from "@/components/members/skill-matrix-section";
+import { SkillMatrixCard } from "@/components/groups/skill-matrix-card";
 import { ContactVerificationSection } from "@/components/members/contact-verification-section";
 import { ContactVerifyBanner } from "@/components/members/contact-verify-banner";
 import { RolePromotionSection } from "@/components/members/role-promotion-section";
@@ -607,6 +608,9 @@ function GroupMembersContent({
           canEdit={ctx.permissions.canEdit}
         />
       )}
+
+      {/* 기술 매트릭스 (목표 레벨/평가일 포함 - localStorage 기반) */}
+      <SkillMatrixCard groupId={ctx.groupId} />
 
       {/* 멘토-멘티 매칭 (canEdit 권한인 경우에만 관리 가능, 멤버가 있을 때만 표시) */}
       {ctx.members.length > 0 && (

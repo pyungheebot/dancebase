@@ -10454,3 +10454,260 @@ export type PracticeFeedbackData = {
   sessions: PracticeFeedbackSession[];
   updatedAt: string;
 };
+
+// ============================================
+// Dance Certification Manager (멤버 댄스 인증서/자격증 관리)
+// ============================================
+
+/** 자격증 카테고리 */
+export type DanceCertificationCategory =
+  | "genre"       // 장르 자격
+  | "instructor"  // 지도자
+  | "judge"       // 심판
+  | "safety"      // 안전
+  | "other";      // 기타
+
+/** 자격증 상태 */
+export type DanceCertificationStatus =
+  | "valid"       // 유효
+  | "expired"     // 만료
+  | "renewal";    // 갱신 필요
+
+/** 자격증 항목 */
+export type DanceCertificationEntry = {
+  id: string;
+  /** 자격증명 */
+  name: string;
+  /** 발급 기관 */
+  issuer: string;
+  /** 취득일 (YYYY-MM-DD) */
+  issuedAt: string;
+  /** 만료일 (YYYY-MM-DD, 없으면 영구) */
+  expiresAt?: string;
+  /** 등급 (예: 1급, 2급, 마스터 등) */
+  grade?: string;
+  /** 카테고리 */
+  category: DanceCertificationCategory;
+  /** 상태 (자동 판별이지만 수동 override 가능) */
+  status: DanceCertificationStatus;
+  /** 자격증 파일 URL */
+  fileUrl?: string;
+  /** 메모 */
+  note?: string;
+  /** 생성일시 */
+  createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type DanceCertificationData = {
+  memberId: string;
+  entries: DanceCertificationEntry[];
+  updatedAt: string;
+};
+
+// ============================================
+// 그룹 멤버 기술 매트릭스 (Member Skill Matrix)
+// ============================================
+
+/** 기술 항목 정의 */
+export type SkillMatrixSkill = {
+  /** 기술 고유 ID */
+  id: string;
+  /** 기술 이름 (예: 턴, 점프, 플로어워크 등) */
+  name: string;
+  /** 카테고리 (예: 기초기술, 파워무브, 스타일 등) */
+  category?: string;
+  /** 기술 설명 */
+  description?: string;
+  /** 생성일시 */
+  createdAt: string;
+};
+
+/** 멤버별 특정 기술의 점수 정보 */
+export type SkillMatrixMemberScore = {
+  /** 현재 레벨 (0=미평가, 1~5) */
+  currentLevel: SkillMatrixLevel;
+  /** 목표 레벨 (1~5, 없으면 undefined) */
+  targetLevel?: SkillMatrixLevel;
+  /** 최종 평가일 (YYYY-MM-DD) */
+  lastEvaluatedAt?: string;
+  /** 메모 */
+  note?: string;
+};
+
+/** 멤버 기술 매트릭스 엔트리 (멤버 한 명의 모든 기술 점수) */
+export type SkillMatrixMemberEntry = {
+  /** 멤버 이름 (또는 ID) */
+  memberName: string;
+  /** skillId → 점수 정보 */
+  scores: Record<string, SkillMatrixMemberScore>;
+};
+
+/** 전체 기술 매트릭스 설정 (localStorage 저장 단위) */
+export type SkillMatrixData = {
+  groupId: string;
+  /** 등록된 기술 목록 */
+  skills: SkillMatrixSkill[];
+  /** 멤버별 점수 목록 */
+  members: SkillMatrixMemberEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 연습 일지 요약 (Group Practice Journal Summary)
+// ============================================================
+
+/** 그룹 연습 일지 항목 */
+export type GroupPracticeJournalEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 연습 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 연습 시간 (분 단위) */
+  durationMinutes: number;
+  /** 참여 멤버 이름 목록 */
+  participants: string[];
+  /** 연습 내용 요약 */
+  contentSummary: string;
+  /** 진행된 곡/안무 목록 */
+  songs: string[];
+  /** 달성 목표 */
+  achievedGoals: string[];
+  /** 미달성 사항 */
+  unachievedItems: string[];
+  /** 다음 연습 계획 */
+  nextPlanNote: string;
+  /** 작성자 이름 */
+  authorName: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** 그룹 연습 일지 월별 통계 */
+export type GroupPracticeJournalMonthStat = {
+  /** 연도-월 (YYYY-MM) */
+  yearMonth: string;
+  /** 해당 월 일지 수 */
+  entryCount: number;
+  /** 해당 월 총 연습 시간 (분) */
+  totalMinutes: number;
+  /** 해당 월 평균 참여 인원 */
+  avgParticipants: number;
+};
+
+// ============================================================
+// 공연 후원 감사편지 (ThankYouLetter)
+// ============================================================
+
+/** 후원 유형 */
+export type ThankYouLetterSponsorType =
+  | "money"      // 금전
+  | "goods"      // 물품
+  | "venue"      // 장소
+  | "service";   // 서비스
+
+/** 감사편지 발송 상태 */
+export type ThankYouLetterStatus =
+  | "draft"      // 작성중
+  | "sent";      // 발송완료
+
+/** 감사편지 항목 */
+export type ThankYouLetterEntry = {
+  id: string;
+  /** 후원사명 */
+  sponsorName: string;
+  /** 후원 유형 */
+  sponsorType: ThankYouLetterSponsorType;
+  /** 후원 내용 (금액, 물품명, 장소명 등) */
+  sponsorDetail?: string;
+  /** 감사편지 내용 */
+  letterContent: string;
+  /** 발송 상태 */
+  status: ThankYouLetterStatus;
+  /** 발송 날짜 */
+  sentAt?: string;
+  /** 담당자 */
+  managerName: string;
+  /** 후원사 연락처 */
+  sponsorContact?: string;
+  /** 후원사 이메일 */
+  sponsorEmail?: string;
+  /** 비고 */
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type ThankYouLetterSheet = {
+  groupId: string;
+  projectId: string;
+  entries: ThankYouLetterEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 출연료 정산 (Performance Fee Settlement)
+// ============================================================
+
+/** 출연 역할 */
+export type PerformanceFeeRole = "main" | "sub" | "extra" | "staff";
+
+/** 정산 상태 */
+export type PerformanceFeeStatus = "pending" | "settled";
+
+/** 수당/공제 항목 유형 */
+export type PerformanceFeeAdjustmentType =
+  | "rehearsal"
+  | "overtime"
+  | "transport"
+  | "meal"
+  | "other";
+
+/** 수당 또는 공제 항목 */
+export type PerformanceFeeAdjustment = {
+  /** 고유 ID */
+  id: string;
+  /** 항목 유형 */
+  type: PerformanceFeeAdjustmentType;
+  /** 항목 설명 */
+  label: string;
+  /** 금액 (양수: 추가 수당, 음수: 공제) */
+  amount: number;
+};
+
+/** 멤버별 출연료 정산 항목 */
+export type PerformanceFeeEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 멤버 이름 */
+  memberName: string;
+  /** 출연 역할 */
+  role: PerformanceFeeRole;
+  /** 기본 출연료 */
+  baseFee: number;
+  /** 수당/공제 항목 목록 */
+  adjustments: PerformanceFeeAdjustment[];
+  /** 최종 정산 금액 (baseFee + adjustments 합계) */
+  finalAmount: number;
+  /** 정산 상태 */
+  status: PerformanceFeeStatus;
+  /** 정산 완료일 (YYYY-MM-DD) */
+  settledAt?: string;
+  /** 메모 */
+  notes?: string;
+  /** 생성 시각 (ISO 8601) */
+  createdAt: string;
+  /** 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type PerformanceFeeData = {
+  groupId: string;
+  projectId: string;
+  entries: PerformanceFeeEntry[];
+  updatedAt: string;
+};

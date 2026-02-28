@@ -1280,4 +1280,24 @@ export const swrKeys = {
   // 그룹 연습 피드백 수집 (localStorage 기반)
   practiceFeedbackSession: (groupId: string) =>
     `practice-feedback-session-${groupId}` as const,
+
+  // 그룹 연습 일지 요약 (localStorage 기반)
+  groupPracticeJournal: (groupId: string) =>
+    `group-practice-journal-${groupId}` as const,
+
+  // 멤버 댄스 인증서/자격증 관리 (localStorage 기반)
+  danceCertificationManager: (memberId: string) =>
+    `dance-certification-manager-${memberId}` as const,
+
+  // 공연 후원 감사편지 (localStorage 기반)
+  thankYouLetter: (groupId: string, projectId: string) =>
+    `thank-you-letter-${groupId}-${projectId}` as const,
+
+  // 공연 출연료 정산 (localStorage 기반)
+  performanceFee: (groupId: string, projectId: string) =>
+    `performance-fee-${groupId}-${projectId}` as const,
+
+  // 그룹 멤버 기술 매트릭스 (localStorage 기반)
+  skillMatrixData: (groupId: string) =>
+    `skill-matrix-data-${groupId}` as const,
 };
