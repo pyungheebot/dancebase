@@ -7893,3 +7893,171 @@ export type StageMemoBoard = {
   notes: StageMemoNote[];
   createdAt: string;
 };
+
+// ============================================================
+// 멤버 식단 관리 (DietTracker)
+// ============================================================
+
+export type DietMealType =
+  | "breakfast"
+  | "lunch"
+  | "dinner"
+  | "snack"
+  | "supplement";
+
+export type DietTrackerMeal = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  mealType: DietMealType;
+  foods: string[];
+  calories?: number;
+  protein?: number;
+  notes?: string;
+  time?: string; // HH:MM
+};
+
+export type DietTrackerWater = {
+  date: string; // YYYY-MM-DD
+  cups: number; // 1잔 = 250ml
+};
+
+export type DietTrackerDayLog = {
+  date: string;
+  meals: DietTrackerMeal[];
+  water: DietTrackerWater;
+  memberName: string;
+};
+
+// ============================================================
+// 그룹 음악 저작권 관리
+// ============================================================
+
+export type MusicLicenseType =
+  | "royalty_free"
+  | "licensed"
+  | "original"
+  | "cover"
+  | "public_domain";
+
+export type MusicLicenseStatus =
+  | "active"
+  | "expiring_soon"
+  | "expired"
+  | "pending";
+
+export type MusicLicenseEntry = {
+  id: string;
+  songTitle: string;
+  artist: string;
+  licenseType: MusicLicenseType;
+  status: MusicLicenseStatus;
+  purchaseDate?: string;
+  expiryDate?: string;
+  cost?: number;
+  licensee: string;
+  usageScope: string;
+  documentUrl?: string;
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 스폰서 후원 추적 (SponsorTracking)
+// ============================================================
+
+export type SponsorTier =
+  | "platinum"
+  | "gold"
+  | "silver"
+  | "bronze"
+  | "individual";
+
+export type SponsorBenefitItem = {
+  id: string;
+  description: string;
+  isDelivered: boolean;
+};
+
+export type SponsorTrackingEntry = {
+  id: string;
+  sponsorName: string;
+  tier: SponsorTier;
+  amount: number;
+  contactPerson?: string;
+  contactEmail?: string;
+  benefits: SponsorBenefitItem[];
+  paymentReceived: boolean;
+  paymentDate?: string;
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 그룹 소셜 미디어 캘린더 (SocialCalendar)
+// ============================================================
+
+export type SocialPlatformType =
+  | "instagram"
+  | "youtube"
+  | "tiktok"
+  | "twitter"
+  | "facebook"
+  | "blog";
+
+export type SocialPostStatus =
+  | "draft"
+  | "scheduled"
+  | "published"
+  | "cancelled";
+
+export type SocialCalendarPost = {
+  id: string;
+  platform: SocialPlatformType;
+  title: string;
+  content: string;
+  scheduledDate: string; // YYYY-MM-DD
+  scheduledTime?: string; // HH:MM
+  status: SocialPostStatus;
+  assignee?: string;
+  hashtags: string[];
+  mediaType?: "photo" | "video" | "reel" | "story" | "text";
+  notes?: string;
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 드레스 코드 (DressCode)
+// ============================================================
+
+export type DressCodeCategory =
+  | "outfit"
+  | "hair"
+  | "makeup"
+  | "accessories"
+  | "shoes";
+
+export type DressCodeGuideItem = {
+  id: string;
+  category: DressCodeCategory;
+  title: string;
+  description: string;
+  colorCode?: string;
+  imageDescription?: string;
+  isRequired: boolean;
+};
+
+export type DressCodeMemberStatus = {
+  memberName: string;
+  itemId: string;
+  isReady: boolean;
+  notes?: string;
+};
+
+export type DressCodeSet = {
+  id: string;
+  projectId: string;
+  performanceName: string;
+  guides: DressCodeGuideItem[];
+  memberStatuses: DressCodeMemberStatus[];
+  createdAt: string;
+};

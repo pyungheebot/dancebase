@@ -1048,4 +1048,21 @@ export const swrKeys = {
   // 공연 무대 메모 (localStorage 기반)
   stageMemo: (groupId: string, projectId: string) =>
     `stage-memo-${groupId}-${projectId}` as const,
+
+  // 멤버 식단 관리 (localStorage 기반)
+  dietTracker: (memberId: string) => `diet-tracker-${memberId}` as const,
+
+  // 공연 스폰서 후원 추적 (localStorage 기반)
+  sponsorTracking: (groupId: string, projectId: string) =>
+    `sponsor-tracking-${groupId}-${projectId}` as const,
+
+  // 그룹 음악 저작권 관리 (localStorage 기반)
+  musicLicense: (groupId: string) => `music-license-${groupId}` as const,
+
+  // 그룹 소셜 미디어 캘린더 (localStorage 기반)
+  socialCalendar: (groupId: string) => `social-calendar-${groupId}` as const,
+
+  // 공연 드레스 코드 (localStorage 기반)
+  dressCode: (groupId: string, projectId: string) =>
+    `dress-code-${groupId}-${projectId}` as const,
 };
