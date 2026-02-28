@@ -776,3 +776,11 @@ export function invalidatePerformanceTicket(projectId: string) {
 export function invalidateDanceMusicPlaylist(memberId: string) {
   mutate(swrKeys.danceMusicPlaylist(memberId));
 }
+
+export function invalidateDanceGoalTracker(memberId: string) {
+  mutate(swrKeys.danceGoalTracker(memberId));
+}
+
+export function invalidateAttendanceBook(groupId: string) {
+  mutate(swrKeys.attendanceBook(groupId));
+}

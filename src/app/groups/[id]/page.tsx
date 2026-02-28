@@ -34,6 +34,8 @@ import { PracticeRoomBookingCard } from "@/components/groups/practice-room-booki
 import { TeamBuildingCard } from "@/components/groups/team-building-card";
 import { QrCheckInCard } from "@/components/groups/qr-check-in-card";
 import { GroupBudgetCard } from "@/components/groups/group-budget-card";
+import { GroupAnnouncementCard } from "@/components/groups/group-announcement-card";
+import { AttendanceBookCard } from "@/components/groups/attendance-book-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -195,6 +197,13 @@ export default function GroupDetailPage({
           />
 
           <GroupBudgetCard groupId={ctx.groupId} />
+
+          <GroupAnnouncementCard groupId={ctx.groupId} />
+
+          <AttendanceBookCard
+            groupId={ctx.groupId}
+            memberNames={ctx.members.map((m) => m.nickname || m.profile.name)}
+          />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />

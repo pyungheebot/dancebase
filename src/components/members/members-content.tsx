@@ -72,6 +72,7 @@ import { DanceStyleAnalysisCard } from "@/components/members/dance-style-analysi
 import { RoutineBuilderCard } from "@/components/members/routine-builder-card";
 import { InspirationBoardCard } from "@/components/members/inspiration-board-card";
 import { DanceMusicCard } from "@/components/members/dance-music-card";
+import { DanceGoalCard } from "@/components/members/dance-goal-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -713,6 +714,7 @@ function GroupMembersContent({
       <RoutineBuilderCard memberId={currentUserId} />
       <InspirationBoardCard memberId={currentUserId} />
       <DanceMusicCard memberId={currentUserId} />
+      <DanceGoalCard memberId={currentUserId} />
     </>
   );
 }

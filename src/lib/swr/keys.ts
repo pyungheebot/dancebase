@@ -1428,4 +1428,24 @@ export const swrKeys = {
   // 멤버 댄스 뮤직 플레이리스트 (localStorage 기반)
   danceMusicPlaylist: (memberId: string) =>
     `dance-music-playlist-${memberId}` as const,
+
+  // 백스테이지 커뮤니케이션 로그 (localStorage 기반)
+  backstageLog: (projectId: string) =>
+    `backstage-log-${projectId}` as const,
+
+  // 멤버 댄스 목표 트래커 (localStorage 기반)
+  danceGoalTracker: (memberId: string) =>
+    `dance-goal-tracker-${memberId}` as const,
+
+  // 그룹 출석부 (localStorage 기반)
+  attendanceBook: (groupId: string) =>
+    `attendance-book-${groupId}` as const,
+
+  // 공연 후원/스폰서 관리 (localStorage 기반)
+  performanceSponsor: (projectId: string) =>
+    `performance-sponsor-${projectId}` as const,
+
+  // 그룹 공지사항 보드 (localStorage 기반)
+  groupAnnouncementBoard: (groupId: string) =>
+    `group-announcement-board-${groupId}` as const,
 };

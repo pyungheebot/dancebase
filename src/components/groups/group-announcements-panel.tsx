@@ -280,7 +280,7 @@ function AnnouncementCard({
         {/* 제목 + 배지 */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-            {item.pinned && (
+            {item.isPinned && (
               <Pin className="h-3 w-3 text-orange-500 shrink-0" />
             )}
             <span
@@ -311,9 +311,9 @@ function AnnouncementCard({
           <button
             onClick={() => onTogglePin(item.id)}
             className="p-1 rounded hover:bg-muted transition-colors"
-            title={item.pinned ? "고정 해제" : "상단 고정"}
+            title={item.isPinned ? "고정 해제" : "상단 고정"}
           >
-            {item.pinned ? (
+            {item.isPinned ? (
               <PinOff className="h-3 w-3 text-muted-foreground" />
             ) : (
               <Pin className="h-3 w-3 text-muted-foreground" />

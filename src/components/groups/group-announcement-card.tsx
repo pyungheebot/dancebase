@@ -10,11 +10,14 @@ import {
   Trash2,
   Pin,
   PinOff,
-  CheckCheck,
-  Eye,
   AlertTriangle,
   Info,
   Bell,
+  Search,
+  Pencil,
+  Paperclip,
+  Clock,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,26 +50,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGroupAnnouncement } from "@/hooks/use-group-announcement";
-import type { AnnouncementPriority, GroupAnnouncementEntry } from "@/types";
+import type { GroupAnnouncementItem, GroupAnnouncementPriority } from "@/types";
 
 // ─── 우선순위 메타 ─────────────────────────────────────────────
 const PRIORITY_META: Record<
-  AnnouncementPriority,
-  { label: string; color: string; bg: string; border: string; icon: React.ReactNode }
+  GroupAnnouncementPriority,
+  {
+    label: string;
+    color: string;
+    bg: string;
+    border: string;
+    icon: React.ReactNode;
+  }
 > = {
   urgent: {
     label: "긴급",
     color: "text-red-700",
     bg: "bg-red-50",
-    border: "border-red-200",
+    border: "border-red-300",
     icon: <AlertTriangle className="h-3 w-3" />,
-  },
-  important: {
-    label: "중요",
-    color: "text-orange-700",
-    bg: "bg-orange-50",
-    border: "border-orange-200",
-    icon: <Bell className="h-3 w-3" />,
   },
   normal: {
     label: "일반",
@@ -75,9 +77,16 @@ const PRIORITY_META: Record<
     border: "border-gray-200",
     icon: <Info className="h-3 w-3" />,
   },
+  low: {
+    label: "낮음",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+    border: "border-blue-200",
+    icon: <Bell className="h-3 w-3" />,
+  },
 };
 
-// ─── 시간 포맷 ─────────────────────────────────────────────────
+// ─── 날짜 포맷 ─────────────────────────────────────────────────
 function formatRelativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
@@ -87,27 +96,61 @@ function formatRelativeTime(iso: string): string {
   if (hours < 24) return `${hours}시간 전`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}일 전`;
-  return new Date(iso).toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
+  return new Date(iso).toLocaleDateString("ko-KR", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
-// ─── 공지 작성 다이얼로그 ──────────────────────────────────────
-function AddAnnouncementDialog({
-  onAdd,
+function formatDateShort(iso: string): string {
+  return new Date(iso).toLocaleDateString("ko-KR", {
+    year: "2-digit",
+    month: "numeric",
+    day: "numeric",
+  });
+}
+
+// ─── 공지 작성/수정 다이얼로그 ──────────────────────────────────
+function AnnouncementFormDialog({
+  trigger,
+  initial,
+  onSubmit,
 }: {
-  onAdd: (
-    title: string,
-    content: string,
-    author: string,
-    priority: AnnouncementPriority,
-    tags: string[]
-  ) => void;
+  trigger: React.ReactNode;
+  initial?: Partial<GroupAnnouncementItem>;
+  onSubmit: (data: {
+    title: string;
+    content: string;
+    authorName: string;
+    priority: GroupAnnouncementPriority;
+    expiresAt: string | null;
+    attachmentUrl: string | null;
+  }) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
-  const [priority, setPriority] = useState<AnnouncementPriority>("normal");
-  const [tagsInput, setTagsInput] = useState("");
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [content, setContent] = useState(initial?.content ?? "");
+  const [authorName, setAuthorName] = useState(initial?.authorName ?? "");
+  const [priority, setPriority] = useState<GroupAnnouncementPriority>(
+    initial?.priority ?? "normal"
+  );
+  const [expiresAt, setExpiresAt] = useState(
+    initial?.expiresAt
+      ? initial.expiresAt.slice(0, 10)
+      : ""
+  );
+  const [attachmentUrl, setAttachmentUrl] = useState(
+    initial?.attachmentUrl ?? ""
+  );
+
+  const resetForm = () => {
+    setTitle(initial?.title ?? "");
+    setContent(initial?.content ?? "");
+    setAuthorName(initial?.authorName ?? "");
+    setPriority(initial?.priority ?? "normal");
+    setExpiresAt(initial?.expiresAt ? initial.expiresAt.slice(0, 10) : "");
+    setAttachmentUrl(initial?.attachmentUrl ?? "");
+  };
 
   const handleSubmit = () => {
     if (!title.trim()) {
@@ -118,33 +161,36 @@ function AddAnnouncementDialog({
       toast.error("내용을 입력해주세요.");
       return;
     }
-    const tags = tagsInput
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
-    onAdd(title.trim(), content.trim(), author.trim(), priority, tags);
-    toast.success("공지가 등록되었습니다.");
-    setTitle("");
-    setContent("");
-    setAuthor("");
-    setPriority("normal");
-    setTagsInput("");
+    onSubmit({
+      title: title.trim(),
+      content: content.trim(),
+      authorName: authorName.trim(),
+      priority,
+      expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+      attachmentUrl: attachmentUrl.trim() || null,
+    });
+    resetForm();
     setOpen(false);
   };
 
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) resetForm();
+  };
+
+  const isEdit = !!initial?.id;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-7 text-xs gap-1">
-          <Plus className="h-3 w-3" />
-          공지 작성
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-sm">공지 작성</DialogTitle>
+          <DialogTitle className="text-sm">
+            {isEdit ? "공지 수정" : "공지 작성"}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-3 pt-1">
+          {/* 제목 */}
           <div className="space-y-1">
             <Label className="text-xs">제목 *</Label>
             <Input
@@ -154,6 +200,8 @@ function AddAnnouncementDialog({
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
+
+          {/* 내용 */}
           <div className="space-y-1">
             <Label className="text-xs">내용 *</Label>
             <Textarea
@@ -164,21 +212,25 @@ function AddAnnouncementDialog({
               onChange={(e) => setContent(e.target.value)}
             />
           </div>
+
+          {/* 작성자 / 우선순위 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-xs">작성자</Label>
               <Input
                 className="h-8 text-xs"
                 placeholder="이름 (선택)"
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
+                value={authorName}
+                onChange={(e) => setAuthorName(e.target.value)}
               />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">우선순위</Label>
               <Select
                 value={priority}
-                onValueChange={(v) => setPriority(v as AnnouncementPriority)}
+                onValueChange={(v) =>
+                  setPriority(v as GroupAnnouncementPriority)
+                }
               >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
@@ -187,25 +239,39 @@ function AddAnnouncementDialog({
                   <SelectItem value="urgent" className="text-xs">
                     <span className="text-red-600 font-medium">긴급</span>
                   </SelectItem>
-                  <SelectItem value="important" className="text-xs">
-                    <span className="text-orange-600 font-medium">중요</span>
-                  </SelectItem>
                   <SelectItem value="normal" className="text-xs">
                     일반
+                  </SelectItem>
+                  <SelectItem value="low" className="text-xs">
+                    <span className="text-blue-600">낮음</span>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
+
+          {/* 만료일 */}
           <div className="space-y-1">
-            <Label className="text-xs">태그 (쉼표로 구분)</Label>
+            <Label className="text-xs">만료일 (선택)</Label>
             <Input
+              type="date"
               className="h-8 text-xs"
-              placeholder="예: 연습, 공연, 중요"
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
             />
           </div>
+
+          {/* 첨부 URL */}
+          <div className="space-y-1">
+            <Label className="text-xs">첨부 URL (선택)</Label>
+            <Input
+              className="h-8 text-xs"
+              placeholder="https://..."
+              value={attachmentUrl}
+              onChange={(e) => setAttachmentUrl(e.target.value)}
+            />
+          </div>
+
           <div className="flex justify-end gap-2 pt-1">
             <Button
               variant="outline"
@@ -216,7 +282,7 @@ function AddAnnouncementDialog({
               취소
             </Button>
             <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-              등록
+              {isEdit ? "수정" : "등록"}
             </Button>
           </div>
         </div>
@@ -225,66 +291,67 @@ function AddAnnouncementDialog({
   );
 }
 
-// ─── 공지 아이템 ──────────────────────────────────────────────
-function AnnouncementItem({
-  entry,
-  currentMemberName,
+// ─── 공지 단일 아이템 ─────────────────────────────────────────
+function AnnouncementRow({
+  item,
   onTogglePin,
   onDelete,
-  onMarkAsRead,
+  onUpdate,
 }: {
-  entry: GroupAnnouncementEntry;
-  currentMemberName?: string;
+  item: GroupAnnouncementItem;
   onTogglePin: (id: string) => void;
   onDelete: (id: string) => void;
-  onMarkAsRead: (id: string, memberName: string) => void;
+  onUpdate: (
+    id: string,
+    patch: Partial<Omit<GroupAnnouncementItem, "id" | "createdAt">>
+  ) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const meta = PRIORITY_META[entry.priority];
-  const isRead =
-    currentMemberName ? entry.readBy.includes(currentMemberName) : false;
+  const meta = PRIORITY_META[item.priority];
+  const isUrgent = item.priority === "urgent";
 
-  const contentLines = entry.content.split("\n");
-  const isLong = contentLines.length > 2 || entry.content.length > 100;
+  const isLong = item.content.length > 120 || item.content.includes("\n");
   const previewContent =
     isLong && !expanded
-      ? entry.content.slice(0, 100).trimEnd() + "…"
-      : entry.content;
+      ? item.content.slice(0, 120).trimEnd() + "…"
+      : item.content;
 
-  const handleRead = () => {
-    if (!currentMemberName) return;
-    onMarkAsRead(entry.id, currentMemberName);
-    toast.success("읽음으로 표시했습니다.");
+  const handlePin = () => {
+    onTogglePin(item.id);
+    toast.success(item.isPinned ? "고정을 해제했습니다." : "공지를 고정했습니다.");
   };
 
   const handleDelete = () => {
-    onDelete(entry.id);
+    onDelete(item.id);
     toast.success("공지를 삭제했습니다.");
-  };
-
-  const handlePin = () => {
-    onTogglePin(entry.id);
-    toast.success(entry.pinned ? "고정을 해제했습니다." : "공지를 고정했습니다.");
   };
 
   return (
     <div
       className={`rounded-lg border p-3 space-y-2 transition-colors ${
-        entry.pinned ? "bg-amber-50 border-amber-200" : `${meta.bg} ${meta.border}`
+        isUrgent
+          ? "border-red-300 bg-red-50"
+          : item.isPinned
+          ? "border-amber-200 bg-amber-50"
+          : `${meta.bg} ${meta.border}`
       }`}
     >
-      {/* 헤더 행 */}
+      {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          {entry.pinned && (
+          {item.isPinned && (
             <Pin className="h-3 w-3 text-amber-500 shrink-0" />
           )}
-          <span className={`text-xs font-semibold truncate ${meta.color}`}>
-            {entry.title}
+          {isUrgent && (
+            <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
+          )}
+          <span
+            className={`text-xs font-semibold truncate ${meta.color}`}
+          >
+            {item.title}
           </span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          {/* 우선순위 배지 */}
           <Badge
             className={`text-[10px] px-1.5 py-0 gap-0.5 ${meta.bg} ${meta.color} border ${meta.border}`}
           >
@@ -297,14 +364,32 @@ function AnnouncementItem({
             size="sm"
             className="h-5 w-5 p-0"
             onClick={handlePin}
-            title={entry.pinned ? "고정 해제" : "고정"}
+            title={item.isPinned ? "고정 해제" : "고정"}
           >
-            {entry.pinned ? (
+            {item.isPinned ? (
               <PinOff className="h-3 w-3 text-amber-500" />
             ) : (
               <Pin className="h-3 w-3 text-gray-400" />
             )}
           </Button>
+          {/* 수정 */}
+          <AnnouncementFormDialog
+            trigger={
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0 text-gray-400 hover:text-blue-600"
+                title="수정"
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
+            }
+            initial={item}
+            onSubmit={(data) => {
+              onUpdate(item.id, data);
+              toast.success("공지를 수정했습니다.");
+            }}
+          />
           {/* 삭제 */}
           <Button
             variant="ghost"
@@ -331,55 +416,38 @@ function AnnouncementItem({
         )}
       </div>
 
-      {/* 태그 */}
-      {entry.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {entry.tags.map((tag) => (
-            <span
-              key={tag}
-              className="text-[10px] px-1.5 py-0 bg-white border border-gray-200 rounded-full text-gray-500"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
+      {/* 첨부 URL */}
+      {item.attachmentUrl && (
+        <a
+          href={item.attachmentUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-[10px] text-blue-500 hover:underline"
+        >
+          <Paperclip className="h-2.5 w-2.5" />
+          첨부 파일 보기
+        </a>
       )}
 
-      {/* 하단: 작성자·시간·읽은 사람·읽음 버튼 */}
+      {/* 하단 메타 */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[10px] text-gray-500">
-          <span className="font-medium">{entry.author}</span>
+          <span className="font-medium">{item.authorName}</span>
           <span>·</span>
-          <span>{formatRelativeTime(entry.createdAt)}</span>
-          <span>·</span>
-          <span className="flex items-center gap-0.5">
-            <Eye className="h-2.5 w-2.5" />
-            {entry.readBy.length}명 읽음
-          </span>
+          <span>{formatRelativeTime(item.createdAt)}</span>
         </div>
-        {currentMemberName && !isRead && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-5 text-[10px] px-2 gap-0.5 border-gray-300"
-            onClick={handleRead}
-          >
-            <CheckCheck className="h-2.5 w-2.5" />
-            읽음
-          </Button>
-        )}
-        {currentMemberName && isRead && (
-          <span className="text-[10px] text-green-600 flex items-center gap-0.5">
-            <CheckCheck className="h-2.5 w-2.5" />
-            읽음
-          </span>
+        {item.expiresAt && (
+          <div className="flex items-center gap-0.5 text-[10px] text-gray-400">
+            <Clock className="h-2.5 w-2.5" />
+            {formatDateShort(item.expiresAt)} 만료
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-// ─── 통계 배지 ─────────────────────────────────────────────────
+// ─── 통계 칩 ──────────────────────────────────────────────────
 function StatChip({
   label,
   value,
@@ -400,75 +468,54 @@ function StatChip({
 // ─── 메인 카드 컴포넌트 ───────────────────────────────────────
 export function GroupAnnouncementCard({
   groupId,
-  currentMemberName,
 }: {
   groupId: string;
-  currentMemberName?: string;
 }) {
   const [open, setOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<"all" | "pinned" | "urgent" | "unread">(
-    "all"
-  );
+  const [search, setSearch] = useState("");
+  const [showExpired, setShowExpired] = useState(false);
 
   const {
     announcements,
-    addAnnouncement,
+    expiredAnnouncements,
+    loading,
+    createAnnouncement,
+    updateAnnouncement,
     deleteAnnouncement,
     togglePin,
-    markAsRead,
-    getUnreadCount,
-    getPinned,
     totalAnnouncements,
     pinnedCount,
     urgentCount,
+    expiredCount,
   } = useGroupAnnouncement(groupId);
 
-  const unreadCount = useMemo(
-    () => getUnreadCount(currentMemberName ?? ""),
-    [getUnreadCount, currentMemberName]
-  );
+  // 검색 필터 적용
+  const filteredActive = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = [...announcements].sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    if (!q) return list;
+    return list.filter(
+      (a) =>
+        a.title.toLowerCase().includes(q) ||
+        a.content.toLowerCase().includes(q) ||
+        a.authorName.toLowerCase().includes(q)
+    );
+  }, [announcements, search]);
 
-  // 탭별 목록
-  const displayList = useMemo((): GroupAnnouncementEntry[] => {
-    if (activeTab === "pinned") return getPinned();
-    if (activeTab === "urgent")
-      return [...announcements]
-        .filter((a) => a.priority === "urgent")
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-    if (activeTab === "unread" && currentMemberName)
-      return [...announcements]
-        .filter((a) => !a.readBy.includes(currentMemberName))
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-    // all: 고정 공지는 상단, 나머지는 최신순
-    const pinned = [...announcements]
-      .filter((a) => a.pinned)
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-    const normal = [...announcements]
-      .filter((a) => !a.pinned)
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-    return [...pinned, ...normal];
-  }, [activeTab, announcements, getPinned, currentMemberName]);
-
-  const TABS = [
-    { key: "all" as const, label: "전체", count: totalAnnouncements },
-    { key: "pinned" as const, label: "고정", count: pinnedCount },
-    { key: "urgent" as const, label: "긴급", count: urgentCount },
-    ...(currentMemberName
-      ? [{ key: "unread" as const, label: "미읽음", count: unreadCount }]
-      : []),
-  ];
+  const filteredExpired = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return expiredAnnouncements;
+    return expiredAnnouncements.filter(
+      (a) =>
+        a.title.toLowerCase().includes(q) ||
+        a.content.toLowerCase().includes(q) ||
+        a.authorName.toLowerCase().includes(q)
+    );
+  }, [expiredAnnouncements, search]);
 
   return (
     <Card className="w-full">
@@ -486,115 +533,118 @@ export function GroupAnnouncementCard({
                 )}
               </button>
             </CollapsibleTrigger>
-            <AddAnnouncementDialog onAdd={addAnnouncement} />
+            <AnnouncementFormDialog
+              trigger={
+                <Button size="sm" className="h-7 text-xs gap-1">
+                  <Plus className="h-3 w-3" />
+                  공지 작성
+                </Button>
+              }
+              onSubmit={(data) => {
+                createAnnouncement(data);
+                toast.success("공지가 등록되었습니다.");
+              }}
+            />
           </div>
         </CardHeader>
 
         <CollapsibleContent>
           <CardContent className="px-4 pb-4 space-y-3">
             {/* 통계 행 */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <StatChip label="전체" value={totalAnnouncements} color="bg-blue-50" />
               <StatChip label="고정" value={pinnedCount} color="bg-amber-50" />
               <StatChip label="긴급" value={urgentCount} color="bg-red-50" />
-              {currentMemberName && (
-                <StatChip label="미읽음" value={unreadCount} color="bg-gray-50" />
-              )}
+              <StatChip label="만료" value={expiredCount} color="bg-gray-100" />
             </div>
 
-            {/* 탭 필터 */}
-            <div className="flex gap-1 flex-wrap">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
-                    activeTab === tab.key
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  {tab.label}
-                  {tab.count > 0 && (
-                    <span
-                      className={`ml-1 font-semibold ${
-                        activeTab === tab.key ? "text-white" : "text-blue-500"
-                      }`}
-                    >
-                      {tab.count}
-                    </span>
-                  )}
-                </button>
-              ))}
+            {/* 검색 */}
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+              <Input
+                className="h-7 text-xs pl-6"
+                placeholder="공지 검색..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
 
-            {/* 공지 목록 */}
-            {displayList.length === 0 ? (
+            {/* 활성 공지 목록 */}
+            {loading ? (
+              <div className="text-center py-6 text-xs text-gray-400">
+                불러오는 중...
+              </div>
+            ) : filteredActive.length === 0 && !search ? (
               <div className="text-center py-6 text-xs text-gray-400">
                 <Megaphone className="h-8 w-8 mx-auto mb-2 text-gray-200" />
-                {activeTab === "all"
-                  ? "등록된 공지가 없습니다."
-                  : activeTab === "pinned"
-                  ? "고정된 공지가 없습니다."
-                  : activeTab === "urgent"
-                  ? "긴급 공지가 없습니다."
-                  : "미읽은 공지가 없습니다."}
+                등록된 공지가 없습니다.
+              </div>
+            ) : filteredActive.length === 0 && search ? (
+              <div className="text-center py-4 text-xs text-gray-400">
+                검색 결과가 없습니다.
               </div>
             ) : (
               <div className="space-y-2">
-                {/* all 탭일 때 고정 섹션 표시 */}
-                {activeTab === "all" && pinnedCount > 0 && (
-                  <>
-                    <div className="flex items-center gap-1 text-[10px] text-amber-600 font-semibold">
-                      <Pin className="h-2.5 w-2.5" />
-                      고정 공지
-                    </div>
-                    {displayList
-                      .filter((a) => a.pinned)
-                      .map((entry) => (
-                        <AnnouncementItem
-                          key={entry.id}
-                          entry={entry}
-                          currentMemberName={currentMemberName}
-                          onTogglePin={togglePin}
-                          onDelete={deleteAnnouncement}
-                          onMarkAsRead={markAsRead}
-                        />
-                      ))}
-                    {displayList.some((a) => !a.pinned) && (
-                      <div className="flex items-center gap-1 text-[10px] text-gray-500 font-semibold pt-1">
-                        <Bell className="h-2.5 w-2.5" />
-                        일반 공지
-                      </div>
-                    )}
-                    {displayList
-                      .filter((a) => !a.pinned)
-                      .map((entry) => (
-                        <AnnouncementItem
-                          key={entry.id}
-                          entry={entry}
-                          currentMemberName={currentMemberName}
-                          onTogglePin={togglePin}
-                          onDelete={deleteAnnouncement}
-                          onMarkAsRead={markAsRead}
-                        />
-                      ))}
-                  </>
+                {/* 고정 공지 섹션 구분선 */}
+                {pinnedCount > 0 && (
+                  <div className="flex items-center gap-1 text-[10px] text-amber-600 font-semibold">
+                    <Pin className="h-2.5 w-2.5" />
+                    고정 공지
+                  </div>
                 )}
+                {filteredActive.filter((a) => a.isPinned).map((item) => (
+                  <AnnouncementRow
+                    key={item.id}
+                    item={item}
+                    onTogglePin={togglePin}
+                    onDelete={deleteAnnouncement}
+                    onUpdate={updateAnnouncement}
+                  />
+                ))}
+                {pinnedCount > 0 &&
+                  filteredActive.some((a) => !a.isPinned) && (
+                    <div className="flex items-center gap-1 text-[10px] text-gray-500 font-semibold pt-1">
+                      <Bell className="h-2.5 w-2.5" />
+                      일반 공지
+                    </div>
+                  )}
+                {filteredActive.filter((a) => !a.isPinned).map((item) => (
+                  <AnnouncementRow
+                    key={item.id}
+                    item={item}
+                    onTogglePin={togglePin}
+                    onDelete={deleteAnnouncement}
+                    onUpdate={updateAnnouncement}
+                  />
+                ))}
+              </div>
+            )}
 
-                {/* all 탭이지만 고정 없을 때, 또는 다른 탭 */}
-                {(activeTab !== "all" ||
-                  pinnedCount === 0) &&
-                  displayList.map((entry) => (
-                    <AnnouncementItem
-                      key={entry.id}
-                      entry={entry}
-                      currentMemberName={currentMemberName}
-                      onTogglePin={togglePin}
-                      onDelete={deleteAnnouncement}
-                      onMarkAsRead={markAsRead}
-                    />
-                  ))}
+            {/* 만료된 공지 접기/펼치기 */}
+            {expiredCount > 0 && (
+              <div className="border-t pt-2">
+                <button
+                  className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => setShowExpired(!showExpired)}
+                >
+                  <ChevronRight
+                    className={`h-3 w-3 transition-transform ${showExpired ? "rotate-90" : ""}`}
+                  />
+                  만료된 공지 {expiredCount}개
+                </button>
+                {showExpired && (
+                  <div className="space-y-2 mt-2 opacity-60">
+                    {filteredExpired.map((item) => (
+                      <AnnouncementRow
+                        key={item.id}
+                        item={item}
+                        onTogglePin={togglePin}
+                        onDelete={deleteAnnouncement}
+                        onUpdate={updateAnnouncement}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

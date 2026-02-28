@@ -3518,8 +3518,15 @@ export type GroupAnnouncementItem = {
   id: string;
   title: string;
   content: string;
+  /** 작성자 이름 */
+  authorName: string;
+  /** 고정 여부 */
+  isPinned: boolean;
   priority: GroupAnnouncementPriority;
-  pinned: boolean;
+  /** 만료 일시 (ISO 8601, null이면 무기한) */
+  expiresAt: string | null;
+  /** 첨부 파일 URL (null이면 없음) */
+  attachmentUrl: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -3529,6 +3536,16 @@ export type GroupAnnouncementInput = {
   content: string;
   priority: GroupAnnouncementPriority;
   pinned: boolean;
+};
+
+/** localStorage 저장 단위 */
+export type GroupAnnouncementData = {
+  /** 그룹 ID */
+  groupId: string;
+  /** 공지사항 목록 */
+  announcements: GroupAnnouncementItem[];
+  /** 마지막 수정 시각 (ISO 8601) */
+  updatedAt: string;
 };
 
 // ============================================
@@ -12580,4 +12597,209 @@ export type DanceMusicData = {
   playlists: DanceMusicPlaylist[];
   /** 마지막 수정 시각 (ISO 8601) */
   updatedAt: string;
+};
+
+// ============================================
+// Dance Goal Tracker (멤버 댄스 목표 트래커, localStorage 기반)
+// ============================================
+
+/** 목표 마일스톤 */
+export type DanceGoalMilestone = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 마일스톤 제목 */
+  title: string;
+  /** 완료 여부 */
+  isCompleted: boolean;
+  /** 완료 일시 (ISO 8601, null이면 미완료) */
+  completedAt: string | null;
+};
+
+/** 목표 카테고리 */
+export type DanceGoalCategory =
+  | "technique"
+  | "flexibility"
+  | "strength"
+  | "performance"
+  | "choreography"
+  | "other";
+
+/** 목표 우선순위 */
+export type DanceGoalPriority = "high" | "medium" | "low";
+
+/** 목표 상태 */
+export type DanceGoalStatus = "active" | "completed" | "paused";
+
+/** 댄스 목표 */
+export type DanceGoal = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 목표 제목 */
+  title: string;
+  /** 목표 설명 */
+  description: string;
+  /** 카테고리 */
+  category: DanceGoalCategory;
+  /** 우선순위 */
+  priority: DanceGoalPriority;
+  /** 마일스톤 목록 */
+  milestones: DanceGoalMilestone[];
+  /** 목표 날짜 (ISO 8601, null이면 미설정) */
+  targetDate: string | null;
+  /** 진행률 (0~100) */
+  progress: number;
+  /** 상태 */
+  status: DanceGoalStatus;
+  /** 생성 일시 (ISO 8601) */
+  createdAt: string;
+  /** 수정 일시 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type DanceGoalTrackerData = {
+  /** 멤버 ID */
+  memberId: string;
+  /** 목표 목록 */
+  goals: DanceGoal[];
+  /** 마지막 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// 백스테이지 커뮤니케이션 로그
+// ============================================================
+
+/** 백스테이지 로그 카테고리 */
+export type BackstageLogCategory =
+  | "cue"
+  | "warning"
+  | "info"
+  | "emergency"
+  | "general";
+
+/** 백스테이지 로그 항목 */
+export type BackstageLogEntry = {
+  /** 항목 고유 ID */
+  id: string;
+  /** 발신자 이름 */
+  senderName: string;
+  /** 메시지 내용 */
+  message: string;
+  /** 카테고리 */
+  category: BackstageLogCategory;
+  /** 타임스탬프 (ISO 8601) */
+  timestamp: string;
+  /** 해결 여부 */
+  isResolved: boolean;
+  /** 해결 처리자 이름 (null이면 미해결) */
+  resolvedBy: string | null;
+};
+
+/** 백스테이지 로그 세션 */
+export type BackstageLogSession = {
+  /** 세션 고유 ID */
+  id: string;
+  /** 공연명 */
+  showName: string;
+  /** 공연 날짜 (YYYY-MM-DD) */
+  showDate: string;
+  /** 로그 항목 목록 */
+  entries: BackstageLogEntry[];
+  /** 세션 활성 여부 */
+  isActive: boolean;
+  /** 세션 생성 시각 (ISO 8601) */
+  createdAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type BackstageLogData = {
+  /** 프로젝트 ID */
+  projectId: string;
+  /** 세션 목록 */
+  sessions: BackstageLogSession[];
+  /** 마지막 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 후원/스폰서 관리 (localStorage 기반)
+// ============================================================
+
+/** 공연 스폰서 등급 */
+export type PerfSponsorTier =
+  | "platinum"
+  | "gold"
+  | "silver"
+  | "bronze"
+  | "supporter";
+
+/** 공연 스폰서 항목 */
+export type PerfSponsorEntry = {
+  /** 고유 ID (crypto.randomUUID) */
+  id: string;
+  /** 스폰서 이름 (기업/개인) */
+  name: string;
+  /** 담당자 이름 (null이면 미지정) */
+  contactPerson: string | null;
+  /** 담당자 이메일 (null이면 미지정) */
+  contactEmail: string | null;
+  /** 후원 등급 */
+  tier: PerfSponsorTier;
+  /** 후원 금액 (원) */
+  amount: number;
+  /** 현물 후원 설명 (null이면 현물 없음) */
+  inKind: string | null;
+  /** 로고 게재 위치 (null이면 해당 없음) */
+  logoPlacement: string | null;
+  /** 제공 혜택 목록 */
+  benefits: string[];
+  /** 후원 상태 */
+  status: "confirmed" | "pending" | "declined";
+  /** 메모 */
+  notes: string;
+  /** 생성 일시 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 공연 후원 localStorage 저장 단위 */
+export type PerfSponsorshipData = {
+  /** 프로젝트 ID */
+  projectId: string;
+  /** 스폰서 목록 */
+  sponsors: PerfSponsorEntry[];
+  /** 후원 목표 금액 (null이면 미설정) */
+  totalGoal: number | null;
+  /** 마지막 수정 시각 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// Attendance Book (그룹 출석부, localStorage 기반)
+// ============================================
+
+/** 출석부 전용 출석 상태 (present/absent/late/excused) */
+export type BookAttendanceStatus = "present" | "absent" | "late" | "excused";
+
+/** 멤버별 출석 기록 */
+export type AttendanceRecord = {
+  memberName: string;
+  status: BookAttendanceStatus;
+  note: string | null;
+};
+
+/** 날짜별 출석부 시트 */
+export type AttendanceSheet = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  title: string;
+  records: AttendanceRecord[];
+  createdAt: string; // ISO 8601
+};
+
+/** 그룹 출석부 전체 데이터 (localStorage 저장 단위) */
+export type AttendanceBookData = {
+  groupId: string;
+  sheets: AttendanceSheet[];
+  updatedAt: string; // ISO 8601
 };

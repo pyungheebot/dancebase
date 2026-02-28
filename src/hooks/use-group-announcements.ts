@@ -69,8 +69,8 @@ function sortAnnouncements(
   items: GroupAnnouncementItem[]
 ): GroupAnnouncementItem[] {
   return [...items].sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 }
@@ -122,8 +122,11 @@ export function useGroupAnnouncements(groupId: string) {
         id: crypto.randomUUID(),
         title: input.title.trim(),
         content: input.content.trim(),
+        authorName: '',
+        isPinned: input.pinned,
         priority: input.priority,
-        pinned: input.pinned,
+        expiresAt: null,
+        attachmentUrl: null,
         createdAt: now,
         updatedAt: now,
       };
@@ -156,7 +159,7 @@ export function useGroupAnnouncements(groupId: string) {
   const togglePin = useCallback(
     (id: string): void => {
       const updated = announcements.map((item) =>
-        item.id === id ? { ...item, pinned: !item.pinned } : item
+        item.id === id ? { ...item, isPinned: !item.isPinned } : item
       );
       persistAndUpdate(updated);
     },

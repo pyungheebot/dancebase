@@ -27,6 +27,8 @@ import { SoundCueCard } from "@/components/projects/sound-cue-card";
 import { StageTransitionCard } from "@/components/projects/stage-transition-card";
 import { StageFormationCard } from "@/components/projects/stage-formation-card";
 import { PerformanceTicketCard } from "@/components/projects/performance-ticket-card";
+import { BackstageLogCard } from "@/components/projects/backstage-log-card";
+import { PerformanceSponsorCard } from "@/components/projects/performance-sponsor-card";
 
 export default function ProjectDetailPage({
   params,
@@ -148,6 +150,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <PerformanceTicketCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <BackstageLogCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <PerformanceSponsorCard
               projectId={ctx.projectId}
             />
           )}
