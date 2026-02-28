@@ -96,14 +96,54 @@ export function schedulesToIcs(schedules: Schedule[]): string {
 }
 
 /**
+ * Google Calendar 이벤트 추가 URL 생성
+ * https://calendar.google.com/calendar/render?action=TEMPLATE&...
+ */
+export function buildGoogleCalendarUrl(schedule: Schedule): string {
+  const params = new URLSearchParams();
+  params.set("action", "TEMPLATE");
+  params.set("text", schedule.title);
+  params.set(
+    "dates",
+    `${toIcsDateTime(schedule.starts_at)}/${toIcsDateTime(schedule.ends_at)}`
+  );
+
+  if (schedule.location) {
+    const loc = schedule.address
+      ? `${schedule.location} (${schedule.address})`
+      : schedule.location;
+    params.set("location", loc);
+  }
+
+  if (schedule.description) {
+    const maxLength = 1000;
+    const details =
+      schedule.description.length > maxLength
+        ? schedule.description.slice(0, maxLength) + "..."
+        : schedule.description;
+    params.set("details", details);
+  }
+
+  params.set("ctz", "Asia/Seoul");
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+/** 파일명에 안전하지 않은 문자를 제거 */
+function sanitizeFilename(name: string): string {
+  return name.replace(/[/\\:*?"<>|]/g, "_").trim() || "schedule";
+}
+
+/**
  * ICS 문자열을 파일로 다운로드
  */
 export function downloadIcs(icsContent: string, filename: string): void {
+  const safeFilename = sanitizeFilename(filename);
   const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = filename;
+  link.download = safeFilename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

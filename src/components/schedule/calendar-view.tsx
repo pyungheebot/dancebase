@@ -39,7 +39,13 @@ import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
 import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
-import { scheduleToIcs, schedulesToIcs, downloadIcs } from "@/lib/ics";
+import { scheduleToIcs, schedulesToIcs, downloadIcs, buildGoogleCalendarUrl } from "@/lib/ics";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { detectConflicts } from "@/lib/schedule-conflict";
 import { useMemo } from "react";
 
@@ -861,19 +867,37 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                     longitude={detailSchedule.longitude}
                   />
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => {
-                    const icsContent = scheduleToIcs(detailSchedule);
-                    downloadIcs(icsContent, `${detailSchedule.title}.ics`);
-                    toast.success("캘린더 파일을 다운로드했습니다");
-                  }}
-                >
-                  <CalendarPlus className="h-3 w-3 mr-1" />
-                  캘린더에 추가
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-7 text-xs">
+                      <CalendarPlus className="h-3 w-3 mr-1" />
+                      캘린더에 추가
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem asChild>
+                      <a
+                        href={buildGoogleCalendarUrl(detailSchedule)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Google 캘린더에 추가 (새 탭에서 열림)"
+                      >
+                        <Calendar className="h-3.5 w-3.5 mr-2" />
+                        Google 캘린더
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        const icsContent = scheduleToIcs(detailSchedule);
+                        downloadIcs(icsContent, `${detailSchedule.title}.ics`);
+                        toast.success("캘린더 파일을 다운로드했습니다");
+                      }}
+                    >
+                      <Download className="h-3.5 w-3.5 mr-2" />
+                      ICS 파일 다운로드
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 {groupId && canEdit && (
                   <ScheduleBroadcastDialog
                     schedule={detailSchedule}
