@@ -41,6 +41,7 @@ import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
 import { scheduleToIcs, schedulesToIcs, downloadIcs, buildGoogleCalendarUrl } from "@/lib/ics";
 import { ShareButton } from "@/components/shared/share-button";
+import { MapEmbed } from "@/components/shared/map-embed";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -748,10 +749,20 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   </span>
                 </div>
                 {detailSchedule.location && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 shrink-0" />
-                    <span>{detailSchedule.location}</span>
-                  </div>
+                  <>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span>{detailSchedule.location}</span>
+                    </div>
+                    <MapEmbed
+                      location={detailSchedule.location}
+                      address={detailSchedule.address}
+                      latitude={detailSchedule.latitude}
+                      longitude={detailSchedule.longitude}
+                      height={160}
+                      showExternalLinks={false}
+                    />
+                  </>
                 )}
                 {/* 날씨 예보 배지 */}
                 <ScheduleWeatherBadge schedule={detailSchedule} />
