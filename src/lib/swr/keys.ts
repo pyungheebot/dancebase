@@ -1244,4 +1244,21 @@ export const swrKeys = {
   // 공연 스태프 콜시트 (localStorage 기반)
   staffCall: (groupId: string, projectId: string) =>
     `staff-call-${groupId}-${projectId}` as const,
+
+  // 그룹 연습 기여도 포인트 (localStorage 기반)
+  contributionPoint: (groupId: string) => `contribution-point-${groupId}` as const,
+
+  // 공연 무대 동선 노트 (localStorage 기반)
+  stageBlocking: (groupId: string, projectId: string) =>
+    `stage-blocking-${groupId}-${projectId}` as const,
+
+  // 멤버 댄스 오디션 기록 (localStorage 기반)
+  danceAudition: (memberId: string) => `dance-audition-${memberId}` as const,
+
+  // 그룹 외부 강사 관리 (localStorage 기반)
+  guestInstructor: (groupId: string) => `guest-instructor-${groupId}` as const,
+
+  // 공연 관객 카운트 (localStorage 기반)
+  audienceCount: (groupId: string, projectId: string) =>
+    `audience-count-${groupId}-${projectId}` as const,
 };

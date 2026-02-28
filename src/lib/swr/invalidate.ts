@@ -712,3 +712,15 @@ export function invalidateAttendanceExcuse(groupId: string) {
 export function invalidateAudienceGuide(groupId: string, projectId: string) {
   mutate(swrKeys.audienceGuide(groupId, projectId));
 }
+
+export function invalidateDanceAudition(memberId: string) {
+  mutate(swrKeys.danceAudition(memberId));
+}
+
+export function invalidateGuestInstructor(groupId: string) {
+  mutate(swrKeys.guestInstructor(groupId));
+}
+
+export function invalidateAudienceCount(groupId: string, projectId: string) {
+  mutate(swrKeys.audienceCount(groupId, projectId));
+}

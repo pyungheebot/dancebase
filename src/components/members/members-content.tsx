@@ -63,6 +63,7 @@ import { DynamicTeamManager } from "@/components/members/dynamic-team-manager";
 import { PartnerMatchingPanel } from "@/components/members/partner-matching-panel";
 import { SkillTreeCard } from "@/components/members/skill-tree-card";
 import { DanceWorkshopCard } from "@/components/members/dance-workshop-card";
+import { DanceAuditionCard } from "@/components/members/dance-audition-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -681,6 +682,9 @@ function GroupMembersContent({
 
       {/* 댄스 워크숍 이력 (개인 워크숍/마스터클래스 참석 이력) */}
       <DanceWorkshopCard memberId={currentUserId} />
+
+      {/* 댄스 오디션 기록 (오디션 참가 이력 및 결과 관리) */}
+      <DanceAuditionCard memberId={currentUserId} />
     </>
   );
 }

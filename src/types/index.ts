@@ -9933,3 +9933,240 @@ export type StaffCallSheet = {
   items: StaffCallItem[];
   updatedAt: string;
 };
+
+// ============================================================
+// 공연 무대 동선 노트 (Stage Blocking Notes)
+// ============================================================
+
+/** 무대 위치 */
+export type StageBlockingPosition =
+  | "upstage_left"    // 상수 좌
+  | "upstage_center"  // 상수 중앙
+  | "upstage_right"   // 상수 우
+  | "center_left"     // 센터 좌
+  | "center"          // 센터
+  | "center_right"    // 센터 우
+  | "downstage_left"  // 하수 좌
+  | "downstage_center"// 하수 중앙
+  | "downstage_right" // 하수 우
+  | "wing_left"       // 윙 좌 (대기)
+  | "wing_right"      // 윙 우 (대기)
+  | "custom";         // 직접 입력
+
+/** 전환 방향 */
+export type StageBlockingDirection =
+  | "forward"   // 앞으로
+  | "backward"  // 뒤로
+  | "left"      // 왼쪽
+  | "right"     // 오른쪽
+  | "diagonal"  // 대각선
+  | "circle"    // 원형
+  | "stay"      // 정지
+  | "exit"      // 퇴장
+  | "enter";    // 등장
+
+/** 멤버별 동선 */
+export type StageBlockingMemberMove = {
+  memberName: string;                    // 멤버 이름
+  fromPosition: StageBlockingPosition;   // 시작 위치
+  toPosition: StageBlockingPosition;     // 종료 위치
+  direction?: StageBlockingDirection;    // 이동 방향
+  note?: string;                         // 멤버 동선 메모
+};
+
+/** 무대 동선 노트 단건 */
+export type StageBlockingNote = {
+  id: string;
+  songTitle: string;             // 곡 제목 / 장면 이름
+  sceneNumber?: string;          // 장면/섹션 번호 (예: "A1", "2절")
+  timeStart?: string;            // 시간 구간 시작 (mm:ss)
+  timeEnd?: string;              // 시간 구간 종료 (mm:ss)
+  countStart?: number;           // 카운트 시작
+  countEnd?: number;             // 카운트 종료
+  formation?: string;            // 포메이션 이름
+  memberMoves: StageBlockingMemberMove[]; // 멤버별 동선
+  caution?: string;              // 주의사항
+  memo?: string;                 // 추가 메모
+  order: number;                 // 표시 순서
+  createdAt: string;             // 생성일 (ISO datetime)
+  updatedAt: string;             // 수정일 (ISO datetime)
+};
+
+/** 무대 동선 전체 데이터 */
+export type StageBlockingEntry = {
+  groupId: string;
+  projectId: string;
+  notes: StageBlockingNote[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 연습 기여도 포인트 (Practice Contribution Points)
+// ============================================================
+
+/** 기여도 포인트 카테고리 */
+export type ContributionPointCategory =
+  | "attendance"    // 출석
+  | "demonstration" // 시범
+  | "feedback"      // 피드백
+  | "cleaning"      // 청소
+  | "equipment"     // 장비관리
+  | "teaching"      // 지도
+  | "preparation"   // 준비
+  | "other";        // 기타
+
+/** 기여도 포인트 거래 (부여/차감 내역) */
+export type ContributionPointTransaction = {
+  id: string;
+  memberId: string;          // 대상 멤버 ID
+  memberName: string;        // 대상 멤버 이름 (스냅샷)
+  category: ContributionPointCategory; // 카테고리
+  points: number;            // 포인트 (양수: 부여, 음수: 차감)
+  reason: string;            // 부여/차감 사유
+  date: string;              // 날짜 (YYYY-MM-DD)
+  grantedBy: string;         // 부여자 이름
+  note?: string;             // 추가 메모
+  createdAt: string;         // 생성일 (ISO datetime)
+};
+
+/** 멤버별 포인트 집계 엔트리 */
+export type ContributionPointEntry = {
+  memberId: string;
+  memberName: string;
+  totalPoints: number;
+  categoryBreakdown: Record<ContributionPointCategory, number>;
+  transactions: ContributionPointTransaction[];
+  rank: number;
+};
+
+/** 기여도 포인트 전체 데이터 */
+export type ContributionPointStore = {
+  groupId: string;
+  transactions: ContributionPointTransaction[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 멤버 댄스 오디션 기록 (Dance Audition Records)
+// ============================================================
+
+/** 오디션 결과 */
+export type DanceAuditionResult =
+  | "pass"       // 합격
+  | "fail"       // 불합격
+  | "pending"    // 대기/결과 미정
+  | "cancelled"; // 취소
+
+/** 오디션 개별 기록 */
+export type DanceAuditionRecord = {
+  id: string;
+  auditionName: string;          // 오디션명
+  organizer: string;             // 주최사/주최자
+  date: string;                  // 오디션 날짜 (YYYY-MM-DD)
+  genre: string;                 // 장르
+  result: DanceAuditionResult;   // 결과
+  prepSong: string;              // 준비한 곡
+  judgesFeedback: string;        // 심사위원 피드백
+  personalNote: string;          // 개인 소감 메모
+  createdAt: string;             // 생성일 (ISO datetime)
+  updatedAt: string;             // 수정일 (ISO datetime)
+};
+
+/** 멤버 댄스 오디션 전체 데이터 */
+export type DanceAuditionEntry = {
+  memberId: string;
+  records: DanceAuditionRecord[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 외부 강사 관리 (Guest Instructor Management)
+// ============================================================
+
+/** 외부 강사 수업 이력 */
+export type GuestInstructorLesson = {
+  id: string;
+  date: string;           // YYYY-MM-DD
+  topic: string;          // 수업 주제
+  rating: number;         // 평점 1~5
+  note?: string;          // 메모
+  createdAt: string;      // 생성일 (ISO datetime)
+};
+
+/** 외부 강사 정보 */
+export type GuestInstructorEntry = {
+  id: string;
+  name: string;           // 강사 이름
+  genre: string;          // 전문 장르 (예: 팝핀, 비보잉, 힙합, 재즈 등)
+  career?: string;        // 경력 소개
+  phone?: string;         // 연락처
+  email?: string;         // 이메일
+  hourlyRate?: number;    // 시간당 비용 (원)
+  lessons: GuestInstructorLesson[];  // 수업 이력
+  note?: string;          // 메모
+  createdAt: string;      // 생성일 (ISO datetime)
+  updatedAt: string;      // 수정일 (ISO datetime)
+};
+
+/** 외부 강사 전체 데이터 */
+export type GuestInstructorData = {
+  groupId: string;
+  instructors: GuestInstructorEntry[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 관객 카운트 (Audience Count Tracker)
+// ============================================================
+
+/** 관객 유형 */
+export type AudienceCountType =
+  | "paid"       // 유료
+  | "invited"    // 초대
+  | "free"       // 무료
+  | "staff";     // 관계자
+
+/** 회차별 관객 수 기록 */
+export type AudienceCountRecord = {
+  id: string;
+  sessionNumber: number;        // 회차 번호 (1, 2, 3...)
+  sessionLabel?: string;        // 회차 라벨 (예: "오후 2시 공연")
+  date: string;                 // 공연 날짜 (YYYY-MM-DD)
+  totalSeats: number;           // 총 좌석 수
+  actualCount: number;          // 실제 관객 수
+  vipCount: number;             // VIP 수
+  byType: {
+    paid: number;               // 유료 관객
+    invited: number;            // 초대 관객
+    free: number;               // 무료 관객
+    staff: number;              // 관계자
+  };
+  note?: string;                // 메모
+  createdAt: string;            // 생성일 (ISO datetime)
+  updatedAt: string;            // 수정일 (ISO datetime)
+};
+
+/** 공연 관객 카운트 항목 입력 타입 */
+export type AudienceCountEntry = {
+  sessionNumber: number;
+  sessionLabel?: string;
+  date: string;
+  totalSeats: number;
+  actualCount: number;
+  vipCount: number;
+  byType: {
+    paid: number;
+    invited: number;
+    free: number;
+    staff: number;
+  };
+  note?: string;
+};
+
+/** 공연 관객 카운트 전체 데이터 */
+export type AudienceCountSheet = {
+  groupId: string;
+  projectId: string;
+  records: AudienceCountRecord[];
+  updatedAt: string;
+};
