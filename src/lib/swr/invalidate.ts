@@ -695,3 +695,20 @@ export function invalidatePracticeRule(groupId: string) {
 export function invalidateAnnouncementTemplate(groupId: string) {
   mutate(swrKeys.announcementTemplate(groupId));
 }
+
+export function invalidateRoleAssignment(groupId: string) {
+  mutate(swrKeys.roleAssignment(groupId));
+}
+
+export function invalidateDanceCondition(memberId: string) {
+  mutate(swrKeys.danceCondition(memberId));
+}
+
+
+export function invalidateAttendanceExcuse(groupId: string) {
+  mutate(swrKeys.attendanceExcuse(groupId));
+}
+
+export function invalidateAudienceGuide(groupId: string, projectId: string) {
+  mutate(swrKeys.audienceGuide(groupId, projectId));
+}

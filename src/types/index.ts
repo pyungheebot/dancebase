@@ -9717,3 +9717,219 @@ export type PracticePartnerEntry = {
   createdAt: string;                    // 생성일 (ISO datetime)
   updatedAt: string;                    // 수정일 (ISO datetime)
 };
+
+// ============================================================
+// 그룹 역할 분담표 (Role Assignment Board)
+// ============================================================
+
+/** 역할 분담 상태 */
+export type RoleAssignmentStatus = "active" | "expired";
+
+/** 역할 분담 이력 항목 */
+export type RoleAssignmentHistoryItem = {
+  id: string;                        // 이력 고유 ID
+  changedAt: string;                 // 변경 일시 (ISO datetime)
+  changedBy: string;                 // 변경자 이름
+  prevAssignee: string;              // 이전 담당자
+  nextAssignee: string;              // 새 담당자
+  note?: string;                     // 변경 사유 (선택)
+};
+
+/** 역할 분담 항목 */
+export type RoleAssignmentItem = {
+  id: string;                        // 항목 고유 ID
+  roleName: string;                  // 역할 이름 (예: 리더, 총무)
+  description?: string;              // 역할 설명
+  assignee: string;                  // 현재 담당자 이름
+  startDate: string;                 // 담당 시작일 (YYYY-MM-DD)
+  endDate?: string;                  // 담당 종료일 (YYYY-MM-DD, 선택)
+  status: RoleAssignmentStatus;      // 상태 (활성/만료)
+  history: RoleAssignmentHistoryItem[]; // 변경 이력
+  createdAt: string;                 // 생성일 (ISO datetime)
+  updatedAt: string;                 // 수정일 (ISO datetime)
+};
+
+/** 역할 분담표 전체 데이터 */
+export type RoleAssignmentEntry = {
+  id: string;
+  groupId: string;
+  items: RoleAssignmentItem[];       // 역할 분담 목록
+  createdAt: string;                 // 생성일 (ISO datetime)
+  updatedAt: string;                 // 수정일 (ISO datetime)
+};
+
+// ============================================================
+// 멤버 댄스 컨디션 일지 (Dance Condition Log)
+// ============================================================
+
+/** 통증 부위 */
+export type DanceConditionPainArea =
+  | "neck"       // 목
+  | "shoulder"   // 어깨
+  | "back"       // 등
+  | "waist"      // 허리
+  | "hip"        // 고관절
+  | "knee"       // 무릎
+  | "ankle"      // 발목
+  | "wrist"      // 손목
+  | "elbow"      // 팔꿈치
+  | "calf"       // 종아리
+  | "thigh"      // 허벅지
+  | "foot"       // 발
+  | "none";      // 통증 없음
+
+/** 연습 강도 */
+export type DanceConditionIntensity =
+  | "rest"      // 휴식
+  | "light"     // 가벼운
+  | "moderate"  // 보통
+  | "hard"      // 힘든
+  | "extreme";  // 극강
+
+/** 댄스 컨디션 일지 단건 기록 */
+export type DanceConditionLog = {
+  id: string;                               // 고유 ID
+  date: string;                             // 기록 날짜 (YYYY-MM-DD)
+  overallScore: number;                     // 전체 컨디션 점수 (1-10)
+  energyLevel: number;                      // 에너지 레벨 (1-10)
+  focusLevel: number;                       // 집중력 (1-10)
+  muscleCondition: number;                  // 근육 상태 (1-10)
+  painAreas: DanceConditionPainArea[];      // 통증 부위 목록
+  practiceIntensity: DanceConditionIntensity; // 연습 강도
+  hydrationMl: number;                      // 수분 섭취량 (ml)
+  memo: string;                             // 컨디션 메모
+  createdAt: string;                        // 생성일 (ISO datetime)
+};
+
+/** 댄스 컨디션 일지 전체 데이터 (localStorage 저장 단위) */
+export type DanceConditionEntry = {
+  memberId: string;                         // 멤버 ID
+  logs: DanceConditionLog[];                // 기록 목록 (최신순)
+  updatedAt: string;                        // 마지막 수정일 (ISO datetime)
+};
+
+// ============================================================
+// 공연 관객 안내 매뉴얼 (Audience Guide Manual)
+// ============================================================
+
+/** 관객 안내 섹션 유형 */
+export type AudienceGuideSectionType =
+  | "location"       // 공연장 위치/교통
+  | "parking"        // 주차 안내
+  | "seating"        // 좌석 안내
+  | "caution"        // 주의사항 (촬영/녹음/음식 등)
+  | "etiquette"      // 공연 에티켓
+  | "emergency"      // 비상구/대피 안내
+  | "faq"            // FAQ
+  | "general";       // 일반 안내
+
+/** FAQ 항목 */
+export type AudienceGuideFAQ = {
+  id: string;
+  question: string;   // 질문
+  answer: string;     // 답변
+  order: number;      // 표시 순서
+};
+
+/** 관객 안내 섹션 */
+export type AudienceGuideSection = {
+  id: string;
+  type: AudienceGuideSectionType;   // 섹션 유형
+  title: string;                    // 섹션 제목
+  content: string;                  // 본문 내용
+  faqs: AudienceGuideFAQ[];         // FAQ 목록 (type === "faq" 일 때 주로 사용)
+  isVisible: boolean;               // 공개 여부
+  order: number;                    // 표시 순서
+  createdAt: string;                // 생성일 (ISO datetime)
+  updatedAt: string;                // 수정일 (ISO datetime)
+};
+
+/** 관객 안내 매뉴얼 전체 데이터 */
+export type AudienceGuideEntry = {
+  id: string;
+  groupId: string;
+  projectId: string;
+  title: string;                      // 매뉴얼 제목
+  description: string;                // 매뉴얼 설명
+  sections: AudienceGuideSection[];   // 섹션 목록
+  createdAt: string;                  // 생성일 (ISO datetime)
+  updatedAt: string;                  // 수정일 (ISO datetime)
+};
+
+// ============================================================
+// 그룹 연습 출결 사유서 (Attendance Excuse Form)
+// ============================================================
+
+/** 출결 유형: 불참 / 지각 / 조퇴 */
+export type AttendanceExcuseType = "absent" | "late" | "early_leave";
+
+/** 사유 카테고리 */
+export type AttendanceExcuseReason =
+  | "health"   // 건강
+  | "study"    // 학업
+  | "work"     // 직장
+  | "family"   // 가정
+  | "other";   // 기타
+
+/** 승인 상태 */
+export type AttendanceExcuseStatus = "pending" | "approved" | "rejected";
+
+/** 사유서 단건 */
+export type AttendanceExcuseItem = {
+  id: string;
+  memberName: string;                   // 제출 멤버 이름
+  date: string;                         // 해당 날짜 (YYYY-MM-DD)
+  type: AttendanceExcuseType;           // 출결 유형
+  reason: AttendanceExcuseReason;       // 사유 카테고리
+  detail: string;                       // 상세 사유
+  status: AttendanceExcuseStatus;       // 승인 상태
+  approverName?: string;                // 승인자 이름
+  approvedAt?: string;                  // 승인/반려 일시 (ISO datetime)
+  submittedAt: string;                  // 제출 일시 (ISO datetime)
+};
+
+/** 그룹 전체 사유서 데이터 */
+export type AttendanceExcuseEntry = {
+  id: string;
+  groupId: string;
+  items: AttendanceExcuseItem[];        // 사유서 목록
+  createdAt: string;                    // 생성일 (ISO datetime)
+  updatedAt: string;                    // 수정일 (ISO datetime)
+};
+
+// ============================================================
+// 공연 스태프 콜시트 (Staff Call Sheet)
+// ============================================================
+
+/** 스태프 역할 */
+export type StaffCallRole =
+  | "stage_manager"   // 무대감독
+  | "sound"           // 음향
+  | "lighting"        // 조명
+  | "costume"         // 의상
+  | "makeup"          // 메이크업
+  | "stage_crew"      // 무대스태프
+  | "front_of_house"  // 프론트
+  | "other";          // 기타
+
+/** 스태프 콜시트 항목 */
+export type StaffCallItem = {
+  id: string;
+  name: string;                  // 스태프 이름
+  role: StaffCallRole;           // 역할
+  callTime: string;              // 콜 시간 (HH:mm)
+  location?: string;             // 집결 장소
+  phone?: string;                // 연락처
+  note?: string;                 // 특이사항
+  confirmed: boolean;            // 확인 상태
+  createdAt: string;             // 생성일 (ISO datetime)
+  updatedAt: string;             // 수정일 (ISO datetime)
+};
+
+/** 스태프 콜시트 전체 데이터 */
+export type StaffCallSheet = {
+  groupId: string;
+  projectId: string;
+  items: StaffCallItem[];
+  updatedAt: string;
+};

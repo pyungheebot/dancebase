@@ -1227,4 +1227,21 @@ export const swrKeys = {
 
   // 그룹 연습 파트너 매칭 (localStorage 기반)
   practicePartner: (groupId: string) => `practice-partner-${groupId}` as const,
+
+  // 그룹 역할 분담표 (localStorage 기반)
+  roleAssignment: (groupId: string) => `role-assignment-${groupId}` as const,
+
+  // 멤버 댄스 컨디션 일지 (localStorage 기반)
+  danceCondition: (memberId: string) => `dance-condition-${memberId}` as const,
+
+  // 그룹 연습 출결 사유서 (localStorage 기반)
+  attendanceExcuse: (groupId: string) => `attendance-excuse-${groupId}` as const,
+
+  // 공연 관객 안내 매뉴얼 (localStorage 기반)
+  audienceGuide: (groupId: string, projectId: string) =>
+    `audience-guide-${groupId}-${projectId}` as const,
+
+  // 공연 스태프 콜시트 (localStorage 기반)
+  staffCall: (groupId: string, projectId: string) =>
+    `staff-call-${groupId}-${projectId}` as const,
 };
