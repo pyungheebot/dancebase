@@ -7058,25 +7058,52 @@ export type ShowInventoryItem = {
 // 멤버 긴급 연락처
 // ============================================
 
+/** 혈액형 */
+export type EmergencyContactBloodType =
+  | "A+"
+  | "A-"
+  | "B+"
+  | "B-"
+  | "AB+"
+  | "AB-"
+  | "O+"
+  | "O-"
+  | "unknown"; // 모름
+
 export type EmergencyContactRelation =
-  | "parent"
-  | "spouse"
-  | "sibling"
-  | "friend"
-  | "other";
+  | "parent"   // 부모
+  | "spouse"   // 배우자
+  | "sibling"  // 형제/자매
+  | "friend"   // 친구
+  | "guardian" // 보호자
+  | "other";   // 기타
+
+/** 긴급 연락처 인물 (멤버의 비상 연락 대상) */
+export type EmergencyContactPerson = {
+  id: string;
+  name: string;
+  relation: EmergencyContactRelation;
+  phone: string;
+  note?: string;
+};
 
 export type EmergencyContactEntry = {
   id: string;
-  memberName: string;
-  contactName: string;
-  relation: EmergencyContactRelation;
-  phone: string;
-  email?: string;
-  notes?: string;
-  bloodType?: string;
-  allergies?: string;
-  medicalNotes?: string;
-  createdAt: string;
+  groupId: string;
+  memberName: string;                        // 멤버 이름
+  memberPhone?: string;                      // 멤버 본인 연락처
+  contactName: string;                       // 긴급 연락처 이름 (대표 1명, 호환성 유지)
+  relation: EmergencyContactRelation;        // 대표 연락처 관계
+  phone: string;                             // 대표 연락처 전화번호
+  email?: string;                            // 이메일
+  notes?: string;                            // 일반 메모
+  bloodType: EmergencyContactBloodType;      // 혈액형
+  allergies?: string;                        // 알레르기/질환 정보
+  medicalNotes?: string;                     // 의료 특이사항
+  insuranceInfo?: string;                    // 보험 정보
+  extraContacts?: EmergencyContactPerson[];  // 추가 긴급 연락처 목록
+  createdAt: string;                         // 생성일 (ISO datetime)
+  updatedAt?: string;                        // 수정일 (ISO datetime)
 };
 
 // ============================================
@@ -9357,4 +9384,147 @@ export type PracticeRuleEntry = {
   order: number;                        // 정렬 순서
   createdAt: string;                    // 생성일 (ISO datetime)
   updatedAt: string;                    // 수정일 (ISO datetime)
+};
+
+
+// ============================================================
+// 멤버 댄스 목표 마일스톤 (DanceMilestone)
+// ============================================================
+
+/** 마일스톤 단계 */
+export type DanceMilestoneStep = {
+  id: string;
+  title: string;          // 단계 제목 (예: "기초 아이솔레이션")
+  description?: string;   // 상세 설명
+  isCompleted: boolean;   // 완료 여부
+  completedAt?: string;   // 완료 일시 (ISO datetime)
+  order: number;          // 정렬 순서
+};
+
+/** 댄스 목표 카테고리 */
+export type DanceMilestoneCategory =
+  | "genre"        // 장르 마스터 (팝핑, 락킹, 왁킹 등)
+  | "technique"    // 테크닉 향상
+  | "flexibility"  // 유연성
+  | "stamina"      // 체력/지구력
+  | "performance"  // 무대 퍼포먼스
+  | "freestyle"    // 프리스타일
+  | "choreography" // 안무 창작
+  | "other";       // 기타
+
+/** 댄스 목표 전체 */
+export type DanceMilestoneGoal = {
+  id: string;
+  memberId: string;                   // 멤버 ID
+  title: string;                      // 목표 제목 (예: "팝핑 마스터")
+  description?: string;               // 목표 설명
+  category: DanceMilestoneCategory;   // 카테고리
+  steps: DanceMilestoneStep[];        // 마일스톤 단계 목록
+  targetDate?: string;                // 목표 기한 (YYYY-MM-DD)
+  createdAt: string;                  // 생성일 (ISO datetime)
+  updatedAt: string;                  // 수정일 (ISO datetime)
+};
+
+/** localStorage 저장 전체 데이터 */
+export type DanceMilestoneData = {
+  goals: DanceMilestoneGoal[];
+};
+
+// ============================================================
+// 공연 의상 변경 시트 (Costume Change Sheet)
+// ============================================================
+
+/** 의상 변경 위치 */
+export type CostumeChangeLocation =
+  | "stage_left"    // 무대 좌측
+  | "stage_right"   // 무대 우측
+  | "backstage"     // 백스테이지
+  | "dressing_room" // 분장실
+  | "other";        // 기타
+
+/** 공연 의상 변경 단일 항목 */
+export type CostumeChangeEntry = {
+  id: string;
+  groupId: string;
+  projectId: string;
+  order: number;                    // 변경 순서 (곡 번호 순)
+  songNumber: number;               // 곡 번호
+  songName: string;                 // 곡 이름
+  memberNames: string[];            // 변경 대상 멤버 목록
+  costumeFrom: string;              // 변경 전 의상
+  costumeTo: string;                // 변경 후 의상
+  changeTimeSeconds: number;        // 변경 시간 (초)
+  needsHelper: boolean;             // 도우미 필요 여부
+  helperName?: string;              // 도우미 이름
+  location: CostumeChangeLocation;  // 변경 위치
+  locationDetail?: string;          // 위치 상세 설명
+  notes?: string;                   // 주의사항
+  createdAt: string;                // 생성일 (ISO datetime)
+  updatedAt: string;                // 수정일 (ISO datetime)
+};
+
+// ============================================================
+// 공연 무대 소품 관리 (Stage Props Management)
+// ============================================================
+
+/** 무대 소품 상태 */
+export type StagePropStatus =
+  | "ready"    // 준비됨
+  | "in_use"   // 사용중
+  | "stored"   // 보관중
+  | "repair"   // 수리중
+  | "lost";    // 분실
+
+/** 무대 소품 단일 항목 */
+export type StagePropEntry = {
+  id: string;
+  groupId: string;
+  projectId: string;
+  name: string;                // 소품 이름
+  scene?: string;              // 사용 곡/장면
+  assignedTo?: string;         // 담당자
+  storageLocation?: string;    // 보관 위치
+  status: StagePropStatus;     // 상태
+  quantity: number;            // 수량
+  cost?: number;               // 비용 (원)
+  photoUrl?: string;           // 사진 URL
+  memo?: string;               // 메모
+  createdAt: string;           // 생성일 (ISO datetime)
+  updatedAt: string;           // 수정일 (ISO datetime)
+};
+
+// ============================================================
+// 그룹 연습 플레이리스트 (PracticePlaylist - 용도별 관리)
+// ============================================================
+
+/** 곡 용도 (연습 단계) */
+export type PracticePlaylistPurpose =
+  | "warmup"    // 웜업
+  | "main"      // 본연습
+  | "cooldown"; // 쿨다운
+
+/** 플레이리스트 단일 곡 */
+export type PracticePlaylistTrack = {
+  id: string;
+  title: string;                         // 곡명
+  artist?: string;                       // 아티스트
+  bpm?: number;                          // BPM
+  genre?: string;                        // 장르
+  duration: number;                      // 소요시간 (초 단위)
+  purpose: PracticePlaylistPurpose;      // 용도 (웜업/본연습/쿨다운)
+  notes?: string;                        // 메모
+  order: number;                         // 정렬 순서
+  addedBy: string;                       // 추가자
+  createdAt: string;                     // 생성일 (ISO datetime)
+};
+
+/** 플레이리스트 항목 */
+export type PracticePlaylistEntry = {
+  id: string;
+  groupId: string;
+  name: string;                          // 플레이리스트 이름
+  tracks: PracticePlaylistTrack[];       // 곡 목록
+  totalDuration: number;                 // 총 재생시간 (초 단위, 계산값)
+  createdAt: string;                     // 생성일 (ISO datetime)
+  updatedAt: string;                     // 수정일 (ISO datetime)
 };

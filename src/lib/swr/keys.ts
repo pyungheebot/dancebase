@@ -1202,4 +1202,15 @@ export const swrKeys = {
 
   // 그룹 연습 룰/규칙 (localStorage 기반)
   practiceRule: (groupId: string) => `practice-rule-${groupId}` as const,
+
+  // 멤버 댄스 목표 마일스톤 (localStorage 기반)
+  danceMilestone: (memberId: string) => `dance-milestone-${memberId}` as const,
+
+  // 공연 의상 변경 시트 (localStorage 기반)
+  costumeChange: (groupId: string, projectId: string) =>
+    `costume-change-${groupId}-${projectId}` as const,
+
+  // 공연 무대 소품 관리 (localStorage 기반)
+  stageProp: (groupId: string, projectId: string) =>
+    `stage-prop-${groupId}-${projectId}` as const,
 };

@@ -12,6 +12,7 @@ import { ProjectNoticeFeed } from "@/components/projects/project-notice-feed";
 import { ProjectProgressOverview } from "@/components/projects/project-progress-overview";
 import { RoleAssignmentBoard } from "@/components/projects/role-assignment-board";
 import { LightingCueCard } from "@/components/projects/lighting-cue-card";
+import { CostumeChangeCard } from "@/components/projects/costume-change-card";
 
 export default function ProjectDetailPage({
   params,
@@ -47,6 +48,12 @@ export default function ProjectDetailPage({
           <MeetingMinutesSection ctx={ctx} />
           {ctx.projectId && (
             <LightingCueCard
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <CostumeChangeCard
               groupId={ctx.groupId}
               projectId={ctx.projectId}
             />

@@ -17,6 +17,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -34,7 +41,29 @@ import {
   mmssToSeconds,
   secondsToMmss,
 } from "@/hooks/use-practice-playlist-card";
-import type { PracticeTrack, PracticePlaylistData } from "@/types";
+import type {
+  PracticePlaylistTrack,
+  PracticePlaylistEntry,
+  PracticePlaylistPurpose,
+} from "@/types";
+
+// ============================================
+// 용도(Purpose) 레이블 & 색상
+// ============================================
+
+const PURPOSE_LABELS: Record<PracticePlaylistPurpose, string> = {
+  warmup: "웜업",
+  main: "본연습",
+  cooldown: "쿨다운",
+};
+
+const PURPOSE_COLORS: Record<PracticePlaylistPurpose, string> = {
+  warmup: "bg-orange-100 text-orange-700 border-orange-200",
+  main: "bg-blue-100 text-blue-700 border-blue-200",
+  cooldown: "bg-teal-100 text-teal-700 border-teal-200",
+};
+
+type PurposeFilter = PracticePlaylistPurpose | "all";
 
 // ============================================
 // 장르 배지 색상
@@ -147,6 +176,7 @@ interface AddTrackDialogProps {
     title: string,
     artist: string,
     duration: number,
+    purpose: PracticePlaylistPurpose,
     bpm?: number,
     genre?: string,
     notes?: string,
@@ -158,6 +188,7 @@ const DEFAULT_FORM = {
   title: "",
   artist: "",
   durationStr: "",
+  purpose: "main" as PracticePlaylistPurpose,
   bpmStr: "",
   genre: "",
   notes: "",
@@ -203,6 +234,7 @@ function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
       form.title,
       form.artist,
       duration,
+      form.purpose,
       bpm && !isNaN(bpm) ? bpm : undefined,
       form.genre || undefined,
       form.notes || undefined,
@@ -251,6 +283,33 @@ function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
               placeholder="아티스트 이름"
               className="h-7 text-xs"
             />
+          </div>
+          {/* 용도 */}
+          <div>
+            <Label className="text-[10px] text-muted-foreground mb-1 block">
+              용도 <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={form.purpose}
+              onValueChange={(v) =>
+                set("purpose", v as PracticePlaylistPurpose)
+              }
+            >
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="warmup" className="text-xs">
+                  웜업
+                </SelectItem>
+                <SelectItem value="main" className="text-xs">
+                  본연습
+                </SelectItem>
+                <SelectItem value="cooldown" className="text-xs">
+                  쿨다운
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           {/* 재생시간 + BPM */}
           <div className="flex gap-2">
@@ -356,7 +415,7 @@ function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
 // ============================================
 
 interface TrackRowProps {
-  track: PracticeTrack;
+  track: PracticePlaylistTrack;
   isFirst: boolean;
   isLast: boolean;
   onRemove: () => void;
@@ -398,6 +457,12 @@ function TrackRow({
 
       {/* 배지 */}
       <div className="flex items-center gap-1 shrink-0">
+        {/* 용도 배지 */}
+        <span
+          className={`inline-flex items-center rounded border px-1.5 py-0 text-[10px] font-medium ${PURPOSE_COLORS[track.purpose]}`}
+        >
+          {PURPOSE_LABELS[track.purpose]}
+        </span>
         {track.genre && <GenreBadge genre={track.genre} />}
         {track.bpm && (
           <span className="inline-flex items-center rounded border px-1.5 py-0 text-[10px] font-medium bg-indigo-50 text-indigo-700 border-indigo-200">
@@ -467,21 +532,27 @@ export function PracticePlaylistCard({ groupId }: PracticePlaylistCardProps) {
 
   const [open, setOpen] = useState(true);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>("");
+  const [purposeFilter, setPurposeFilter] = useState<PurposeFilter>("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showAddTrackDialog, setShowAddTrackDialog] = useState(false);
 
   // 선택된 플레이리스트 (없으면 첫 번째)
-  const selectedPlaylist: PracticePlaylistData | null =
+  const selectedPlaylist: PracticePlaylistEntry | null =
     playlists.find((p) => p.id === selectedPlaylistId) ??
     playlists[0] ??
     null;
 
-  // order 기준 정렬
+  // order 기준 정렬 후 용도 필터 적용
   const sortedTracks = selectedPlaylist
     ? [...selectedPlaylist.tracks].sort((a, b) => a.order - b.order)
     : [];
 
-  // 전체 재생시간 (현재 선택된 플레이리스트)
+  const filteredTracks =
+    purposeFilter === "all"
+      ? sortedTracks
+      : sortedTracks.filter((t) => t.purpose === purposeFilter);
+
+  // 현재 선택된 플레이리스트의 총 재생시간
   const playlistDuration = sortedTracks.reduce(
     (sum, t) => sum + t.duration,
     0
@@ -499,10 +570,7 @@ export function PracticePlaylistCard({ groupId }: PracticePlaylistCardProps) {
     toast.success("곡이 삭제되었습니다.");
   };
 
-  const handleMoveTrack = (
-    trackId: string,
-    direction: "up" | "down"
-  ) => {
+  const handleMoveTrack = (trackId: string, direction: "up" | "down") => {
     if (!selectedPlaylist) return;
     moveTrack(selectedPlaylist.id, trackId, direction);
   };
@@ -511,14 +579,36 @@ export function PracticePlaylistCard({ groupId }: PracticePlaylistCardProps) {
     title: string,
     artist: string,
     duration: number,
+    purpose: PracticePlaylistPurpose,
     bpm?: number,
     genre?: string,
     notes?: string,
     addedBy?: string
   ) => {
     if (!selectedPlaylist) return;
-    addTrack(selectedPlaylist.id, title, artist, duration, bpm, genre, notes, addedBy);
+    addTrack(
+      selectedPlaylist.id,
+      title,
+      artist,
+      duration,
+      purpose,
+      bpm,
+      genre,
+      notes,
+      addedBy
+    );
   };
+
+  // 용도별 곡 수 계산
+  const purposeCounts = selectedPlaylist
+    ? (["warmup", "main", "cooldown"] as PracticePlaylistPurpose[]).reduce(
+        (acc, p) => {
+          acc[p] = sortedTracks.filter((t) => t.purpose === p).length;
+          return acc;
+        },
+        {} as Record<PracticePlaylistPurpose, number>
+      )
+    : null;
 
   return (
     <>
@@ -591,9 +681,12 @@ export function PracticePlaylistCard({ groupId }: PracticePlaylistCardProps) {
                     <button
                       key={p.id}
                       type="button"
-                      onClick={() => setSelectedPlaylistId(p.id)}
+                      onClick={() => {
+                        setSelectedPlaylistId(p.id);
+                        setPurposeFilter("all");
+                      }}
                       className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
-                        (selectedPlaylist?.id === p.id)
+                        selectedPlaylist?.id === p.id
                           ? "bg-violet-100 text-violet-700 border-violet-300 font-medium"
                           : "bg-transparent text-muted-foreground border-muted-foreground/30 hover:bg-muted"
                       }`}
@@ -606,67 +699,119 @@ export function PracticePlaylistCard({ groupId }: PracticePlaylistCardProps) {
                   ))}
                 </div>
 
-                {/* 선택된 플레이리스트 상단 버튼 */}
+                {/* 선택된 플레이리스트 상단 */}
                 {selectedPlaylist && (
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-700 truncate">
-                        {selectedPlaylist.name}
-                      </span>
-                      {playlistDuration > 0 && (
-                        <span className="text-[10px] text-muted-foreground">
-                          총 {secondsToMmss(playlistDuration)}
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-gray-700 truncate">
+                          {selectedPlaylist.name}
                         </span>
-                      )}
+                        {playlistDuration > 0 && (
+                          <span className="text-[10px] text-muted-foreground">
+                            총 {secondsToMmss(playlistDuration)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs px-2 gap-0.5"
+                          onClick={() => setShowAddTrackDialog(true)}
+                        >
+                          <Plus className="h-3 w-3" />
+                          곡 추가
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={() =>
+                            handleDeletePlaylist(selectedPlaylist.id)
+                          }
+                          title="플레이리스트 삭제"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs px-2 gap-0.5"
-                        onClick={() => setShowAddTrackDialog(true)}
-                      >
-                        <Plus className="h-3 w-3" />
-                        곡 추가
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-                        onClick={() =>
-                          handleDeletePlaylist(selectedPlaylist.id)
-                        }
-                        title="플레이리스트 삭제"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
+
+                    {/* 용도별 필터 탭 */}
+                    {sortedTracks.length > 0 && (
+                      <div className="flex gap-1 mb-2.5">
+                        {/* 전체 */}
+                        <button
+                          type="button"
+                          onClick={() => setPurposeFilter("all")}
+                          className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                            purposeFilter === "all"
+                              ? "bg-gray-800 text-white border-gray-800"
+                              : "bg-transparent text-muted-foreground border-muted-foreground/30 hover:bg-muted"
+                          }`}
+                        >
+                          전체
+                          <span className="ml-0.5 opacity-70">
+                            ({sortedTracks.length})
+                          </span>
+                        </button>
+                        {(
+                          ["warmup", "main", "cooldown"] as PracticePlaylistPurpose[]
+                        ).map((p) => {
+                          const count = purposeCounts?.[p] ?? 0;
+                          if (count === 0) return null;
+                          return (
+                            <button
+                              key={p}
+                              type="button"
+                              onClick={() => setPurposeFilter(p)}
+                              className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                                purposeFilter === p
+                                  ? PURPOSE_COLORS[p] + " font-medium"
+                                  : "bg-transparent text-muted-foreground border-muted-foreground/30 hover:bg-muted"
+                              }`}
+                            >
+                              {PURPOSE_LABELS[p]}
+                              <span className="ml-0.5 opacity-70">
+                                ({count})
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* 트랙 목록 */}
-                {selectedPlaylist && sortedTracks.length === 0 ? (
+                {selectedPlaylist && filteredTracks.length === 0 ? (
                   <div className="py-5 flex flex-col items-center gap-1.5 text-muted-foreground">
                     <ListMusic className="h-7 w-7 opacity-30" />
-                    <p className="text-xs">아직 등록된 곡이 없습니다.</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => setShowAddTrackDialog(true)}
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      곡 추가
-                    </Button>
+                    <p className="text-xs">
+                      {sortedTracks.length === 0
+                        ? "아직 등록된 곡이 없습니다."
+                        : "해당 용도의 곡이 없습니다."}
+                    </p>
+                    {sortedTracks.length === 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => setShowAddTrackDialog(true)}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        곡 추가
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    {sortedTracks.map((track, idx) => (
+                    {filteredTracks.map((track, idx) => (
                       <TrackRow
                         key={track.id}
                         track={track}
                         isFirst={idx === 0}
-                        isLast={idx === sortedTracks.length - 1}
+                        isLast={idx === filteredTracks.length - 1}
                         onRemove={() => handleRemoveTrack(track.id)}
                         onMoveUp={() => handleMoveTrack(track.id, "up")}
                         onMoveDown={() => handleMoveTrack(track.id, "down")}

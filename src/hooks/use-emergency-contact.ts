@@ -1,127 +1,263 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import type { EmergencyContactEntry, EmergencyContactRelation } from "@/types";
+import useSWR from "swr";
+import { useCallback } from "react";
+import { toast } from "sonner";
+import { swrKeys } from "@/lib/swr/keys";
+import type {
+  EmergencyContactEntry,
+  EmergencyContactBloodType,
+  EmergencyContactRelation,
+  EmergencyContactPerson,
+} from "@/types";
+
+// ============================================================
+// localStorage 유틸
+// ============================================================
 
 function getStorageKey(groupId: string): string {
   return `dancebase:emergency-contact:${groupId}`;
 }
 
-function loadContacts(groupId: string): EmergencyContactEntry[] {
+function loadEntries(groupId: string): EmergencyContactEntry[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as EmergencyContactEntry[];
+    return raw ? (JSON.parse(raw) as EmergencyContactEntry[]) : [];
   } catch {
     return [];
   }
 }
 
-function saveContacts(groupId: string, contacts: EmergencyContactEntry[]): void {
+function saveEntries(groupId: string, entries: EmergencyContactEntry[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(contacts));
+    localStorage.setItem(getStorageKey(groupId), JSON.stringify(entries));
   } catch {
-    // 저장 실패 시 무시
+    // localStorage 쓰기 실패 무시
   }
 }
 
-export function useEmergencyContact(groupId: string, memberNames: string[] = []) {
-  const [contacts, setContacts] = useState<EmergencyContactEntry[]>(() =>
-    loadContacts(groupId)
+// ============================================================
+// 입력 타입
+// ============================================================
+
+export type AddEmergencyContactInput = {
+  memberName: string;
+  memberPhone?: string;
+  contactName: string;
+  relation: EmergencyContactRelation;
+  phone: string;
+  email?: string;
+  notes?: string;
+  bloodType: EmergencyContactBloodType;
+  allergies?: string;
+  medicalNotes?: string;
+  insuranceInfo?: string;
+  extraContacts?: Omit<EmergencyContactPerson, "id">[];
+};
+
+export type UpdateEmergencyContactInput = Partial<AddEmergencyContactInput>;
+
+// ============================================================
+// 훅
+// ============================================================
+
+export function useEmergencyContact(groupId: string) {
+  const { data, isLoading, mutate } = useSWR(
+    groupId ? swrKeys.emergencyContact(groupId) : null,
+    async () => loadEntries(groupId)
   );
 
-  const persist = useCallback(
-    (next: EmergencyContactEntry[]) => {
-      setContacts(next);
-      saveContacts(groupId, next);
-    },
-    [groupId]
-  );
+  const entries = data ?? [];
 
-  // 연락처 추가
+  // ── 항목 추가 ──
   const addContact = useCallback(
-    (
-      memberName: string,
-      contactName: string,
-      relation: EmergencyContactRelation,
-      phone: string,
-      email?: string,
-      notes?: string,
-      bloodType?: string,
-      allergies?: string,
-      medicalNotes?: string
-    ): boolean => {
-      if (!memberName.trim() || !contactName.trim() || !phone.trim()) return false;
+    async (input: AddEmergencyContactInput): Promise<boolean> => {
+      if (!input.memberName.trim()) {
+        toast.error("멤버 이름을 입력해주세요");
+        return false;
+      }
+      if (!input.contactName.trim()) {
+        toast.error("긴급 연락처 이름을 입력해주세요");
+        return false;
+      }
+      if (!input.phone.trim()) {
+        toast.error("긴급 연락처 전화번호를 입력해주세요");
+        return false;
+      }
+
+      const now = new Date().toISOString();
       const newEntry: EmergencyContactEntry = {
         id: crypto.randomUUID(),
-        memberName: memberName.trim(),
-        contactName: contactName.trim(),
-        relation,
-        phone: phone.trim(),
-        email: email?.trim() || undefined,
-        notes: notes?.trim() || undefined,
-        bloodType: bloodType?.trim() || undefined,
-        allergies: allergies?.trim() || undefined,
-        medicalNotes: medicalNotes?.trim() || undefined,
-        createdAt: new Date().toISOString(),
+        groupId,
+        memberName: input.memberName.trim(),
+        memberPhone: input.memberPhone?.trim() || undefined,
+        contactName: input.contactName.trim(),
+        relation: input.relation,
+        phone: input.phone.trim(),
+        email: input.email?.trim() || undefined,
+        notes: input.notes?.trim() || undefined,
+        bloodType: input.bloodType,
+        allergies: input.allergies?.trim() || undefined,
+        medicalNotes: input.medicalNotes?.trim() || undefined,
+        insuranceInfo: input.insuranceInfo?.trim() || undefined,
+        extraContacts: input.extraContacts?.map((c) => ({
+          id: crypto.randomUUID(),
+          name: c.name.trim(),
+          relation: c.relation,
+          phone: c.phone.trim(),
+          note: c.note?.trim() || undefined,
+        })),
+        createdAt: now,
+        updatedAt: now,
       };
-      persist([...contacts, newEntry]);
+
+      const updated = [...entries, newEntry];
+      saveEntries(groupId, updated);
+      await mutate(updated, false);
+      toast.success("긴급 연락처가 추가되었습니다");
       return true;
     },
-    [contacts, persist]
+    [groupId, entries, mutate]
   );
 
-  // 연락처 수정
+  // ── 항목 수정 ──
   const updateContact = useCallback(
-    (id: string, patch: Partial<Omit<EmergencyContactEntry, "id" | "createdAt">>): boolean => {
-      const target = contacts.find((c) => c.id === id);
-      if (!target) return false;
-      const updated = contacts.map((c) =>
-        c.id === id ? { ...c, ...patch } : c
+    async (id: string, changes: UpdateEmergencyContactInput): Promise<boolean> => {
+      const target = entries.find((e) => e.id === id);
+      if (!target) {
+        toast.error("항목을 찾을 수 없습니다");
+        return false;
+      }
+
+      const updatedExtraContacts =
+        changes.extraContacts !== undefined
+          ? changes.extraContacts.map((c) => ({
+              id: crypto.randomUUID(),
+              name: c.name.trim(),
+              relation: c.relation,
+              phone: c.phone.trim(),
+              note: c.note?.trim() || undefined,
+            }))
+          : target.extraContacts;
+
+      const updated = entries.map((e) =>
+        e.id === id
+          ? {
+              ...e,
+              memberName:
+                changes.memberName !== undefined
+                  ? changes.memberName.trim()
+                  : e.memberName,
+              memberPhone:
+                changes.memberPhone !== undefined
+                  ? changes.memberPhone.trim() || undefined
+                  : e.memberPhone,
+              contactName:
+                changes.contactName !== undefined
+                  ? changes.contactName.trim()
+                  : e.contactName,
+              relation:
+                changes.relation !== undefined ? changes.relation : e.relation,
+              phone:
+                changes.phone !== undefined ? changes.phone.trim() : e.phone,
+              email:
+                changes.email !== undefined
+                  ? changes.email.trim() || undefined
+                  : e.email,
+              notes:
+                changes.notes !== undefined
+                  ? changes.notes.trim() || undefined
+                  : e.notes,
+              bloodType:
+                changes.bloodType !== undefined
+                  ? changes.bloodType
+                  : e.bloodType,
+              allergies:
+                changes.allergies !== undefined
+                  ? changes.allergies.trim() || undefined
+                  : e.allergies,
+              medicalNotes:
+                changes.medicalNotes !== undefined
+                  ? changes.medicalNotes.trim() || undefined
+                  : e.medicalNotes,
+              insuranceInfo:
+                changes.insuranceInfo !== undefined
+                  ? changes.insuranceInfo.trim() || undefined
+                  : e.insuranceInfo,
+              extraContacts: updatedExtraContacts,
+              updatedAt: new Date().toISOString(),
+            }
+          : e
       );
-      persist(updated);
+
+      saveEntries(groupId, updated);
+      await mutate(updated, false);
+      toast.success("긴급 연락처가 수정되었습니다");
       return true;
     },
-    [contacts, persist]
+    [groupId, entries, mutate]
   );
 
-  // 연락처 삭제
+  // ── 항목 삭제 ──
   const deleteContact = useCallback(
-    (id: string): void => {
-      persist(contacts.filter((c) => c.id !== id));
+    async (id: string): Promise<boolean> => {
+      const filtered = entries.filter((e) => e.id !== id);
+      saveEntries(groupId, filtered);
+      await mutate(filtered, false);
+      toast.success("긴급 연락처가 삭제되었습니다");
+      return true;
     },
-    [contacts, persist]
+    [groupId, entries, mutate]
   );
 
-  // 멤버별 연락처 조회
+  // ── 멤버별 조회 ──
   const getByMember = useCallback(
     (memberName: string): EmergencyContactEntry[] => {
-      return contacts.filter((c) => c.memberName === memberName);
+      return entries.filter((e) => e.memberName === memberName);
     },
-    [contacts]
+    [entries]
   );
 
-  // 통계
-  const totalContacts = contacts.length;
-
-  const membersWithContacts = Array.from(
-    new Set(contacts.map((c) => c.memberName))
-  ).filter((name) => memberNames.includes(name));
-
-  const membersWithoutContacts = memberNames.filter(
-    (name) => !contacts.some((c) => c.memberName === name)
+  // ── 혈액형별 필터 ──
+  const filterByBloodType = useCallback(
+    (bloodType: EmergencyContactBloodType | "all"): EmergencyContactEntry[] => {
+      if (bloodType === "all") return entries;
+      return entries.filter((e) => e.bloodType === bloodType);
+    },
+    [entries]
   );
+
+  // ── 알레르기/질환 보유자 필터 ──
+  const filterByHasMedical = useCallback(
+    (): EmergencyContactEntry[] => {
+      return entries.filter((e) => e.allergies || e.medicalNotes);
+    },
+    [entries]
+  );
+
+  // ── 통계 ──
+  const stats = {
+    total: entries.length,
+    withMedical: entries.filter((e) => e.allergies || e.medicalNotes).length,
+    withInsurance: entries.filter((e) => e.insuranceInfo).length,
+    totalExtraContacts: entries.reduce(
+      (sum, e) => sum + (e.extraContacts?.length ?? 0),
+      0
+    ),
+  };
 
   return {
-    contacts,
-    totalContacts,
-    membersWithContacts,
-    membersWithoutContacts,
+    entries,
+    loading: isLoading,
+    refetch: () => mutate(),
     addContact,
     updateContact,
     deleteContact,
     getByMember,
+    filterByBloodType,
+    filterByHasMedical,
+    stats,
   };
 }

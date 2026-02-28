@@ -40,8 +40,12 @@ import {
   FileText,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useEmergencyContact } from "@/hooks/use-emergency-contact";
-import type { EmergencyContactEntry, EmergencyContactRelation } from "@/types";
+import { useEmergencyContact, type AddEmergencyContactInput } from "@/hooks/use-emergency-contact";
+import type {
+  EmergencyContactEntry,
+  EmergencyContactRelation,
+  EmergencyContactBloodType,
+} from "@/types";
 
 // ============================================
 // 상수
@@ -52,6 +56,7 @@ const RELATION_LABELS: Record<EmergencyContactRelation, string> = {
   spouse: "배우자",
   sibling: "형제자매",
   friend: "친구",
+  guardian: "보호자",
   other: "기타",
 };
 
@@ -60,10 +65,19 @@ const RELATION_COLORS: Record<EmergencyContactRelation, string> = {
   spouse: "bg-pink-100 text-pink-700 border-pink-200",
   sibling: "bg-green-100 text-green-700 border-green-200",
   friend: "bg-orange-100 text-orange-700 border-orange-200",
+  guardian: "bg-violet-100 text-violet-700 border-violet-200",
   other: "bg-gray-100 text-gray-700 border-gray-200",
 };
 
-const BLOOD_TYPE_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const BLOOD_TYPE_OPTIONS: EmergencyContactBloodType[] = [
+  "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown",
+];
+
+const BLOOD_TYPE_LABELS: Record<EmergencyContactBloodType, string> = {
+  "A+": "A+", "A-": "A-", "B+": "B+", "B-": "B-",
+  "AB+": "AB+", "AB-": "AB-", "O+": "O+", "O-": "O-",
+  unknown: "모름",
+};
 
 // ============================================
 // 빈 폼 상태
@@ -71,26 +85,30 @@ const BLOOD_TYPE_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 type FormState = {
   memberName: string;
+  memberPhone: string;
   contactName: string;
   relation: EmergencyContactRelation;
   phone: string;
   email: string;
   notes: string;
-  bloodType: string;
+  bloodType: EmergencyContactBloodType;
   allergies: string;
   medicalNotes: string;
+  insuranceInfo: string;
 };
 
 const EMPTY_FORM: FormState = {
   memberName: "",
+  memberPhone: "",
   contactName: "",
   relation: "parent",
   phone: "",
   email: "",
   notes: "",
-  bloodType: "",
+  bloodType: "unknown",
   allergies: "",
   medicalNotes: "",
+  insuranceInfo: "",
 };
 
 // ============================================
@@ -99,7 +117,7 @@ const EMPTY_FORM: FormState = {
 
 function MedicalInfoSection({ entry }: { entry: EmergencyContactEntry }) {
   const [open, setOpen] = useState(false);
-  const hasMedical = entry.bloodType || entry.allergies || entry.medicalNotes;
+  const hasMedical = entry.bloodType !== "unknown" || entry.allergies || entry.medicalNotes;
   if (!hasMedical) return null;
 
   return (
@@ -117,11 +135,11 @@ function MedicalInfoSection({ entry }: { entry: EmergencyContactEntry }) {
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="mt-1.5 rounded-md bg-muted/40 p-2 space-y-1 text-xs">
-          {entry.bloodType && (
+          {entry.bloodType !== "unknown" && (
             <div className="flex items-center gap-1.5">
               <Heart className="h-3 w-3 text-red-400 shrink-0" />
               <span className="text-muted-foreground">혈액형:</span>
-              <span className="font-medium">{entry.bloodType}</span>
+              <span className="font-medium">{BLOOD_TYPE_LABELS[entry.bloodType]}</span>
             </div>
           )}
           {entry.allergies && (
@@ -136,6 +154,13 @@ function MedicalInfoSection({ entry }: { entry: EmergencyContactEntry }) {
               <FileText className="h-3 w-3 text-blue-400 shrink-0 mt-0.5" />
               <span className="text-muted-foreground shrink-0">메모:</span>
               <span className="font-medium break-all">{entry.medicalNotes}</span>
+            </div>
+          )}
+          {entry.insuranceInfo && (
+            <div className="flex items-start gap-1.5">
+              <FileText className="h-3 w-3 text-green-400 shrink-0 mt-0.5" />
+              <span className="text-muted-foreground shrink-0">보험:</span>
+              <span className="font-medium break-all">{entry.insuranceInfo}</span>
             </div>
           )}
         </div>
@@ -167,14 +192,16 @@ function ContactDialog({
     initial
       ? {
           memberName: initial.memberName,
+          memberPhone: initial.memberPhone ?? "",
           contactName: initial.contactName,
           relation: initial.relation,
           phone: initial.phone,
           email: initial.email ?? "",
           notes: initial.notes ?? "",
-          bloodType: initial.bloodType ?? "",
+          bloodType: initial.bloodType,
           allergies: initial.allergies ?? "",
           medicalNotes: initial.medicalNotes ?? "",
+          insuranceInfo: initial.insuranceInfo ?? "",
         }
       : EMPTY_FORM
   );
@@ -234,9 +261,20 @@ function ContactDialog({
             </Select>
           </div>
 
+          {/* 본인 연락처 */}
+          <div className="space-y-1">
+            <Label className="text-xs">본인 연락처</Label>
+            <Input
+              value={form.memberPhone}
+              onChange={(e) => handleChange("memberPhone", e.target.value)}
+              placeholder="010-0000-0000"
+              className="h-8 text-xs"
+            />
+          </div>
+
           {/* 연락처 이름 */}
           <div className="space-y-1">
-            <Label className="text-xs">연락처 이름 *</Label>
+            <Label className="text-xs">긴급 연락처 이름 *</Label>
             <Input
               value={form.contactName}
               onChange={(e) => handleChange("contactName", e.target.value)}
@@ -307,16 +345,17 @@ function ContactDialog({
               <Label className="text-xs">혈액형</Label>
               <Select
                 value={form.bloodType}
-                onValueChange={(v) => handleChange("bloodType", v === "none" ? "" : v)}
+                onValueChange={(v) =>
+                  handleChange("bloodType", v as EmergencyContactBloodType)
+                }
               >
                 <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="선택 안 함" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none" className="text-xs">선택 안 함</SelectItem>
                   {BLOOD_TYPE_OPTIONS.map((bt) => (
                     <SelectItem key={bt} value={bt} className="text-xs">
-                      {bt}
+                      {BLOOD_TYPE_LABELS[bt]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -335,13 +374,24 @@ function ContactDialog({
             </div>
 
             {/* 의료 메모 */}
-            <div className="space-y-1">
+            <div className="space-y-1 mb-2">
               <Label className="text-xs">의료 메모</Label>
               <Textarea
                 value={form.medicalNotes}
                 onChange={(e) => handleChange("medicalNotes", e.target.value)}
                 placeholder="지병, 복용 약물 등"
                 className="text-xs min-h-[60px] resize-none"
+              />
+            </div>
+
+            {/* 보험 정보 */}
+            <div className="space-y-1">
+              <Label className="text-xs">보험 정보</Label>
+              <Input
+                value={form.insuranceInfo}
+                onChange={(e) => handleChange("insuranceInfo", e.target.value)}
+                placeholder="보험사, 증권번호 등"
+                className="h-8 text-xs"
               />
             </div>
           </div>
@@ -382,14 +432,27 @@ export function EmergencyContactCard({ groupId, memberNames }: EmergencyContactC
   const [expandedMembers, setExpandedMembers] = useState<Set<string>>(new Set());
 
   const {
-    totalContacts,
-    membersWithContacts,
-    membersWithoutContacts,
+    entries,
     addContact,
     updateContact,
     deleteContact,
-    getByMember,
-  } = useEmergencyContact(groupId, memberNames);
+  } = useEmergencyContact(groupId);
+
+  // 멤버별 연락처 조회
+  function getByMember(memberName: string): EmergencyContactEntry[] {
+    return entries.filter((e) => e.memberName === memberName);
+  }
+
+  // 통계 파생
+  const membersWithContacts = Array.from(
+    new Set(entries.map((e) => e.memberName))
+  ).filter((name) => memberNames.includes(name));
+
+  const membersWithoutContacts = memberNames.filter(
+    (name) => !entries.some((e) => e.memberName === name)
+  );
+
+  const totalContacts = entries.length;
 
   function toggleMember(name: string) {
     setExpandedMembers((prev) => {
@@ -400,42 +463,42 @@ export function EmergencyContactCard({ groupId, memberNames }: EmergencyContactC
     });
   }
 
-  function handleAdd(form: FormState) {
-    const ok = addContact(
-      form.memberName,
-      form.contactName,
-      form.relation,
-      form.phone,
-      form.email || undefined,
-      form.notes || undefined,
-      form.bloodType || undefined,
-      form.allergies || undefined,
-      form.medicalNotes || undefined
-    );
-    if (ok) toast.success("긴급 연락처가 추가되었습니다.");
-    else toast.error("필수 항목을 확인해주세요.");
-  }
-
-  function handleUpdate(form: FormState) {
-    if (!editTarget) return;
-    const ok = updateContact(editTarget.id, {
+  async function handleAdd(form: FormState) {
+    const input: AddEmergencyContactInput = {
+      memberName: form.memberName,
+      memberPhone: form.memberPhone || undefined,
       contactName: form.contactName,
       relation: form.relation,
       phone: form.phone,
       email: form.email || undefined,
       notes: form.notes || undefined,
-      bloodType: form.bloodType || undefined,
+      bloodType: form.bloodType,
       allergies: form.allergies || undefined,
       medicalNotes: form.medicalNotes || undefined,
+      insuranceInfo: form.insuranceInfo || undefined,
+    };
+    await addContact(input);
+  }
+
+  async function handleUpdate(form: FormState) {
+    if (!editTarget) return;
+    await updateContact(editTarget.id, {
+      memberPhone: form.memberPhone || undefined,
+      contactName: form.contactName,
+      relation: form.relation,
+      phone: form.phone,
+      email: form.email || undefined,
+      notes: form.notes || undefined,
+      bloodType: form.bloodType,
+      allergies: form.allergies || undefined,
+      medicalNotes: form.medicalNotes || undefined,
+      insuranceInfo: form.insuranceInfo || undefined,
     });
-    if (ok) toast.success("연락처가 수정되었습니다.");
-    else toast.error("수정에 실패했습니다.");
     setEditTarget(null);
   }
 
-  function handleDelete(id: string) {
-    deleteContact(id);
-    toast.success("연락처가 삭제되었습니다.");
+  async function handleDelete(id: string) {
+    await deleteContact(id);
   }
 
   function openEdit(entry: EmergencyContactEntry) {
@@ -525,7 +588,7 @@ export function EmergencyContactCard({ groupId, memberNames }: EmergencyContactC
               ) : (
                 <div className="space-y-2">
                   {memberNames.map((memberName) => {
-                    const entries = getByMember(memberName);
+                    const memberEntries = getByMember(memberName);
                     const expanded = expandedMembers.has(memberName);
 
                     return (
@@ -541,9 +604,9 @@ export function EmergencyContactCard({ groupId, memberNames }: EmergencyContactC
                           <div className="flex items-center gap-1.5">
                             <User className="h-3 w-3 text-muted-foreground" />
                             <span className="text-xs font-medium">{memberName}</span>
-                            {entries.length > 0 ? (
+                            {memberEntries.length > 0 ? (
                               <Badge className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 border-green-200">
-                                {entries.length}개
+                                {memberEntries.length}개
                               </Badge>
                             ) : (
                               <Badge
@@ -566,12 +629,12 @@ export function EmergencyContactCard({ groupId, memberNames }: EmergencyContactC
                         {/* 연락처 상세 */}
                         {expanded && (
                           <div className="border-t px-3 py-2 space-y-2">
-                            {entries.length === 0 ? (
+                            {memberEntries.length === 0 ? (
                               <p className="text-[10px] text-muted-foreground py-1">
                                 등록된 연락처가 없습니다.
                               </p>
                             ) : (
-                              entries.map((entry) => (
+                              memberEntries.map((entry) => (
                                 <div
                                   key={entry.id}
                                   className="rounded-md bg-muted/30 px-2.5 py-2 space-y-1"
