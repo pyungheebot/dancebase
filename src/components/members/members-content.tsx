@@ -77,6 +77,7 @@ import { DanceConditionJournalCard } from "@/components/members/dance-condition-
 import { DanceVideoPortfolioCard } from "@/components/members/dance-video-portfolio-card";
 import { DanceClassReviewCard } from "@/components/members/dance-class-review-card";
 import { DanceCompetitionCard } from "@/components/members/dance-competition-card";
+import { DanceStyleProfileCard } from "@/components/members/dance-style-profile-card";
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 
@@ -725,6 +726,7 @@ function GroupMembersContent({
 
       {/* 댄스 대회 참가 기록 (대회/컴피티션 참가 이력) */}
       <DanceCompetitionCard memberId={currentUserId} />
+      <DanceStyleProfileCard memberId={currentUserId} />
     </>
   );
 }

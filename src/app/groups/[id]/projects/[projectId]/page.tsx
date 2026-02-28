@@ -39,6 +39,8 @@ import { PerformanceSetlistCard } from "@/components/projects/performance-setlis
 import { StagePropCard } from "@/components/projects/stage-prop-card";
 import { ConsentFormCard } from "@/components/projects/consent-form-card";
 import { PhotoShootCard } from "@/components/projects/photo-shoot-card";
+import { VenueManagementCard } from "@/components/projects/venue-management-card";
+import { MakeupHairCard } from "@/components/projects/makeup-hair-card";
 
 export default function ProjectDetailPage({
   params,
@@ -220,6 +222,16 @@ export default function ProjectDetailPage({
           )}
           {ctx.projectId && (
             <PhotoShootCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <VenueManagementCard
+              projectId={ctx.projectId}
+            />
+          )}
+          {ctx.projectId && (
+            <MakeupHairCard
               projectId={ctx.projectId}
             />
           )}

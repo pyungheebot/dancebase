@@ -837,3 +837,23 @@ export function invalidatePhotoShootPlan(projectId: string) {
 export function invalidateFitnessTest(memberId: string) {
   mutate(swrKeys.fitnessTest(memberId));
 }
+
+export function invalidateGroupMentorMatches(groupId: string) {
+  mutate(swrKeys.groupMentorMatches(groupId));
+}
+
+export function invalidateDanceStyleProfileV2(memberId: string) {
+  mutate(swrKeys.danceStyleProfileV2(memberId));
+}
+
+export function invalidateGroupChallengeCard(groupId: string) {
+  mutate(swrKeys.groupChallengeCard(groupId));
+}
+
+export function invalidateVenueManagement(projectId: string) {
+  mutate(swrKeys.venueManagement(projectId));
+}
+
+export function invalidateMakeupHair(projectId: string) {
+  mutate(swrKeys.makeupHair(projectId));
+}

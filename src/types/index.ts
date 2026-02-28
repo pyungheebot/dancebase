@@ -13916,3 +13916,349 @@ export type FitnessTestData = {
   /** 마지막 수정일 (ISO 8601) */
   updatedAt: string;
 };
+
+// ============================================================
+// 댄스 스타일 프로필 v2 (DanceStyleProfileCard 전용)
+// ============================================================
+
+/** 댄스 장르 숙련도 (1~5 별점) */
+export type DanceProfileSkillStar = 1 | 2 | 3 | 4 | 5;
+
+/** 장르별 숙련도 항목 */
+export type DanceProfileGenreEntry = {
+  /** 장르명 (예: 힙합, 팝핑 등) */
+  genre: string;
+  /** 숙련도 별점 1~5 */
+  stars: DanceProfileSkillStar;
+};
+
+/** 선호 포지션 */
+export type DanceProfilePosition = "center" | "side" | "back";
+
+/** 연습 시간 선호도 */
+export type DanceProfilePracticeTime = "morning" | "afternoon" | "evening" | "midnight";
+
+/** 영감을 받은 댄서 항목 */
+export type DanceProfileInspirationEntry = {
+  /** 댄서 이름 */
+  name: string;
+  /** 메모 (선택) */
+  memo?: string;
+};
+
+/** 선호 BPM 범위 */
+export type DanceProfileBpmRange = {
+  min: number;
+  max: number;
+};
+
+/** 댄스 스타일 프로필 v2 전체 데이터 (localStorage 저장 단위) */
+export type DanceStyleProfileV2 = {
+  /** 멤버 ID */
+  memberId: string;
+  /** 선호 장르 + 숙련도 목록 */
+  genres: DanceProfileGenreEntry[];
+  /** 선호 포지션 */
+  position: DanceProfilePosition | null;
+  /** 자기소개 */
+  bio: string;
+  /** 영감을 받은 댄서 목록 */
+  inspirations: DanceProfileInspirationEntry[];
+  /** 연습 시간 선호도 목록 (복수 선택 가능) */
+  practiceTimes: DanceProfilePracticeTime[];
+  /** 선호 음악 BPM 범위 */
+  bpmRange: DanceProfileBpmRange;
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// GroupMentorCard (그룹 멘토 매칭, localStorage 기반)
+// ============================================
+
+/** 멘토 매칭 분야 */
+export type GroupMentorField =
+  | "기술"
+  | "안무"
+  | "체력"
+  | "무대매너";
+
+/** 그룹 멘토 매칭 상태 */
+export type GroupMentorStatus = "진행중" | "완료" | "중단";
+
+/** 멘토링 세션 기록 */
+export type GroupMentorSession = {
+  /** 고유 식별자 */
+  id: string;
+  /** 세션 날짜 (YYYY-MM-DD) */
+  date: string;
+  /** 세션 내용 */
+  content: string;
+  /** 평가 점수 (1~5) */
+  rating: number;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 멘토-멘티 매칭 쌍 */
+export type GroupMentorMatch = {
+  /** 고유 식별자 */
+  id: string;
+  /** 멘토 이름 */
+  mentorName: string;
+  /** 멘티 이름 */
+  menteeName: string;
+  /** 매칭 분야 */
+  field: GroupMentorField;
+  /** 시작일 (YYYY-MM-DD) */
+  startDate: string;
+  /** 종료일 (YYYY-MM-DD, 없으면 null) */
+  endDate: string | null;
+  /** 매칭 상태 */
+  status: GroupMentorStatus;
+  /** 세션 기록 목록 */
+  sessions: GroupMentorSession[];
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+// ============================================
+// GroupChallengeCard (댄스 그룹 챌린지 카드)
+// ============================================
+
+/** 댄스 챌린지 카테고리 */
+export type DanceGroupChallengeCategory =
+  | "choreography"
+  | "freestyle"
+  | "cover"
+  | "fitness";
+
+/** 참여자별 진행 상태 */
+export type DanceGroupChallengeParticipantStatus =
+  | "not_started"
+  | "in_progress"
+  | "completed";
+
+/** 챌린지 참여자 */
+export type DanceGroupChallengeParticipant = {
+  /** 참여자 ID (로컬 고유 ID) */
+  id: string;
+  /** 참여자 이름 */
+  name: string;
+  /** 진행 상태 */
+  status: DanceGroupChallengeParticipantStatus;
+  /** 완료 순서 (완료 시 기록, null이면 미완료) */
+  completedRank: number | null;
+  /** 참여 등록일 (ISO 8601) */
+  joinedAt: string;
+};
+
+/** 댄스 그룹 챌린지 단일 항목 */
+export type DanceGroupChallengeEntry = {
+  /** 고유 ID */
+  id: string;
+  /** 챌린지 제목 */
+  title: string;
+  /** 챌린지 설명 */
+  description: string;
+  /** 카테고리 */
+  category: DanceGroupChallengeCategory;
+  /** 시작일 (YYYY-MM-DD) */
+  startDate: string;
+  /** 종료일 (YYYY-MM-DD) */
+  endDate: string;
+  /** 참여자 목록 */
+  participants: DanceGroupChallengeParticipant[];
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** localStorage 저장 단위 */
+export type DanceGroupChallengeStore = {
+  /** 챌린지 목록 */
+  entries: DanceGroupChallengeEntry[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// 공연장 관리 (VenueManagement)
+// ============================================
+
+/** 공연장 예약 상태 */
+export type VenueMgmtBookingStatus = "미확정" | "확정" | "취소";
+
+/** 공연장 시설 항목 */
+export type VenueMgmtFacility = {
+  /** 시설 ID */
+  id: string;
+  /** 시설 이름 */
+  name: string;
+  /** 보유 여부 */
+  available: boolean;
+};
+
+/** 공연장 연락처 */
+export type VenueMgmtContact = {
+  /** 담당자 이름 */
+  managerName: string;
+  /** 전화번호 */
+  phone: string;
+  /** 이메일 */
+  email: string;
+};
+
+/** 공연장 무대 크기 */
+export type VenueMgmtStageSize = {
+  /** 가로 (m) */
+  width: number | null;
+  /** 세로 (m) */
+  depth: number | null;
+};
+
+/** 공연장 대관 정보 */
+export type VenueMgmtRental = {
+  /** 대관료 (원) */
+  fee: number | null;
+  /** 예약 상태 */
+  bookingStatus: VenueMgmtBookingStatus;
+  /** 입장 시간 (HH:mm) */
+  entryTime: string;
+  /** 퇴장 시간 (HH:mm) */
+  exitTime: string;
+};
+
+/** 공연장 접근 정보 */
+export type VenueMgmtAccess = {
+  /** 대중교통 안내 */
+  transit: string;
+  /** 주차 안내 */
+  parking: string;
+};
+
+/** 공연장 정보 단위 */
+export type VenueMgmtVenue = {
+  /** 고유 ID */
+  id: string;
+  /** 공연장 이름 */
+  name: string;
+  /** 주소 */
+  address: string;
+  /** 수용 인원 */
+  capacity: number | null;
+  /** 무대 크기 */
+  stageSize: VenueMgmtStageSize;
+  /** 시설 체크리스트 */
+  facilities: VenueMgmtFacility[];
+  /** 연락처 */
+  contact: VenueMgmtContact;
+  /** 대관 정보 */
+  rental: VenueMgmtRental;
+  /** 무대 도면 메모 */
+  stageMemo: string;
+  /** 접근 정보 */
+  access: VenueMgmtAccess;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+  /** 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+/** 공연장 관리 전체 데이터 (localStorage 저장 단위) */
+export type VenueMgmtData = {
+  /** 프로젝트 ID */
+  projectId: string;
+  /** 공연장 목록 */
+  venues: VenueMgmtVenue[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};
+
+// ============================================
+// MakeupHairCard (분장/헤어 관리, localStorage 기반)
+// ============================================
+
+/** 분장 유형 */
+export type MakeupHairMakeupType =
+  | "내추럴"
+  | "스테이지"
+  | "특수분장";
+
+/** 헤어 스타일 */
+export type MakeupHairStyle =
+  | "업스타일"
+  | "다운스타일"
+  | "반묶음"
+  | "특수";
+
+/** 분장/헤어 플랜 (멤버별 장면별 스타일 정보) */
+export type MakeupHairPlan = {
+  /** 고유 식별자 */
+  id: string;
+  /** 멤버명 */
+  memberName: string;
+  /** 장면(Scene) 번호 */
+  scene: number;
+  /** 분장 유형 */
+  makeupType: MakeupHairMakeupType;
+  /** 헤어 스타일 */
+  hairStyle: MakeupHairStyle;
+  /** 색상 톤 (없으면 null) */
+  colorTone: string | null;
+  /** 특이사항 메모 (없으면 null) */
+  memo: string | null;
+  /** 생성일 (ISO 8601) */
+  createdAt: string;
+};
+
+/** 분장 타임라인 항목 (멤버별 분장 시작/소요 시간) */
+export type MakeupHairTimelineEntry = {
+  /** 고유 식별자 */
+  id: string;
+  /** 멤버명 */
+  memberName: string;
+  /** 분장 시작 예정 시간 (HH:MM) */
+  startTime: string;
+  /** 소요 시간 (분) */
+  durationMinutes: number;
+};
+
+/** 준비물 체크리스트 아이템 */
+export type MakeupHairChecklistItem = {
+  /** 고유 식별자 */
+  id: string;
+  /** 아이템명 */
+  item: string;
+  /** 체크 여부 */
+  checked: boolean;
+};
+
+/** 담당 아티스트 정보 */
+export type MakeupHairArtist = {
+  /** 고유 식별자 */
+  id: string;
+  /** 이름 */
+  name: string;
+  /** 연락처 (없으면 null) */
+  contact: string | null;
+  /** 전문 분야 (없으면 null) */
+  specialty: string | null;
+};
+
+/** MakeupHairCard 전체 데이터 (localStorage 저장 단위) */
+export type MakeupHairData = {
+  /** 프로젝트 ID */
+  projectId: string;
+  /** 분장/헤어 플랜 목록 */
+  plans: MakeupHairPlan[];
+  /** 분장 타임라인 목록 */
+  timeline: MakeupHairTimelineEntry[];
+  /** 준비물 체크리스트 */
+  checklist: MakeupHairChecklistItem[];
+  /** 담당 아티스트 목록 */
+  artists: MakeupHairArtist[];
+  /** 마지막 수정일 (ISO 8601) */
+  updatedAt: string;
+};

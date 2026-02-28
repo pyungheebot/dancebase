@@ -1534,4 +1534,21 @@ export const swrKeys = {
 
   // 공연 사진 촬영 계획 (localStorage 기반)
   photoShootPlan: (projectId: string) => `photo-shoot-plan-${projectId}` as const,
+
+  // 그룹 멘토 매칭 (localStorage 기반)
+  groupMentorMatches: (groupId: string) =>
+    `group-mentor-matches-${groupId}` as const,
+
+  // 댄스 스타일 프로필 v2 (localStorage 기반)
+  danceStyleProfileV2: (memberId: string) => `dance-style-profile-v2-${memberId}` as const,
+
+  // 댄스 그룹 챌린지 카드 (localStorage 기반)
+  groupChallengeCard: (groupId: string) =>
+    `group-challenge-card-${groupId}` as const,
+
+  // 공연장 관리 (localStorage 기반)
+  venueManagement: (projectId: string) => `venue-management-${projectId}` as const,
+
+  // 분장/헤어 관리 (localStorage 기반)
+  makeupHair: (projectId: string) => `makeup-hair-${projectId}` as const,
 };

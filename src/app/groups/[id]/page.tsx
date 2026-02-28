@@ -46,6 +46,8 @@ import { GroupRulebookCard } from "@/components/groups/group-rulebook-card";
 import { MembershipFeeCard } from "@/components/groups/membership-fee-card";
 import { GroupMusicLibraryCard } from "@/components/groups/group-music-library-card";
 import { GroupPracticeFeedbackCard } from "@/components/groups/group-practice-feedback-card";
+import { GroupMentorCard } from "@/components/groups/group-mentor-card";
+import { GroupChallengeCard } from "@/components/groups/group-challenge-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
 
@@ -237,6 +239,10 @@ export default function GroupDetailPage({
           <GroupMusicLibraryCard groupId={ctx.groupId} />
 
           <GroupPracticeFeedbackCard groupId={ctx.groupId} />
+
+          <GroupMentorCard groupId={ctx.groupId} />
+
+          <GroupChallengeCard groupId={ctx.groupId} />
 
           <EntityNav ctx={ctx} />
           <DashboardContent ctx={ctx} />
