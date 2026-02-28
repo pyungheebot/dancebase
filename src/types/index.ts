@@ -7732,3 +7732,164 @@ export type PracticeTimerLogEntry = {
   intensity: number; // 1~5
   createdAt: string;
 };
+
+// ============================================================
+// 그룹 예산 플래너
+// ============================================================
+
+export type BudgetPlannerCategory =
+  | "costume"
+  | "venue"
+  | "equipment"
+  | "food"
+  | "transportation"
+  | "promotion"
+  | "education"
+  | "other";
+
+export type BudgetPlannerItem = {
+  id: string;
+  category: BudgetPlannerCategory;
+  label: string;
+  plannedAmount: number;
+  actualAmount: number;
+  note?: string;
+  period: string; // YYYY-MM
+};
+
+export type BudgetPlannerPlan = {
+  id: string;
+  title: string;
+  year: number;
+  items: BudgetPlannerItem[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ============================================================
+// 공연 관객 피드백
+// ============================================================
+
+export type AudienceFeedbackRating = {
+  choreography: number; // 안무 (1-5)
+  music: number; // 음악 (1-5)
+  costumes: number; // 의상 (1-5)
+  stagePresence: number; // 무대 존재감 (1-5)
+  overall: number; // 전체 만족도 (1-5)
+};
+
+export type AudienceFeedbackEntry = {
+  id: string;
+  name?: string;
+  email?: string;
+  ratings: AudienceFeedbackRating;
+  favoritePerformance?: string;
+  comment?: string;
+  wouldRecommend: boolean;
+  submittedAt: string;
+};
+
+export type AudienceFeedbackSurvey = {
+  id: string;
+  projectId: string;
+  title: string;
+  isActive: boolean;
+  entries: AudienceFeedbackEntry[];
+  createdAt: string;
+};
+
+// ============================================================
+// 멤버 댄스 다이어리
+// ============================================================
+
+export type DanceDiaryMood =
+  | "great"
+  | "good"
+  | "neutral"
+  | "tired"
+  | "frustrated";
+
+export type DanceDiaryCondition =
+  | "excellent"
+  | "good"
+  | "normal"
+  | "sore"
+  | "injured";
+
+export type DanceDiaryEntry = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  mood: DanceDiaryMood;
+  condition: DanceDiaryCondition;
+  practiceHours: number;
+  achievements: string[];
+  struggles: string[];
+  notes: string;
+  songsPracticed: string[];
+  rating: number; // 1~5
+  createdAt: string;
+};
+
+// ============================================================
+// 그룹 멘토링 매칭
+// ============================================================
+
+export type MentoringMatchStatus = "active" | "completed" | "paused";
+
+export type MentoringSessionRecord = {
+  id: string;
+  date: string;
+  topic: string;
+  durationMinutes: number;
+  notes?: string;
+  menteeRating?: number; // 1-5
+};
+
+export type MentoringMatchPair = {
+  id: string;
+  mentorName: string;
+  menteeName: string;
+  skillFocus: string[];
+  status: MentoringMatchStatus;
+  sessions: MentoringSessionRecord[];
+  startDate: string;
+  endDate?: string;
+  goals: string[];
+  createdAt: string;
+};
+
+// ============================================================
+// 공연 무대 메모
+// ============================================================
+
+export type StageMemoZone =
+  | "upstage-left"
+  | "upstage-center"
+  | "upstage-right"
+  | "center-left"
+  | "center"
+  | "center-right"
+  | "downstage-left"
+  | "downstage-center"
+  | "downstage-right";
+
+export type StageMemoPriority = "high" | "medium" | "low";
+
+export type StageMemoNote = {
+  id: string;
+  zone: StageMemoZone;
+  priority: StageMemoPriority;
+  content: string;
+  author: string;
+  tags: string[];
+  isResolved: boolean;
+  createdAt: string;
+};
+
+export type StageMemoBoard = {
+  id: string;
+  projectId: string;
+  title: string;
+  notes: StageMemoNote[];
+  createdAt: string;
+};

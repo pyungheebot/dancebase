@@ -1031,4 +1031,21 @@ export const swrKeys = {
   // 연습 타이머 기록 (localStorage 기반)
   practiceTimerLog: (groupId: string) =>
     `practice-timer-log-${groupId}` as const,
+
+  // 그룹 예산 플래너 (localStorage 기반)
+  budgetPlanner: (groupId: string) => `budget-planner-${groupId}` as const,
+
+  // 공연 관객 피드백 (localStorage 기반)
+  audienceFeedback: (groupId: string, projectId: string) =>
+    `audience-feedback-${groupId}-${projectId}` as const,
+
+  // 멤버 댄스 다이어리 (localStorage 기반)
+  danceDiary: (memberId: string) => `dance-diary-${memberId}` as const,
+
+  // 그룹 멘토링 매칭 (localStorage 기반)
+  mentoringMatch: (groupId: string) => `mentoring-match-${groupId}` as const,
+
+  // 공연 무대 메모 (localStorage 기반)
+  stageMemo: (groupId: string, projectId: string) =>
+    `stage-memo-${groupId}-${projectId}` as const,
 };
