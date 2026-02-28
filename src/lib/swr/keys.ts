@@ -1188,4 +1188,18 @@ export const swrKeys = {
   // 공연 프로그램 편집 (localStorage 기반)
   showProgram: (groupId: string, projectId: string) =>
     `show-program-${groupId}-${projectId}` as const,
+
+  // 멤버 유연성 테스트 기록 (localStorage 기반)
+  flexibilityTest: (memberId: string) => `flexibility-test-${memberId}` as const,
+
+  // 공연 백스테이지 커뮤니케이션 (localStorage 기반)
+  backstageComm: (groupId: string, projectId: string) =>
+    `backstage-comm-${groupId}-${projectId}` as const,
+
+  // 그룹 멤버 생일 캘린더 (localStorage 기반)
+  birthdayCalendarLocal: (groupId: string) =>
+    `birthday-calendar-${groupId}` as const,
+
+  // 그룹 연습 룰/규칙 (localStorage 기반)
+  practiceRule: (groupId: string) => `practice-rule-${groupId}` as const,
 };

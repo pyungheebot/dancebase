@@ -9182,3 +9182,179 @@ export type ShowProgramEntry = {
   createdAt: string;
   updatedAt: string;
 };
+
+// ============================================================
+// 멤버 유연성 테스트 기록
+// ============================================================
+
+export type FlexibilityTestItemKey =
+  | "sit_and_reach"         // 앉아서 앞으로 굽히기 (cm)
+  | "standing_reach"        // 서서 앞으로 굽히기 (cm)
+  | "side_split"            // 개각 (도)
+  | "front_split"           // 전굴 (도)
+  | "shoulder_flexibility"  // 어깨 유연성 (cm)
+  | "hip_flexibility"       // 힙 유연성 (도)
+  | "spine_flexibility"     // 척추 유연성 (cm)
+  | "ankle_flexibility"     // 발목 유연성 (도)
+  | "custom";               // 커스텀 항목
+
+export type FlexibilityTestUnit = "cm" | "도" | "mm" | "초" | "회" | "기타";
+
+export type FlexibilityTestItem = {
+  id: string;
+  key: FlexibilityTestItemKey;
+  name: string;              // 표시 이름 (커스텀인 경우 직접 입력)
+  unit: FlexibilityTestUnit;
+  higherIsBetter: boolean;   // 값이 클수록 좋은지 여부
+  targetValue?: number;      // 목표값
+  description?: string;      // 항목 설명
+};
+
+export type FlexibilityTestEntry = {
+  itemId: string;            // FlexibilityTestItem.id
+  value: number;             // 측정값
+};
+
+export type FlexibilityTestRecord = {
+  id: string;
+  memberId: string;
+  date: string;              // YYYY-MM-DD
+  entries: FlexibilityTestEntry[];
+  notes?: string;
+  createdAt: string;
+};
+
+export type FlexibilityTestData = {
+  items: FlexibilityTestItem[];
+  records: FlexibilityTestRecord[];
+};
+
+// ============================================================
+// 공연 백스테이지 커뮤니케이션
+// ============================================================
+
+export type BackstageCommType =
+  | "urgent"     // 긴급
+  | "notice"     // 공지
+  | "cue"        // 큐 신호
+  | "issue"      // 문제 보고
+  | "general";   // 일반
+
+export type BackstageCommTargetScope =
+  | "all"        // 전체
+  | "individual" // 개인
+  | "team";      // 팀
+
+export type BackstageCommTarget = {
+  scope: BackstageCommTargetScope;
+  label?: string; // 개인명 또는 팀명 (all 이면 undefined)
+};
+
+export type BackstageCommMessage = {
+  id: string;
+  type: BackstageCommType;
+  content: string;
+  senderName: string;
+  target: BackstageCommTarget;
+  isPinned: boolean;
+  isRead: boolean;
+  readBy: string[];    // 확인한 사람 이름 목록
+  createdAt: string;   // ISO timestamp
+};
+
+export type BackstageCommEntry = {
+  id: string;
+  groupId: string;
+  projectId: string;
+  messages: BackstageCommMessage[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 멤버 생일 캘린더 (Birthday Calendar - localStorage 기반)
+// ============================================================
+
+/** 생일 정보 항목 */
+export type BirthdayCalendarEntry = {
+  id: string;
+  groupId: string;
+  /** 멤버 이름 */
+  name: string;
+  /** 생일 (MM-DD 형식, 예: "03-15") */
+  birthday: string;
+  /** 선호 선물 또는 케이크 */
+  giftPreference?: string;
+  /** 파티 계획 여부 */
+  partyPlanned: boolean;
+  /** 기타 메모 */
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+/** 생일 축하 메시지 */
+export type BirthdayCalendarMessage = {
+  id: string;
+  /** 해당하는 BirthdayCalendarEntry.id */
+  entryId: string;
+  groupId: string;
+  /** 메시지 작성자 */
+  author: string;
+  /** 축하 메시지 내용 */
+  content: string;
+  createdAt: string;
+};
+
+/** 전체 저장소 구조 */
+export type BirthdayCalendarStore = {
+  groupId: string;
+  entries: BirthdayCalendarEntry[];
+  messages: BirthdayCalendarMessage[];
+  updatedAt: string;
+};
+
+// ============================================================
+// 그룹 연습 룰/규칙 (Practice Rules & Etiquette)
+// ============================================================
+
+/** 규칙 카테고리 */
+export type PracticeRuleCategory =
+  | "attendance"    // 출석
+  | "dress"         // 복장
+  | "manner"        // 매너
+  | "safety"        // 안전
+  | "equipment"     // 장비/기자재
+  | "hygiene"       // 위생
+  | "communication" // 소통
+  | "other";        // 기타
+
+/** 규칙 중요도 */
+export type PracticeRulePriority =
+  | "required"      // 필수 (반드시 지켜야 함)
+  | "recommended"   // 권장 (지키는 것이 좋음)
+  | "optional";     // 선택 (자율)
+
+/** 페널티 유형 */
+export type PracticeRulePenaltyType =
+  | "none"          // 없음
+  | "warning"       // 경고
+  | "fine"          // 벌금
+  | "exclusion"     // 연습 제외
+  | "custom";       // 커스텀
+
+/** 연습 규칙 단일 항목 */
+export type PracticeRuleEntry = {
+  id: string;
+  groupId: string;
+  category: PracticeRuleCategory;       // 카테고리
+  priority: PracticeRulePriority;       // 중요도
+  title: string;                        // 규칙 제목
+  description?: string;                 // 상세 설명
+  penaltyType: PracticeRulePenaltyType; // 페널티 유형
+  penaltyDetail?: string;               // 페널티 상세 (벌금 금액, 커스텀 내용 등)
+  isActive: boolean;                    // 활성화 여부
+  order: number;                        // 정렬 순서
+  createdAt: string;                    // 생성일 (ISO datetime)
+  updatedAt: string;                    // 수정일 (ISO datetime)
+};

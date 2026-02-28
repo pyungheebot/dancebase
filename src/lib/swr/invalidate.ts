@@ -147,6 +147,10 @@ export function invalidateDashboardSettings(entityId: string, memberTable: strin
   mutate(swrKeys.dashboardSettings(entityId, memberTable));
 }
 
+export function invalidateBackstageComm(groupId: string, projectId: string) {
+  mutate(swrKeys.backstageComm(groupId, projectId));
+}
+
 export function invalidateNotifications() {
   mutate(swrKeys.notifications());
   mutate(swrKeys.unreadNotificationCount());
@@ -682,4 +686,8 @@ export function invalidateVideoReview(groupId: string) {
 
 export function invalidateShowProgram(groupId: string, projectId: string) {
   mutate(swrKeys.showProgram(groupId, projectId));
+}
+
+export function invalidatePracticeRule(groupId: string) {
+  mutate(swrKeys.practiceRule(groupId));
 }

@@ -11,6 +11,7 @@ import { ProjectTaskBoard } from "@/components/projects/project-task-board";
 import { ProjectNoticeFeed } from "@/components/projects/project-notice-feed";
 import { ProjectProgressOverview } from "@/components/projects/project-progress-overview";
 import { RoleAssignmentBoard } from "@/components/projects/role-assignment-board";
+import { LightingCueCard } from "@/components/projects/lighting-cue-card";
 
 export default function ProjectDetailPage({
   params,
@@ -44,6 +45,12 @@ export default function ProjectDetailPage({
             />
           )}
           <MeetingMinutesSection ctx={ctx} />
+          {ctx.projectId && (
+            <LightingCueCard
+              groupId={ctx.groupId}
+              projectId={ctx.projectId}
+            />
+          )}
         </>
       )}
     </EntityPageLayout>
