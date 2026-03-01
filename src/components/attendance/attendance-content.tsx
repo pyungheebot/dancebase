@@ -54,6 +54,7 @@ import { exportToCsv } from "@/lib/export/csv-exporter";
 import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows, Star } from "lucide-react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useProjectSongs } from "@/hooks/use-project-songs";
 import type { EntityContext } from "@/types/entity-context";
@@ -122,7 +123,8 @@ export function AttendanceContent({
   );
   const [attendance, setAttendance] = useState<AttendanceWithProfile[]>([]);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
-  const [bulkUpdating, setBulkUpdating] = useState(false);
+  // 일괄 출석 처리 pending 관리 (useFormSubmission으로 수동 setState 대체)
+  const { pending: bulkUpdating, submit: submitBulkStatus } = useFormSubmission();
   const { user } = useAuth();
   const currentUserId = user?.id ?? "";
   const [editOpen, setEditOpen] = useState(false);
@@ -303,19 +305,18 @@ export function AttendanceContent({
 
   const handleBulkStatus = useCallback(async (status: "present" | "absent" | "undecided") => {
     if (!selectedScheduleId) return;
-    setBulkUpdating(true);
-    try {
-      const userIds = membersForTable.map((m) => m.user_id);
+    const userIds = membersForTable.map((m) => m.user_id);
 
-      try {
-        if (status === "undecided") {
-          await bulkDeleteAttendance(selectedScheduleId, userIds);
-        } else {
-          await bulkUpsertAttendance(selectedScheduleId, userIds, status);
-        }
-      } catch {
-        toast.error(TOAST.ATTENDANCE.BATCH_ERROR);
-        return;
+    // submitBulkStatus: pending 자동 관리 + 에러 시 toast.error 자동 처리
+    await submitBulkStatus(async () => {
+      if (status === "undecided") {
+        await bulkDeleteAttendance(selectedScheduleId, userIds).catch(() => {
+          throw new Error(TOAST.ATTENDANCE.BATCH_ERROR);
+        });
+      } else {
+        await bulkUpsertAttendance(selectedScheduleId, userIds, status).catch(() => {
+          throw new Error(TOAST.ATTENDANCE.BATCH_ERROR);
+        });
       }
 
       toast.success(
@@ -324,10 +325,8 @@ export function AttendanceContent({
         "전체 미정 처리되었습니다"
       );
       await fetchAttendance();
-    } finally {
-      setBulkUpdating(false);
-    }
-  }, [selectedScheduleId, membersForTable, fetchAttendance]);
+    });
+  }, [selectedScheduleId, membersForTable, fetchAttendance, submitBulkStatus]);
 
   const handleDownloadMemberStatsCsv = () => {
     const dateStr = format(new Date(), "yyyy-MM");

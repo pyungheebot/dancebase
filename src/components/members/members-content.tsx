@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, Suspense, useEffect } from "react";
-import { useDebounce } from "@/hooks/use-debounce";
+import { useState, useMemo, Suspense } from "react";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
-import { useAsyncAction } from "@/hooks/use-async-action";
+import { useTableFilter } from "@/hooks/use-table-filter";
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { createClient } from "@/lib/supabase/client";
 import { MemberList } from "@/components/groups/member-list";
 import { InviteModal } from "@/components/groups/invite-modal";
@@ -45,7 +45,6 @@ import { ChevronDown, Download, Plus, Search, Tags, Trash2, TrendingUp, Users } 
 import { InviteGroupMembersDialog } from "@/components/members/invite-group-members-dialog";
 import { MemberAdvancedFilter } from "@/components/members/member-advanced-filter";
 import { useMemberFilter } from "@/hooks/use-member-filter";
-import { useQueryParams } from "@/hooks/use-query-params";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { exportToCsv } from "@/lib/export/csv-exporter";
@@ -179,35 +178,27 @@ function GroupMembersContent({
   const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  // URL 쿼리 파라미터 동기화 (검색어, 역할 필터, 정렬)
-  const [queryParams, setQueryParams] = useQueryParams({
-    q: "",
-    role: "all",
-    sort: "name",
-  });
-  const roleFilter = queryParams.role;
-  const sortOrder = queryParams.sort;
+  // URL 쿼리 파라미터 동기화 + 검색 디바운싱 통합 관리
+  // - role/sort는 즉시 URL 반영
+  // - q(검색어)는 로컬 입력 → 500ms 디바운스 후 URL 반영
+  const {
+    filters,
+    setFilter,
+    searchInput,
+    setSearchInput,
+    debouncedSearch,
+  } = useTableFilter(
+    { q: "", role: "all", sort: "name" },
+    { searchKey: "q", debounceMs: 500 }
+  );
 
-  // 검색어: 로컬 state로 즉시 반영, 500ms 디바운싱 후 URL 업데이트
-  const [searchInput, setSearchInput] = useState(queryParams.q);
-  const debouncedSearch = useDebounce(searchInput, 500);
-  // debouncedSearch가 변경될 때만 URL 업데이트
-  useEffect(() => {
-    if (debouncedSearch !== queryParams.q) {
-      setQueryParams({ q: debouncedSearch });
-    }
-  // queryParams.q 변경에 의한 무한루프를 방지하기 위해 의도적으로 제외
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch]);
-  // URL의 q가 외부에서 변경되면 로컬 입력도 동기화 (뒤로가기 등)
-  useEffect(() => {
-    setSearchInput(queryParams.q);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryParams.q]);
-  const searchQuery = queryParams.q;
+  const roleFilter = filters.role;
+  const sortOrder = filters.sort;
+  // 필터링 로직에서는 디바운싱된 검색어를 사용
+  const searchQuery = debouncedSearch;
 
-  const setRoleFilter = (v: string) => setQueryParams({ role: v });
-  const setSortOrder = (v: string) => setQueryParams({ sort: v });
+  const setRoleFilter = (v: string) => setFilter("role", v);
+  const setSortOrder = (v: string) => setFilter("sort", v);
 
   // 고급 필터
   const {
@@ -227,7 +218,9 @@ function GroupMembersContent({
   // 일괄 선택 상태
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkRemoveOpen, setBulkRemoveOpen] = useState(false);
-  const [bulkLoading, setBulkLoading] = useState(false);
+
+  // 일괄 역할 변경 / 일괄 제거 공통 pending 관리 (useFormSubmission으로 수동 setState 대체)
+  const { pending: bulkLoading, submit: submitBulk } = useFormSubmission();
 
   // 스크롤 위치 복원
   useScrollRestore();
@@ -372,40 +365,40 @@ function GroupMembersContent({
 
   const handleBulkRoleChange = async (newRole: "leader" | "sub_leader" | "member") => {
     if (selectedIds.size === 0) return;
-    setBulkLoading(true);
     const ids = Array.from(selectedIds);
-    const { error } = await supabase
-      .from("group_members")
-      .update({ role: newRole })
-      .in("id", ids);
-    setBulkLoading(false);
-    if (error) {
-      toast.error(TOAST.MEMBERS.ROLE_CHANGE_ERROR);
-      return;
-    }
-    const roleLabel = newRole === "leader" ? "그룹장" : newRole === "sub_leader" ? "부그룹장" : "멤버";
-    toast.success(`${ids.length}명의 역할이 ${roleLabel}(으)로 변경되었습니다`);
-    setSelectedIds(new Set());
-    onUpdate();
+
+    // submitBulk: pending 자동 관리 + 에러 시 toast.error 자동 호출
+    await submitBulk(async () => {
+      const { error } = await supabase
+        .from("group_members")
+        .update({ role: newRole })
+        .in("id", ids);
+      if (error) throw new Error(TOAST.MEMBERS.ROLE_CHANGE_ERROR);
+
+      const label = newRole === "leader" ? "그룹장" : newRole === "sub_leader" ? "부그룹장" : "멤버";
+      toast.success(`${ids.length}명의 역할이 ${label}(으)로 변경되었습니다`);
+      setSelectedIds(new Set());
+      onUpdate();
+    });
   };
 
   const handleBulkRemoveConfirm = async () => {
     if (selectedIds.size === 0) return;
-    setBulkLoading(true);
     const ids = Array.from(selectedIds);
-    const { error } = await supabase
-      .from("group_members")
-      .delete()
-      .in("id", ids);
-    setBulkLoading(false);
-    setBulkRemoveOpen(false);
-    if (error) {
-      toast.error(TOAST.MEMBERS.MEMBER_REMOVE_ERROR);
-      return;
-    }
-    toast.success(`${ids.length}명이 제거되었습니다`);
-    setSelectedIds(new Set());
-    onUpdate();
+
+    // submitBulk: pending 자동 관리 + 에러 시 toast.error 자동 호출
+    await submitBulk(async () => {
+      const { error } = await supabase
+        .from("group_members")
+        .delete()
+        .in("id", ids);
+      if (error) throw new Error(TOAST.MEMBERS.MEMBER_REMOVE_ERROR);
+
+      setBulkRemoveOpen(false);
+      toast.success(`${ids.length}명이 제거되었습니다`);
+      setSelectedIds(new Set());
+      onUpdate();
+    });
   };
 
   return (
@@ -803,35 +796,31 @@ function ProjectMembersContent({
 }) {
   const [addOpen, setAddOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState("");
-  const { pending: submitting, execute } = useAsyncAction();
+  // 멤버 추가 pending 관리 (useFormSubmission으로 대체)
+  const { pending: submitting, submit: submitAddMember } = useFormSubmission();
   const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
 
-  // URL 쿼리 파라미터 동기화 (검색어, 역할 필터, 정렬)
-  const [queryParams, setQueryParams] = useQueryParams({
-    q: "",
-    role: "all",
-    sort: "name",
-  });
-  const roleFilter = queryParams.role;
-  const sortOrder = queryParams.sort;
+  // URL 쿼리 파라미터 동기화 + 검색 디바운싱 통합 관리
+  // - role/sort는 즉시 URL 반영
+  // - q(검색어)는 로컬 입력 → 500ms 디바운스 후 URL 반영
+  const {
+    filters,
+    setFilter,
+    searchInput,
+    setSearchInput,
+    debouncedSearch,
+  } = useTableFilter(
+    { q: "", role: "all", sort: "name" },
+    { searchKey: "q", debounceMs: 500 }
+  );
 
-  // 검색어: 로컬 state로 즉시 반영, 500ms 디바운싱 후 URL 업데이트
-  const [searchInput, setSearchInput] = useState(queryParams.q);
-  const debouncedSearchProj = useDebounce(searchInput, 500);
-  useEffect(() => {
-    if (debouncedSearchProj !== queryParams.q) {
-      setQueryParams({ q: debouncedSearchProj });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchProj]);
-  useEffect(() => {
-    setSearchInput(queryParams.q);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryParams.q]);
-  const searchQuery = queryParams.q;
+  const roleFilter = filters.role;
+  const sortOrder = filters.sort;
+  // 필터링 로직에서는 디바운싱된 검색어를 사용
+  const searchQuery = debouncedSearch;
 
-  const setRoleFilter = (v: string) => setQueryParams({ role: v });
-  const setSortOrder = (v: string) => setQueryParams({ sort: v });
+  const setRoleFilter = (v: string) => setFilter("role", v);
+  const setSortOrder = (v: string) => setFilter("sort", v);
 
   // 고급 필터
   const {
@@ -866,12 +855,15 @@ function ProjectMembersContent({
 
   const handleAddMember = async () => {
     if (!selectedUserId || !ctx.projectId) return;
-    await execute(async () => {
-      await supabase.from("project_members").insert({
+
+    // submitAddMember: errorMessage 옵션 적용됨 → 에러 시 자동 toast.error
+    await submitAddMember(async () => {
+      const { error } = await supabase.from("project_members").insert({
         project_id: ctx.projectId!,
         user_id: selectedUserId,
         role: "member",
       });
+      if (error) throw error;
       setSelectedUserId("");
       setAddOpen(false);
       onUpdate();

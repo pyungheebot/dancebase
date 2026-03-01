@@ -15,7 +15,7 @@ import { TOAST } from "@/lib/toast-messages";
 import { createNotification } from "@/lib/notifications";
 import { ContentReportDialog } from "@/components/board/content-report-dialog";
 import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
-import { useAsyncAction } from "@/hooks/use-async-action";
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import {
   createComment,
@@ -230,14 +230,18 @@ export function BoardCommentSection({
   groupId,
 }: BoardCommentSectionProps) {
   const [content, setContent] = useState("");
-  const { pending: submitting, execute: executeSubmit } = useAsyncAction();
+  // 댓글 작성 / 답글 작성 / 수정 각각 별도 pending 관리
+  const { pending: submitting, submit: submitComment } = useFormSubmission();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
-  const { pending: editSaving, execute: executeEdit } = useAsyncAction();
+  const { pending: editSaving, submit: submitEdit } = useFormSubmission({
+    successMessage: TOAST.BOARD.COMMENT_UPDATED,
+    errorMessage: TOAST.BOARD.COMMENT_UPDATE_ERROR,
+  });
   // 답글 관련 상태
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
-  const { pending: replySubmitting, execute: executeReply } = useAsyncAction();
+  const { pending: replySubmitting, submit: submitReply } = useFormSubmission();
   // 신고 다이얼로그 상태
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
   // 삭제 확인 다이얼로그
@@ -253,22 +257,21 @@ export function BoardCommentSection({
     const targetContent = parentId ? replyContent : content;
     if (!targetContent.trim()) return;
 
-    const execFn = parentId ? executeReply : executeSubmit;
+    // 답글이면 submitReply, 원댓글이면 submitComment 사용
+    const submitFn = parentId ? submitReply : submitComment;
 
-    await execFn(async () => {
+    await submitFn(async () => {
       if (!user) return;
 
-      try {
-        await createComment({
-          postId,
-          authorId: user.id,
-          content: targetContent.trim(),
-          parentId: parentId ?? null,
-        });
-      } catch {
-        toast.error(TOAST.BOARD.COMMENT_CREATE_ERROR);
-        return;
-      }
+      // 실패 시 throw하여 useFormSubmission이 toast.error 처리
+      await createComment({
+        postId,
+        authorId: user.id,
+        content: targetContent.trim(),
+        parentId: parentId ?? null,
+      }).catch(() => {
+        throw new Error(TOAST.BOARD.COMMENT_CREATE_ERROR);
+      });
 
       // 게시글 작성자에게 알림 (본인 댓글이면 스킵)
       if (postAuthorId && postAuthorId !== user.id) {
@@ -299,6 +302,8 @@ export function BoardCommentSection({
   const handleDeleteConfirm = async () => {
     const commentId = deleteDialog.confirm();
     if (!commentId) return;
+
+    // submit을 재사용하지 않고 단순 호출 (pending 표시 불필요한 즉각 삭제)
     try {
       await deleteComment(commentId);
     } catch {
@@ -320,14 +325,12 @@ export function BoardCommentSection({
 
   const handleEditSave = async (commentId: string) => {
     if (!editingContent.trim()) return;
-    await executeEdit(async () => {
-      try {
-        await updateComment(commentId, editingContent.trim());
-      } catch {
-        toast.error(TOAST.BOARD.COMMENT_UPDATE_ERROR);
-        return;
-      }
-      toast.success(TOAST.BOARD.COMMENT_UPDATED);
+
+    // submitEdit에 successMessage/errorMessage 옵션 적용됨 → toast 자동 처리
+    await submitEdit(async () => {
+      await updateComment(commentId, editingContent.trim()).catch(() => {
+        throw new Error(TOAST.BOARD.COMMENT_UPDATE_ERROR);
+      });
       setEditingId(null);
       setEditingContent("");
       onUpdate();

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useMemo, Suspense } from "react";
-import { useDebounce } from "@/hooks/use-debounce";
 import { useAuth } from "@/hooks/use-auth";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
-import { useQueryParams } from "@/hooks/use-query-params";
+import { useTableFilter } from "@/hooks/use-table-filter";
 import { createClient } from "@/lib/supabase/client";
 import { FinanceTransactionForm } from "@/components/groups/finance-transaction-form";
 import { FinanceCategoryManager } from "@/components/groups/finance-category-manager";
@@ -33,6 +32,7 @@ import { FinanceFilters } from "@/components/finance/finance-filters";
 import { FinanceTransactionList } from "@/components/finance/finance-transaction-list";
 import { exportToCsv } from "@/lib/export/csv-exporter";
 import { toast } from "sonner";
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { TOAST } from "@/lib/toast-messages";
 import { format } from "date-fns";
 import { useEntitySettings } from "@/hooks/use-entity-settings";
@@ -114,6 +114,12 @@ function FinanceContentInner({
   const [editingTxn, setEditingTxn] = useState<FinanceTransaction | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
+  // 거래 삭제 pending 관리 (useFormSubmission으로 수동 setState 대체)
+  const { submit: submitDelete } = useFormSubmission({
+    successMessage: TOAST.FINANCE.TRANSACTION_DELETED,
+    errorMessage: TOAST.FINANCE.TRANSACTION_DELETE_ERROR,
+  });
+
   // 납부 기한 설정 훅 (entity_settings 재사용)
   const entityType = ctx.projectId ? "project" : "group";
   const entityId = ctx.projectId ?? ctx.groupId;
@@ -141,24 +147,32 @@ function FinanceContentInner({
   // 월 필터: 기본값은 현재 월
   const currentMonth = format(new Date(), "yyyy-MM");
 
-  // URL 쿼리 파라미터 동기화 (탭, 월 필터, 거래 유형 필터)
-  const [queryParams, setQueryParams] = useQueryParams({
-    tab: "transactions",
-    month: currentMonth,
-    type: "all",
-  });
-  const activeTab = queryParams.tab;
-  const selectedMonth = queryParams.month;
-  const typeFilter = queryParams.type as "all" | "income" | "expense";
+  // URL 쿼리 파라미터 동기화 + 검색 디바운싱 통합 관리
+  // - tab/month/type은 즉시 URL 반영
+  // - q(검색어)는 로컬 입력 → 300ms 디바운스 후 URL 반영
+  const {
+    filters,
+    setFilter,
+    searchInput: searchQuery,
+    setSearchInput: setSearchQuery,
+    debouncedSearch: debouncedQuery,
+  } = useTableFilter(
+    {
+      tab: "transactions",
+      month: currentMonth,
+      type: "all",
+      q: "",
+    },
+    { searchKey: "q", debounceMs: 300 }
+  );
 
-  const setActiveTab = (v: string) => setQueryParams({ tab: v });
-  const setSelectedMonth = (v: string) => setQueryParams({ month: v });
-  const setTypeFilter = (v: "all" | "income" | "expense") => setQueryParams({ type: v });
+  const activeTab = filters.tab;
+  const selectedMonth = filters.month;
+  const typeFilter = filters.type as "all" | "income" | "expense";
 
-  // 텍스트 검색 (URL에 저장하지 않음 — 일시적 필터)
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  // 300ms 디바운싱 — 실제 필터링에만 사용 (입력 반응은 searchQuery로 즉시)
-  const debouncedQuery = useDebounce(searchQuery, 300);
+  const setActiveTab = (v: string) => setFilter("tab", v);
+  const setSelectedMonth = (v: string) => setFilter("month", v);
+  const setTypeFilter = (v: "all" | "income" | "expense") => setFilter("type", v);
 
   const isManager = financeRole === "manager";
   const canManage = isManager || ctx.permissions.canEdit;
@@ -276,17 +290,17 @@ function FinanceContentInner({
 
   const handleDeleteConfirm = async () => {
     if (!deleteTargetId) return;
-    const { error } = await supabase
-      .from("finance_transactions")
-      .delete()
-      .eq("id", deleteTargetId);
-    if (error) {
-      toast.error(TOAST.FINANCE.TRANSACTION_DELETE_ERROR);
-    } else {
-      toast.success(TOAST.FINANCE.TRANSACTION_DELETED);
+
+    // submitDelete: successMessage/errorMessage 옵션 적용됨 → toast 자동 처리
+    await submitDelete(async () => {
+      const { error } = await supabase
+        .from("finance_transactions")
+        .delete()
+        .eq("id", deleteTargetId);
+      if (error) throw error;
       refetch();
-    }
-    setDeleteTargetId(null);
+      setDeleteTargetId(null);
+    });
   };
 
   return (

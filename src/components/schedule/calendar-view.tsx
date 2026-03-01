@@ -38,7 +38,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
-import { useAsyncAction } from "@/hooks/use-async-action";
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
 import { scheduleToIcs, schedulesToIcs, downloadIcs, buildGoogleCalendarUrl } from "@/lib/ics";
@@ -170,25 +170,13 @@ type CalendarViewProps = {
 // RSVP + 대기 명단 통합 섹션
 function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
   const { rsvp, loading, submitRsvp, cancelRsvp } = useScheduleRsvp(schedule.id);
-  const { pending: submitting, execute } = useAsyncAction();
+  // useFormSubmission: pending 관리 + 에러 시 toast.error 자동 처리
+  const { pending: submitting, submit } = useFormSubmission();
   const { user } = useAuth();
 
   const handleRsvp = async (response: ScheduleRsvpResponse) => {
     if (!user) {
       toast.error(TOAST.SCHEDULE.LOGIN_REQUIRED);
-      return;
-    }
-
-    if (rsvp?.my_response === response) {
-      // 같은 응답 클릭 시 취소
-      await execute(async () => {
-        try {
-          await cancelRsvp(user.id);
-          toast.success(TOAST.SCHEDULE.RSVP_CANCELLED);
-        } catch {
-          toast.error(TOAST.SCHEDULE.RSVP_CANCEL_ERROR);
-        }
-      });
       return;
     }
 
@@ -198,13 +186,23 @@ function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
       maybe: "미정",
     };
 
-    await execute(async () => {
-      try {
-        await submitRsvp(user.id, response);
-        toast.success(`"${labels[response]}"으로 응답했습니다`);
-      } catch {
-        toast.error(TOAST.SCHEDULE.RSVP_ERROR);
-      }
+    if (rsvp?.my_response === response) {
+      // 같은 응답 클릭 시 취소
+      await submit(async () => {
+        await cancelRsvp(user.id).catch(() => {
+          throw new Error(TOAST.SCHEDULE.RSVP_CANCEL_ERROR);
+        });
+        toast.success(TOAST.SCHEDULE.RSVP_CANCELLED);
+      });
+      return;
+    }
+
+    // 새 응답 제출
+    await submit(async () => {
+      await submitRsvp(user.id, response).catch(() => {
+        throw new Error(TOAST.SCHEDULE.RSVP_ERROR);
+      });
+      toast.success(`"${labels[response]}"으로 응답했습니다`);
     });
   };
 

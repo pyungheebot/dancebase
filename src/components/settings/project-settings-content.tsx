@@ -11,7 +11,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { X, Plus, Share2 } from "lucide-react";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { toast } from "sonner";
-import { useAsyncAction } from "@/hooks/use-async-action";
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import type { EntityContext } from "@/types/entity-context";
 import type { Project } from "@/types";
 import {
@@ -32,8 +32,9 @@ export function ProjectSettingsContent({ ctx, project }: ProjectSettingsContentP
   const router = useRouter();
   const supabase = createClient();
 
-  const { pending: saving, execute: executeSave } = useAsyncAction();
-  const { pending: deleting, execute: executeDelete } = useAsyncAction();
+  // 저장 / 삭제 각각 별도 pending 관리
+  const { pending: saving, submit: submitSave } = useFormSubmission();
+  const { pending: deleting, submit: submitDelete } = useFormSubmission();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [projectForm, setProjectForm] = useState<ProjectFormValues>(DEFAULT_PROJECT_FORM_VALUES);
@@ -72,7 +73,7 @@ export function ProjectSettingsContent({ ctx, project }: ProjectSettingsContentP
   };
 
   const handleSave = async () => {
-    await executeSave(async () => {
+    await submitSave(async () => {
       if (!ctx.projectId) return;
 
       const { error } = await supabase
@@ -101,21 +102,22 @@ export function ProjectSettingsContent({ ctx, project }: ProjectSettingsContentP
       const featureResults = await Promise.all(featureUpdates);
       const featureError = featureResults.some((r) => r.error);
 
+      // 에러 시 throw하여 useFormSubmission이 toast.error 처리
       if (error || featureError) {
-        toast.error("프로젝트 저장에 실패했습니다");
-      } else {
-        toast.success("프로젝트가 저장되었습니다");
+        throw new Error("프로젝트 저장에 실패했습니다");
       }
+
+      toast.success("프로젝트가 저장되었습니다");
     });
   };
 
   const handleDelete = async () => {
     if (!ctx.projectId) return;
-    await executeDelete(async () => {
+    await submitDelete(async () => {
       const { error } = await supabase.from("projects").delete().eq("id", ctx.projectId!);
+      // 에러 시 throw하여 useFormSubmission이 toast.error 처리
       if (error) {
-        toast.error("프로젝트 삭제에 실패했습니다");
-        return;
+        throw new Error("프로젝트 삭제에 실패했습니다");
       }
       router.push(`/groups/${ctx.groupId}/projects`);
     });
