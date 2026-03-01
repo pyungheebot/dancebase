@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Copy } from "lucide-react";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { useAuth } from "@/hooks/use-auth";
@@ -220,13 +221,15 @@ export function ProjectDuplicateDialog({
             복제된 프로젝트의 상태는 &quot;신규&quot;로 설정되며, 복제한 사용자는 리더로 추가됩니다.
           </p>
 
-          <Button
+          <SubmitButton
             className="w-full"
             onClick={handleSubmit}
-            disabled={submitting || !isValid}
+            loading={submitting}
+            loadingText="복제 중..."
+            disabled={!isValid}
           >
-            {submitting ? "복제 중..." : "복제 생성"}
-          </Button>
+            복제 생성
+          </SubmitButton>
         </div>
       </DialogContent>
     </Dialog>

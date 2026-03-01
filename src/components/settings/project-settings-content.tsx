@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { X, Plus, Share2 } from "lucide-react";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import type { EntityContext } from "@/types/entity-context";
@@ -208,13 +209,15 @@ export function ProjectSettingsContent({ ctx, project }: ProjectSettingsContentP
           <ReminderSettingsSection entityType="project" entityId={ctx.projectId} />
         )}
 
-        <Button
+        <SubmitButton
           className="w-full"
           onClick={handleSave}
-          disabled={saving || !projectForm.name.trim()}
+          loading={saving}
+          loadingText="저장 중..."
+          disabled={!projectForm.name.trim()}
         >
-          {saving ? "저장 중..." : "저장"}
-        </Button>
+          저장
+        </SubmitButton>
 
         {/* 삭제 (프로젝트 전용) */}
         {features.deletable && (

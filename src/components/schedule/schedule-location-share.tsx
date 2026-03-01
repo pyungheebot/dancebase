@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { generateLocationCard, getMapUrls } from "@/lib/qr-generator";
-import { copyToClipboard } from "@/lib/clipboard";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 
 type MapService = "kakao" | "naver";
 
@@ -40,6 +40,10 @@ export function ScheduleLocationShare({
   const [cardDataUrl, setCardDataUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [selectedService, setSelectedService] = useState<MapService>("kakao");
+  const { copy } = useCopyToClipboard({
+    successMessage: "카카오맵 링크를 복사했습니다",
+    errorMessage: "링크 복사에 실패했습니다",
+  });
 
   const lat = latitude ?? undefined;
   const lng = longitude ?? undefined;
@@ -77,7 +81,7 @@ export function ScheduleLocationShare({
   };
 
   const handleCopyLink = async () => {
-    await copyToClipboard(kakaoUrl, "카카오맵 링크를 복사했습니다", "링크 복사에 실패했습니다");
+    await copy(kakaoUrl);
   };
 
   const handleDownloadImage = () => {

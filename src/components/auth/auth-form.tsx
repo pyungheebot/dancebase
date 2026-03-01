@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SubmitButton } from "@/components/shared/submit-button";
 
 type AuthFormProps = {
   inviteCode?: string;
@@ -124,9 +125,9 @@ export function AuthForm({ inviteCode }: AuthFormProps) {
           {error && (
             <p className="text-sm text-destructive">{error}</p>
           )}
-          <Button type="submit" variant="outline" className="w-full h-9 text-sm bg-background" disabled={loading}>
-            {loading ? "처리 중..." : "로그인"}
-          </Button>
+          <SubmitButton variant="outline" className="w-full h-9 text-sm bg-background" loading={loading} loadingText="처리 중...">
+            로그인
+          </SubmitButton>
         </form>
       )}
 

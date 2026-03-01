@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { toast } from "sonner";
 import type { FinanceCategory, FinanceTransaction } from "@/types";
 import {
@@ -407,13 +408,14 @@ export function FinanceTransactionForm({
           />
         </div>
 
-        <Button
-          type="submit"
+        <SubmitButton
           className="w-full h-8 text-sm"
-          disabled={pending || !isFormValid}
+          loading={pending}
+          loadingText="저장 중..."
+          disabled={!isFormValid}
         >
-          {pending ? "저장 중..." : isEdit ? "수정" : "저장"}
-        </Button>
+          {isEdit ? "수정" : "저장"}
+        </SubmitButton>
       </form>
     </DialogContent>
   );

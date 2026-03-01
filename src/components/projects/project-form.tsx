@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { useAuth } from "@/hooks/use-auth";
@@ -77,13 +78,15 @@ export function ProjectForm({ groupId, onCreated }: ProjectFormProps) {
         </DialogHeader>
         <div className="space-y-3">
           <ProjectFormFields values={form} onChange={handleChange} />
-          <Button
+          <SubmitButton
             className="w-full"
             onClick={handleSubmit}
-            disabled={submitting || !form.name.trim()}
+            loading={submitting}
+            loadingText="생성 중..."
+            disabled={!form.name.trim()}
           >
-            {submitting ? "생성 중..." : "생성"}
-          </Button>
+            생성
+          </SubmitButton>
         </div>
       </DialogContent>
     </Dialog>

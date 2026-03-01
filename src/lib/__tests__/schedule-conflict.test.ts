@@ -20,8 +20,8 @@ function makeSchedule(
     longitude: null,
     attendance_method: "none",
     starts_at,
-    // ends_at이 명시적으로 null이면 그대로 전달 (getEffectiveEnd가 +2h 추정)
-    ends_at: ends_at !== undefined ? ends_at : starts_at,
+    // ends_at이 명시적으로 null이면 starts_at으로 폴백 (getEffectiveEnd가 +2h 추정)
+    ends_at: ends_at != null ? ends_at : starts_at,
     created_by: "user-1",
     late_threshold: null,
     attendance_deadline: null,

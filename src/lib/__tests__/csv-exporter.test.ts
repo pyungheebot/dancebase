@@ -6,7 +6,7 @@ const mockClick = vi.fn();
 const mockAppendChild = vi.fn();
 const mockRemoveChild = vi.fn();
 const mockRevokeObjectURL = vi.fn();
-const mockCreateObjectURL = vi.fn(() => "blob:mock-url");
+const mockCreateObjectURL = vi.fn((_blob: Blob) => "blob:mock-url");
 
 beforeEach(() => {
   mockClick.mockClear();

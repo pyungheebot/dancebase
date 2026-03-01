@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Camera, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/shared/submit-button";
 import {
   GroupFormFields,
   type GroupFormValues,
@@ -100,14 +101,16 @@ export function GroupBasicSection({
       {/* 그룹 기본 정보 폼 */}
       <GroupFormFields values={groupForm} onChange={onGroupFieldChange} />
 
-      <Button onClick={onSave} disabled={saving || !groupForm.name.trim()} className="w-full">
-        {saving ? (
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-        ) : (
-          <Save className="h-4 w-4 mr-2" />
-        )}
+      <SubmitButton
+        onClick={onSave}
+        loading={saving}
+        loadingText="저장 중..."
+        disabled={!groupForm.name.trim()}
+        className="w-full"
+      >
+        <Save className="h-4 w-4 mr-2" />
         설정 저장
-      </Button>
+      </SubmitButton>
     </div>
   );
 }

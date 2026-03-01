@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Paperclip, X, FileText, Clock } from "lucide-react";
+import { SubmitButton } from "@/components/shared/submit-button";
 import NextImage from "next/image";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
@@ -714,23 +715,21 @@ export function BoardPostForm({
           onChange={(v) => setField("publishedAt", v)}
         />
 
-        <Button
+        <SubmitButton
           className="w-full"
           onClick={handleSubmit}
-          disabled={submitting || !state.title.trim()}
+          loading={submitting}
+          loadingText={mode === "edit" ? "수정 중..." : "작성 중..."}
+          disabled={!state.title.trim()}
         >
-          {submitting
+          {state.publishedAt && new Date(state.publishedAt) > new Date()
             ? mode === "edit"
-              ? "수정 중..."
-              : "작성 중..."
-            : state.publishedAt && new Date(state.publishedAt) > new Date()
-              ? mode === "edit"
-                ? "예약 수정"
-                : "예약 발행"
-              : mode === "edit"
-                ? "수정"
-                : "작성"}
-        </Button>
+              ? "예약 수정"
+              : "예약 발행"
+            : mode === "edit"
+              ? "수정"
+              : "작성"}
+        </SubmitButton>
       </div>
     </DialogContent>
   );

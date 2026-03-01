@@ -17,7 +17,7 @@ import {
 import { CheckCircle2, Copy, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
-import { copyToClipboard } from "@/lib/clipboard";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import type { SettlementMemberStatus } from "@/types";
 
@@ -61,15 +61,15 @@ function MyRequestCard({
 }) {
   const [paying, setPaying] = useState(false);
   const paymentMethod = request.group_payment_methods;
+  const { copy: copyAccountNumber } = useCopyToClipboard({
+    successMessage: "계좌번호가 복사되었습니다",
+    errorMessage: "복사에 실패했습니다",
+  });
 
   async function handleMarkPaid() {
     setPaying(true);
     await onMarkPaid(myMemberId);
     setPaying(false);
-  }
-
-  async function copyAccountNumber(text: string) {
-    await copyToClipboard(text, "계좌번호가 복사되었습니다", "복사에 실패했습니다");
   }
 
   const isActive = request.status === "active";

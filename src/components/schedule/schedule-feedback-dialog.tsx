@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Star, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/shared/submit-button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -173,17 +174,16 @@ export function ScheduleFeedbackDialog({
           >
             취소
           </Button>
-          <Button
+          <SubmitButton
             size="sm"
             className="h-8 text-xs"
             onClick={handleSubmit}
-            disabled={submitting || loadingExisting || rating === 0}
+            loading={submitting}
+            loadingText={isEditMode ? "수정 중..." : "등록 중..."}
+            disabled={loadingExisting || rating === 0}
           >
-            {submitting ? (
-              <Loader2 className="h-3 w-3 animate-spin mr-1" />
-            ) : null}
             {isEditMode ? "수정 완료" : "평가 등록"}
-          </Button>
+          </SubmitButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
