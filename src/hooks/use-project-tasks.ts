@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { frequentConfig } from "@/lib/swr/cache-config";
 import { invalidateProjectTasks } from "@/lib/swr/invalidate";
 import type { ProjectTask } from "@/types";
 import { toast } from "sonner";
@@ -30,7 +31,8 @@ export function useProjectTasks(projectId: string) {
 
   const { data, isLoading, mutate } = useSWR(
     projectId ? swrKeys.projectTasks(projectId) : null,
-    fetcher
+    fetcher,
+    frequentConfig,
   );
 
   const tasks = data ?? [];

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { frequentConfig } from "@/lib/swr/cache-config";
 import type { JoinRequestWithProfile, JoinRequestStatus } from "@/types";
 
 export function useJoinRequests(groupId: string, status?: JoinRequestStatus | "all") {
@@ -22,7 +23,8 @@ export function useJoinRequests(groupId: string, status?: JoinRequestStatus | "a
       const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as JoinRequestWithProfile[];
-    }
+    },
+    frequentConfig,
   );
 
   return {
@@ -45,6 +47,7 @@ export function usePendingJoinRequestCount(groupId: string, enabled = true) {
       if (error) return 0;
       return count ?? 0;
     },
+    frequentConfig,
   );
 
   return {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  isValidUUID,
   validateRequired,
   validateMinLength,
   validateMaxLength,
@@ -10,6 +11,53 @@ import {
   validateUrl,
   sanitizeUrl,
 } from "@/lib/validation";
+
+describe("isValidUUID", () => {
+  it("유효한 UUID v4 형식이면 true를 반환한다", () => {
+    expect(isValidUUID("550e8400-e29b-41d4-a716-446655440000")).toBe(true);
+  });
+
+  it("소문자 hex UUID도 유효하다", () => {
+    expect(isValidUUID("f47ac10b-58cc-4372-a567-0e02b2c3d479")).toBe(true);
+  });
+
+  it("대문자 hex UUID도 유효하다", () => {
+    expect(isValidUUID("F47AC10B-58CC-4372-A567-0E02B2C3D479")).toBe(true);
+  });
+
+  it("대소문자 혼합 UUID도 유효하다", () => {
+    expect(isValidUUID("f47AC10B-58cc-4372-A567-0e02b2C3D479")).toBe(true);
+  });
+
+  it("빈 문자열은 false를 반환한다", () => {
+    expect(isValidUUID("")).toBe(false);
+  });
+
+  it("하이픈이 없는 UUID는 false를 반환한다", () => {
+    expect(isValidUUID("550e8400e29b41d4a716446655440000")).toBe(false);
+  });
+
+  it("짧은 문자열은 false를 반환한다", () => {
+    expect(isValidUUID("550e8400-e29b-41d4")).toBe(false);
+  });
+
+  it("잘못된 형식의 문자열은 false를 반환한다", () => {
+    expect(isValidUUID("not-a-uuid-at-all")).toBe(false);
+  });
+
+  it("UUID 형식이지만 길이가 다르면 false를 반환한다", () => {
+    expect(isValidUUID("550e8400-e29b-41d4-a716-44665544000")).toBe(false); // 마지막 그룹이 11자리
+  });
+
+  it("UUID 형식이지만 잘못된 문자가 포함되면 false를 반환한다", () => {
+    expect(isValidUUID("550e8400-e29b-41d4-a716-44665544000g")).toBe(false); // g는 hex 아님
+  });
+
+  it("공백이 포함된 UUID는 false를 반환한다", () => {
+    expect(isValidUUID(" 550e8400-e29b-41d4-a716-446655440000")).toBe(false);
+    expect(isValidUUID("550e8400-e29b-41d4-a716-446655440000 ")).toBe(false);
+  });
+});
 
 describe("validateRequired", () => {
   it("값이 있으면 null 반환", () => {

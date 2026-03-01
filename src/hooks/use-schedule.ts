@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { frequentConfig } from "@/lib/swr/cache-config";
 import { useIndependentEntityIds } from "@/hooks/use-independent-entities";
 import type { Schedule, AttendanceWithProfile } from "@/types";
 
@@ -42,6 +43,7 @@ export function useSchedules(groupId: string, projectId?: string | null) {
       const { data } = await query;
       return (data ?? []) as Schedule[];
     },
+    frequentConfig,
   );
 
   return {
@@ -84,7 +86,8 @@ export function useTodaySchedules() {
         .order("starts_at", { ascending: true });
 
       return (data ?? []) as Schedule[];
-    }
+    },
+    frequentConfig,
   );
 
   return {
@@ -108,6 +111,7 @@ export function useAttendance(scheduleId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.attendance(scheduleId),
     fetcher,
+    frequentConfig,
   );
 
   return {

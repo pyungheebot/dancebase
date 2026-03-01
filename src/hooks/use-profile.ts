@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { staticConfig } from "@/lib/swr/cache-config";
 import { useAuth } from "@/hooks/use-auth";
 import { filterProfileByPrivacy } from "@/lib/privacy";
 import type { Profile, PublicProfile, PublicProfileGroup } from "@/types";
@@ -142,6 +143,7 @@ export function useUserProfile(userId: string) {
         followingCount: followingRes.count ?? 0,
       };
     },
+    staticConfig,
   );
 
   return {

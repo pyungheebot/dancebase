@@ -4,6 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { frequentConfig, immutableConfig, staticConfig } from "@/lib/swr/cache-config";
 import { useIndependentEntityIds } from "@/hooks/use-independent-entities";
 import { BOARD_CATEGORIES } from "@/types";
 import type {
@@ -126,7 +127,7 @@ export function useBoard(groupId: string, projectId?: string | null) {
 
       return { posts: [] as BoardPostWithDetails[], totalCount: 0 };
     },
-    { keepPreviousData: true },
+    { ...frequentConfig, keepPreviousData: true },
   );
 
   const totalCount = data?.totalCount ?? 0;
@@ -217,6 +218,7 @@ export function useBoardPost(postId: string) {
 
       return { post, comments, poll, pollOptions };
     },
+    frequentConfig,
   );
 
   return {
@@ -243,6 +245,7 @@ export function useBoardPostAttachments(postId: string) {
       if (error) return [] as BoardPostAttachment[];
       return (data ?? []) as BoardPostAttachment[];
     },
+    frequentConfig,
   );
 
   return {
@@ -274,6 +277,7 @@ export function useBoardPostLikes(postId: string) {
         : false;
       return { likes: typedLikes, likedByMe };
     },
+    frequentConfig,
   );
 
   return {
@@ -305,6 +309,7 @@ export function useBoardCategories(groupId: string) {
       if (error) return [] as BoardCategoryRow[];
       return (data ?? []) as BoardCategoryRow[];
     },
+    immutableConfig,
   );
 
   const dbCategories = data ?? [];
@@ -348,6 +353,7 @@ export function useBoardTrash(groupId: string) {
       if (error) return [] as BoardTrashPost[];
       return (data ?? []) as BoardTrashPost[];
     },
+    staticConfig,
   );
 
   return {

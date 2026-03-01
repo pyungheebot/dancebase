@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useFinanceBudget } from "@/hooks/use-finance-budget";
 import { invalidateFinanceBudget } from "@/lib/swr/invalidate";
@@ -72,6 +74,7 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
   const [formIncome, setFormIncome] = useState<string>("");
   const [formExpense, setFormExpense] = useState<string>("");
   const { pending: saving, execute } = useAsyncAction();
+  const deleteDialog = useConfirmDialog<string>();
 
   const entityType = ctx.projectId ? "project" : "group";
   const entityId = ctx.projectId ?? ctx.groupId;
@@ -142,12 +145,19 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
     });
   };
 
-  // 예산 삭제
-  const handleDelete = async () => {
+  // 예산 삭제 요청 (확인 다이얼로그 열기)
+  const handleDeleteRequest = () => {
     if (!budget) return;
+    deleteDialog.requestConfirm(budget.id, `${formatMonthLabel(selectedMonth)} 예산`);
+  };
+
+  // 예산 삭제 실행
+  const handleDeleteConfirm = async () => {
+    const budgetId = deleteDialog.confirm();
+    if (!budgetId) return;
     await execute(async () => {
       try {
-        await deleteFinanceBudget(budget.id);
+        await deleteFinanceBudget(budgetId);
       } catch {
         toast.error(TOAST.FINANCE.BUDGET_DELETE_ERROR);
         return;
@@ -353,6 +363,16 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
         </div>
       )}
 
+      {/* 예산 삭제 확인 다이얼로그 */}
+      <DeleteConfirmDialog
+        open={deleteDialog.open}
+        onCancel={deleteDialog.cancel}
+        onConfirm={handleDeleteConfirm}
+        title="예산 삭제"
+        itemLabel={deleteDialog.targetLabel}
+        loading={saving}
+      />
+
       {/* 예산 설정 다이얼로그 */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-sm">
@@ -400,7 +420,7 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs text-destructive hover:text-destructive mr-auto"
-                onClick={handleDelete}
+                onClick={handleDeleteRequest}
                 disabled={saving}
               >
                 예산 삭제

@@ -45,6 +45,8 @@ import { scheduleToIcs, schedulesToIcs, downloadIcs, buildGoogleCalendarUrl } fr
 import { ShareButton } from "@/components/shared/share-button";
 import { MapEmbed } from "@/components/shared/map-embed";
 import { MirrorModeDialog } from "@/components/shared/mirror-mode-dialog";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -428,6 +430,7 @@ function RecurrenceEditDialog({
 
 export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath, groupId, canEditRoles }: CalendarViewProps) {
   const [state, dispatch] = useReducer(calendarReducer, initialCalendarState);
+  const singleDeleteDialog = useConfirmDialog<Schedule>();
   const {
     currentMonth,
     editSchedule,
@@ -505,9 +508,16 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
       // 반복 일정이면 범위 선택 다이얼로그 표시
       dispatch({ type: "OPEN_RECURRENCE_DELETE", schedule });
     } else {
-      // 단일 일정이면 바로 삭제
-      handleDeleteConfirm(schedule, "this");
+      // 단일 일정이면 확인 다이얼로그 표시
+      singleDeleteDialog.requestConfirm(schedule, schedule.title);
     }
+  };
+
+  // 단일 일정 삭제 확인
+  const handleSingleDeleteConfirm = () => {
+    const schedule = singleDeleteDialog.confirm();
+    if (!schedule) return;
+    handleDeleteConfirm(schedule, "this");
   };
 
   // 삭제 실행
@@ -789,6 +799,16 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
           if (!open) dispatch({ type: "CLOSE_RECURRENCE_EDIT" });
         }}
         onSelect={handleRecurrenceEditSelect}
+      />
+
+      {/* 단일 일정 삭제 확인 다이얼로그 */}
+      <DeleteConfirmDialog
+        open={singleDeleteDialog.open}
+        onCancel={singleDeleteDialog.cancel}
+        onConfirm={handleSingleDeleteConfirm}
+        title="일정 삭제"
+        itemLabel={singleDeleteDialog.targetLabel}
+        loading={deleteLoading}
       />
 
       {/* 반복 일정 삭제 범위 선택 다이얼로그 */}

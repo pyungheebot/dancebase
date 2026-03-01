@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { frequentConfig } from "@/lib/swr/cache-config";
 import { useIndependentEntityIds } from "@/hooks/use-independent-entities";
 import type {
   FinanceCategory,
@@ -124,6 +125,7 @@ export function useFinance(groupId: string, projectId?: string | null) {
 
       return { transactions, categories, financeRole };
     },
+    frequentConfig,
   );
 
   const transactions = useMemo(() => data?.transactions ?? [], [data?.transactions]);

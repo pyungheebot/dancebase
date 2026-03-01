@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { staticConfig } from "@/lib/swr/cache-config";
 
 export type GroupStats = {
   memberCount: number;
@@ -60,7 +61,8 @@ export function useGroupStats(groupId: string) {
         thisMonthPostCount: postsRes.count ?? 0,
         projectCount: projectsRes.count ?? 0,
       };
-    }
+    },
+    staticConfig,
   );
 
   return {

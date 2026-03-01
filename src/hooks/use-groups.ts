@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { staticConfig } from "@/lib/swr/cache-config";
 import type { Group, GroupMemberWithProfile, MemberCategory } from "@/types";
 
 export function useGroups() {
@@ -21,6 +22,7 @@ export function useGroups() {
 
       return (data as (Group & { member_count: number; my_role: string })[]) || [];
     },
+    staticConfig,
   );
 
   return {
@@ -88,6 +90,7 @@ export function useGroupDetail(groupId: string) {
         categoryColorMap,
       };
     },
+    staticConfig,
   );
 
   return {

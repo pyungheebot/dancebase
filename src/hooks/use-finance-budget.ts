@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { frequentConfig } from "@/lib/swr/cache-config";
 import type { FinanceBudget } from "@/types";
 
 export function useFinanceBudget(
@@ -28,7 +29,8 @@ export function useFinanceBudget(
 
   const { data, isLoading, mutate } = useSWR(
     swrKeys.financeBudget(entityType, entityId, yearMonth),
-    fetcher
+    fetcher,
+    frequentConfig,
   );
 
   return {

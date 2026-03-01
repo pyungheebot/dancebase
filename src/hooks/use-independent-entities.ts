@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { immutableConfig } from "@/lib/swr/cache-config";
 
 export type IndependentEntityRow = {
   entity_id: string;
@@ -30,7 +31,8 @@ export function useIndependentEntityIds(groupId: string | undefined) {
       if (error) throw error;
       return (data ?? []) as IndependentEntityRow[];
     },
-    { dedupingInterval: 30000 }, // 30초 dedup으로 중복 호출 방지
+    // immutableConfig: 세션 중 독립 엔티티 목록은 거의 변하지 않음 (dedupingInterval 60초)
+    immutableConfig,
   );
 }
 

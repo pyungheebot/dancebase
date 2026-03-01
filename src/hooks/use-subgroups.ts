@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { immutableConfig, staticConfig } from "@/lib/swr/cache-config";
 import type { GroupMemberWithProfile } from "@/types";
 
 type SubgroupItem = {
@@ -30,6 +31,7 @@ export function useSubgroups(groupId: string) {
       });
       return (data as SubgroupItem[]) || [];
     },
+    staticConfig,
   );
 
   return {
@@ -49,6 +51,7 @@ export function useGroupAncestors(groupId: string) {
       });
       return (data as AncestorItem[]) || [];
     },
+    immutableConfig,
   );
 
   return {
@@ -71,6 +74,7 @@ export function useParentGroupMembers(parentGroupId: string | null) {
       if (error) return [];
       return (data as GroupMemberWithProfile[]) || [];
     },
+    staticConfig,
   );
 
   return {

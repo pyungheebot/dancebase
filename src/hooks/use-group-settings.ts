@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { useAuth } from "@/hooks/use-auth";
 import { useBoardCategories } from "@/hooks/use-board";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { invalidateBoardCategories, invalidateGroup } from "@/lib/swr/invalidate";
 import { createNotification } from "@/lib/notifications";
 import {
@@ -53,6 +54,11 @@ export function useGroupSettings(ctx: EntityContext, group: Group) {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [addingCategory, setAddingCategory] = useState(false);
   const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
+
+  // 확인 다이얼로그 (카테고리 삭제 / 탈퇴 / 해산)
+  const deleteCategoryDialog = useConfirmDialog<string>();
+  const leaveGroupDialog = useConfirmDialog<"leave">();
+  const dissolveGroupDialog = useConfirmDialog<"dissolve">();
 
   // 그룹 초기화
   useEffect(() => {
@@ -125,14 +131,21 @@ export function useGroupSettings(ctx: EntityContext, group: Group) {
     setAddingCategory(false);
   };
 
-  // 카테고리 삭제
-  const handleDeleteCategory = async (category: BoardCategoryRow) => {
-    setDeletingCategoryId(category.id);
-    const { error } = await supabase.from("board_categories").delete().eq("id", category.id);
+  // 카테고리 삭제 요청 (확인 다이얼로그 열기)
+  const handleDeleteCategoryRequest = (category: BoardCategoryRow) => {
+    deleteCategoryDialog.requestConfirm(category.id, `"${category.name}"`);
+  };
+
+  // 카테고리 삭제 실행
+  const handleDeleteCategoryConfirm = async () => {
+    const categoryId = deleteCategoryDialog.confirm();
+    if (!categoryId) return;
+    setDeletingCategoryId(categoryId);
+    const { error } = await supabase.from("board_categories").delete().eq("id", categoryId);
     if (error) {
       toast.error("카테고리 삭제에 실패했습니다");
     } else {
-      toast.success(`"${category.name}" 카테고리가 삭제되었습니다`);
+      toast.success("카테고리가 삭제되었습니다");
       invalidateBoardCategories(ctx.groupId);
       refetchBoardCategories();
     }
@@ -264,8 +277,14 @@ export function useGroupSettings(ctx: EntityContext, group: Group) {
     setSavingInviteSettings(false);
   };
 
-  // 그룹 탈퇴
-  const handleLeaveGroup = async () => {
+  // 그룹 탈퇴 요청 (확인 다이얼로그 열기)
+  const handleLeaveGroupRequest = () => {
+    leaveGroupDialog.requestConfirm("leave", group.name);
+  };
+
+  // 그룹 탈퇴 실행
+  const handleLeaveGroupConfirm = async () => {
+    leaveGroupDialog.confirm();
     setLeavingGroup(true);
     if (!user) {
       toast.error("로그인이 필요합니다.");
@@ -286,8 +305,14 @@ export function useGroupSettings(ctx: EntityContext, group: Group) {
     router.push("/dashboard");
   };
 
-  // 그룹 해산
-  const handleDissolveGroup = async () => {
+  // 그룹 해산 요청 (확인 다이얼로그 열기)
+  const handleDissolveGroupRequest = () => {
+    dissolveGroupDialog.requestConfirm("dissolve", group.name);
+  };
+
+  // 그룹 해산 실행
+  const handleDissolveGroupConfirm = async () => {
+    dissolveGroupDialog.confirm();
     setDissolvingGroup(true);
     const { error } = await supabase.from("groups").delete().eq("id", ctx.groupId);
     if (error) {
@@ -352,16 +377,28 @@ export function useGroupSettings(ctx: EntityContext, group: Group) {
     addingCategory,
     deletingCategoryId,
     isGroupLeader: myGroupRole === "leader",
+    // 확인 다이얼로그 상태 (외부 노출용)
+    deleteCategoryDialog,
+    leaveGroupDialog,
+    dissolveGroupDialog,
     handleRoleChange,
     handleAddCategory,
-    handleDeleteCategory,
+    // 카테고리 삭제: GroupCategorySection이 자체 ConfirmDialog를 가지므로 직접 실행 버전도 유지
+    handleDeleteCategory: handleDeleteCategoryConfirm,
+    handleDeleteCategoryRequest,
+    handleDeleteCategoryConfirm,
     handleAvatarChange,
     handleApproveRequest,
     handleRejectRequest,
     handleRegenerateInviteCode,
     handleSaveInviteSettings,
-    handleLeaveGroup,
-    handleDissolveGroup,
+    // 탈퇴/해산: GroupDangerSection이 자체 다이얼로그를 가지므로 실행 버전도 유지
+    handleLeaveGroup: handleLeaveGroupConfirm,
+    handleLeaveGroupRequest,
+    handleLeaveGroupConfirm,
+    handleDissolveGroup: handleDissolveGroupConfirm,
+    handleDissolveGroupRequest,
+    handleDissolveGroupConfirm,
     handleSave,
   };
 }

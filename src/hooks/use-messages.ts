@@ -4,13 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { realtimeConfig } from "@/lib/swr/cache-config";
 import { useAuth } from "@/hooks/use-auth";
 import type { Conversation, Message } from "@/types";
 
 export function useConversations() {
   const { user } = useAuth();
-  // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 자동 갱신
-  // Realtime subscription이 주 업데이트 채널이므로 refreshInterval 미사용
+  // realtimeConfig: Realtime 구독 + 탭 복귀 시 즉시 갱신, dedupingInterval 2초
   const { data, isLoading, mutate } = useSWR(
     swrKeys.conversations(),
     async () => {
@@ -18,6 +18,7 @@ export function useConversations() {
       const { data } = await supabase.rpc("get_conversations");
       return (data as Conversation[]) ?? [];
     },
+    realtimeConfig,
   );
 
   // Realtime: 메시지 INSERT/UPDATE 시 목록 자동 갱신
@@ -70,7 +71,7 @@ export function useConversation(partnerId: string) {
   // 가장 오래된 커서: 이전 메시지 로드 시 이 타임스탬프보다 이전 것을 조회
   const oldestCursorRef = useRef<string | null>(null);
 
-  // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 최신 메시지 자동 갱신
+  // realtimeConfig: Realtime 구독 + 탭 복귀 시 즉시 갱신, dedupingInterval 2초
   const { data, isLoading, mutate } = useSWR(
     swrKeys.conversation(partnerId),
     async () => {
@@ -117,6 +118,7 @@ export function useConversation(partnerId: string) {
       };
     },
     {
+      ...realtimeConfig,
       onSuccess: (result) => {
         if (!result) return;
         // SWR 성공 시 olderMessages 초기화 및 커서 설정
@@ -211,8 +213,7 @@ export function useConversation(partnerId: string) {
 
 export function useUnreadCount() {
   const { user } = useAuth();
-  // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 미읽은 수 즉시 갱신
-  // Realtime INSERT/UPDATE 구독으로 실시간 갱신도 병행
+  // realtimeConfig: Realtime 구독 + 탭 복귀 시 즉시 갱신, dedupingInterval 2초
   const { data, mutate } = useSWR(
     swrKeys.unreadCount(),
     async () => {
@@ -220,6 +221,7 @@ export function useUnreadCount() {
       const { data } = await supabase.rpc("get_unread_message_count");
       return typeof data === "number" ? data : 0;
     },
+    realtimeConfig,
   );
 
   // 인스턴스별 고유 채널명 — header/sidebar 등 여러 곳에서 동시 마운트 시

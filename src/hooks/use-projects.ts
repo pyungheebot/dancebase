@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { staticConfig } from "@/lib/swr/cache-config";
 import type { Project, ProjectMemberWithProfile, ProjectSharedGroup } from "@/types";
 import { invalidateSharedGroups } from "@/lib/swr/invalidate";
 
@@ -46,6 +47,7 @@ export function useProjects(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.projects(groupId),
     fetcher,
+    staticConfig,
   );
 
   return {
@@ -88,6 +90,7 @@ export function useProjectDetail(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.projectDetail(projectId),
     fetcher,
+    staticConfig,
   );
 
   return {
@@ -113,6 +116,7 @@ export function useSharedGroups(projectId: string) {
         .order("shared_at");
       return (data ?? []) as SharedGroupWithName[];
     },
+    staticConfig,
   );
 
   const addSharedGroup = async (groupId: string) => {

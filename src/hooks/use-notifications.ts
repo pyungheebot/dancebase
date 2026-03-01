@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { realtimeConfig } from "@/lib/swr/cache-config";
 import { invalidateNotifications } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
@@ -29,8 +30,9 @@ export function useNotifications(limit = 10) {
       return (data as Notification[]) ?? [];
     },
     {
-      // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 알림 자동 갱신
+      // realtimeConfig: Realtime 구독 + 탭 복귀 즉시 갱신, dedupingInterval 2초
       // refreshInterval: Realtime이 주 채널이지만 보조 폴링으로 놓친 이벤트 보완
+      ...realtimeConfig,
       refreshInterval: 120000,
     }
   );
@@ -165,9 +167,10 @@ export function useUnreadNotificationCount() {
       return count ?? 0;
     },
     {
-      // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 배지 수 즉시 갱신
+      // realtimeConfig: 탭 복귀 즉시 갱신, dedupingInterval 2초
       // refreshInterval: invalidateNotifications()로 Realtime 갱신되지만
       //   Realtime 구독 없는 이 훅은 폴링으로 보완 (30초)
+      ...realtimeConfig,
       refreshInterval: 30000,
     }
   );

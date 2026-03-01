@@ -14,7 +14,9 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { createNotification } from "@/lib/notifications";
 import { ContentReportDialog } from "@/components/board/content-report-dialog";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import {
   createComment,
   updateComment,
@@ -238,6 +240,8 @@ export function BoardCommentSection({
   const { pending: replySubmitting, execute: executeReply } = useAsyncAction();
   // 신고 다이얼로그 상태
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
+  // 삭제 확인 다이얼로그
+  const deleteDialog = useConfirmDialog<string>();
 
   const { user } = useAuth();
 
@@ -288,7 +292,13 @@ export function BoardCommentSection({
     });
   };
 
-  const handleDelete = async (commentId: string) => {
+  const handleDeleteRequest = (commentId: string) => {
+    deleteDialog.requestConfirm(commentId);
+  };
+
+  const handleDeleteConfirm = async () => {
+    const commentId = deleteDialog.confirm();
+    if (!commentId) return;
     try {
       await deleteComment(commentId);
     } catch {
@@ -354,7 +364,7 @@ export function BoardCommentSection({
     onEditStart: handleEditStart,
     onEditCancel: handleEditCancel,
     onEditSave: handleEditSave,
-    onDelete: handleDelete,
+    onDelete: handleDeleteRequest,
     onReplyClick: handleReplyClick,
     onReport: handleReport,
     activeReplyId,
@@ -466,6 +476,15 @@ export function BoardCommentSection({
           targetId={reportTargetId}
         />
       )}
+
+      {/* 댓글 삭제 확인 다이얼로그 */}
+      <DeleteConfirmDialog
+        open={deleteDialog.open}
+        onCancel={deleteDialog.cancel}
+        onConfirm={handleDeleteConfirm}
+        title="댓글 삭제"
+        description="댓글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      />
     </div>
   );
 }
