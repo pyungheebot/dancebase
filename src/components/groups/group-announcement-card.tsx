@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/select";
 import { useGroupAnnouncement } from "@/hooks/use-group-announcement";
 import type { GroupAnnouncementItem, GroupAnnouncementPriority } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ─── 우선순위 메타 ─────────────────────────────────────────────
 const PRIORITY_META: Record<
@@ -98,14 +99,6 @@ function formatRelativeTime(iso: string): string {
   if (days < 7) return `${days}일 전`;
   return new Date(iso).toLocaleDateString("ko-KR", {
     month: "short",
-    day: "numeric",
-  });
-}
-
-function formatDateShort(iso: string): string {
-  return new Date(iso).toLocaleDateString("ko-KR", {
-    year: "2-digit",
-    month: "numeric",
     day: "numeric",
   });
 }
@@ -439,7 +432,7 @@ function AnnouncementRow({
         {item.expiresAt && (
           <div className="flex items-center gap-0.5 text-[10px] text-gray-400">
             <Clock className="h-2.5 w-2.5" />
-            {formatDateShort(item.expiresAt)} 만료
+            {formatMonthDay(item.expiresAt)} 만료
           </div>
         )}
       </div>

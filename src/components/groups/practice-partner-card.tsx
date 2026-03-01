@@ -49,15 +49,11 @@ import type {
   PracticePartnerMember,
   PracticePartnerMatch,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 날짜 포맷 유틸
 // ============================================
-
-function formatDate(isoStr: string): string {
-  const d = new Date(isoStr);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 // ============================================
 // 별점 컴포넌트
@@ -583,7 +579,7 @@ function ActiveMatchRow({
 
       {/* 매칭일 */}
       <span className="text-[10px] text-muted-foreground shrink-0">
-        {formatDate(match.matchedAt)}
+        {formatYearMonthDay(match.matchedAt)}
       </span>
 
       {/* 액션 버튼 */}
@@ -632,9 +628,9 @@ function HistoryMatchRow({ match }: { match: PracticePartnerMatch }) {
       <span className="font-medium text-foreground">{match.memberBName}</span>
       <div className="flex-1" />
       <div className="flex flex-col items-end gap-0.5">
-        <span>{formatDate(match.matchedAt)}</span>
+        <span>{formatYearMonthDay(match.matchedAt)}</span>
         {match.endedAt && (
-          <span className="text-[9px]">~ {formatDate(match.endedAt)}</span>
+          <span className="text-[9px]">~ {formatYearMonthDay(match.endedAt)}</span>
         )}
       </div>
       {/* 평점 */}

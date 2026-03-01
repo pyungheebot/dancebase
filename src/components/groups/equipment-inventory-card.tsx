@@ -30,6 +30,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useEquipmentInventory } from "@/hooks/use-equipment-inventory";
 import type { EquipmentCondition, EquipmentItem, EquipmentCheckout } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 상수 ────────────────────────────────────────────────────
 
@@ -60,11 +61,6 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 // ─── 날짜 포맷 ───────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -686,7 +682,7 @@ export function EquipmentInventoryCard({ groupId }: EquipmentInventoryCardProps)
                             className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-[10px] text-gray-400"
                           >
                             <span>{co.borrowerName} · {itemName}</span>
-                            <span>반납: {formatDate(co.returnedAt!)}</span>
+                            <span>반납: {formatYearMonthDay(co.returnedAt!)}</span>
                           </div>
                         );
                       })}

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemberScoreLeaderboard } from "@/hooks/use-member-score-leaderboard";
 import type { MemberScoreEntry, MemberScoreBreakdown } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // -----------------------------------------------
 // 점수 구성 바 색상 정의
@@ -320,9 +321,7 @@ export function MemberScoreLeaderboardCard({
   // 기간 표시 문자열 계산
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const formatDate = (d: Date) =>
-    `${d.getMonth() + 1}/${d.getDate()}`;
-  const periodLabel = `${formatDate(thirtyDaysAgo)} ~ ${formatDate(now)}`;
+  const periodLabel = `${formatMonthDay(thirtyDaysAgo)} ~ ${formatMonthDay(now)}`;
 
   return (
     <Card className="mb-3">

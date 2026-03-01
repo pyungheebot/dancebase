@@ -52,21 +52,9 @@ import type {
   AttendanceExcuseStatus,
   AttendanceExcuseItem,
 } from "@/types";
+import { formatShortDateTime } from "@/lib/date-utils";
 
 // ─── 헬퍼 ───────────────────────────────────────────────────
-
-function formatDateTime(iso: string): string {
-  try {
-    return new Date(iso).toLocaleString("ko-KR", {
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
-}
 
 // ─── 사유서 단건 카드 ─────────────────────────────────────────
 
@@ -139,7 +127,7 @@ function ExcuseItemRow({
             <span>
               제출일:{" "}
               <span className="text-foreground">
-                {formatDateTime(item.submittedAt)}
+                {formatShortDateTime(item.submittedAt)}
               </span>
             </span>
             {item.approverName && (
@@ -154,7 +142,7 @@ function ExcuseItemRow({
               <span>
                 처리일:{" "}
                 <span className="text-foreground">
-                  {formatDateTime(item.approvedAt)}
+                  {formatShortDateTime(item.approvedAt)}
                 </span>
               </span>
             )}

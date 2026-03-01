@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { useProjectMilestones } from "@/hooks/use-project-milestones";
 import type { ProjectMilestone } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 type ProjectMilestoneTimelineProps = {
   projectId: string;
@@ -25,10 +26,6 @@ type ProjectMilestoneTimelineProps = {
 };
 
 /** YYYY-MM-DD 날짜를 한국어 형식으로 변환 */
-function formatDate(dateStr: string): string {
-  const [year, month, day] = dateStr.split("-");
-  return `${year}. ${month}. ${day}.`;
-}
 
 /** 완료 시각(ISO)을 한국어 날짜로 변환 */
 function formatCompletedAt(iso: string): string {
@@ -146,7 +143,7 @@ function MilestoneNode({
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <div className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
                 <Calendar className="h-3 w-3" />
-                <span>목표: {formatDate(milestone.targetDate)}</span>
+                <span>목표: {formatYearMonthDay(milestone.targetDate)}</span>
               </div>
               {isDone && milestone.completedAt && (
                 <span className="text-[11px] text-green-600">

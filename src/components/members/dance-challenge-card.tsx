@@ -46,6 +46,7 @@ import type {
   DanceChallengePlatform,
   DanceChallengeResult,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 레이블/색상 상수
@@ -82,12 +83,6 @@ const RESULT_COLORS: Record<DanceChallengeResult, string> = {
 // ============================================================
 // 유틸
 // ============================================================
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  return `${year}.${month}.${day}`;
-}
 
 function formatNumber(n: number): string {
   if (n >= 10000) return `${(n / 10000).toFixed(1)}만`;
@@ -407,7 +402,7 @@ function EntryRow({ entry, onUpdate, onDelete }: EntryRowProps) {
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                   <CalendarDays className="h-3 w-3" />
-                  <span>{formatDate(entry.date)}</span>
+                  <span>{formatYearMonthDay(entry.date)}</span>
                 </div>
                 {entry.songTitle && (
                   <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -468,7 +463,7 @@ function EntryRow({ entry, onUpdate, onDelete }: EntryRowProps) {
             {/* 액션 버튼 */}
             <div className="flex items-center justify-between pt-1 border-t border-muted/40">
               <p className="text-[10px] text-muted-foreground">
-                등록: {formatDate(entry.createdAt.slice(0, 10))}
+                등록: {formatYearMonthDay(entry.createdAt.slice(0, 10))}
               </p>
               <div className="flex gap-1">
                 <EntryDialog

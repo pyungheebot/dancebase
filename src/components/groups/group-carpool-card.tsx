@@ -37,18 +37,9 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { useGroupCarPool } from "@/hooks/use-group-carpool";
 import type { CarPoolItem, CarPoolStatus } from "@/types";
+import { formatShortDateTime } from "@/lib/date-utils";
 
 // ── 날짜 포매터 ──────────────────────────────────────────────────────
-
-function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString("ko-KR", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 // ── 상태 배지 색상 ───────────────────────────────────────────────────
 
@@ -131,7 +122,7 @@ function CarPoolItemCard({
       <div className="flex items-center justify-between text-xs text-gray-500">
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
-          <span>{formatDateTime(item.departureTime)}</span>
+          <span>{formatShortDateTime(item.departureTime)}</span>
         </div>
         <div className="flex items-center gap-1">
           <Users className="h-3 w-3" />

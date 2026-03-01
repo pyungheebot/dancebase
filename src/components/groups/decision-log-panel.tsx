@@ -41,6 +41,7 @@ import {
 } from "@/hooks/use-decision-log";
 import type { DecisionCategory, DecisionImpact, DecisionLogItem } from "@/types";
 import { DECISION_CATEGORIES } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 상수 - 레이블 / 색상
@@ -76,15 +77,6 @@ const IMPACT_MARKER_COLORS: Record<DecisionImpact, string> = {
 // ============================================
 // 날짜 포맷
 // ============================================
-
-function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 // ============================================
 // 추가 Dialog
@@ -311,7 +303,7 @@ function DecisionTimelineItem({
         {/* 날짜 + 배지 행 */}
         <div className="flex items-center gap-1.5 flex-wrap mb-1">
           <span className="text-[10px] text-muted-foreground shrink-0">
-            {formatDate(item.decidedAt)}
+            {formatYearMonthDay(item.decidedAt)}
           </span>
           <span
             className={`inline-flex items-center rounded px-1.5 py-0 text-[10px] font-medium ${CATEGORY_COLORS[item.category]}`}

@@ -40,6 +40,7 @@ import {
 import { toast } from "sonner";
 import { useDanceMilestone, calcGoalProgress } from "@/hooks/use-dance-milestone";
 import type { DanceMilestoneCategory, DanceMilestoneGoal } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 레이블 상수
@@ -70,12 +71,6 @@ const CATEGORY_COLORS: Record<DanceMilestoneCategory, string> = {
 // ============================================================
 // 유틸
 // ============================================================
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  return `${year}.${month}.${day}`;
-}
 
 function progressBarColor(progress: number): string {
   if (progress <= 30) return "bg-red-400";
@@ -378,7 +373,7 @@ function GoalCard({
               {goal.targetDate && (
                 <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground">
                   <CalendarDays className="h-3 w-3" />
-                  <span>목표 기한: {formatDate(goal.targetDate)}</span>
+                  <span>목표 기한: {formatYearMonthDay(goal.targetDate)}</span>
                 </div>
               )}
             </div>
@@ -432,7 +427,7 @@ function GoalCard({
                         )}
                         {step.isCompleted && step.completedAt && (
                           <p className="text-[10px] text-green-600">
-                            {formatDate(step.completedAt.slice(0, 10))} 완료
+                            {formatYearMonthDay(step.completedAt.slice(0, 10))} 완료
                           </p>
                         )}
                       </div>

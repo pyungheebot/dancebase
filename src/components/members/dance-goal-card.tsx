@@ -55,6 +55,7 @@ import type {
   DanceGoalPriority,
   DanceGoalStatus,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 상수 및 유틸
@@ -107,11 +108,6 @@ const PROGRESS_BAR_COLORS: Record<DanceGoalStatus, string> = {
   completed: "bg-blue-500",
   paused: "bg-yellow-400",
 };
-
-function formatDate(isoStr: string): string {
-  if (!isoStr) return "";
-  return isoStr.slice(0, 10).replace(/-/g, ".");
-}
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -406,7 +402,7 @@ function GoalItem({
                     }`}
                   >
                     <CalendarDays className="h-3 w-3" />
-                    {formatDate(goal.targetDate)}
+                    {formatYearMonthDay(goal.targetDate)}
                     {overdue && " (기한 초과)"}
                   </span>
                 )}
@@ -586,7 +582,7 @@ function GoalItem({
                       </span>
                       {m.completedAt && (
                         <span className="text-[10px] text-muted-foreground">
-                          {formatDate(m.completedAt)}
+                          {formatYearMonthDay(m.completedAt)}
                         </span>
                       )}
                       <button

@@ -59,6 +59,7 @@ import { toast } from "sonner";
 import { useTeamBuilding } from "@/hooks/use-team-building";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { TeamBuildingCategory, TeamBuildingEvent } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수 / 헬퍼
@@ -94,11 +95,6 @@ const CATEGORY_ICON: Record<TeamBuildingCategory, React.ReactNode> = {
   other: <Sparkles className="h-3 w-3" />,
 };
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
 
 function calcDDay(dateStr: string): string {
   const today = new Date(new Date().toISOString().slice(0, 10));
@@ -578,7 +574,7 @@ function EventCard({
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <CalendarDays className="h-2.5 w-2.5" />
-                {formatDate(event.date)}
+                {formatYearMonthDay(event.date)}
                 {event.time && ` ${event.time}`}
               </span>
               {!event.isCompleted && (

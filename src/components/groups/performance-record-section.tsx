@@ -36,6 +36,7 @@ import {
   type PerformanceRecordInput,
 } from "@/hooks/use-performance-records";
 import type { PerformanceRecord, PerformanceEventType } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 const EVENT_TYPE_LABELS: Record<PerformanceEventType, string> = {
   performance: "공연",
@@ -145,11 +146,6 @@ export function PerformanceRecordSection({
     setDeletingId(null);
   };
 
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-  };
-
   return (
     <div className="rounded border bg-card px-3 py-2.5">
       {/* 헤더 */}
@@ -238,7 +234,7 @@ export function PerformanceRecordSection({
                         {/* 날짜 + 메타 정보 */}
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span className="text-[10px] text-muted-foreground">
-                            {formatDate(record.event_date)}
+                            {formatYearMonthDay(record.event_date)}
                           </span>
                           {record.ranking && (
                             <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">

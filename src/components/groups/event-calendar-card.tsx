@@ -60,6 +60,7 @@ import type {
   GroupEventCategory,
   GroupEventRsvpStatus,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수
@@ -103,11 +104,6 @@ function getDaysInMonth(year: number, month: number): number {
 
 function getFirstDayOfWeek(year: number, month: number): number {
   return new Date(year, month - 1, 1).getDay();
-}
-
-function formatDateKo(ymd: string): string {
-  const [y, m, d] = ymd.split("-");
-  return `${y}년 ${Number(m)}월 ${Number(d)}일`;
 }
 
 // ============================================================
@@ -900,7 +896,7 @@ export function EventCalendarCard({ groupId }: EventCalendarCardProps) {
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-semibold text-foreground">
-                          {formatDateKo(selectedDate)}
+                          {formatYearMonthDay(selectedDate)}
                         </span>
                         <div className="flex items-center gap-1">
                           <Button

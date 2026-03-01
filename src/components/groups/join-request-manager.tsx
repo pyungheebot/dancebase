@@ -17,6 +17,7 @@ import {
 } from "@/lib/swr/invalidate";
 import { createNotification } from "@/lib/notifications";
 import type { JoinRequestWithProfile, JoinRequestStatus } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 type TabStatus = "all" | JoinRequestStatus;
 
@@ -25,11 +26,6 @@ const STATUS_LABELS: Record<JoinRequestStatus, { label: string; className: strin
   approved: { label: "승인", className: "bg-green-100 text-green-700 border-green-300" },
   rejected: { label: "거절", className: "bg-gray-100 text-gray-600 border-gray-300" },
 };
-
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 type Props = {
   groupId: string;
@@ -341,8 +337,8 @@ export function JoinRequestManager({ groupId, groupName }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium truncate">{req.profiles.name}</p>
                   <p className="text-[10px] text-muted-foreground">
-                    신청일: {formatDate(req.requested_at)}
-                    {req.reviewed_at && ` · 처리일: ${formatDate(req.reviewed_at)}`}
+                    신청일: {formatYearMonthDay(req.requested_at)}
+                    {req.reviewed_at && ` · 처리일: ${formatYearMonthDay(req.reviewed_at)}`}
                   </p>
                 </div>
 

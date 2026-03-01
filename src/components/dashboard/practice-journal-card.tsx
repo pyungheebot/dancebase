@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "sonner";
 import { BookOpen, ChevronDown, ChevronUp, Plus, Trash2, Target } from "lucide-react";
 import { usePracticeJournal } from "@/hooks/use-practice-journal";
+import { formatShortDate } from "@/lib/date-utils";
 
 // ============================================================
 // 별점 컴포넌트
@@ -342,15 +343,7 @@ function EntryItem({
   };
   onDelete: (id: string) => void;
 }) {
-  function formatDate(dateStr: string) {
-    const d = new Date(dateStr + "T00:00:00");
-    const mm = d.getMonth() + 1;
-    const dd = d.getDate();
-    const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
-    const dow = dayNames[d.getDay()];
-    return `${mm}/${dd}(${dow})`;
-  }
-
+  
   function formatDuration(minutes: number) {
     if (minutes < 60) return `${minutes}분`;
     const h = Math.floor(minutes / 60);
@@ -363,7 +356,7 @@ function EntryItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-[11px] font-medium tabular-nums text-muted-foreground shrink-0">
-            {formatDate(entry.date)}
+            {formatShortDate(entry.date)}
           </span>
           <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium shrink-0">
             {formatDuration(entry.durationMinutes)}

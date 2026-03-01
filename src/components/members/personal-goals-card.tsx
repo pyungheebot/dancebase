@@ -34,16 +34,11 @@ import {
 import { toast } from "sonner";
 import { usePersonalGoals } from "@/hooks/use-personal-goals";
 import type { PersonalGoalItem, PersonalGoalStatus } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 유틸
 // ============================================
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  return `${year}.${month}.${day}`;
-}
 
 function formatIso(isoStr: string): string {
   return isoStr.slice(0, 10).replace(/-/g, ".");
@@ -332,7 +327,7 @@ function GoalItem({ goal, onUpdateProgress, onAbandon, onDelete }: GoalItemProps
           </p>
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
             <CalendarDays className="h-2.5 w-2.5 shrink-0" />
-            <span>{formatDate(goal.targetDate)}</span>
+            <span>{formatYearMonthDay(goal.targetDate)}</span>
             {isCompleted && goal.completedAt && (
               <span className="text-green-600">
                 · 완료 {formatIso(goal.completedAt)}

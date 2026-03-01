@@ -39,6 +39,7 @@ import type {
   PracticeEvalCriteria,
   PracticeEvalScore,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── Props ────────────────────────────────────────────────────
 
@@ -68,15 +69,6 @@ function emptyForm(): NewSessionForm {
 }
 
 // ─── 헬퍼 ────────────────────────────────────────────────────
-
-function formatDate(dateStr: string): string {
-  try {
-    const d = new Date(dateStr);
-    return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-  } catch {
-    return dateStr;
-  }
-}
 
 function scoreColor(ratio: number): string {
   if (ratio >= 0.9) return "text-emerald-600";
@@ -972,7 +964,7 @@ export function PracticeEvaluationCard({
                         <div className="flex items-center gap-1.5 text-[10px] text-gray-400 min-w-0">
                           <Calendar className="h-3 w-3 shrink-0" />
                           <span className="shrink-0">
-                            {formatDate(session.date)}
+                            {formatYearMonthDay(session.date)}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">

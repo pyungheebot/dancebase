@@ -3,6 +3,7 @@
 import {useState, useEffect, useRef} from "react";
 import { useRunthroughSession } from "@/hooks/use-runthrough-session";
 import type { RunthroughSession } from "@/types";
+import { formatShortDateTime } from "@/lib/date-utils";
 import {
   Dialog,
   DialogContent,
@@ -35,11 +36,6 @@ function formatSeconds(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
 function calcTotalSeconds(startedAt: string, endedAt: string | null): number {
@@ -89,7 +85,7 @@ function SessionDetail({ session, songTitles, onClose }: SessionDetailProps) {
         <div className="flex items-center gap-2">
           <Clock className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">
-            {formatDate(session.startedAt)}
+            {formatShortDateTime(session.startedAt)}
           </span>
           <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
             총 {formatSeconds(totalSec)}
@@ -198,7 +194,7 @@ function PastSessionsTab({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-medium">
-                  {formatDate(session.startedAt)}
+                  {formatShortDateTime(session.startedAt)}
                 </span>
                 <Badge
                   variant="secondary"

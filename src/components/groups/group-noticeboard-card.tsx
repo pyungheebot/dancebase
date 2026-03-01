@@ -43,6 +43,7 @@ import {
   type NoticeboardPostCategory,
   type NoticeboardComment,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // 카테고리 배지 색상
 const CATEGORY_COLOR: Record<NoticeboardPostCategory, string> = {
@@ -75,15 +76,6 @@ const DEFAULT_COMMENT_FORM: CommentForm = {
   authorName: "",
   content: "",
 };
-
-function formatDate(iso: string) {
-  try {
-    const d = new Date(iso);
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-  } catch {
-    return "";
-  }
-}
 
 // 게시글 상세 Dialog
 function PostDetailDialog({
@@ -161,7 +153,7 @@ function PostDetailDialog({
             </span>
           )}
           <span className="text-[10px] text-muted-foreground">
-            {formatDate(post.createdAt)}
+            {formatYearMonthDay(post.createdAt)}
           </span>
         </div>
 
@@ -231,7 +223,7 @@ function PostDetailDialog({
                           </span>
                         )}
                         <span className="text-[10px] text-muted-foreground">
-                          {formatDate(comment.createdAt)}
+                          {formatYearMonthDay(comment.createdAt)}
                         </span>
                       </div>
                       <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
@@ -635,7 +627,7 @@ export function GroupNoticeboardCard({ groupId }: { groupId: string }) {
                           </span>
                         )}
                         <span className="text-[10px] text-muted-foreground shrink-0">
-                          {formatDate(post.createdAt)}
+                          {formatYearMonthDay(post.createdAt)}
                         </span>
                       </button>
 

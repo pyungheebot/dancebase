@@ -36,6 +36,7 @@ import {
 import { toast } from "sonner";
 import { useRehearsalPlanner } from "@/hooks/use-rehearsal-planner";
 import type { RehearsalWeek } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 유틸 함수
@@ -60,11 +61,6 @@ function getDDayClass(dday: number | null): string {
 }
 
 /** YYYY-MM-DD → 한국어 날짜 */
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  return `${year}. ${month}. ${day}.`;
-}
 
 /** 주차별 색상 (6주→진한 색, 1주→밝은 색) */
 function getWeekColor(weekNumber: number): string {
@@ -436,7 +432,7 @@ export function RehearsalPlannerCard({
                     <p className="text-xs font-medium truncate">{plan.title}</p>
                     <div className="flex items-center gap-1 mt-0.5 text-[11px] text-muted-foreground">
                       <Clock className="h-3 w-3 shrink-0" />
-                      <span>공연일: {formatDate(plan.performanceDate)}</span>
+                      <span>공연일: {formatYearMonthDay(plan.performanceDate)}</span>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">

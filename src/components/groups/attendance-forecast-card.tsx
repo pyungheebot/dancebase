@@ -33,14 +33,10 @@ import {
 import { toast } from "sonner";
 import { useAttendanceForecastSessions } from "@/hooks/use-attendance-forecast-sessions";
 import type { AttendanceForecastSession, AttendanceForecastIntent } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 날짜 포맷 헬퍼 ──────────────────────────────────────────
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
-}
 
 function isUpcoming(dateStr: string): boolean {
   const today = new Date();
@@ -493,7 +489,7 @@ function SessionItem({
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
                 <CalendarDays className="h-2.5 w-2.5" />
-                {formatDate(session.date)}
+                {formatYearMonthDay(session.date)}
               </span>
               {session.time && (
                 <span className="flex items-center gap-0.5 text-[10px] text-gray-500">

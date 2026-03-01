@@ -45,6 +45,7 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import type { GroupAnniversaryItem, GroupAnniversaryType } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수
@@ -93,10 +94,6 @@ const REMINDER_OPTIONS = [
 // 헬퍼 함수
 // ============================================================
 
-function formatDate(dateStr: string): string {
-  const [yyyy, mm, dd] = dateStr.split("-");
-  return `${yyyy}년 ${Number(mm)}월 ${Number(dd)}일`;
-}
 
 function getDDayLabel(dDay: number): { text: string; color: string } {
   if (dDay === 0) return { text: "D-Day", color: "bg-pink-500 text-white" };
@@ -220,7 +217,7 @@ function AnniversaryRow({
               <RefreshCw className="h-3 w-3 text-gray-400 shrink-0" aria-label="매년 반복" />
             )}
           </div>
-          <p className="text-[11px] text-gray-500 mt-0.5">{formatDate(item.date)}</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">{formatYearMonthDay(item.date)}</p>
         </div>
 
         {/* D-Day 뱃지 */}

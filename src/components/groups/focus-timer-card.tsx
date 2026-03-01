@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useFocusTimer, phaseLabel } from "@/hooks/use-focus-timer";
 import type { FocusTimerPhase, FocusTimerSession } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 헬퍼
@@ -42,11 +43,6 @@ function formatMinutes(minutes: number): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
-}
-
-function formatDate(ymd: string): string {
-  const d = new Date(ymd + "T00:00:00");
-  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 // ============================================
@@ -204,7 +200,7 @@ function SessionItem({ session }: { session: FocusTimerSession }) {
   return (
     <div className="bg-muted/30 rounded px-2 py-1.5 flex items-center gap-2">
       <span className="text-[10px] text-muted-foreground shrink-0">
-        {formatDate(session.date)}
+        {formatMonthDay(session.date)}
       </span>
       <div className="flex-1 flex items-center gap-1.5 flex-wrap">
         <span className="text-[10px] px-1.5 py-0 rounded bg-red-100 text-red-700 font-medium">

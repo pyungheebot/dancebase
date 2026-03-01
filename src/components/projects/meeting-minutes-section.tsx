@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 /** action_item 알림 발송 이력 localStorage 복합 ID 생성 */
 function buildActionItemNotifId(minuteId: string, itemIdx: number): string {
@@ -66,10 +67,6 @@ interface MeetingMinutesSectionProps {
 }
 
 // 날짜 포맷
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr + "T00:00:00");
-  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
-}
 
 // 멤버 이름 가져오기
 function getMemberName(userId: string, ctx: EntityContext): string {
@@ -511,7 +508,7 @@ function MinuteCard({
           <div className="flex-1 min-w-0 text-left">
             <p className="text-xs font-medium truncate">{minute.title}</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">
-              {formatDate(minute.meeting_date)}
+              {formatYearMonthDay(minute.meeting_date)}
               {minute.attendees.length > 0 && (
                 <span className="ml-2">
                   참석 {minute.attendees.length}명

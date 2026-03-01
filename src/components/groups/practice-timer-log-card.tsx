@@ -41,6 +41,7 @@ import {
   usePracticeTimerLog,
 } from "@/hooks/use-practice-timer-log";
 import type { PracticeTimerCategory, PracticeTimerLogEntry } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수 / 헬퍼
@@ -103,11 +104,6 @@ function formatTotalTime(minutes: number): string {
   if (h === 0) return `${m}분`;
   if (m === 0) return `${h}시간`;
   return `${h}시간 ${m}분`;
-}
-
-function formatDate(ymd: string): string {
-  const d = new Date(ymd + "T00:00:00");
-  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 function toWeekLabel(weekStart: string): string {
@@ -268,7 +264,7 @@ function LogItem({
     <div className="bg-muted/30 rounded px-2 py-1.5 flex items-start gap-2">
       {/* 날짜 */}
       <span className="text-[10px] text-muted-foreground shrink-0 mt-0.5 w-8">
-        {formatDate(entry.date)}
+        {formatMonthDay(entry.date)}
       </span>
 
       {/* 본문 */}

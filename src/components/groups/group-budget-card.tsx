@@ -44,6 +44,7 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { useGroupBudget } from "@/hooks/use-group-budget";
 import type { GroupBudgetTransaction, GroupBudgetCategory } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 헬퍼
@@ -51,11 +52,6 @@ import type { GroupBudgetTransaction, GroupBudgetCategory } from "@/types";
 
 function formatAmount(amount: number): string {
   return amount.toLocaleString("ko-KR") + "원";
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 // ============================================================
@@ -881,7 +877,7 @@ export function GroupBudgetCard({ groupId }: { groupId: string }) {
                           <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
                             <span className="flex items-center gap-0.5">
                               <Calendar className="h-2.5 w-2.5" />
-                              {formatDate(tx.date)}
+                              {formatMonthDay(tx.date)}
                             </span>
                             <Badge
                               variant="secondary"

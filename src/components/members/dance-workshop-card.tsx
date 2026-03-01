@@ -43,6 +43,7 @@ import {
   SUGGESTED_WORKSHOP_GENRES,
 } from "@/hooks/use-dance-workshop";
 import type { DanceWorkshopEntry, DanceWorkshopLevel } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 별점 컴포넌트
@@ -293,10 +294,7 @@ export function DanceWorkshopCard({ memberId }: DanceWorkshopCardProps) {
   // 날짜 포매터
   // ──────────────────────────────────────
 
-  function formatDate(iso: string) {
-    return iso.replace(/-/g, ".");
-  }
-
+  
   function formatCost(cost: number) {
     if (cost === 0) return "무료";
     return cost.toLocaleString("ko-KR") + "원";
@@ -507,7 +505,7 @@ export function DanceWorkshopCard({ memberId }: DanceWorkshopCardProps) {
                       entry={entry}
                       onEdit={() => startEdit(entry)}
                       onDelete={() => handleDelete(entry.id, entry.workshopName)}
-                      formatDate={formatDate}
+                      formatYearMonthDay={formatYearMonthDay}
                       formatCost={formatCost}
                     />
                   )
@@ -561,11 +559,11 @@ interface WorkshopRowProps {
   entry: DanceWorkshopEntry;
   onEdit: () => void;
   onDelete: () => void;
-  formatDate: (iso: string) => string;
+  formatYearMonthDay: (iso: string) => string;
   formatCost: (cost: number) => string;
 }
 
-function WorkshopRow({ entry, onEdit, onDelete, formatDate, formatCost }: WorkshopRowProps) {
+function WorkshopRow({ entry, onEdit, onDelete, formatYearMonthDay, formatCost }: WorkshopRowProps) {
   const colors = WORKSHOP_LEVEL_COLORS[entry.level];
 
   return (
@@ -613,7 +611,7 @@ function WorkshopRow({ entry, onEdit, onDelete, formatDate, formatCost }: Worksh
         </span>
         <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
           <Calendar className="h-3 w-3" />
-          {formatDate(entry.date)}
+          {formatYearMonthDay(entry.date)}
         </span>
         <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
           <DollarSign className="h-3 w-3" />

@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SkillMatrixLevel } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 상수
@@ -96,12 +97,6 @@ function getLevelText(level: SkillMatrixLevel): string {
     : level === 0
     ? "text-gray-400"
     : "text-gray-700";
-}
-
-function formatDate(ymd: string): string {
-  if (!ymd) return "-";
-  const [y, m, d] = ymd.split("-");
-  return `${y}.${m}.${d}`;
 }
 
 // ============================================
@@ -716,7 +711,7 @@ export function SkillMatrixCard({ groupId }: SkillMatrixCardProps) {
                                     />
                                     {lastEval && (
                                       <span className="text-[8px] text-muted-foreground leading-none mt-0.5">
-                                        {formatDate(lastEval)}
+                                        {formatYearMonthDay(lastEval)}
                                       </span>
                                     )}
                                   </div>

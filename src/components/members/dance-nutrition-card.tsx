@@ -41,6 +41,7 @@ import {
 
 import { useDanceNutrition } from "@/hooks/use-dance-nutrition";
 import { DanceNutritionEntry, DanceNutritionMealTime } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ---- 상수 ----
 const MEAL_TIME_LABELS: Record<DanceNutritionMealTime, string> = {
@@ -90,11 +91,6 @@ const EMPTY_FORM: EntryFormData = {
 function toNum(v: string): number {
   const n = parseFloat(v);
   return isNaN(n) || n < 0 ? 0 : n;
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 function progressColor(pct: number): string {
@@ -589,7 +585,7 @@ export function DanceNutritionCard({ memberId }: { memberId: string }) {
                           : "bg-muted/50 hover:bg-muted border-transparent"
                       }`}
                     >
-                      <span className="font-medium">{formatDate(day)}</span>
+                      <span className="font-medium">{formatMonthDay(day)}</span>
                       {isToday && (
                         <span
                           className={`text-[9px] ${isSelected ? "text-emerald-100" : "text-emerald-500"}`}
@@ -659,7 +655,7 @@ export function DanceNutritionCard({ memberId }: { memberId: string }) {
               {/* 당일 식단 기록 목록 */}
               <div>
                 <p className="text-xs font-medium mb-2 text-muted-foreground">
-                  {formatDate(selectedDate)} 식단 기록
+                  {formatMonthDay(selectedDate)} 식단 기록
                   <span className="ml-1 text-[10px]">({todayEntries.length}건)</span>
                 </p>
                 {todayEntries.length === 0 ? (

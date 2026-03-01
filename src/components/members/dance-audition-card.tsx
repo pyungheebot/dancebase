@@ -43,6 +43,7 @@ import {
   SUGGESTED_AUDITION_GENRES,
 } from "@/hooks/use-dance-audition";
 import type { DanceAuditionRecord, DanceAuditionResult } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // Props
@@ -245,10 +246,7 @@ export function DanceAuditionCard({ memberId }: DanceAuditionCardProps) {
   // 날짜 포매터
   // ──────────────────────────────────────
 
-  function formatDate(iso: string) {
-    return iso.replace(/-/g, ".");
-  }
-
+  
   // ──────────────────────────────────────
   // JSX
   // ──────────────────────────────────────
@@ -481,7 +479,7 @@ export function DanceAuditionCard({ memberId }: DanceAuditionCardProps) {
                       onDelete={() =>
                         handleDelete(record.id, record.auditionName)
                       }
-                      formatDate={formatDate}
+                      formatYearMonthDay={formatYearMonthDay}
                     />
                   )
                 )}
@@ -526,14 +524,14 @@ interface AuditionRowProps {
   record: DanceAuditionRecord;
   onEdit: () => void;
   onDelete: () => void;
-  formatDate: (iso: string) => string;
+  formatYearMonthDay: (iso: string) => string;
 }
 
 function AuditionRow({
   record,
   onEdit,
   onDelete,
-  formatDate,
+  formatYearMonthDay,
 }: AuditionRowProps) {
   const colors = AUDITION_RESULT_COLORS[record.result];
 
@@ -587,7 +585,7 @@ function AuditionRow({
         </span>
         <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
           <Calendar className="h-3 w-3" />
-          {formatDate(record.date)}
+          {formatYearMonthDay(record.date)}
         </span>
         {record.prepSong && (
           <span className="flex items-center gap-1 text-[11px] text-muted-foreground">

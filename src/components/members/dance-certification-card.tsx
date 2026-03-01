@@ -44,10 +44,6 @@ import {
 } from "@/components/ui/dialog";
 import {
 
-
-
-
-
 } from "@/components/ui/select";
 import {
   useDanceCertification,
@@ -58,6 +54,7 @@ import {
   DANCE_CERT_KINDS,
 } from "@/hooks/use-dance-certification";
 import type { DanceCertItem, DanceCertKind } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 종류별 아이콘 ────────────────────────────────────────────
 
@@ -91,10 +88,6 @@ const EMPTY_FORM: FormState = {
 };
 
 // ─── 날짜 유틸 ───────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  return iso.slice(0, 10).replace(/-/g, ".");
-}
 
 function daysUntilExpiry(expiresAt: string): number {
   const diffMs = new Date(expiresAt).getTime() - Date.now();
@@ -434,7 +427,7 @@ function CertItemRow({ item, onEdit, onDelete }: CertItemRowProps) {
 
       <div className="flex items-center gap-3 flex-wrap text-[10px] text-muted-foreground">
         <span>{item.issuer}</span>
-        <span>취득: {formatDate(item.acquiredAt)}</span>
+        <span>취득: {formatYearMonthDay(item.acquiredAt)}</span>
         {item.expiresAt ? (
           <span
             className={
@@ -445,7 +438,7 @@ function CertItemRow({ item, onEdit, onDelete }: CertItemRowProps) {
                 : ""
             }
           >
-            만료: {formatDate(item.expiresAt)}
+            만료: {formatYearMonthDay(item.expiresAt)}
           </span>
         ) : (
           <span>만료: 영구</span>

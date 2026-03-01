@@ -32,7 +32,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </Sheet>
 
       {/* 메인 콘텐츠 */}
-      <main className="flex-1 overflow-y-auto">
+      <main id="main-content" className="flex-1 overflow-y-auto">
         {/* 모바일 헤더 */}
         <div className="sticky top-0 z-10 flex items-center h-11 px-3 border-b bg-background md:hidden">
           <Button

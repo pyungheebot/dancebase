@@ -46,6 +46,7 @@ import {
   UNIFIED_EVENT_TYPE_COLORS,
 } from "@/hooks/use-unified-calendar";
 import type { UnifiedCalendarEvent, UnifiedEventType } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수
@@ -66,11 +67,6 @@ const DAYS_OF_WEEK = ["일", "월", "화", "수", "목", "금", "토"];
 // ============================================================
 // 유틸리티
 // ============================================================
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${DAYS_OF_WEEK[d.getDay()]})`;
-}
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -605,7 +601,7 @@ function UpcomingRow({ event }: UpcomingRowProps) {
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium truncate">{event.title}</p>
         <p className="text-[10px] text-muted-foreground">
-          {formatDate(event.date)}
+          {formatMonthDay(event.date)}
           {!event.isAllDay && ` · ${event.startTime}`}
           {event.location && ` · ${event.location}`}
         </p>
@@ -811,7 +807,7 @@ export function UnifiedCalendarCard({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-semibold text-gray-700">
-                    {formatDate(selectedDate)} 일정
+                    {formatMonthDay(selectedDate)} 일정
                   </p>
                   <Button
                     variant="ghost"

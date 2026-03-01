@@ -36,6 +36,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAttendanceBook } from "@/hooks/use-attendance-book";
 import type { BookAttendanceStatus } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ——————————————————————————————
 // 상수 / 유틸
@@ -74,15 +75,6 @@ function nextStatus(current: BookAttendanceStatus): BookAttendanceStatus {
   return STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
 }
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-}
 
 function todayString(): string {
   return new Date().toISOString().slice(0, 10);
@@ -403,7 +395,7 @@ export function AttendanceBookCard({ groupId, memberNames }: AttendanceBookCardP
                             <div className="min-w-0">
                               <p className="text-xs font-semibold truncate">{sheet.title}</p>
                               <p className="text-[10px] text-muted-foreground">
-                                {formatDate(sheet.date)}
+                                {formatYearMonthDay(sheet.date)}
                               </p>
                             </div>
                           </div>

@@ -64,16 +64,11 @@ import type {
   DanceConditionPainArea,
   DanceConditionIntensity,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 유틸
 // ============================================================
-
-function formatDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
-}
-
 
 function formatWeekLabel(weekStart: string): string {
   const [, m, d] = weekStart.split("-");
@@ -468,7 +463,7 @@ function LogItem({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-foreground">
-            {formatDate(log.date)}
+            {formatYearMonthDay(log.date)}
           </span>
           <Badge
             variant="outline"

@@ -50,6 +50,7 @@ import type {
   RehearsalScheduleType as RehearsalType,
   RehearsalScheduleStatus as RehearsalStatus,
 } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수 & 헬퍼
@@ -98,16 +99,6 @@ const ALL_STATUSES_FILTER: (RehearsalStatus | "all")[] = [
   "completed",
   "cancelled",
 ];
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "-";
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("ko-KR", {
-    month: "short",
-    day: "numeric",
-    weekday: "short",
-  });
-}
 
 function daysUntil(dateStr: string): number {
   const today = new Date();
@@ -491,7 +482,7 @@ function RehearsalItem({
         {/* 날짜 + 시간 + D-day */}
         <div className="flex items-center gap-1.5 flex-wrap mb-1">
           <span className="text-[10px] text-gray-500 font-mono">
-            {formatDate(rehearsal.date)}
+            {formatMonthDay(rehearsal.date)}
           </span>
           <span className="text-[10px] text-gray-400">
             {rehearsal.startTime}
@@ -822,7 +813,7 @@ export function RehearsalScheduleCard({
                   {upcomingRehearsals[0].title}
                 </span>
                 <span className="text-[10px] text-indigo-500">
-                  {formatDate(upcomingRehearsals[0].date)}
+                  {formatMonthDay(upcomingRehearsals[0].date)}
                 </span>
                 <span className="text-[10px] text-indigo-400 flex items-center gap-0.5">
                   <Clock className="h-2.5 w-2.5" />

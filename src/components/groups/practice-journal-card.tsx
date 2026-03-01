@@ -44,11 +44,6 @@ import type { GroupPracticeJournalEntry } from "@/types";
 // 날짜/시간 헬퍼
 // ============================================
 
-function formatDate(ymd: string): string {
-  const d = new Date(ymd + "T00:00:00");
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
-
 function dateToYMD(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
@@ -207,7 +202,7 @@ function JournalEntryItem({
       >
         <CalendarIcon className="h-3 w-3 text-muted-foreground shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium truncate">{formatDate(entry.date)}</p>
+          <p className="text-xs font-medium truncate">{formatYearMonthDay(entry.date)}</p>
           <p className="text-[9px] text-muted-foreground line-clamp-1">
             {entry.contentSummary || "내용 없음"}
           </p>
@@ -436,7 +431,7 @@ function JournalFormDialog({
                   )}
                 >
                   <CalendarIcon className="h-3 w-3 mr-1.5 shrink-0" />
-                  {form.date ? formatDate(form.date) : "날짜 선택"}
+                  {form.date ? formatYearMonthDay(form.date) : "날짜 선택"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">

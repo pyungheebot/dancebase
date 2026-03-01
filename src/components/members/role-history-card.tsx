@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useRoleHistory } from "@/hooks/use-role-history";
 import type { MemberRoleType } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // Props
@@ -117,18 +118,6 @@ const ROLE_OPTIONS: MemberRoleType[] = [
 // ============================================
 // 날짜 포맷 헬퍼
 // ============================================
-
-function formatDate(dateStr: string): string {
-  try {
-    return new Date(dateStr).toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
-}
 
 // ============================================
 // 역할 배정 다이얼로그
@@ -615,9 +604,9 @@ export function RoleHistoryCard({ groupId, memberNames }: RoleHistoryCardProps) 
                               </div>
                             </div>
                             <p className="text-[10px] text-muted-foreground">
-                              {formatDate(entry.startDate)}
+                              {formatYearMonthDay(entry.startDate)}
                               {entry.endDate
-                                ? ` ~ ${formatDate(entry.endDate)}`
+                                ? ` ~ ${formatYearMonthDay(entry.endDate)}`
                                 : " ~ 현재"}
                             </p>
                             {entry.assignedBy && (

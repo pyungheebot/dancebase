@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 유형 헬퍼
@@ -96,17 +97,6 @@ function itemTypeBadgeClass(type: ProgramBookItemType): string {
 // ============================================================
 // 날짜 포맷 헬퍼
 // ============================================================
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "-";
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "short",
-  });
-}
 
 // ============================================================
 // 공연 정보 설정 다이얼로그
@@ -991,7 +981,7 @@ export function ProgramBookEditorCard({
                       <div className="flex items-center gap-1">
                         <CalendarDays className="h-3 w-3 text-muted-foreground" />
                         <span className="text-[11px] text-muted-foreground">
-                          {formatDate(data!.showDate)}
+                          {formatYearMonthDay(data!.showDate)}
                         </span>
                       </div>
                     )}

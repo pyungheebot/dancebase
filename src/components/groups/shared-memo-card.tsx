@@ -24,6 +24,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useSharedMemo } from "@/hooks/use-shared-memo";
 import type { SharedMemoColor } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ─── 색상 설정 ────────────────────────────────────────────────
 const COLOR_MAP: Record<
@@ -71,10 +72,6 @@ const COLOR_OPTIONS: SharedMemoColor[] = [
 ];
 
 // ─── 날짜 포맷 헬퍼 ──────────────────────────────────────────
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getMonth() + 1}/${d.getDate()}`;
-}
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -132,7 +129,7 @@ function MemoItem({
       {/* 하단: 작성자 + 날짜 + 버튼 */}
       <div className="flex items-center justify-between">
         <span className="text-[10px] text-gray-400">
-          {memo.author} · {formatDate(memo.createdAt)}
+          {memo.author} · {formatMonthDay(memo.createdAt)}
         </span>
         <div className="flex items-center gap-0.5">
           <Button

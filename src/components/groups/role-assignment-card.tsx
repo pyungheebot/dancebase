@@ -35,12 +35,6 @@ import type { RoleAssignmentItem } from "@/types";
 
 // ─── 날짜 포맷 ────────────────────────────────────────────────
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const [y, m, d] = dateStr.split("-");
-  return `${y}.${m}.${d}`;
-}
-
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -363,8 +357,8 @@ function RoleItemCard({ item, hook }: RoleItemCardProps) {
         </span>
         <span className="flex items-center gap-1 text-[11px] text-gray-400">
           <Calendar className="h-3 w-3" />
-          {formatDate(item.startDate)}
-          {item.endDate && ` ~ ${formatDate(item.endDate)}`}
+          {formatYearMonthDay(item.startDate)}
+          {item.endDate && ` ~ ${formatYearMonthDay(item.endDate)}`}
         </span>
       </div>
 

@@ -47,6 +47,7 @@ import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useDietTracker } from "@/hooks/use-diet-tracker";
 import type { DietMealType, DietTrackerMeal } from "@/types";
+import { formatYearMonthDay, formatMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수 매핑
@@ -96,18 +97,6 @@ function getTodayStr(): string {
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
-}
-
-function formatDateKor(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  const dayIdx = new Date(`${dateStr}T00:00:00`).getDay();
-  return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일 (${days[dayIdx]})`;
-}
-
-function formatDateShort(dateStr: string): string {
-  const [, m, d] = dateStr.split("-");
-  return `${parseInt(m)}/${parseInt(d)}`;
 }
 
 // ============================================================
@@ -424,7 +413,7 @@ function WeeklyCaloriesChart({
                   : "text-muted-foreground"
               )}
             >
-              {formatDateShort(date)}
+              {formatMonthDay(date)}
             </span>
           </div>
         );
@@ -691,7 +680,7 @@ export function DietTrackerCard({
                   </div>
 
                   <p className="text-xs text-muted-foreground -mt-2">
-                    {formatDateKor(selectedDate)}
+                    {formatYearMonthDay(selectedDate)}
                   </p>
 
                   {/* ── 수분 섭취 트래커 ── */}

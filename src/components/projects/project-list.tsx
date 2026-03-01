@@ -26,6 +26,7 @@ import { invalidateProject } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 const STATUS_COLORS: Record<ProjectStatus, string> = {
   "신규": "bg-blue-100 text-blue-700",
@@ -47,13 +48,6 @@ interface ProjectListProps {
 }
 
 // 날짜 문자열을 "YYYY.MM.DD" 형식으로 변환
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}.${m}.${day}`;
-}
 
 // D-day 계산: 종료일 기준
 function getDdayLabel(startDate: string | null, endDate: string | null): { label: string; color: string } | null {
@@ -324,10 +318,10 @@ export function ProjectList({ groupId }: ProjectListProps) {
                       <CalendarRange className="h-3 w-3 text-muted-foreground shrink-0" />
                       <span className="text-[11px] text-muted-foreground">
                         {project.start_date && project.end_date
-                          ? `${formatDate(project.start_date)} ~ ${formatDate(project.end_date)}`
+                          ? `${formatYearMonthDay(project.start_date)} ~ ${formatYearMonthDay(project.end_date)}`
                           : project.start_date
-                          ? `${formatDate(project.start_date)} ~`
-                          : `~ ${formatDate(project.end_date!)}`}
+                          ? `${formatYearMonthDay(project.start_date)} ~`
+                          : `~ ${formatYearMonthDay(project.end_date!)}`}
                       </span>
                     </div>
                   )}

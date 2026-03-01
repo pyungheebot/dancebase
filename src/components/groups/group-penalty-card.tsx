@@ -59,6 +59,7 @@ import type {
   GroupPenaltyRule,
   GroupPenaltyRecord,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ── 상수 ──────────────────────────────────────────────────────────
 
@@ -102,14 +103,6 @@ const VIOLATION_META: Record<
 };
 
 // ── 날짜 포매터 ────────────────────────────────────────────────────
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 // ── 규칙 추가 다이얼로그 ────────────────────────────────────────────
 
@@ -505,7 +498,7 @@ function RecordItem({
             </Badge>
           </div>
           <div className="flex items-center gap-2 text-[10px] text-gray-400">
-            <span>{formatDate(record.date)}</span>
+            <span>{formatYearMonthDay(record.date)}</span>
             {record.memo && (
               <span className="truncate text-gray-500">{record.memo}</span>
             )}
@@ -759,7 +752,7 @@ export function GroupPenaltyCard({ groupId }: { groupId: string }) {
 
             {data.lastResetAt && (
               <p className="text-[10px] text-gray-400">
-                마지막 초기화: {formatDate(data.lastResetAt)}
+                마지막 초기화: {formatYearMonthDay(data.lastResetAt)}
               </p>
             )}
 

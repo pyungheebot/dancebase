@@ -46,6 +46,7 @@ import {
   SUGGESTED_GENRES,
 } from "@/hooks/use-dance-class-review";
 import type { DanceClassReview, DanceClassDifficulty } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 별점 컴포넌트
@@ -293,10 +294,7 @@ export function DanceClassReviewCard({ memberId }: DanceClassReviewCardProps) {
   // 포맷 헬퍼
   // ──────────────────────────────────────
 
-  function formatDate(iso: string) {
-    return iso.replace(/-/g, ".");
-  }
-
+  
   function formatCost(cost: number | null) {
     if (cost === null) return null;
     if (cost === 0) return "무료";
@@ -548,7 +546,7 @@ export function DanceClassReviewCard({ memberId }: DanceClassReviewCardProps) {
                       review={review}
                       onEdit={() => startEdit(review)}
                       onDelete={() => handleDelete(review.id, review.className)}
-                      formatDate={formatDate}
+                      formatYearMonthDay={formatYearMonthDay}
                       formatCost={formatCost}
                     />
                   )
@@ -597,11 +595,11 @@ interface ReviewRowProps {
   review: DanceClassReview;
   onEdit: () => void;
   onDelete: () => void;
-  formatDate: (iso: string) => string;
+  formatYearMonthDay: (iso: string) => string;
   formatCost: (cost: number | null) => string | null;
 }
 
-function ReviewRow({ review, onEdit, onDelete, formatDate, formatCost }: ReviewRowProps) {
+function ReviewRow({ review, onEdit, onDelete, formatYearMonthDay, formatCost }: ReviewRowProps) {
   const colors = DIFFICULTY_COLORS[review.difficulty];
   const costStr = formatCost(review.cost);
 
@@ -663,7 +661,7 @@ function ReviewRow({ review, onEdit, onDelete, formatDate, formatCost }: ReviewR
         )}
         <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
           <Calendar className="h-3 w-3" />
-          {formatDate(review.date)}
+          {formatYearMonthDay(review.date)}
         </span>
         {costStr && (
           <span className="flex items-center gap-1 text-[11px] text-muted-foreground">

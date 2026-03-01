@@ -38,6 +38,7 @@ import {
   type GroupFaq,
   type GroupFaqCategory,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // 카테고리 배지 색상
 const CATEGORY_COLOR: Record<GroupFaqCategory, string> = {
@@ -208,16 +209,6 @@ export function GroupFaqCard({ groupId }: { groupId: string }) {
     setPinningId(id);
     await togglePin(id);
     setPinningId(null);
-  };
-
-  // 날짜 포맷
-  const formatDate = (iso: string) => {
-    try {
-      const d = new Date(iso);
-      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-    } catch {
-      return "";
-    }
   };
 
   const totalCount = faqs.length;
@@ -698,7 +689,7 @@ export function GroupFaqCard({ groupId }: { groupId: string }) {
                               )}
                               {faq.createdAt && (
                                 <span className="text-[10px] text-muted-foreground">
-                                  {formatDate(faq.createdAt)}
+                                  {formatYearMonthDay(faq.createdAt)}
                                 </span>
                               )}
                             </div>

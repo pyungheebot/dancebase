@@ -57,6 +57,7 @@ import type {
   WeatherAlertLevel,
   WeatherAlertEntry,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 날씨 조건별 아이콘 ───────────────────────────────────────
 
@@ -91,11 +92,6 @@ function WeatherIcon({
 }
 
 // ─── 날짜 포맷 ────────────────────────────────────────────────
-
-function formatDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  return `${y}.${m}.${d}`;
-}
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -364,7 +360,7 @@ function TodayWeatherCard({
               {WEATHER_CONDITION_LABELS[entry.condition]}
             </p>
             <p className="text-[10px] text-muted-foreground">
-              {formatDate(entry.date)} 오늘
+              {formatYearMonthDay(entry.date)} 오늘
             </p>
           </div>
         </div>
@@ -451,7 +447,7 @@ function HistoryRow({
       <div className="flex items-center gap-2 min-w-0">
         <WeatherIcon condition={entry.condition} size="sm" />
         <span className="text-xs text-muted-foreground w-20 shrink-0">
-          {formatDate(entry.date)}
+          {formatYearMonthDay(entry.date)}
         </span>
         <span className="text-xs truncate">{WEATHER_CONDITION_LABELS[entry.condition]}</span>
       </div>

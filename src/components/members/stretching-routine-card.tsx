@@ -31,6 +31,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useStretchingRoutine } from "@/hooks/use-stretching-routine";
 import type { StretchingBodyPart, StretchingRoutine } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ─── 상수 ────────────────────────────────────────────────────
 
@@ -78,11 +79,6 @@ const FLEXIBILITY_LABELS: Record<number, string> = {
 // ─── 날짜 유틸 ───────────────────────────────────────────────
 
 const today = new Date().toISOString().split("T")[0];
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return `${d.getMonth() + 1}/${d.getDate()}`;
-}
 
 function getDayLabel(dateStr: string): string {
   const days = ["일", "월", "화", "수", "목", "금", "토"];
@@ -836,7 +832,7 @@ export function StretchingRoutineCard({ memberId }: { memberId: string }) {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-xs font-medium">
-                              {formatDate(log.date)}({getDayLabel(log.date)})
+                              {formatMonthDay(log.date)}({getDayLabel(log.date)})
                             </span>
                             <span className="text-[10px] text-muted-foreground truncate">
                               {routine?.routineName ?? "삭제된 루틴"}

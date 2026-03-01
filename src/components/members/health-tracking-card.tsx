@@ -40,6 +40,7 @@ import {
 import { toast } from "sonner";
 import { useHealthTracking } from "@/hooks/use-health-tracking";
 import type { BodyPart, InjurySeverity, InjuryStatus, InjuryRecord } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 레이블 상수
@@ -104,12 +105,6 @@ const STATUS_ICON: Record<InjuryStatus, React.ReactNode> = {
 // ============================================
 // 날짜 포맷 유틸
 // ============================================
-
-function formatDate(iso: string): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 function todayString(): string {
   const d = new Date();
@@ -366,8 +361,8 @@ function InjuryItem({ record, onStatusChange, onEditNote, onDelete }: InjuryItem
       {/* 날짜 및 상태 변경 */}
       <div className="flex items-center justify-between gap-2">
         <div className="text-[10px] text-gray-400 space-x-2">
-          <span>발생: {formatDate(record.occurredAt)}</span>
-          {record.healedAt && <span>완치: {formatDate(record.healedAt)}</span>}
+          <span>발생: {formatYearMonthDay(record.occurredAt)}</span>
+          {record.healedAt && <span>완치: {formatYearMonthDay(record.healedAt)}</span>}
         </div>
         {record.status !== "healed" && (
           <Select

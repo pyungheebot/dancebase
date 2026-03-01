@@ -46,17 +46,11 @@ import type {
   ContributionPointEntry,
   ContributionPointTransaction,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 날짜 헬퍼
 // ============================================================
-
-function formatDate(ymd: string): string {
-  const d = new Date(ymd + "T00:00:00");
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-}
 
 function dateToYMD(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
@@ -252,7 +246,7 @@ function TransactionItem({
           {tx.reason}
         </p>
         <p className="text-[10px] text-muted-foreground">
-          {formatDate(tx.date)} · {tx.grantedBy}
+          {formatYearMonthDay(tx.date)} · {tx.grantedBy}
         </p>
         {tx.note && (
           <p className="text-[10px] text-muted-foreground/80 line-clamp-1">

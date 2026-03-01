@@ -44,6 +44,7 @@ import {
 import { toast } from "sonner";
 import { useAttendanceReward } from "@/hooks/use-attendance-reward";
 import type { AttendanceRewardTier } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수 & 유틸리티
@@ -82,14 +83,6 @@ const TIER_TEXT: Record<AttendanceRewardTier, string> = {
   platinum: "#4A4A4A",
   diamond: "#0066AA",
 };
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("ko-KR", {
-    year: "2-digit",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 // ============================================================
 // 서브 컴포넌트: 티어 배지
@@ -638,7 +631,7 @@ export function AttendanceRewardCard({
                               {record.memberName}
                             </p>
                             <p className="text-[10px] text-muted-foreground">
-                              출석률 {record.attendanceRate}% · {formatDate(record.earnedAt)}
+                              출석률 {record.attendanceRate}% · {formatYearMonthDay(record.earnedAt)}
                             </p>
                           </div>
                           <span className="text-xs font-semibold text-amber-600 shrink-0">
@@ -720,7 +713,7 @@ export function AttendanceRewardCard({
                             {rule.points}pt
                           </span>
                           <span className="text-[10px] text-muted-foreground ml-auto">
-                            {formatDate(rule.createdAt)}
+                            {formatYearMonthDay(rule.createdAt)}
                           </span>
                         </div>
                       </div>

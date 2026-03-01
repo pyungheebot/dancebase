@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { useGroupDuesTracker } from "@/hooks/use-group-dues-tracker";
 import type { DuesTrackPeriod, DuesTrackPaymentStatus } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ─── 상태 메타 ────────────────────────────────────────────────
 
@@ -75,11 +76,6 @@ function formatAmount(amount: number): string {
   if (amount >= 10000)
     return `${(amount / 10000).toFixed(amount % 10000 === 0 ? 0 : 1)}만원`;
   return `${amount.toLocaleString()}원`;
-}
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 function formatYearMonth(year: number, month: number): string {
@@ -387,7 +383,7 @@ function MemberRow({
       {/* 납부일 */}
       {member.status === "paid" && member.paidAt && (
         <span className="text-[10px] text-gray-400">
-          {formatDate(member.paidAt)}
+          {formatMonthDay(member.paidAt)}
         </span>
       )}
 

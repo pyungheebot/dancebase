@@ -22,6 +22,7 @@ import { StickyNote, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useMemberNotes } from "@/hooks/use-member-notes";
 import type { MemberNoteCategory, MemberNoteV2 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 카테고리 메타
@@ -59,11 +60,6 @@ const CATEGORY_OPTIONS: MemberNoteCategory[] = [
 // ============================================
 // 날짜 포맷
 // ============================================
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 // ============================================
 // 메모 항목 컴포넌트
@@ -183,7 +179,7 @@ function NoteItem({ note, onUpdate, onDelete }: NoteItemProps) {
         {note.content}
       </p>
       <p className="text-[10px] text-muted-foreground">
-        {formatDate(note.updatedAt)}
+        {formatYearMonthDay(note.updatedAt)}
       </p>
     </div>
   );

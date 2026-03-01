@@ -65,6 +65,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:rounded-md focus:border focus:shadow-lg"
+        >
+          본문으로 건너뛰기
+        </a>
         <Script id="sw-register" strategy="afterInteractive">
           {`if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js");}`}
         </Script>

@@ -44,17 +44,11 @@ import {
   calcDaysLeft,
 } from "@/hooks/use-time-capsule";
 import type { TimeCapsule, TimeCapsuleEntry } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 날짜 포맷 헬퍼
 // ============================================
-
-function formatDate(isoOrDate: string): string {
-  const d = new Date(
-    isoOrDate.length === 10 ? isoOrDate + "T00:00:00" : isoOrDate
-  );
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 function dateToYMD(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -623,7 +617,7 @@ function CapsuleItem({
             {capsule.title}
           </span>
           <span className="text-[10px] text-green-600 shrink-0">
-            {formatDate(capsule.openDate)} 개봉
+            {formatYearMonthDay(capsule.openDate)} 개봉
           </span>
           <button
             type="button"
@@ -646,7 +640,7 @@ function CapsuleItem({
                     {msg.authorName}
                   </span>
                   <span className="text-[10px] text-green-500">
-                    {formatDate(msg.createdAt)}
+                    {formatYearMonthDay(msg.createdAt)}
                   </span>
                 </div>
                 <p className="text-xs text-green-900 leading-relaxed whitespace-pre-wrap">
@@ -683,7 +677,7 @@ function CapsuleItem({
             {capsule.title}
           </span>
           <span className="text-[10px] text-amber-600 shrink-0">
-            {formatDate(capsule.openDate)} 개봉 가능
+            {formatYearMonthDay(capsule.openDate)} 개봉 가능
           </span>
           <button
             type="button"
@@ -721,7 +715,7 @@ function CapsuleItem({
           </span>
           <DDayBadge openDate={capsule.openDate} />
           <span className="text-[10px] text-muted-foreground shrink-0">
-            {formatDate(capsule.openDate)} 개봉
+            {formatYearMonthDay(capsule.openDate)} 개봉
           </span>
           <button
             type="button"
@@ -762,7 +756,7 @@ function CapsuleItem({
         </button>
         <DDayBadge openDate={capsule.openDate} />
         <span className="text-[10px] text-muted-foreground shrink-0">
-          {formatDate(capsule.openDate)}
+          {formatYearMonthDay(capsule.openDate)}
         </span>
         <button
           type="button"
@@ -852,7 +846,7 @@ function EntryItem({
             {entry.title}
           </span>
           <span className="text-[10px] text-green-600 shrink-0">
-            {formatDate(entry.openDate)} 개봉
+            {formatYearMonthDay(entry.openDate)} 개봉
           </span>
           <button
             type="button"
@@ -870,7 +864,7 @@ function EntryItem({
         {/* 스냅샷 정보 */}
         <div className="space-y-1.5">
           <p className="text-[10px] text-green-600">
-            작성일: {formatDate(entry.writtenAt)}
+            작성일: {formatYearMonthDay(entry.writtenAt)}
           </p>
           {entry.currentGoal && (
             <div className="bg-white/60 rounded px-2 py-1.5 space-y-0.5">
@@ -942,7 +936,7 @@ function EntryItem({
                     {msg.authorName}
                   </span>
                   <span className="text-[10px] text-green-500">
-                    {formatDate(msg.createdAt)}
+                    {formatYearMonthDay(msg.createdAt)}
                   </span>
                 </div>
                 <p className="text-xs text-green-900 leading-relaxed whitespace-pre-wrap">
@@ -1008,7 +1002,7 @@ function EntryItem({
           </span>
           <DDayBadge openDate={entry.openDate} />
           <span className="text-[10px] text-muted-foreground shrink-0">
-            {formatDate(entry.openDate)}
+            {formatYearMonthDay(entry.openDate)}
           </span>
           <button
             type="button"
@@ -1054,7 +1048,7 @@ function EntryItem({
         </button>
         <DDayBadge openDate={entry.openDate} />
         <span className="text-[10px] text-muted-foreground shrink-0">
-          {formatDate(entry.openDate)}
+          {formatYearMonthDay(entry.openDate)}
         </span>
         <button
           type="button"
@@ -1301,7 +1295,7 @@ export function TimeCapsuleCard({ groupId }: TimeCapsuleCardProps) {
             <TabsContent value="basic" className="mt-2 space-y-2">
               {nextOpenDate && (
                 <p className="text-[10px] text-muted-foreground px-0.5">
-                  다음 개봉일: {formatDate(nextOpenDate)} (D-
+                  다음 개봉일: {formatYearMonthDay(nextOpenDate)} (D-
                   {Math.max(0, calcDaysLeft(nextOpenDate))})
                 </p>
               )}
@@ -1356,7 +1350,7 @@ export function TimeCapsuleCard({ groupId }: TimeCapsuleCardProps) {
               </p>
               {entryNextOpenDate && (
                 <p className="text-[10px] text-muted-foreground px-0.5">
-                  다음 개봉일: {formatDate(entryNextOpenDate)} (D-
+                  다음 개봉일: {formatYearMonthDay(entryNextOpenDate)} (D-
                   {Math.max(0, calcDaysLeft(entryNextOpenDate))})
                 </p>
               )}

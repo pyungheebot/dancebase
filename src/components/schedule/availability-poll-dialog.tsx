@@ -21,6 +21,7 @@ import {
   type SlotCount,
 } from "@/hooks/use-availability-poll";
 import { useAuth } from "@/hooks/use-auth";
+import { formatShortDate } from "@/lib/date-utils";
 
 // ============================================================
 // 상수
@@ -202,23 +203,6 @@ export function AvailabilityPollDialog({
   }
 
   // ============================================================
-  // 날짜 포맷 헬퍼
-  // ============================================================
-
-  function formatDate(dateStr: string): string {
-    try {
-      const d = new Date(dateStr + "T00:00:00");
-      const days = ["일", "월", "화", "수", "목", "금", "토"];
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-      const dow = days[d.getDay()];
-      return `${mm}/${dd}(${dow})`;
-    } catch {
-      return dateStr;
-    }
-  }
-
-  // ============================================================
   // 렌더링 — 생성 모드
   // ============================================================
 
@@ -330,7 +314,7 @@ export function AvailabilityPollDialog({
               {poll.dates.map((date) => (
                 <tr key={date} className="border-t border-gray-100">
                   <td className="py-2 pr-2 font-medium text-[11px]">
-                    {formatDate(date)}
+                    {formatShortDate(date)}
                   </td>
                   {poll.timeSlots.map((slot) => {
                     const key = `${date}_${slot}`;
@@ -375,7 +359,7 @@ export function AvailabilityPollDialog({
             <span className="text-xs text-green-700 font-medium">
               최적 시간:{" "}
               <span className="font-semibold">
-                {formatDate(optimalSlot.date)}{" "}
+                {formatShortDate(optimalSlot.date)}{" "}
                 {TIME_SLOT_LABELS[optimalSlot.timeSlot] ?? optimalSlot.timeSlot}
               </span>{" "}
               ({optimalSlot.count}명 가능)
@@ -405,7 +389,7 @@ export function AvailabilityPollDialog({
               {poll.dates.map((date) => (
                 <tr key={date} className="border-t border-gray-100">
                   <td className="py-2 pr-2 font-medium text-[11px]">
-                    {formatDate(date)}
+                    {formatShortDate(date)}
                   </td>
                   {poll.timeSlots.map((slot) => {
                     const key = `${date}_${slot}`;
@@ -425,7 +409,7 @@ export function AvailabilityPollDialog({
                             getHeatmapClass(count, maxCount),
                             isOptimal ? "ring-2 ring-green-600 ring-offset-1" : "",
                           ].join(" ")}
-                          title={`${formatDate(date)} ${slot}: ${count}명`}
+                          title={`${formatShortDate(date)} ${slot}: ${count}명`}
                         >
                           {count}명
                         </div>

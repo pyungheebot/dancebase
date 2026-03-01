@@ -45,6 +45,7 @@ import {
   SELECTABLE_EMOJIS,
 } from "@/hooks/use-thank-you-letters";
 import type { ThankYouCategory } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 const ALL_CATEGORIES: ThankYouCategory[] = [
   "teamwork",
@@ -159,15 +160,7 @@ export function ThankYouLettersCard({
     toast.success("편지를 삭제했습니다.");
   }
 
-  function formatDate(isoStr: string) {
-    return new Date(isoStr).toLocaleDateString("ko-KR", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
+  
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <Card className="w-full">
@@ -308,7 +301,7 @@ export function ThankYouLettersCard({
                           currentUserId === letter.toId
                         }
                         onDelete={() => handleDelete(letter.id)}
-                        formatDate={formatDate}
+                        formatMonthDay={formatMonthDay}
                       />
                     ))}
                   </ul>
@@ -337,7 +330,7 @@ export function ThankYouLettersCard({
                         showPrivateBadge
                         canDelete={currentUserId === letter.toId}
                         onDelete={() => handleDelete(letter.id)}
-                        formatDate={formatDate}
+                        formatMonthDay={formatMonthDay}
                       />
                     ))}
                   </ul>
@@ -496,7 +489,7 @@ interface LetterCardProps {
   showPrivateBadge?: boolean;
   canDelete?: boolean;
   onDelete?: () => void;
-  formatDate: (isoStr: string) => string;
+  formatMonthDay: (isoStr: string) => string;
 }
 
 function LetterCard({
@@ -504,7 +497,7 @@ function LetterCard({
   showPrivateBadge,
   canDelete,
   onDelete,
-  formatDate,
+  formatMonthDay,
 }: LetterCardProps) {
   return (
     <li className="rounded-xl border border-pink-100 bg-gradient-to-br from-rose-50 via-pink-50 to-white px-3 py-2.5 group shadow-sm">
@@ -554,7 +547,7 @@ function LetterCard({
 
       {/* 날짜 */}
       <p className="text-[9px] text-muted-foreground mt-1.5 text-right">
-        {formatDate(letter.createdAt)}
+        {formatMonthDay(letter.createdAt)}
       </p>
     </li>
   );

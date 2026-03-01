@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { usePracticeNotes } from "@/hooks/use-practice-notes";
 import type { PracticeNoteTag, PracticeNoteEntry } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ─── 태그 메타 ───────────────────────────────────────────────
 
@@ -85,15 +86,6 @@ const TAG_META: Record<
 const ALL_TAGS = Object.keys(TAG_META) as PracticeNoteTag[];
 
 // ─── 날짜 포맷 헬퍼 ──────────────────────────────────────────
-
-function formatDateShort(iso: string): string {
-  const d = new Date(iso);
-  const month = d.getMonth() + 1;
-  const day = d.getDate();
-  const hour = String(d.getHours()).padStart(2, "0");
-  const minute = String(d.getMinutes()).padStart(2, "0");
-  return `${month}/${day} ${hour}:${minute}`;
-}
 
 // ─── 노트 추가 다이얼로그 ─────────────────────────────────────
 
@@ -315,7 +307,7 @@ function CommentThread({
                     {comment.author}
                   </span>
                   <span className="text-[10px] text-gray-400">
-                    {formatDateShort(comment.createdAt)}
+                    {formatMonthDay(comment.createdAt)}
                   </span>
                 </div>
                 <p className="text-[11px] text-gray-600 leading-relaxed">
@@ -493,7 +485,7 @@ function NoteItem({
       </Collapsible>
 
       {/* 등록 시각 */}
-      <p className="text-[10px] text-gray-400">{formatDateShort(note.createdAt)}</p>
+      <p className="text-[10px] text-gray-400">{formatMonthDay(note.createdAt)}</p>
     </div>
   );
 }

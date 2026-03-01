@@ -105,7 +105,7 @@ function EntryItem({
               {entry.name}
             </span>
             <span className="text-[11px] text-gray-500">
-              {formatMonthDay(entry.birthday)}
+              {(entry.birthday)}
             </span>
           </div>
         </div>
@@ -553,7 +553,7 @@ export function BirthdayCalendarCard({ groupId }: BirthdayCalendarCardProps) {
                               {entry.name}
                             </span>
                             <span className="text-[11px] text-gray-400">
-                              {formatMonthDay(entry.birthday)}
+                              {(entry.birthday)}
                             </span>
                           </div>
                           <span

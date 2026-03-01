@@ -30,21 +30,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 날짜 포맷 유틸
 // ============================================
-
-function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 // ============================================
 // 단일 쌍 카드
@@ -239,7 +229,7 @@ function HistoryTab({
         <div className="rounded-lg border bg-muted/30 px-3 py-2">
           <p className="text-xs font-semibold">{selectedRecord.label}</p>
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            {formatDateTime(selectedRecord.matchedAt)}
+            {formatYearMonthDay(selectedRecord.matchedAt)}
           </p>
         </div>
         <div className="flex items-center justify-between">
@@ -286,7 +276,7 @@ function HistoryTab({
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium truncate">{record.label}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                {formatDateTime(record.matchedAt)}
+                {formatYearMonthDay(record.matchedAt)}
               </p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">

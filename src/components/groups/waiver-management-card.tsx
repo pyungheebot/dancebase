@@ -37,6 +37,7 @@ import {
 
 import { useWaiverManagement } from "@/hooks/use-waiver-management";
 import type { WaiverType, WaiverTemplate, WaiverSignature } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 상수 ────────────────────────────────────────────────────────
 const WAIVER_TYPE_META: Record<
@@ -79,10 +80,6 @@ const WAIVER_TYPE_OPTIONS: WaiverType[] = [
 ];
 
 // ─── 날짜 포맷 헬퍼 ──────────────────────────────────────────────
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
-}
 
 // ─── 탭 타입 ─────────────────────────────────────────────────────
 type Tab = "list" | "status" | "new";
@@ -167,7 +164,7 @@ function WaiverListTab({
                     </span>
                   )}
                   <span className="text-[10px] text-gray-400">
-                    등록 {formatDate(tpl.createdAt)}
+                    등록 {formatYearMonthDay(tpl.createdAt)}
                   </span>
                 </div>
               </div>
@@ -274,7 +271,7 @@ function SignatureStatusTab({
                           {sig.memberName}
                         </span>
                         <span className="text-[10px] text-gray-400">
-                          {formatDate(sig.signedAt)}
+                          {formatYearMonthDay(sig.signedAt)}
                         </span>
                         {expired && (
                           <Badge className="bg-red-100 text-[10px] px-1 py-0 text-red-600 hover:bg-red-100">

@@ -3,8 +3,6 @@
 import { useState } from "react";
 import {
   ClipboardCheck,
-  ChevronDown,
-  ChevronUp,
   Plus,
   Trash2,
   Music,
@@ -23,17 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { CollapsibleCard } from "@/components/shared/collapsible-card";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useReturnOnboarding } from "@/hooks/use-return-onboarding";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { OnboardingCheckItemCategory } from "@/types";
 
 // ─── 카테고리 메타 ────────────────────────────────────────────────
@@ -102,11 +91,6 @@ const CATEGORY_OPTIONS: OnboardingCheckItemCategory[] = [
 ];
 
 // ─── 날짜 포맷 헬퍼 ──────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 // ─── Props ────────────────────────────────────────────────────────
 
@@ -186,38 +170,23 @@ export function ReturnOnboardingCard({
 
   return (
     <>
-      <Card className="w-full">
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer select-none pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ClipboardCheck className="h-4 w-4 text-teal-500" />
-                  <CardTitle className="text-sm font-semibold">
-                    복귀 온보딩
-                  </CardTitle>
-                  <Badge className="text-[10px] px-1.5 py-0 bg-teal-100 text-teal-700">
-                    진행중 {activeSessions}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-3">
-                  {!loading && (
-                    <span className="text-[11px] text-muted-foreground">
-                      완료율 {averageCompletionRate}%
-                    </span>
-                  )}
-                  {isOpen ? (
-                    <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-
-          <CollapsibleContent>
-            <CardContent className="pt-0 space-y-3">
+      <CollapsibleCard
+        title="복귀 온보딩"
+        icon={<ClipboardCheck className="h-4 w-4 text-teal-500" />}
+        headerExtra={
+          <div className="flex items-center gap-3">
+            <Badge className="text-[10px] px-1.5 py-0 bg-teal-100 text-teal-700">
+              진행중 {activeSessions}
+            </Badge>
+            {!loading && (
+              <span className="text-[11px] text-muted-foreground">
+                완료율 {averageCompletionRate}%
+              </span>
+            )}
+          </div>
+        }
+      >
+            <div className="space-y-3">
               {/* 탭 */}
               <div className="flex gap-1 border-b pb-2">
                 <button
@@ -306,7 +275,7 @@ export function ReturnOnboardingCard({
                                   {session.memberName}
                                 </span>
                                 <span className="text-[10px] text-muted-foreground">
-                                  {formatDate(session.startDate)} 복귀
+                                  {formatYearMonthDay(session.startDate)} 복귀
                                 </span>
                               </div>
                               <div className="flex items-center gap-1">
@@ -514,10 +483,8 @@ export function ReturnOnboardingCard({
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </CollapsibleContent>
-        </Collapsible>
-      </Card>
+            </div>
+      </CollapsibleCard>
 
       {/* ── 새 세션 시작 다이얼로그 ── */}
       <Dialog open={sessionDialogOpen} onOpenChange={setSessionDialogOpen}>

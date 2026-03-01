@@ -44,18 +44,11 @@ import type {
   CostumeRentalItem,
   CostumeRentalRecord,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ================================================================
 // 유틸 함수
 // ================================================================
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  return `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(2, "0")}. ${String(
-    d.getDate()
-  ).padStart(2, "0")}.`;
-}
 
 function isOverdue(dueDate?: string): boolean {
   if (!dueDate) return false;
@@ -463,7 +456,7 @@ function ItemRow({ item, onRent, onReturn, onDelete }: ItemRowProps) {
                 }`}
               >
                 <Calendar className="h-2.5 w-2.5" />
-                {formatDate(item.dueDate)}
+                {formatYearMonthDay(item.dueDate)}
                 {overdue && (
                   <AlertTriangle className="h-2.5 w-2.5 text-red-500" />
                 )}
@@ -563,9 +556,9 @@ function RecordList({ records, items }: RecordListProps) {
                     — {record.renterName}
                   </span>
                   <div className="text-muted-foreground mt-0.5">
-                    {formatDate(record.rentedAt)}
+                    {formatYearMonthDay(record.rentedAt)}
                     {record.returnedAt && (
-                      <> → {formatDate(record.returnedAt)}</>
+                      <> → {formatYearMonthDay(record.returnedAt)}</>
                     )}
                     {!record.returnedAt && (
                       <span className="text-blue-600"> (대여중)</span>

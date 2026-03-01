@@ -30,6 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useSleepTracker } from "@/hooks/use-sleep-tracker";
 import type { SleepTrackerQuality } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 const QUALITY_LABELS: Record<SleepTrackerQuality, string> = {
   excellent: "최상",
@@ -54,11 +55,6 @@ const QUALITY_BAR_COLORS: Record<SleepTrackerQuality, string> = {
   poor: "bg-orange-400",
   terrible: "bg-red-400",
 };
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return `${d.getMonth() + 1}/${d.getDate()}`;
-}
 
 function getDayLabel(dateStr: string): string {
   const days = ["일", "월", "화", "수", "목", "금", "토"];
@@ -224,7 +220,7 @@ export function SleepTrackerCard({ memberId }: { memberId: string }) {
               <span className="text-xs text-yellow-700">
                 최적 수면일:{" "}
                 <strong>
-                  {formatDate(stats.bestSleepDay)}(
+                  {formatMonthDay(stats.bestSleepDay)}(
                   {getDayLabel(stats.bestSleepDay)})
                 </strong>
               </span>
@@ -326,7 +322,7 @@ export function SleepTrackerCard({ memberId }: { memberId: string }) {
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium w-10">
-                        {formatDate(entry.date)}({getDayLabel(entry.date)})
+                        {formatMonthDay(entry.date)}({getDayLabel(entry.date)})
                       </span>
                       <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                         <Moon className="h-2.5 w-2.5" />

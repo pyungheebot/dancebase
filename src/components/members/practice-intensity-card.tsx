@@ -27,6 +27,7 @@ import {
   getIntensityLabel,
 } from "@/hooks/use-practice-intensity";
 import { IntensityLevel, PracticeIntensityEntry, WeeklyIntensitySummary } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ── 상수 ─────────────────────────────────────────────────────────────────────
 
@@ -35,11 +36,6 @@ const BODY_PART_OPTIONS = ["전신", "다리", "팔", "코어", "어깨", "허�
 const INTENSITY_LEVELS: IntensityLevel[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 // ── 날짜 포맷 유틸 ────────────────────────────────────────────────────────────
-
-function formatDate(dateStr: string): string {
-  const [, month, day] = dateStr.split("-");
-  return `${parseInt(month)}/${parseInt(day)}`;
-}
 
 function formatWeekLabel(weekStart: string): string {
   const [, month, day] = weekStart.split("-");
@@ -132,7 +128,7 @@ function RecentEntryList({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-medium">
-                {formatDate(entry.date)}
+                {formatMonthDay(entry.date)}
               </span>
               <span
                 className={cn(

@@ -41,6 +41,7 @@ import type {
   PracticeHighlightCategory,
   PracticeHighlightEntry,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 상수
@@ -94,13 +95,6 @@ const CATEGORY_ORDER: PracticeHighlightCategory[] = [
 // 날짜 헬퍼
 // ============================================
 
-function formatDate(ymd: string): string {
-  const d = new Date(ymd + "T00:00:00");
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-}
-
 function dateToYMD(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
     2,
@@ -140,7 +134,7 @@ function HighlightItem({
             {entry.title}
           </p>
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            {entry.memberName} · {formatDate(entry.date)}
+            {entry.memberName} · {formatYearMonthDay(entry.date)}
           </p>
         </div>
         <span

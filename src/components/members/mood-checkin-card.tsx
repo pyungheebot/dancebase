@@ -14,6 +14,7 @@ import { useMoodCheckin } from "@/hooks/use-mood-checkin";
 import { MoodType, MoodEntry } from "@/types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ── 이모지 매핑 ──────────────────────────────
 const MOOD_EMOJI: Record<MoodType, string> = {
@@ -43,10 +44,6 @@ const MOOD_COLOR: Record<MoodType, string> = {
 const MOOD_ORDER: MoodType[] = ["great", "good", "okay", "bad", "terrible"];
 
 // ── 날짜 포맷 ──────────────────────────────
-function formatDate(dateStr: string): string {
-  const [, month, day] = dateStr.split("-");
-  return `${parseInt(month)}/${parseInt(day)}`;
-}
 
 function getWeekdayShort(dateStr: string): string {
   const days = ["일", "월", "화", "수", "목", "금", "토"];
@@ -104,7 +101,7 @@ function RecentMoodList({ entries }: { entries: MoodEntry[] }) {
         >
           <span className="text-lg leading-none">{MOOD_EMOJI[entry.mood]}</span>
           <span className="text-[10px] text-muted-foreground">
-            {formatDate(entry.date)}
+            {formatMonthDay(entry.date)}
           </span>
           <span className="text-[9px] text-muted-foreground/70">
             ({getWeekdayShort(entry.date)})

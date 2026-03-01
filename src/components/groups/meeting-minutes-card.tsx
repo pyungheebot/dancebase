@@ -47,6 +47,7 @@ import type {
   MeetingAgendaItem,
   MeetingActionItem,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 상수
@@ -94,12 +95,6 @@ const TYPE_OPTIONS: { value: MeetingMinutesType; label: string }[] = [
 // ============================================
 // 날짜 헬퍼
 // ============================================
-
-function formatDate(ymd: string): string {
-  if (!ymd) return "";
-  const d = new Date(ymd + "T00:00:00");
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 function todayYMD(): string {
   const d = new Date();
@@ -792,7 +787,7 @@ function MinutesDetail({ entry }: { entry: MeetingMinutesEntry }) {
                       <span className="text-[10px] flex-1">{ai.task}</span>
                       {ai.deadline && (
                         <span className="text-[9px] text-muted-foreground shrink-0">
-                          ~{formatDate(ai.deadline)}
+                          ~{formatYearMonthDay(ai.deadline)}
                         </span>
                       )}
                     </div>
@@ -823,7 +818,7 @@ function MinutesDetail({ entry }: { entry: MeetingMinutesEntry }) {
           <span>
             다음 회의:{" "}
             <span className="font-semibold">
-              {formatDate(entry.nextMeetingDate)}
+              {formatYearMonthDay(entry.nextMeetingDate)}
             </span>
           </span>
         </div>
@@ -865,7 +860,7 @@ function MinutesItem({
             )}
 
             <span className="text-[10px] text-muted-foreground shrink-0 font-mono w-[72px]">
-              {formatDate(entry.date)}
+              {formatYearMonthDay(entry.date)}
             </span>
 
             <span className="text-xs font-medium flex-1 truncate">
@@ -1011,7 +1006,7 @@ export function MeetingMinutesCard({
                   {recentMeeting.title}
                 </span>
                 <span className="text-[9px] text-muted-foreground shrink-0">
-                  {formatDate(recentMeeting.date)}
+                  {formatYearMonthDay(recentMeeting.date)}
                 </span>
               </div>
             )}

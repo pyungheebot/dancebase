@@ -57,15 +57,11 @@ import type {
   DanceStyleTrait,
   DanceStyleTraitScores,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 날짜 유틸
 // ============================================================
-
-function formatDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
-}
 
 // ============================================================
 // CSS 레이더 차트 (div 기반 육각형)
@@ -662,7 +658,7 @@ function SnapshotRow({
       >
         <Activity className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
         <span className="text-xs font-medium flex-1">
-          {formatDate(snapshot.date)}
+          {formatYearMonthDay(snapshot.date)}
         </span>
         <Badge
           className="text-[10px] px-1.5 py-0 bg-indigo-100 text-indigo-700 border-indigo-200"

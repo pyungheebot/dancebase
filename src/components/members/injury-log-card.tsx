@@ -48,6 +48,7 @@ import type {
   DanceInjurySeverity,
   DanceInjuryRehabStatus,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 레이블 & 색상 상수
@@ -104,13 +105,6 @@ const REHAB_STATUS_COLORS: Record<DanceInjuryRehabStatus, string> = {
 // ============================================================
 // 날짜 포맷 유틸
 // ============================================================
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 function todayString(): string {
   const d = new Date();
@@ -518,9 +512,9 @@ function InjuryItem({
 
       {/* 날짜 정보 */}
       <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-        <span>부상일: {formatDate(entry.injuredAt)}</span>
+        <span>부상일: {formatYearMonthDay(entry.injuredAt)}</span>
         {entry.expectedRecoveryAt && (
-          <span>예상 회복일: {formatDate(entry.expectedRecoveryAt)}</span>
+          <span>예상 회복일: {formatYearMonthDay(entry.expectedRecoveryAt)}</span>
         )}
       </div>
 

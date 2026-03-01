@@ -28,6 +28,7 @@ import {
   type PreRsvpResponse,
 } from "@/hooks/use-pre-rsvp";
 import { useAuth } from "@/hooks/use-auth";
+import { formatFullDate } from "@/lib/date-utils";
 
 // ============================================================
 // 응답 버튼 설정
@@ -86,21 +87,6 @@ type PreRsvpPollProps = {
 // ============================================================
 // 날짜 포맷 헬퍼
 // ============================================================
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "-";
-  try {
-    const d = new Date(dateStr + "T00:00:00");
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    const dow = days[d.getDay()];
-    return `${yyyy}년 ${mm}월 ${dd}일 (${dow})`;
-  } catch {
-    return dateStr;
-  }
-}
 
 // ============================================================
 // 메인 컴포넌트
@@ -285,7 +271,7 @@ export function PreRsvpPoll({
         <div className="rounded-md bg-muted/50 border px-3 py-2.5 space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-medium">
             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-            {formatDate(poll.proposedDate)}
+            {formatFullDate(poll.proposedDate)}
             {poll.proposedTime && (
               <span className="text-muted-foreground">{poll.proposedTime}</span>
             )}
@@ -358,7 +344,7 @@ export function PreRsvpPoll({
         <div className="rounded-md bg-muted/50 border px-3 py-2.5 space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-medium">
             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-            {formatDate(poll.proposedDate)}
+            {formatFullDate(poll.proposedDate)}
             {poll.proposedTime && (
               <span className="text-muted-foreground">{poll.proposedTime}</span>
             )}

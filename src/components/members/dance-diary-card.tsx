@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useDanceDiary } from "@/hooks/use-dance-diary";
 import type { DiaryCardEntry, DiaryCardEmotion, DiaryCardEmotionMeta } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 상수 ────────────────────────────────────────────────────────────────────
 
@@ -64,13 +65,6 @@ const CONDITION_COLORS = [
 function getTodayStr(): string {
   const now = new Date();
   return now.toISOString().slice(0, 10);
-}
-
-function formatDateKor(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  const dayIdx = new Date(`${dateStr}T00:00:00`).getDay();
-  return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일 (${days[dayIdx]})`;
 }
 
 function getDaysInMonth(year: number, month: number): number {
@@ -486,10 +480,10 @@ function DiaryEntryItem({
           <span className="text-base shrink-0">{em.emoji}</span>
           <div className="min-w-0">
             <p className="text-xs font-medium truncate">
-              {entry.title || formatDateKor(entry.date)}
+              {entry.title || formatYearMonthDay(entry.date)}
             </p>
             <p className="text-[10px] text-muted-foreground">
-              {formatDateKor(entry.date)}
+              {formatYearMonthDay(entry.date)}
             </p>
           </div>
         </div>
@@ -805,7 +799,7 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
                 {/* ── 선택 날짜 + 버튼 ── */}
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">
-                    {formatDateKor(selectedDate)}
+                    {formatYearMonthDay(selectedDate)}
                   </p>
                   {!formVisible && !selectedEntry && (
                     <Button

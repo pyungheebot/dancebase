@@ -53,6 +53,7 @@ import type {
   RecurrenceEndType,
   ScheduleRecurrenceRule,
 } from "@/types";
+import { formatKo } from "@/lib/date-utils";
 
 // ============================================
 // 상수
@@ -91,14 +92,6 @@ const EMPTY_FORM: FormState = {
 // ============================================
 // 날짜 포맷 유틸리티
 // ============================================
-
-function formatDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  const day = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
-  return `${y}.${m}.${d} (${day})`;
-}
 
 // ============================================
 // 미리보기 섹션
@@ -147,7 +140,7 @@ function RecurrencePreview({
           {dates.map((date, i) => (
             <li key={i} className="flex items-center gap-2 text-xs">
               <Calendar className="h-3 w-3 shrink-0 text-muted-foreground" />
-              <span>{formatDate(date)}</span>
+              <span>{formatKo(date, "yyyy.MM.dd (EEE)")}</span>
               <span className="text-muted-foreground">{form.startTime}</span>
             </li>
           ))}
@@ -603,7 +596,7 @@ function RuleCard({ rule, onUpdate, onDelete }: RuleCardProps) {
               className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
             >
               <Calendar className="h-2.5 w-2.5" />
-              {formatDate(date)}
+              {formatKo(date, "yyyy.MM.dd (EEE)")}
             </span>
           ))}
         </div>

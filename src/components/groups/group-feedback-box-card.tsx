@@ -42,6 +42,7 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { useGroupFeedbackBox } from "@/hooks/use-group-feedback-box";
 import type { AnonFeedbackCategory, AnonFeedbackItem } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ── 카테고리 메타 ───────────────────────────────────────────────────
 
@@ -86,13 +87,6 @@ const ALL_CATEGORIES: AnonFeedbackCategory[] = [
 
 // ── 날짜 포매터 ────────────────────────────────────────────────────
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 // ── 피드백 제출 다이얼로그 ──────────────────────────────────────────
 
@@ -375,7 +369,7 @@ function FeedbackItem({
       <p className="text-xs text-gray-700 leading-relaxed">{feedback.content}</p>
 
       {/* 작성일 */}
-      <p className="text-[10px] text-gray-400">{formatDate(feedback.createdAt)}</p>
+      <p className="text-[10px] text-gray-400">{formatYearMonthDay(feedback.createdAt)}</p>
 
       {/* 답변 영역 */}
       {feedback.replyText && (
@@ -384,7 +378,7 @@ function FeedbackItem({
           <p className="text-xs text-gray-700">{feedback.replyText}</p>
           {feedback.repliedAt && (
             <p className="text-[10px] text-blue-400">
-              {formatDate(feedback.repliedAt)}
+              {formatYearMonthDay(feedback.repliedAt)}
             </p>
           )}
         </div>

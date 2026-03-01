@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { useAttendanceException } from "@/hooks/use-attendance-exception";
 import type { AttendanceExceptionType } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 상수 ────────────────────────────────────────────────────────
 
@@ -85,11 +86,6 @@ const ALL_TYPES: AttendanceExceptionType[] = [
 ];
 
 // ─── 날짜 포맷 헬퍼 ──────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}/${d.getMonth() + 1}/${String(d.getDate()).padStart(2, "0")}`;
-}
 
 function currentMonth(): string {
   const now = new Date();
@@ -635,12 +631,12 @@ export function AttendanceExceptionCard({
                             {entry.approvedBy && (
                               <p className="text-[10px] text-gray-400">
                                 승인: {entry.approvedBy} ·{" "}
-                                {formatDate(entry.createdAt)}
+                                {formatYearMonthDay(entry.createdAt)}
                               </p>
                             )}
                             {!entry.approvedBy && (
                               <p className="text-[10px] text-gray-400">
-                                등록: {formatDate(entry.createdAt)}
+                                등록: {formatYearMonthDay(entry.createdAt)}
                               </p>
                             )}
                           </div>

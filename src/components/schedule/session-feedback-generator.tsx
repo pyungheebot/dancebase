@@ -33,21 +33,13 @@ import {
 } from "@/components/ui/select";
 import { useSessionAutoFeedback } from "@/hooks/use-session-auto-feedback";
 import { useAsyncAction } from "@/hooks/use-async-action";
-import { formatYearMonthDay } from "@/lib/date-utils";
+import { formatYearMonthDay,
+  formatFullDate
+} from "@/lib/date-utils";
 import type { SessionAutoFeedback } from "@/types";
 import type { Schedule } from "@/types";
 
 // ── 유틸 ──────────────────────────────────────────────────────────────────
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "short",
-  });
-}
 
 function rateColor(rate: number) {
   if (rate >= 90) return "text-green-600";
@@ -111,7 +103,7 @@ function SavedFeedbackItem({
                 {feedback.scheduleName}
               </span>
               <span className="text-[10px] text-muted-foreground shrink-0">
-                {formatDate(feedback.date)}
+                {formatFullDate(feedback.date)}
               </span>
             </div>
             {open ? (
@@ -294,7 +286,7 @@ export function SessionFeedbackGenerator({
                       <SelectItem key={s.id} value={s.id} className="text-xs">
                         <span className="font-medium">{s.title}</span>
                         <span className="text-muted-foreground ml-1">
-                          {formatDate(s.starts_at)}
+                          {formatFullDate(s.starts_at)}
                         </span>
                       </SelectItem>
                     ))}
@@ -334,7 +326,7 @@ export function SessionFeedbackGenerator({
                   <div>
                     <p className="text-xs font-semibold">{draft.scheduleName}</p>
                     <p className="text-[10px] text-muted-foreground">
-                      {formatDate(draft.date)}
+                      {formatFullDate(draft.date)}
                     </p>
                   </div>
                   <span

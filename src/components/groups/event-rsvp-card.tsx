@@ -36,6 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useEventRsvp } from "@/hooks/use-event-rsvp";
 import type { EventRsvpItem, EventRsvpResponse } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 상수 ────────────────────────────────────────────────────
 
@@ -82,11 +83,6 @@ function calcDDay(dateStr: string): string {
   if (diff < 0) return "종료";
   if (diff === 0) return "D-Day";
   return `D-${diff}`;
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
 // ─── 이벤트 추가 다이얼로그 ──────────────────────────────────
@@ -333,7 +329,7 @@ function EventRow({
           <div className="flex items-center gap-3 mt-0.5 flex-wrap">
             <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
               <CalendarCheck className="h-3 w-3" />
-              {formatDate(event.date)}
+              {formatYearMonthDay(event.date)}
             </span>
             {event.time && (
               <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
@@ -350,7 +346,7 @@ function EventRow({
             {event.deadline && (
               <span className="flex items-center gap-0.5 text-[10px] text-amber-600">
                 <AlarmClock className="h-3 w-3" />
-                마감 {formatDate(event.deadline)}
+                마감 {formatYearMonthDay(event.deadline)}
               </span>
             )}
           </div>

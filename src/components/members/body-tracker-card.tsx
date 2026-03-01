@@ -40,6 +40,7 @@ import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useBodyTracker } from "@/hooks/use-body-tracker";
 import type { BodyTrackerEntry } from "@/types";
+import { formatYearMonthDay, formatMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 날짜 유틸
@@ -51,18 +52,6 @@ function getTodayStr(): string {
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
-}
-
-function formatDateKor(dateStr: string): string {
-  if (!dateStr) return "";
-  const [y, m, d] = dateStr.split("-");
-  return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
-}
-
-function formatDateShort(dateStr: string): string {
-  if (!dateStr) return "";
-  const [, m, d] = dateStr.split("-");
-  return `${parseInt(m)}/${parseInt(d)}`;
 }
 
 // ============================================================
@@ -147,7 +136,7 @@ function WeightLineChart({ data }: WeightChartProps) {
                       ? "bg-primary w-2.5 h-2.5"
                       : "bg-primary/60 w-2 h-2"
                   )}
-                  title={`${formatDateKor(p.date)}: ${p.weight}kg`}
+                  title={`${formatYearMonthDay(p.date)}: ${p.weight}kg`}
                 />
                 {showLabel && (
                   <span
@@ -190,7 +179,7 @@ function WeightLineChart({ data }: WeightChartProps) {
                   transform: "translateX(-50%)",
                 }}
               >
-                {formatDateShort(p.date)}
+                {formatMonthDay(p.date)}
               </span>
             );
           })}
@@ -316,7 +305,7 @@ function EntryItem({ entry, onEdit, onDelete }: EntryItemProps) {
     <div className="rounded-lg border p-2.5 bg-white space-y-1.5">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-gray-800">
-          {formatDateKor(entry.date)}
+          {formatYearMonthDay(entry.date)}
         </span>
         <div className="flex items-center gap-1">
           <Button

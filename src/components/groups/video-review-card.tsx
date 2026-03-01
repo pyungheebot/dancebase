@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import { useVideoReview } from "@/hooks/use-video-review";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { VideoReviewEntry, VideoReviewTimestamp, VideoReviewTimestampType } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수 / 헬퍼
@@ -78,12 +79,6 @@ const TIMESTAMP_TYPE_ICON: Record<VideoReviewTimestampType, React.ReactNode> = {
 const ALL_TIMESTAMP_TYPES = Object.keys(
   TIMESTAMP_TYPE_LABEL
 ) as VideoReviewTimestampType[];
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
 
 /** MM:SS 형식 유효성 검사 */
 function isValidTime(time: string): boolean {
@@ -556,7 +551,7 @@ function EntryItem({
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <CalendarDays className="h-2.5 w-2.5" />
-                {formatDate(entry.date)}
+                {formatYearMonthDay(entry.date)}
               </span>
               {entry.duration && (
                 <span className="flex items-center gap-1 text-[10px] text-muted-foreground">

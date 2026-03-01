@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { usePersonalGrowthTimeline } from "@/hooks/use-personal-growth-timeline";
 import type { GrowthEventType, GrowthTimelineEvent } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 이벤트 유형별 아이콘, 색상, 레이블
@@ -69,14 +70,6 @@ const EVENT_CONFIG: Record<
 // ============================================================
 // 날짜 포맷 유틸리티
 // ============================================================
-
-function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  return `${year}년 ${month}월 ${day}일`;
-}
 
 // ============================================================
 // 단일 타임라인 이벤트 아이템
@@ -124,7 +117,7 @@ function TimelineItem({
         </p>
         <p className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground/70">
           <Calendar className="h-3 w-3" />
-          {formatDate(event.date)}
+          {formatYearMonthDay(event.date)}
         </p>
       </div>
     </div>

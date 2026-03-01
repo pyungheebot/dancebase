@@ -44,6 +44,7 @@ import type {
   MemberGoalCategory,
   MemberGoalPriority,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 레이블 상수
@@ -87,12 +88,6 @@ const PRIORITY_COLORS: Record<MemberGoalPriority, string> = {
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  return `${year}.${month}.${day}`;
 }
 
 function progressBarColor(progress: number): string {
@@ -493,7 +488,7 @@ function GoalItemCard({
             <span className="font-medium text-foreground/70">{goal.memberName}</span>
             <span className="flex items-center gap-0.5">
               <CalendarDays className="h-2.5 w-2.5" />
-              {formatDate(goal.targetDate)}
+              {formatYearMonthDay(goal.targetDate)}
               {isOverdue && (
                 <span className="ml-0.5 text-red-500 font-medium">기한 초과</span>
               )}

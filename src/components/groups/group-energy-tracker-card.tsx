@@ -2,13 +2,8 @@
 
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
-import { ChevronDown, ChevronUp, Zap, Trash2, Plus } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Zap, Trash2, Plus } from "lucide-react";
+import { CollapsibleCard } from "@/components/shared/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -242,33 +237,19 @@ export function GroupEnergyTrackerCard({
     .slice(0, 10);
 
   return (
-    <Card className="border border-gray-200">
-      <Collapsible open={open} onOpenChange={setOpen}>
-        <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors rounded-t-lg py-3 px-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm font-semibold text-gray-800">
-                  그룹 에너지 트래커
-                </span>
-                {recent30.length > 0 && (
-                  <Badge className="text-[10px] px-1.5 py-0 bg-yellow-100 text-yellow-700">
-                    최근 30일 {recent30.length}건
-                  </Badge>
-                )}
-              </div>
-              {open ? (
-                <ChevronUp className="h-4 w-4 text-gray-400" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              )}
-            </div>
-          </CardHeader>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent>
-          <CardContent className="pt-0 pb-4 px-4 space-y-5">
+    <CollapsibleCard
+      title="그룹 에너지 트래커"
+      icon={<Zap className="h-4 w-4 text-yellow-500" />}
+      defaultOpen={false}
+      headerExtra={
+        recent30.length > 0 ? (
+          <Badge className="text-[10px] px-1.5 py-0 bg-yellow-100 text-yellow-700">
+            최근 30일 {recent30.length}건
+          </Badge>
+        ) : undefined
+      }
+    >
+          <div className="space-y-5">
             {loading ? (
               <p className="text-xs text-gray-400 text-center py-4">불러오는 중...</p>
             ) : (
@@ -437,9 +418,7 @@ export function GroupEnergyTrackerCard({
                 )}
               </>
             )}
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
-    </Card>
+          </div>
+    </CollapsibleCard>
   );
 }

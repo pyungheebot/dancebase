@@ -50,6 +50,7 @@ import type {
   DanceClassLogLevel,
   DanceClassLogSource,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 별점 컴포넌트
@@ -340,10 +341,7 @@ export function DanceClassLogCard({ memberId }: DanceClassLogCardProps) {
   // 유틸
   // ──────────────────────────────────────────
 
-  function formatDate(iso: string) {
-    return iso.replace(/-/g, ".");
-  }
-
+  
   function formatDuration(min?: number) {
     if (!min) return null;
     if (min < 60) return `${min}분`;
@@ -599,7 +597,7 @@ export function DanceClassLogCard({ memberId }: DanceClassLogCardProps) {
                       onDelete={() =>
                         handleDelete(entry.id, entry.className)
                       }
-                      formatDate={formatDate}
+                      formatYearMonthDay={formatYearMonthDay}
                       formatDuration={formatDuration}
                     />
                   )
@@ -656,7 +654,7 @@ interface ClassLogRowProps {
   entry: DanceClassLogEntry;
   onEdit: () => void;
   onDelete: () => void;
-  formatDate: (iso: string) => string;
+  formatYearMonthDay: (iso: string) => string;
   formatDuration: (min?: number) => string | null;
 }
 
@@ -664,7 +662,7 @@ function ClassLogRow({
   entry,
   onEdit,
   onDelete,
-  formatDate,
+  formatYearMonthDay,
   formatDuration,
 }: ClassLogRowProps) {
   const levelColors = CLASS_LOG_LEVEL_COLORS[entry.level];
@@ -724,7 +722,7 @@ function ClassLogRow({
         </span>
         <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
           <Calendar className="h-3 w-3" />
-          {formatDate(entry.date)}
+          {formatYearMonthDay(entry.date)}
           {entry.startTime && (
             <span className="ml-0.5">{entry.startTime}</span>
           )}

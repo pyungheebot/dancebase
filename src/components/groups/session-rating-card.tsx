@@ -30,17 +30,11 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useSessionRating } from "@/hooks/use-session-rating";
 import type { SessionRatingEntry, SessionRatingAvg } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 날짜 포맷 헬퍼
 // ============================================
-
-function formatDate(ymd: string): string {
-  const d = new Date(ymd + "T00:00:00");
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-}
 
 function dateToYMD(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
@@ -404,7 +398,7 @@ function RatingItem({
           {entry.raterName}
         </span>
         <span className="text-[10px] text-muted-foreground shrink-0">
-          {formatDate(entry.createdAt.slice(0, 10))}
+          {formatYearMonthDay(entry.createdAt.slice(0, 10))}
         </span>
         <button
           type="button"
@@ -471,7 +465,7 @@ function SessionAvgItem({
           {avg.sessionTitle}
         </span>
         <span className="text-[10px] text-muted-foreground shrink-0">
-          {formatDate(avg.sessionDate)}
+          {formatYearMonthDay(avg.sessionDate)}
         </span>
         <span className="text-[10px] px-1.5 py-0 rounded bg-muted text-muted-foreground font-medium shrink-0">
           {avg.ratingCount}명

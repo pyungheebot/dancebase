@@ -29,16 +29,11 @@ import {
   estimateCompletionDate,
 } from "@/hooks/use-mastery-curve";
 import type { MasteryCurveEntry, MasteryCheckpoint } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 날짜 포맷 유틸
 // ============================================
-
-function formatDateKor(dateStr: string): string {
-  if (!dateStr) return "-";
-  const [y, m, d] = dateStr.split("-");
-  return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
-}
 
 function dateDiffDays(from: string, to: string): number {
   const a = new Date(from).getTime();
@@ -538,7 +533,7 @@ function EntryPanel({
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                 <Flag className="h-2.5 w-2.5" />
-                목표: {formatDateKor(entry.targetDate)}
+                목표: {formatYearMonthDay(entry.targetDate)}
               </span>
               {!isCompleted && daysLeft > 0 && (
                 <span className="text-[10px] text-muted-foreground">

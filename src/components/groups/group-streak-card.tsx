@@ -2,23 +2,11 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { CollapsibleCard } from "@/components/shared/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  ChevronDown,
-  ChevronUp,
   Flame,
   Trophy,
   UserPlus,
@@ -143,26 +131,11 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
     : null;
 
   return (
-    <Card className="w-full">
-      <Collapsible open={open} onOpenChange={setOpen}>
-        <CardHeader className="pb-2">
-          <CollapsibleTrigger asChild>
-            <div className="flex items-center justify-between cursor-pointer select-none">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Flame className="h-4 w-4 text-orange-500" />
-                출석 스트릭
-              </CardTitle>
-              {open ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              )}
-            </div>
-          </CollapsibleTrigger>
-        </CardHeader>
-
-        <CollapsibleContent>
-          <CardContent className="space-y-4 pt-0">
+    <CollapsibleCard
+      title="출석 스트릭"
+      icon={<Flame className="h-4 w-4 text-orange-500" />}
+    >
+          <div className="space-y-4">
             {/* 멤버 추가 */}
             <div className="flex gap-2">
               <Input
@@ -466,9 +439,7 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
                 )}
               </>
             )}
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
-    </Card>
+          </div>
+    </CollapsibleCard>
   );
 }

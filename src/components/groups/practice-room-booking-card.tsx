@@ -57,6 +57,7 @@ import type {
   PracticeRoomBooking,
   PracticeRoomBookingStatus,
 } from "@/types";
+import { formatShortDate } from "@/lib/date-utils";
 
 // ─── 상수 ─────────────────────────────────────────────────────
 
@@ -66,11 +67,6 @@ const WEEK_DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
 function formatCost(cost: number): string {
   return cost.toLocaleString("ko-KR") + "원";
-}
-
-function formatDateLabel(dateStr: string): string {
-  const d = new Date(dateStr);
-  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 function formatWeekLabel(weekDates: string[]): string {
@@ -810,7 +806,7 @@ function WeeklyViewTab({
                 }`}
               >
                 <p className="text-[10px] font-medium">{dayLabel}</p>
-                <p className="text-[9px] opacity-75">{formatDateLabel(date)}</p>
+                <p className="text-[9px] opacity-75">{formatShortDate(date)}</p>
               </div>
 
               {/* 예약 블록 */}

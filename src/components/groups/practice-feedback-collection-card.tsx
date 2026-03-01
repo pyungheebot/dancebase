@@ -40,15 +40,11 @@ import type {
   PracticeFeedbackAggregate,
   PracticeFeedbackRating,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 날짜 헬퍼
 // ============================================
-
-function formatDate(ymd: string): string {
-  const d = new Date(ymd + "T00:00:00");
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
 
 function dateToYMD(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -275,11 +271,11 @@ function SessionItem({
         <CalendarIcon className="h-3 w-3 text-muted-foreground shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium truncate">
-            {session.title || formatDate(session.practiceDate)}
+            {session.title || formatYearMonthDay(session.practiceDate)}
           </p>
           {session.title && (
             <p className="text-[9px] text-muted-foreground">
-              {formatDate(session.practiceDate)}
+              {formatYearMonthDay(session.practiceDate)}
             </p>
           )}
         </div>

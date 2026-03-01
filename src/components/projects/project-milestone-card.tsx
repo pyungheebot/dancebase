@@ -34,17 +34,13 @@ import {
 import { toast } from "sonner";
 import { useProjectMilestoneCard } from "@/hooks/use-project-milestone-card";
 import type { ProjectMilestoneCard } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ================================================================
 // 유틸 함수
 // ================================================================
 
 /** YYYY-MM-DD → 한국어 날짜 */
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const [year, month, day] = dateStr.split("-");
-  return `${year}. ${month}. ${day}.`;
-}
 
 /** 마감일 기준 D-Day 텍스트 */
 function getDdayText(dueDate: string): string {
@@ -422,7 +418,7 @@ function MilestoneItem({
               )}
               <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                 <Calendar className="h-3 w-3" />
-                <span>마감일: {formatDate(milestone.dueDate)}</span>
+                <span>마감일: {formatYearMonthDay(milestone.dueDate)}</span>
               </div>
             </div>
 

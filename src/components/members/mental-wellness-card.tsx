@@ -38,6 +38,7 @@ import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useMentalWellness } from "@/hooks/use-mental-wellness";
 import type { MentalWellnessEntry } from "@/types";
+import { formatYearMonthDay, formatMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수
@@ -142,18 +143,6 @@ function getTodayStr(): string {
   return `${y}-${m}-${d}`;
 }
 
-function formatDateKor(dateStr: string): string {
-  if (!dateStr) return "";
-  const [y, m, d] = dateStr.split("-");
-  return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
-}
-
-function formatDateShort(dateStr: string): string {
-  if (!dateStr) return "";
-  const [, m, d] = dateStr.split("-");
-  return `${parseInt(m)}/${parseInt(d)}`;
-}
-
 // ============================================================
 // 주간 추이 바 차트 (div 기반)
 // ============================================================
@@ -195,7 +184,7 @@ function WeeklyTrendChart({ entries }: WeeklyChartProps) {
                   <div
                     key={e.id}
                     className="flex-1 flex flex-col justify-end group relative"
-                    title={`${formatDateKor(e.date)}: ${val}`}
+                    title={`${formatYearMonthDay(e.date)}: ${val}`}
                   >
                     <div
                       className={cn(
@@ -211,7 +200,7 @@ function WeeklyTrendChart({ entries }: WeeklyChartProps) {
                       <span
                         className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[8px] text-muted-foreground whitespace-nowrap"
                       >
-                        {formatDateShort(e.date)}
+                        {formatMonthDay(e.date)}
                       </span>
                     )}
                   </div>
@@ -457,7 +446,7 @@ function EntryItem({ entry, onEdit, onDelete }: EntryItemProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-gray-800">
-            {formatDateKor(entry.date)}
+            {formatYearMonthDay(entry.date)}
           </span>
           <Badge
             className={cn(

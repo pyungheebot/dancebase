@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { useBattleScoreboard } from "@/hooks/use-battle-scoreboard";
 import type { BattleMatch, BattleStats, BattleType } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 상수 ────────────────────────────────────────────────────
 
@@ -98,13 +99,6 @@ function winRateBarClass(rate: number): string {
 }
 
 // ─── 날짜 포맷 헬퍼 ──────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-}
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
@@ -521,7 +515,7 @@ function MatchHistoryList({
           >
             {/* 날짜 */}
             <span className="w-[72px] shrink-0 text-[10px] text-gray-400">
-              {formatDate(match.date)}
+              {formatYearMonthDay(match.date)}
             </span>
 
             {/* 타입 배지 */}

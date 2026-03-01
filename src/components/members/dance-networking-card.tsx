@@ -51,15 +51,11 @@ import type {
   DanceNetworkingRole,
   DanceNetworkingSns,
 } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 날짜 포맷
 // ============================================
-
-function formatDateKor(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
-}
 
 function getTodayStr(): string {
   const now = new Date();
@@ -625,7 +621,7 @@ function EntryCard({
                   <div className="flex items-center gap-1.5">
                     <Calendar className="h-3 w-3 text-gray-400 shrink-0" />
                     <span className="text-xs text-gray-700">
-                      {formatDateKor(entry.metDate)}
+                      {formatYearMonthDay(entry.metDate)}
                     </span>
                   </div>
                 )}

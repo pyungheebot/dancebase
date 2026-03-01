@@ -54,6 +54,7 @@ import type {
   GroupWishStatus,
   GroupWishItem,
 } from "@/types";
+import { formatMonthDay } from "@/lib/date-utils";
 
 // ─── 카테고리 메타 ────────────────────────────────────────────
 
@@ -177,11 +178,6 @@ const STATUS_META: Record<GroupWishStatus, StatusMeta> = {
 const ALL_STATUSES = Object.keys(STATUS_META) as GroupWishStatus[];
 
 // ─── 유틸 ─────────────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getMonth() + 1}/${d.getDate()}`;
-}
 
 function formatCost(cost: number): string {
   if (cost === 0) return "";
@@ -641,7 +637,7 @@ function WishItemCard({ item, hook }: WishItemCardProps) {
             <div className="flex items-center gap-2 text-[10px] text-gray-400">
               <span>제안: {item.proposedBy}</span>
               <span>·</span>
-              <span>{formatDate(item.createdAt)}</span>
+              <span>{formatMonthDay(item.createdAt)}</span>
             </div>
 
             {/* 상태 변경 셀렉트 */}

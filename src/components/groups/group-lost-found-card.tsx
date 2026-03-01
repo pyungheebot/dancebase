@@ -51,6 +51,7 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { useGroupLostFound } from "@/hooks/use-group-lost-found";
 import type { LostFoundItem, LostFoundStatus } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ── 상수 ──────────────────────────────────────────────────────────
 
@@ -81,15 +82,6 @@ type FilterType = "전체" | LostFoundStatus;
 const FILTERS: FilterType[] = ["전체", "분실", "발견", "반환완료"];
 
 // ── 날짜 포매터 ────────────────────────────────────────────────────
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 // ── 분실물 추가/수정 다이얼로그 ────────────────────────────────────
 
@@ -431,7 +423,7 @@ function LostFoundItemCard({
       {/* 세부 정보 */}
       <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-gray-400">
         {item.lostPlace && <span>장소: {item.lostPlace}</span>}
-        {item.lostDate && <span>날짜: {formatDate(item.lostDate)}</span>}
+        {item.lostDate && <span>날짜: {formatYearMonthDay(item.lostDate)}</span>}
         <span>신고: {item.reporterName}</span>
         {item.finderName && <span>발견: {item.finderName}</span>}
       </div>

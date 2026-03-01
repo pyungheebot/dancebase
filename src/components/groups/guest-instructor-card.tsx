@@ -35,6 +35,7 @@ import {
 } from "@/hooks/use-guest-instructor";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { GuestInstructorEntry } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 상수 ────────────────────────────────────────────────────
 
@@ -53,11 +54,6 @@ const GENRE_OPTIONS = [
 ] as const;
 
 // ─── 유틸 ────────────────────────────────────────────────────
-
-function formatDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  return `${y}.${m}.${d}`;
-}
 
 function formatCurrency(amount: number): string {
   return amount.toLocaleString("ko-KR") + "원";
@@ -488,7 +484,7 @@ function InstructorCard({
                       <StarRating value={lesson.rating} readonly />
                     </div>
                     <div className="mt-0.5 flex items-center gap-2 text-[10px] text-gray-400">
-                      <span>{formatDate(lesson.date)}</span>
+                      <span>{formatYearMonthDay(lesson.date)}</span>
                       {lesson.note && (
                         <span className="truncate">{lesson.note}</span>
                       )}

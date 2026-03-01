@@ -42,6 +42,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useGrowthJournal } from "@/hooks/use-growth-journal";
 import type { GrowthJournalEntry, GrowthJournalMood } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 상수
@@ -74,11 +75,6 @@ const MOOD_ORDER: GrowthJournalMood[] = [
 // ============================================
 // 날짜 유틸
 // ============================================
-
-function formatDateKor(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
-}
 
 function getTodayStr(): string {
   const now = new Date();
@@ -552,7 +548,7 @@ function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[10px] text-muted-foreground">
-              {formatDateKor(entry.date)}
+              {formatYearMonthDay(entry.date)}
             </span>
             <Badge variant="outline" className="text-[10px] px-1.5 py-0">
               {MOOD_LABEL[entry.mood]}

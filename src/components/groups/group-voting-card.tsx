@@ -38,20 +38,12 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { useGroupVoting } from "@/hooks/use-group-voting";
 import type { GroupVoteCardItem } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ── 더미 사용자 ID (실제 프로젝트에서는 인증 컨텍스트에서 가져옴) ──
 const DUMMY_USER_ID = "local-user";
 
 // ── 날짜 포매터 ────────────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 function formatDeadline(iso: string): string {
   const d = new Date(iso);
@@ -232,11 +224,11 @@ function VoteItem({
           <span className="flex items-center gap-0.5">
             <Clock className="h-3 w-3" />
             {expired
-              ? formatDate(vote.deadline)
+              ? formatYearMonthDay(vote.deadline)
               : formatDeadline(vote.deadline)}
           </span>
         )}
-        <span>{formatDate(vote.createdAt)}</span>
+        <span>{formatYearMonthDay(vote.createdAt)}</span>
       </div>
 
       <Separator />

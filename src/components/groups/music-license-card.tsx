@@ -45,6 +45,7 @@ import { TOAST } from "@/lib/toast-messages";
 import { useMusicLicense } from "@/hooks/use-music-license";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { MusicLicenseEntry, MusicLicenseType, MusicLicenseStatus } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================================
 // 상수 / 레이블 맵
@@ -103,12 +104,6 @@ function calcDday(expiryDate: string): string {
   if (diffDays === 0) return "D-Day";
   if (diffDays > 0) return `D-${diffDays}`;
   return `D+${Math.abs(diffDays)}`;
-}
-
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return "-";
-  const d = new Date(dateStr);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function formatCost(cost?: number): string {
@@ -452,7 +447,7 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
                         {entry.expiryDate && (
                           <span className="flex items-center gap-1">
                             <span className="text-muted-foreground">만료일:</span>
-                            <span className="font-medium">{formatDate(entry.expiryDate)}</span>
+                            <span className="font-medium">{formatYearMonthDay(entry.expiryDate)}</span>
                             <span
                               className={cn(
                                 "font-semibold",

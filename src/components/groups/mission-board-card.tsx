@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/select";
 import { useMissionBoard } from "@/hooks/use-mission-board";
 import type { MissionDifficulty } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ─── 상수 ────────────────────────────────────────────────────
 
@@ -86,13 +87,6 @@ const RANK_META = [
 ] as const;
 
 // ─── 헬퍼 함수 ───────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-}
 
 function calcDday(deadline: string): { label: string; urgent: boolean } {
   const today = new Date();
@@ -567,7 +561,7 @@ function MissionList({
                   }`}
                 >
                   <Calendar className="h-3 w-3" />
-                  {formatDate(mission.deadline!)} ({dday.label})
+                  {formatYearMonthDay(mission.deadline!)} ({dday.label})
                 </span>
               )}
               <span className="flex items-center gap-0.5">
