@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateMemberBatchInvite } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { InviteCandidate } from "@/types";
 
 export function useMemberBatchInvite(groupId: string) {
@@ -62,7 +63,7 @@ export function useMemberBatchInvite(groupId: string) {
   // 일괄 초대 함수
   async function inviteMembers(userIds: string[]): Promise<boolean> {
     if (userIds.length === 0) {
-      toast.error("초대할 멤버를 선택해주세요");
+      toast.error(TOAST.MEMBER.INVITE_REQUIRED);
       return false;
     }
 
@@ -88,7 +89,7 @@ export function useMemberBatchInvite(groupId: string) {
       toast.success(`${userIds.length}명을 그룹에 초대했습니다`);
       return true;
     } catch {
-      toast.error("멤버 초대에 실패했습니다");
+      toast.error(TOAST.MEMBER.INVITE_ERROR);
       return false;
     } finally {
       setInviting(false);

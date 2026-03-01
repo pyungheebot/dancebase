@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type {
   OnboardingCheckItem,
   OnboardingCheckItemCategory,
@@ -64,7 +65,7 @@ export function useReturnOnboarding(groupId: string) {
       description: string
     ): boolean => {
       if (!title.trim()) {
-        toast.error("항목 제목을 입력해주세요.");
+        toast.error(TOAST.ITEM_TITLE_REQUIRED);
         return false;
       }
       const now = new Date().toISOString();
@@ -77,7 +78,7 @@ export function useReturnOnboarding(groupId: string) {
       };
       const updated = [...checkItems, newItem];
       persist(updated, sessions);
-      toast.success("체크 항목이 추가되었습니다.");
+      toast.success(TOAST.EQUIPMENT.CHECK_ADDED);
       return true;
     },
     [checkItems, sessions, persist]
@@ -87,7 +88,7 @@ export function useReturnOnboarding(groupId: string) {
     (itemId: string): void => {
       const updated = checkItems.filter((item) => item.id !== itemId);
       persist(updated, sessions);
-      toast.success("체크 항목이 삭제되었습니다.");
+      toast.success(TOAST.EQUIPMENT.CHECK_DELETED);
     },
     [checkItems, sessions, persist]
   );
@@ -99,7 +100,7 @@ export function useReturnOnboarding(groupId: string) {
   const startSession = useCallback(
     (memberName: string): boolean => {
       if (!memberName.trim()) {
-        toast.error("멤버 이름을 선택해주세요.");
+        toast.error(TOAST.MEMBER.NAME_SELECT_REQUIRED);
         return false;
       }
       // 이미 진행 중인 세션이 있으면 중복 방지
@@ -153,12 +154,12 @@ export function useReturnOnboarding(groupId: string) {
     (sessionId: string): boolean => {
       const session = sessions.find((s) => s.id === sessionId);
       if (!session) {
-        toast.error("세션을 찾을 수 없습니다.");
+        toast.error(TOAST.SESSION.NOT_FOUND);
         return false;
       }
       const allChecked = session.items.every((item) => item.checked);
       if (!allChecked) {
-        toast.error("모든 항목을 체크한 후 완료할 수 있습니다.");
+        toast.error(TOAST.EQUIPMENT.ALL_CHECK_REQUIRED);
         return false;
       }
       const now = new Date().toISOString();
@@ -176,7 +177,7 @@ export function useReturnOnboarding(groupId: string) {
     (sessionId: string): void => {
       const updated = sessions.filter((s) => s.id !== sessionId);
       persist(checkItems, updated);
-      toast.success("세션이 삭제되었습니다.");
+      toast.success(TOAST.SESSION.DELETED);
     },
     [checkItems, sessions, persist]
   );

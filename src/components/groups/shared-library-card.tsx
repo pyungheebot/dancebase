@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { useSharedLibrary } from "@/hooks/use-shared-library";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { SharedLibFileType, SharedLibItem } from "@/types";
+import { validateUrl, sanitizeUrl } from "@/lib/validation";
 
 // ─── 파일 유형 설정 ───────────────────────────────────────────
 
@@ -139,6 +140,11 @@ function AddItemDialog({
     }
     if (!form.uploadedBy.trim()) {
       toast.error("업로더 이름을 입력해주세요.");
+      return;
+    }
+    const urlError = validateUrl(form.url);
+    if (urlError) {
+      toast.error(urlError);
       return;
     }
 
@@ -330,7 +336,7 @@ function LibraryItemRow({
           <span className="text-xs font-medium text-gray-800 truncate">
             {item.url ? (
               <a
-                href={item.url}
+                href={sanitizeUrl(item.url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-blue-600 hover:underline"

@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import {
@@ -64,12 +65,12 @@ export function useGroupFaq(groupId: string) {
       };
 
       if (!persist(newValue)) {
-        toast.error("FAQ 추가에 실패했습니다");
+        toast.error(TOAST.FAQ.ADD_ERROR);
         return false;
       }
 
       await mutate(newValue);
-      toast.success("FAQ가 추가되었습니다");
+      toast.success(TOAST.FAQ.ADDED);
       return true;
     },
     [value, persist, mutate]
@@ -86,12 +87,12 @@ export function useGroupFaq(groupId: string) {
       const newValue: GroupFaqSettingValue = { faqs: newFaqs };
 
       if (!persist(newValue)) {
-        toast.error("FAQ 수정에 실패했습니다");
+        toast.error(TOAST.FAQ.UPDATE_ERROR);
         return false;
       }
 
       await mutate(newValue);
-      toast.success("FAQ가 수정되었습니다");
+      toast.success(TOAST.FAQ.UPDATED);
       return true;
     },
     [value, persist, mutate]
@@ -105,12 +106,12 @@ export function useGroupFaq(groupId: string) {
       const newValue: GroupFaqSettingValue = { faqs: newFaqs };
 
       if (!persist(newValue)) {
-        toast.error("FAQ 삭제에 실패했습니다");
+        toast.error(TOAST.FAQ.DELETE_ERROR);
         return false;
       }
 
       await mutate(newValue);
-      toast.success("FAQ가 삭제되었습니다");
+      toast.success(TOAST.FAQ.DELETED);
       return true;
     },
     [value, persist, mutate]
@@ -124,7 +125,7 @@ export function useGroupFaq(groupId: string) {
       const newValue: GroupFaqSettingValue = { faqs: newFaqs };
 
       if (!persist(newValue)) {
-        toast.error("고정 설정에 실패했습니다");
+        toast.error(TOAST.BOARD.PIN_ERROR);
         return false;
       }
 
@@ -156,7 +157,7 @@ export function useGroupFaq(groupId: string) {
       };
 
       if (!persist(newValue)) {
-        toast.error("순서 변경에 실패했습니다");
+        toast.error(TOAST.ORDER_ERROR);
         return false;
       }
 

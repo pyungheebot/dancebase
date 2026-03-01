@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { PerformanceRetro, RetroCategory, RetroItem } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
@@ -45,15 +46,15 @@ export function usePerformanceRetrospective(
     overallRating: number;
   }): boolean {
     if (!input.performanceTitle.trim()) {
-      toast.error("공연명을 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE.NAME_REQUIRED);
       return false;
     }
     if (!input.performanceDate) {
-      toast.error("공연 날짜를 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE.DATE_REQUIRED);
       return false;
     }
     if (input.overallRating < 1 || input.overallRating > 5) {
-      toast.error("평가는 1~5점 사이로 입력해주세요.");
+      toast.error(TOAST.MISC.SCORE_RANGE);
       return false;
     }
     try {
@@ -70,10 +71,10 @@ export function usePerformanceRetrospective(
       const next = [...stored, newRetro];
       saveToStorage(storageKey(groupId, projectId), next);
       void mutate(next, false);
-      toast.success("회고가 생성되었습니다.");
+      toast.success(TOAST.RETROSPECTIVE.CREATED);
       return true;
     } catch {
-      toast.error("회고 생성에 실패했습니다.");
+      toast.error(TOAST.RETROSPECTIVE.CREATE_ERROR);
       return false;
     }
   }
@@ -85,10 +86,10 @@ export function usePerformanceRetrospective(
       const next = stored.filter((r) => r.id !== retroId);
       saveToStorage(storageKey(groupId, projectId), next);
       void mutate(next, false);
-      toast.success("회고가 삭제되었습니다.");
+      toast.success(TOAST.RETROSPECTIVE.DELETED);
       return true;
     } catch {
-      toast.error("회고 삭제에 실패했습니다.");
+      toast.error(TOAST.RETROSPECTIVE.DELETE_ERROR);
       return false;
     }
   }
@@ -101,7 +102,7 @@ export function usePerformanceRetrospective(
     authorName: string
   ): boolean {
     if (!content.trim()) {
-      toast.error("내용을 입력해주세요.");
+      toast.error(TOAST.CONTENT_REQUIRED_DOT);
       return false;
     }
     try {
@@ -122,7 +123,7 @@ export function usePerformanceRetrospective(
       void mutate(next, false);
       return true;
     } catch {
-      toast.error("항목 추가에 실패했습니다.");
+      toast.error(TOAST.ITEM_ADD_ERROR);
       return false;
     }
   }
@@ -144,7 +145,7 @@ export function usePerformanceRetrospective(
       void mutate(next, false);
       return true;
     } catch {
-      toast.error("공감 처리에 실패했습니다.");
+      toast.error(TOAST.BOARD.REACTION_ERROR);
       return false;
     }
   }
@@ -152,7 +153,7 @@ export function usePerformanceRetrospective(
   // ── 액션 아이템 추가 ─────────────────────────────────────
   function addActionItem(retroId: string, action: string): boolean {
     if (!action.trim()) {
-      toast.error("액션 아이템을 입력해주세요.");
+      toast.error(TOAST.RETROSPECTIVE.ACTION_ITEM_REQUIRED);
       return false;
     }
     try {
@@ -163,10 +164,10 @@ export function usePerformanceRetrospective(
       });
       saveToStorage(storageKey(groupId, projectId), next);
       void mutate(next, false);
-      toast.success("액션 아이템이 추가되었습니다.");
+      toast.success(TOAST.RETROSPECTIVE.ACTION_ITEM_ADDED);
       return true;
     } catch {
-      toast.error("액션 아이템 추가에 실패했습니다.");
+      toast.error(TOAST.RETROSPECTIVE.ACTION_ITEM_ADD_ERROR);
       return false;
     }
   }

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PracticeChallengeEntry,
@@ -63,23 +64,23 @@ export function usePracticeChallenge(groupId: string) {
     createdBy: string;
   }): boolean {
     if (!input.title.trim()) {
-      toast.error("도전 과제 제목을 입력해주세요.");
+      toast.error(TOAST.MISSION.TITLE_REQUIRED);
       return false;
     }
     if (!input.startDate || !input.endDate) {
-      toast.error("시작일과 종료일을 입력해주세요.");
+      toast.error(TOAST.DATE.START_END_REQUIRED);
       return false;
     }
     if (input.startDate > input.endDate) {
-      toast.error("종료일은 시작일보다 늦어야 합니다.");
+      toast.error(TOAST.DATE.END_LATER_THAN_START);
       return false;
     }
     if (!input.targetValue || input.targetValue < 1) {
-      toast.error("목표값을 1 이상으로 입력해주세요.");
+      toast.error(TOAST.GOAL.VALUE_REQUIRED);
       return false;
     }
     if (!input.unit.trim()) {
-      toast.error("단위를 입력해주세요.");
+      toast.error(TOAST.GOAL.UNIT_REQUIRED);
       return false;
     }
     try {
@@ -101,10 +102,10 @@ export function usePracticeChallenge(groupId: string) {
       const next = [...stored, newEntry];
       saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
-      toast.success("도전 과제가 생성되었습니다.");
+      toast.success(TOAST.MISSION.CREATED);
       return true;
     } catch {
-      toast.error("도전 과제 생성에 실패했습니다.");
+      toast.error(TOAST.MISSION.CREATE_ERROR);
       return false;
     }
   }
@@ -119,7 +120,7 @@ export function usePracticeChallenge(groupId: string) {
       const stored = loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), []);
       const idx = stored.findIndex((c) => c.id === challengeId);
       if (idx === -1) {
-        toast.error("도전 과제를 찾을 수 없습니다.");
+        toast.error(TOAST.MISSION.NOT_FOUND);
         return false;
       }
       const updated = { ...stored[idx], ...patch };
@@ -130,10 +131,10 @@ export function usePracticeChallenge(groupId: string) {
       ];
       saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
-      toast.success("도전 과제가 수정되었습니다.");
+      toast.success(TOAST.MISSION.UPDATED);
       return true;
     } catch {
-      toast.error("도전 과제 수정에 실패했습니다.");
+      toast.error(TOAST.MISSION.UPDATE_ERROR);
       return false;
     }
   }
@@ -147,10 +148,10 @@ export function usePracticeChallenge(groupId: string) {
       if (next.length === stored.length) return false;
       saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
-      toast.success("도전 과제가 삭제되었습니다.");
+      toast.success(TOAST.MISSION.DELETED);
       return true;
     } catch {
-      toast.error("도전 과제 삭제에 실패했습니다.");
+      toast.error(TOAST.MISSION.DELETE_ERROR);
       return false;
     }
   }
@@ -159,21 +160,21 @@ export function usePracticeChallenge(groupId: string) {
 
   function joinChallenge(challengeId: string, memberName: string): boolean {
     if (!memberName.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.NAME_REQUIRED_DOT);
       return false;
     }
     try {
       const stored = loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), []);
       const challenge = stored.find((c) => c.id === challengeId);
       if (!challenge) {
-        toast.error("도전 과제를 찾을 수 없습니다.");
+        toast.error(TOAST.MISSION.NOT_FOUND);
         return false;
       }
       const alreadyJoined = challenge.participants.some(
         (p) => p.memberName.toLowerCase() === memberName.trim().toLowerCase()
       );
       if (alreadyJoined) {
-        toast.error("이미 참가 중인 멤버입니다.");
+        toast.error(TOAST.MISC.DUPLICATE_MEMBER_DOT);
         return false;
       }
       const newParticipant: PracticeChallengeParticipant = {
@@ -190,7 +191,7 @@ export function usePracticeChallenge(groupId: string) {
       toast.success(`${memberName.trim()}님이 도전에 참가했습니다.`);
       return true;
     } catch {
-      toast.error("참가에 실패했습니다.");
+      toast.error(TOAST.MISC.JOIN_ERROR);
       return false;
     }
   }
@@ -226,11 +227,11 @@ export function usePracticeChallenge(groupId: string) {
       saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
       if (clamped === 100) {
-        toast.success("도전 과제를 완료했습니다!");
+        toast.success(TOAST.MISSION.COMPLETED);
       }
       return true;
     } catch {
-      toast.error("진행률 업데이트에 실패했습니다.");
+      toast.error(TOAST.ONBOARDING.PROGRESS_ERROR);
       return false;
     }
   }
@@ -242,7 +243,7 @@ export function usePracticeChallenge(groupId: string) {
       const stored = loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), []);
       const idx = stored.findIndex((c) => c.id === challengeId);
       if (idx === -1) {
-        toast.error("도전 과제를 찾을 수 없습니다.");
+        toast.error(TOAST.MISSION.NOT_FOUND);
         return false;
       }
       const next = stored.map((c) =>
@@ -250,10 +251,10 @@ export function usePracticeChallenge(groupId: string) {
       );
       saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
-      toast.success("도전 과제가 완료 처리되었습니다.");
+      toast.success(TOAST.MISSION.COMPLETE_PROCESSED);
       return true;
     } catch {
-      toast.error("완료 처리에 실패했습니다.");
+      toast.error(TOAST.MISSION.COMPLETE_ERROR);
       return false;
     }
   }

@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // 멤버별 위험도 분석 결과
 export type MemberRiskAnalysis = {
@@ -287,7 +288,7 @@ export function useSmartReminder(scheduleId: string, groupId: string) {
 
       return { success: true, count: targetMemberIds.length };
     } catch {
-      toast.error("리마인더 발송에 실패했습니다");
+      toast.error(TOAST.REMINDER.SEND_ERROR);
       return { success: false, count: 0 };
     } finally {
       setSending(false);

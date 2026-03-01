@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { WinbackCandidate, WinbackCampaignData } from "@/types";
 
 // 비활성 기준: 30일
@@ -223,7 +224,7 @@ export function useWinbackCampaign(groupId: string) {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        toast.error("로그인이 필요합니다");
+        toast.error(TOAST.LOGIN_REQUIRED);
         return { success: false, count: 0 };
       }
 
@@ -241,7 +242,7 @@ export function useWinbackCampaign(groupId: string) {
 
       return { success: true, count: memberIds.length };
     } catch {
-      toast.error("메시지 발송에 실패했습니다");
+      toast.error(TOAST.INTERCOM.SEND_ERROR);
       return { success: false, count: 0 };
     } finally {
       setSending(false);

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupActivityReport,
@@ -146,10 +147,10 @@ export function useActivityReport(groupId: string) {
       const next = [newReport, ...stored].slice(0, MAX_REPORTS);
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("활동 리포트가 생성되었습니다.");
+      toast.success(TOAST.REPORT.CREATED);
       return true;
     } catch {
-      toast.error("리포트 생성에 실패했습니다.");
+      toast.error(TOAST.REPORT.CREATE_ERROR);
       return false;
     }
   }
@@ -163,10 +164,10 @@ export function useActivityReport(groupId: string) {
       if (next.length === stored.length) return false;
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("리포트가 삭제되었습니다.");
+      toast.success(TOAST.REPORT.DELETED);
       return true;
     } catch {
-      toast.error("리포트 삭제에 실패했습니다.");
+      toast.error(TOAST.REPORT.DELETE_ERROR);
       return false;
     }
   }

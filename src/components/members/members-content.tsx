@@ -47,44 +47,165 @@ import { useMemberFilter } from "@/hooks/use-member-filter";
 import { toast } from "sonner";
 import { exportToCsv } from "@/lib/export/csv-exporter";
 import { getCategoryColorClasses } from "@/types";
+import dynamic from "next/dynamic";
 import { EmptyState } from "@/components/shared/empty-state";
-import { InactiveMembersSection } from "@/components/members/inactive-members-section";
-import { MemberComparisonDashboard } from "@/components/members/member-comparison-dashboard";
-import { MemberActivityReport } from "@/components/members/member-activity-report";
-import { MemberActivityTrendChart } from "@/components/members/member-activity-trend-chart";
-import { SkillMatrixSection } from "@/components/members/skill-matrix-section";
-import { SkillMatrixCard } from "@/components/groups/skill-matrix-card";
-import { ContactVerificationSection } from "@/components/members/contact-verification-section";
-import { ContactVerifyBanner } from "@/components/members/contact-verify-banner";
-import { RolePromotionSection } from "@/components/members/role-promotion-section";
-import { MemberRiskAlert } from "@/components/members/member-risk-alert";
-import { MentorMenteeSection } from "@/components/members/mentor-mentee-section";
-import { MyFeedbackSheet } from "@/components/members/peer-feedback-dialog";
-import { RewardPointsShop } from "@/components/members/reward-points-shop";
-import { DynamicTeamManager } from "@/components/members/dynamic-team-manager";
-import { PartnerMatchingPanel } from "@/components/members/partner-matching-panel";
-import { SkillTreeCard } from "@/components/members/skill-tree-card";
-import { DanceWorkshopCard } from "@/components/members/dance-workshop-card";
-import { DanceAuditionCard } from "@/components/members/dance-audition-card";
-import { DanceClassLogCard } from "@/components/members/dance-class-log-card";
-import { DanceNetworkingCard } from "@/components/members/dance-networking-card";
-import { InjuryLogCard } from "@/components/members/injury-log-card";
-import { DanceStyleAnalysisCard } from "@/components/members/dance-style-analysis-card";
-import { RoutineBuilderCard } from "@/components/members/routine-builder-card";
-import { InspirationBoardCard } from "@/components/members/inspiration-board-card";
-import { DanceMusicCard } from "@/components/members/dance-music-card";
-import { DanceGoalCard } from "@/components/members/dance-goal-card";
-import { DanceConditionJournalCard } from "@/components/members/dance-condition-journal-card";
-import { DanceVideoPortfolioCard } from "@/components/members/dance-video-portfolio-card";
-import { DanceClassReviewCard } from "@/components/members/dance-class-review-card";
-import { DanceCompetitionCard } from "@/components/members/dance-competition-card";
-import { DanceStyleProfileCard } from "@/components/members/dance-style-profile-card";
-import { DanceDiaryCard } from "@/components/members/dance-diary-card";
-import { DanceCertificationCard } from "@/components/members/dance-certification-card";
-import { DancePlaylistCard } from "@/components/members/dance-playlist-card";
-import { DanceFlexibilityCard } from "@/components/members/dance-flexibility-card";
-import { DanceMoodBoardCard } from "@/components/members/dance-mood-board-card";
-import { DanceNutritionCard } from "@/components/members/dance-nutrition-card";
+
+// 로딩 플레이스홀더
+const CardSkeleton = () => <div className="h-32 animate-pulse rounded-lg bg-muted mt-4" />;
+const SmallSkeleton = () => <div className="h-8 animate-pulse rounded bg-muted" />;
+
+// 멤버 관리 섹션 (중간 크기)
+const InactiveMembersSection = dynamic(
+  () => import("@/components/members/inactive-members-section").then(m => ({ default: m.InactiveMembersSection })),
+  { loading: () => <CardSkeleton /> }
+);
+const MemberComparisonDashboard = dynamic(
+  () => import("@/components/members/member-comparison-dashboard").then(m => ({ default: m.MemberComparisonDashboard })),
+  { loading: () => <SmallSkeleton /> }
+);
+const MemberActivityReport = dynamic(
+  () => import("@/components/members/member-activity-report").then(m => ({ default: m.MemberActivityReport })),
+  { loading: () => <CardSkeleton /> }
+);
+const MemberActivityTrendChart = dynamic(
+  () => import("@/components/members/member-activity-trend-chart").then(m => ({ default: m.MemberActivityTrendChart })),
+  { loading: () => <div className="h-24 animate-pulse rounded bg-muted" /> }
+);
+const SkillMatrixSection = dynamic(
+  () => import("@/components/members/skill-matrix-section").then(m => ({ default: m.SkillMatrixSection })),
+  { loading: () => <CardSkeleton /> }
+);
+const SkillMatrixCard = dynamic(
+  () => import("@/components/groups/skill-matrix-card").then(m => ({ default: m.SkillMatrixCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const ContactVerificationSection = dynamic(
+  () => import("@/components/members/contact-verification-section").then(m => ({ default: m.ContactVerificationSection })),
+  { loading: () => <CardSkeleton /> }
+);
+const ContactVerifyBanner = dynamic(
+  () => import("@/components/members/contact-verify-banner").then(m => ({ default: m.ContactVerifyBanner })),
+  { loading: () => <div className="h-12 animate-pulse rounded bg-muted" /> }
+);
+const RolePromotionSection = dynamic(
+  () => import("@/components/members/role-promotion-section").then(m => ({ default: m.RolePromotionSection })),
+  { loading: () => <CardSkeleton /> }
+);
+const MemberRiskAlert = dynamic(
+  () => import("@/components/members/member-risk-alert").then(m => ({ default: m.MemberRiskAlert }))
+);
+const MentorMenteeSection = dynamic(
+  () => import("@/components/members/mentor-mentee-section").then(m => ({ default: m.MentorMenteeSection })),
+  { loading: () => <CardSkeleton /> }
+);
+const MyFeedbackSheet = dynamic(
+  () => import("@/components/members/peer-feedback-dialog").then(m => ({ default: m.MyFeedbackSheet })),
+  { loading: () => <SmallSkeleton /> }
+);
+const RewardPointsShop = dynamic(
+  () => import("@/components/members/reward-points-shop").then(m => ({ default: m.RewardPointsShop })),
+  { loading: () => <SmallSkeleton /> }
+);
+const DynamicTeamManager = dynamic(
+  () => import("@/components/members/dynamic-team-manager").then(m => ({ default: m.DynamicTeamManager })),
+  { loading: () => <SmallSkeleton /> }
+);
+const PartnerMatchingPanel = dynamic(
+  () => import("@/components/members/partner-matching-panel").then(m => ({ default: m.PartnerMatchingPanel })),
+  { loading: () => <SmallSkeleton /> }
+);
+
+// 스킬 트리 카드
+const SkillTreeCard = dynamic(
+  () => import("@/components/members/skill-tree-card").then(m => ({ default: m.SkillTreeCard })),
+  { loading: () => <CardSkeleton /> }
+);
+
+// 댄스 카드 (대형 컴포넌트, 840~1200줄)
+const DanceWorkshopCard = dynamic(
+  () => import("@/components/members/dance-workshop-card").then(m => ({ default: m.DanceWorkshopCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceAuditionCard = dynamic(
+  () => import("@/components/members/dance-audition-card").then(m => ({ default: m.DanceAuditionCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceClassLogCard = dynamic(
+  () => import("@/components/members/dance-class-log-card").then(m => ({ default: m.DanceClassLogCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceNetworkingCard = dynamic(
+  () => import("@/components/members/dance-networking-card").then(m => ({ default: m.DanceNetworkingCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const InjuryLogCard = dynamic(
+  () => import("@/components/members/injury-log-card").then(m => ({ default: m.InjuryLogCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceStyleAnalysisCard = dynamic(
+  () => import("@/components/members/dance-style-analysis-card").then(m => ({ default: m.DanceStyleAnalysisCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const RoutineBuilderCard = dynamic(
+  () => import("@/components/members/routine-builder-card").then(m => ({ default: m.RoutineBuilderCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const InspirationBoardCard = dynamic(
+  () => import("@/components/members/inspiration-board-card").then(m => ({ default: m.InspirationBoardCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceMusicCard = dynamic(
+  () => import("@/components/members/dance-music-card").then(m => ({ default: m.DanceMusicCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceGoalCard = dynamic(
+  () => import("@/components/members/dance-goal-card").then(m => ({ default: m.DanceGoalCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceConditionJournalCard = dynamic(
+  () => import("@/components/members/dance-condition-journal-card").then(m => ({ default: m.DanceConditionJournalCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceVideoPortfolioCard = dynamic(
+  () => import("@/components/members/dance-video-portfolio-card").then(m => ({ default: m.DanceVideoPortfolioCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceClassReviewCard = dynamic(
+  () => import("@/components/members/dance-class-review-card").then(m => ({ default: m.DanceClassReviewCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceCompetitionCard = dynamic(
+  () => import("@/components/members/dance-competition-card").then(m => ({ default: m.DanceCompetitionCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceStyleProfileCard = dynamic(
+  () => import("@/components/members/dance-style-profile-card").then(m => ({ default: m.DanceStyleProfileCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceDiaryCard = dynamic(
+  () => import("@/components/members/dance-diary-card").then(m => ({ default: m.DanceDiaryCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceCertificationCard = dynamic(
+  () => import("@/components/members/dance-certification-card").then(m => ({ default: m.DanceCertificationCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DancePlaylistCard = dynamic(
+  () => import("@/components/members/dance-playlist-card").then(m => ({ default: m.DancePlaylistCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceFlexibilityCard = dynamic(
+  () => import("@/components/members/dance-flexibility-card").then(m => ({ default: m.DanceFlexibilityCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceMoodBoardCard = dynamic(
+  () => import("@/components/members/dance-mood-board-card").then(m => ({ default: m.DanceMoodBoardCard })),
+  { loading: () => <CardSkeleton /> }
+);
+const DanceNutritionCard = dynamic(
+  () => import("@/components/members/dance-nutrition-card").then(m => ({ default: m.DanceNutritionCard })),
+  { loading: () => <CardSkeleton /> }
+);
 import type { EntityContext, EntityMember } from "@/types/entity-context";
 import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
 

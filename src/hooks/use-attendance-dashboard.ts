@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type { AttendanceDashRecord, AttendanceDashStatus, AttendanceDashSummary } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
@@ -42,11 +43,11 @@ export function useAttendanceDashboard(groupId: string) {
     notes?: string;
   }): boolean {
     if (!input.memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBER_NAME_REQUIRED_DOT);
       return false;
     }
     if (!input.date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.DATE_REQUIRED_DOT);
       return false;
     }
     try {
@@ -60,10 +61,10 @@ export function useAttendanceDashboard(groupId: string) {
       const updated = [...records, newRecord];
       saveToStorage(LS_KEY(groupId), updated);
       mutate(updated, false);
-      toast.success("출석 기록이 추가되었습니다.");
+      toast.success(TOAST.ATTENDANCE.ADDED);
       return true;
     } catch {
-      toast.error("출석 기록 추가에 실패했습니다.");
+      toast.error(TOAST.ATTENDANCE.ADD_ERROR);
       return false;
     }
   }
@@ -80,10 +81,10 @@ export function useAttendanceDashboard(groupId: string) {
       );
       saveToStorage(LS_KEY(groupId), updated);
       mutate(updated, false);
-      toast.success("출석 기록이 수정되었습니다.");
+      toast.success(TOAST.ATTENDANCE.UPDATED);
       return true;
     } catch {
-      toast.error("출석 기록 수정에 실패했습니다.");
+      toast.error(TOAST.ATTENDANCE.UPDATE_ERROR);
       return false;
     }
   }
@@ -95,10 +96,10 @@ export function useAttendanceDashboard(groupId: string) {
       const updated = records.filter((r) => r.id !== id);
       saveToStorage(LS_KEY(groupId), updated);
       mutate(updated, false);
-      toast.success("출석 기록이 삭제되었습니다.");
+      toast.success(TOAST.ATTENDANCE.DELETED);
       return true;
     } catch {
-      toast.error("출석 기록 삭제에 실패했습니다.");
+      toast.error(TOAST.ATTENDANCE.DELETE_ERROR);
       return false;
     }
   }

@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type {
   AttendanceComparisonDetail,
   AttendanceComparisonDetailResult,
@@ -43,7 +44,7 @@ export function useAttendanceComparisonDetail(
 
       const { data: scheduleRows, error: schedErr } = await schedulesQuery;
       if (schedErr) {
-        toast.error("일정 데이터를 불러오지 못했습니다");
+        toast.error(TOAST.SCHEDULE.DATA_LOAD_ERROR);
         return { members: [], hasData: false };
       }
 
@@ -76,7 +77,7 @@ export function useAttendanceComparisonDetail(
         .in("user_id", selectedUserIds);
 
       if (attErr) {
-        toast.error("출석 데이터를 불러오지 못했습니다");
+        toast.error(TOAST.ATTENDANCE.DATA_LOAD_ERROR);
         return { members: [], hasData: false };
       }
 

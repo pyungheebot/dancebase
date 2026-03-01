@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import { toast } from "sonner";
 
 import {
   Collapsible,
@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { useGroupMusicLibrary } from "@/hooks/use-group-music-library";
 import type { GroupMusicTrack, MusicTrackUseCase } from "@/types";
+import { validateUrl, sanitizeUrl } from "@/lib/validation";
 
 // ─── 상수 ─────────────────────────────────────────────────────────────────────
 
@@ -155,6 +156,19 @@ function TrackFormDialog({
   }
 
   function handleSubmit() {
+    if (!form.title.trim()) {
+      toast.error("곡 제목을 입력해주세요");
+      return;
+    }
+    if (!form.artist.trim()) {
+      toast.error("아티스트를 입력해주세요");
+      return;
+    }
+    const urlError = validateUrl(form.url);
+    if (urlError) {
+      toast.error(urlError);
+      return;
+    }
     const ok = onSubmit(form);
     if (ok) setOpen(false);
   }
@@ -663,7 +677,7 @@ function TrackRow({
             <span className="text-[10px] text-gray-400">{track.artist}</span>
             {track.url && (
               <a
-                href={track.url}
+                href={sanitizeUrl(track.url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-400 hover:text-blue-600"

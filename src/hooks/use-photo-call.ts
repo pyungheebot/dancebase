@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type { PhotoCallEntry, PhotoCallType } from "@/types";
 
@@ -74,7 +75,7 @@ export function usePhotoCall(groupId: string, projectId: string) {
   const addEntry = useCallback(
     async (input: AddPhotoCallInput): Promise<boolean> => {
       if (!input.type) {
-        toast.error("촬영 유형을 선택해주세요");
+        toast.error(TOAST.PHOTO_CALL.TYPE_REQUIRED);
         return false;
       }
 
@@ -105,7 +106,7 @@ export function usePhotoCall(groupId: string, projectId: string) {
       const updated = [...current, newEntry];
       saveEntries(groupId, projectId, updated);
       await mutate(updated, false);
-      toast.success("포토콜 항목이 추가되었습니다");
+      toast.success(TOAST.PHOTO_CALL.ADDED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -117,7 +118,7 @@ export function usePhotoCall(groupId: string, projectId: string) {
       const current = loadEntries(groupId, projectId);
       const target = current.find((e) => e.id === id);
       if (!target) {
-        toast.error("항목을 찾을 수 없습니다");
+        toast.error(TOAST.NOT_FOUND);
         return false;
       }
 
@@ -165,7 +166,7 @@ export function usePhotoCall(groupId: string, projectId: string) {
 
       saveEntries(groupId, projectId, updated);
       await mutate(updated, false);
-      toast.success("항목이 수정되었습니다");
+      toast.success(TOAST.ITEM_UPDATED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -178,7 +179,7 @@ export function usePhotoCall(groupId: string, projectId: string) {
       const filtered = current.filter((e) => e.id !== id);
       saveEntries(groupId, projectId, filtered);
       await mutate(filtered, false);
-      toast.success("항목이 삭제되었습니다");
+      toast.success(TOAST.ITEM_DELETED);
       return true;
     },
     [groupId, projectId, mutate]

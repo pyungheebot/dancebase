@@ -6,6 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { invalidatePerformanceRecords } from "@/lib/swr/invalidate";
 import type { PerformanceRecord, PerformanceEventType } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 export type PerformanceRecordInput = {
   event_name: string;
@@ -52,7 +53,7 @@ export function usePerformanceRecords(groupId: string) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.LOGIN_REQUIRED);
       return false;
     }
 
@@ -71,11 +72,11 @@ export function usePerformanceRecords(groupId: string) {
     });
 
     if (error) {
-      toast.error("성과 기록 추가에 실패했습니다");
+      toast.error(TOAST.PERFORMANCE_RECORD.ADD_ERROR);
       return false;
     }
 
-    toast.success("성과가 기록되었습니다");
+    toast.success(TOAST.PERFORMANCE_RECORD.CREATED);
     invalidatePerformanceRecords(groupId);
     mutate();
     return true;
@@ -104,11 +105,11 @@ export function usePerformanceRecords(groupId: string) {
       .eq("id", id);
 
     if (error) {
-      toast.error("성과 기록 수정에 실패했습니다");
+      toast.error(TOAST.PERFORMANCE_RECORD.UPDATE_ERROR);
       return false;
     }
 
-    toast.success("성과가 수정되었습니다");
+    toast.success(TOAST.PERFORMANCE_RECORD.UPDATED);
     invalidatePerformanceRecords(groupId);
     mutate();
     return true;
@@ -123,11 +124,11 @@ export function usePerformanceRecords(groupId: string) {
       .eq("id", id);
 
     if (error) {
-      toast.error("성과 기록 삭제에 실패했습니다");
+      toast.error(TOAST.PERFORMANCE_RECORD.DELETE_ERROR);
       return false;
     }
 
-    toast.success("성과 기록이 삭제되었습니다");
+    toast.success(TOAST.PERFORMANCE_RECORD.DELETED);
     invalidatePerformanceRecords(groupId);
     mutate();
     return true;

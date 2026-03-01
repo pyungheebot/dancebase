@@ -6,6 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { invalidateProjectTasks } from "@/lib/swr/invalidate";
 import type { ProjectTask } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 export function useProjectTasks(projectId: string) {
   const fetcher = async (): Promise<ProjectTask[]> => {
@@ -51,7 +52,7 @@ export function useProjectTasks(projectId: string) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.LOGIN_REQUIRED);
       return false;
     }
 
@@ -66,7 +67,7 @@ export function useProjectTasks(projectId: string) {
     });
 
     if (error) {
-      toast.error("할 일 추가에 실패했습니다");
+      toast.error(TOAST.ONBOARDING.TASK_DELETE_ERROR);
       return false;
     }
 
@@ -84,7 +85,7 @@ export function useProjectTasks(projectId: string) {
       .eq("id", taskId);
 
     if (error) {
-      toast.error("상태 변경에 실패했습니다");
+      toast.error(TOAST.STATUS_ERROR);
       return;
     }
 
@@ -107,11 +108,11 @@ export function useProjectTasks(projectId: string) {
       .eq("id", taskId);
 
     if (error) {
-      toast.error("삭제에 실패했습니다");
+      toast.error(TOAST.DELETE_SIMPLE_ERROR);
       return;
     }
 
-    toast.success("할 일이 삭제되었습니다");
+    toast.success(TOAST.ONBOARDING.TASK_DELETED);
     invalidateProjectTasks(projectId);
     mutate();
   }

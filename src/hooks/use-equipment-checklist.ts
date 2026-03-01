@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   EquipmentChecklistSheet,
@@ -118,7 +119,7 @@ export function useEquipmentChecklist(groupId: string) {
     ): Promise<boolean> => {
       const trimmed = input.name.trim();
       if (!trimmed) {
-        toast.error("항목 이름을 입력해주세요");
+        toast.error(TOAST.ITEM_NAME_REQUIRED);
         return false;
       }
       const current = loadSheet(groupId);
@@ -137,7 +138,7 @@ export function useEquipmentChecklist(groupId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("항목이 추가되었습니다");
+      toast.success(TOAST.ITEM_ADDED);
       return true;
     },
     [groupId, mutate]
@@ -154,7 +155,7 @@ export function useEquipmentChecklist(groupId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("항목이 삭제되었습니다");
+      toast.success(TOAST.ITEM_DELETED);
       return true;
     },
     [groupId, mutate]
@@ -168,7 +169,7 @@ export function useEquipmentChecklist(groupId: string) {
       assignee?: string
     ): Promise<string | null> => {
       if (!date) {
-        toast.error("날짜를 선택해주세요");
+        toast.error(TOAST.DATE_SELECT);
         return null;
       }
       const current = loadSheet(groupId);
@@ -180,7 +181,7 @@ export function useEquipmentChecklist(groupId: string) {
         (r) => r.date === date && r.phase === phase
       );
       if (existing) {
-        toast.error("해당 날짜에 이미 기록이 존재합니다");
+        toast.error(TOAST.DATA.DUPLICATE_DATE);
         return null;
       }
 
@@ -206,7 +207,7 @@ export function useEquipmentChecklist(groupId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("체크리스트 기록이 생성되었습니다");
+      toast.success(TOAST.EQUIPMENT.CHECKLIST_CREATED);
       return newRecord.id;
     },
     [groupId, mutate]
@@ -222,7 +223,7 @@ export function useEquipmentChecklist(groupId: string) {
       const current = loadSheet(groupId);
       const record = current.records.find((r) => r.id === recordId);
       if (!record) {
-        toast.error("기록을 찾을 수 없습니다");
+        toast.error(TOAST.RECORD.NOT_FOUND);
         return false;
       }
       const now = new Date().toISOString();
@@ -275,7 +276,7 @@ export function useEquipmentChecklist(groupId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("기록이 삭제되었습니다");
+      toast.success(TOAST.ENERGY.DELETED);
       return true;
     },
     [groupId, mutate]
@@ -297,7 +298,7 @@ export function useEquipmentChecklist(groupId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("담당자가 변경되었습니다");
+      toast.success(TOAST.INFO.ASSIGNEE_CHANGED);
       return true;
     },
     [groupId, mutate]

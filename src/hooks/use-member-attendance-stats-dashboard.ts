@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   MemberAttendStatRecord,
@@ -154,11 +155,11 @@ export function useMemberAttendanceStatsDashboard(groupId: string) {
     notes?: string;
   }): boolean {
     if (!input.memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBER_NAME_REQUIRED_DOT);
       return false;
     }
     if (!input.date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.DATE_REQUIRED_DOT);
       return false;
     }
     try {
@@ -174,10 +175,10 @@ export function useMemberAttendanceStatsDashboard(groupId: string) {
       const updated = [...records, newRecord];
       saveRecords(groupId, updated);
       mutate(updated, false);
-      toast.success("출석 기록이 추가되었습니다.");
+      toast.success(TOAST.ATTENDANCE.ADDED);
       return true;
     } catch {
-      toast.error("출석 기록 추가에 실패했습니다.");
+      toast.error(TOAST.ATTENDANCE.ADD_ERROR);
       return false;
     }
   }
@@ -189,10 +190,10 @@ export function useMemberAttendanceStatsDashboard(groupId: string) {
       const updated = records.filter((r) => r.id !== id);
       saveRecords(groupId, updated);
       mutate(updated, false);
-      toast.success("출석 기록이 삭제되었습니다.");
+      toast.success(TOAST.ATTENDANCE.DELETED);
       return true;
     } catch {
-      toast.error("출석 기록 삭제에 실패했습니다.");
+      toast.error(TOAST.ATTENDANCE.DELETE_ERROR);
       return false;
     }
   }

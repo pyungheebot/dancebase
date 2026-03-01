@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { GroupEvent, EventTag } from "@/types";
 
 const STORAGE_KEY_PREFIX = "dancebase:event-gallery:";
@@ -72,11 +73,11 @@ export function useEventGallery(groupId: string) {
         return false;
       }
       if (!input.title.trim()) {
-        toast.error("제목을 입력해주세요.");
+        toast.error(TOAST.TITLE_REQUIRED_DOT);
         return false;
       }
       if (!input.date) {
-        toast.error("날짜를 입력해주세요.");
+        toast.error(TOAST.DATE_REQUIRED_DOT);
         return false;
       }
 
@@ -93,7 +94,7 @@ export function useEventGallery(groupId: string) {
       };
 
       persistAndUpdate([...events, newEvent]);
-      toast.success("이벤트가 등록되었습니다.");
+      toast.success(TOAST.EVENT.REGISTERED);
       return true;
     },
     [events, groupId, persistAndUpdate]
@@ -103,11 +104,11 @@ export function useEventGallery(groupId: string) {
   const updateEvent = useCallback(
     (id: string, input: GroupEventInput): boolean => {
       if (!input.title.trim()) {
-        toast.error("제목을 입력해주세요.");
+        toast.error(TOAST.TITLE_REQUIRED_DOT);
         return false;
       }
       if (!input.date) {
-        toast.error("날짜를 입력해주세요.");
+        toast.error(TOAST.DATE_REQUIRED_DOT);
         return false;
       }
 
@@ -126,7 +127,7 @@ export function useEventGallery(groupId: string) {
       );
 
       persistAndUpdate(updated);
-      toast.success("이벤트가 수정되었습니다.");
+      toast.success(TOAST.SHOW_TIMELINE.EVENT_UPDATED_DOT);
       return true;
     },
     [events, persistAndUpdate]
@@ -137,7 +138,7 @@ export function useEventGallery(groupId: string) {
     (id: string): void => {
       const updated = events.filter((e) => e.id !== id);
       persistAndUpdate(updated);
-      toast.success("이벤트가 삭제되었습니다.");
+      toast.success(TOAST.SHOW_TIMELINE.EVENT_DELETED_DOT);
     },
     [events, persistAndUpdate]
   );

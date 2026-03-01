@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { PhotoAlbum, PhotoAlbumItem } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
@@ -23,7 +24,7 @@ export function usePhotoAlbum(groupId: string) {
 
   function addAlbum(input: { name: string; coverUrl?: string }): boolean {
     if (!input.name.trim()) {
-      toast.error("앨범 이름을 입력해주세요.");
+      toast.error(TOAST.ALBUM.NAME_REQUIRED);
       return false;
     }
     try {
@@ -38,10 +39,10 @@ export function usePhotoAlbum(groupId: string) {
       const next = [...stored, newAlbum];
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("앨범이 생성되었습니다.");
+      toast.success(TOAST.ALBUM.CREATED);
       return true;
     } catch {
-      toast.error("앨범 생성에 실패했습니다.");
+      toast.error(TOAST.ALBUM.CREATE_ERROR);
       return false;
     }
   }
@@ -55,10 +56,10 @@ export function usePhotoAlbum(groupId: string) {
       if (next.length === stored.length) return false;
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("앨범이 삭제되었습니다.");
+      toast.success(TOAST.ALBUM.DELETED);
       return true;
     } catch {
-      toast.error("앨범 삭제에 실패했습니다.");
+      toast.error(TOAST.ALBUM.DELETE_ERROR);
       return false;
     }
   }
@@ -70,14 +71,14 @@ export function usePhotoAlbum(groupId: string) {
     input: Omit<PhotoAlbumItem, "id" | "createdAt">
   ): boolean {
     if (!input.title.trim()) {
-      toast.error("사진 제목을 입력해주세요.");
+      toast.error(TOAST.ALBUM.PHOTO_TITLE_REQUIRED);
       return false;
     }
     try {
       const stored = loadFromStorage<PhotoAlbum[]>(STORAGE_KEY(groupId), []);
       const album = stored.find((a) => a.id === albumId);
       if (!album) {
-        toast.error("앨범을 찾을 수 없습니다.");
+        toast.error(TOAST.ALBUM.NOT_FOUND);
         return false;
       }
       const newPhoto: PhotoAlbumItem = {
@@ -95,10 +96,10 @@ export function usePhotoAlbum(groupId: string) {
       );
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("사진이 추가되었습니다.");
+      toast.success(TOAST.ALBUM.PHOTO_ADDED);
       return true;
     } catch {
-      toast.error("사진 추가에 실패했습니다.");
+      toast.error(TOAST.ALBUM.PHOTO_ADD_ERROR);
       return false;
     }
   }
@@ -115,10 +116,10 @@ export function usePhotoAlbum(groupId: string) {
       );
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("사진이 삭제되었습니다.");
+      toast.success(TOAST.ALBUM.PHOTO_DELETED);
       return true;
     } catch {
-      toast.error("사진 삭제에 실패했습니다.");
+      toast.error(TOAST.ALBUM.PHOTO_DELETE_ERROR);
       return false;
     }
   }
@@ -143,10 +144,10 @@ export function usePhotoAlbum(groupId: string) {
       });
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("사진이 수정되었습니다.");
+      toast.success(TOAST.ALBUM.PHOTO_UPDATED);
       return true;
     } catch {
-      toast.error("사진 수정에 실패했습니다.");
+      toast.error(TOAST.ALBUM.PHOTO_UPDATE_ERROR);
       return false;
     }
   }

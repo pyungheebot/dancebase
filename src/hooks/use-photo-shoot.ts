@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
@@ -68,7 +69,7 @@ export function usePhotoShoot(projectId: string) {
     (input: PhotoShootPlanInput): boolean => {
       const trimTitle = input.title.trim();
       if (!trimTitle) {
-        toast.error("촬영 계획 제목을 입력해주세요");
+        toast.error(TOAST.PHOTO_SHOOT.TITLE_REQUIRED);
         return false;
       }
       const newPlan: PhotoShootPlan = {
@@ -90,7 +91,7 @@ export function usePhotoShoot(projectId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("촬영 계획이 추가되었습니다");
+      toast.success(TOAST.PHOTO_SHOOT.ADDED);
       return true;
     },
     [current, persist]
@@ -101,12 +102,12 @@ export function usePhotoShoot(projectId: string) {
     (id: string, input: PhotoShootPlanInput): boolean => {
       const trimTitle = input.title.trim();
       if (!trimTitle) {
-        toast.error("촬영 계획 제목을 입력해주세요");
+        toast.error(TOAST.PHOTO_SHOOT.TITLE_REQUIRED);
         return false;
       }
       const idx = current.plans.findIndex((p) => p.id === id);
       if (idx === -1) {
-        toast.error("촬영 계획을 찾을 수 없습니다");
+        toast.error(TOAST.PHOTO_SHOOT.NOT_FOUND);
         return false;
       }
       const updatedPlans = current.plans.map((p) =>
@@ -130,7 +131,7 @@ export function usePhotoShoot(projectId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("촬영 계획이 수정되었습니다");
+      toast.success(TOAST.PHOTO_SHOOT.UPDATED);
       return true;
     },
     [current, persist]
@@ -145,7 +146,7 @@ export function usePhotoShoot(projectId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("촬영 계획이 삭제되었습니다");
+      toast.success(TOAST.PHOTO_SHOOT.DELETED);
     },
     [current, persist]
   );
@@ -175,7 +176,7 @@ export function usePhotoShoot(projectId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("촬영 담당자가 업데이트되었습니다");
+      toast.success(TOAST.PHOTO_SHOOT.ASSIGNEE_UPDATED);
     },
     [current, persist]
   );

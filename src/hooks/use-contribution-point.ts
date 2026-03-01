@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   ContributionPointCategory,
@@ -160,23 +161,23 @@ export function useContributionPoint(groupId: string) {
   const addTransaction = useCallback(
     async (input: AddContributionPointInput): Promise<boolean> => {
       if (!input.memberId.trim()) {
-        toast.error("멤버를 선택해주세요");
+        toast.error(TOAST.MEMBER_SELECT);
         return false;
       }
       if (!input.reason.trim()) {
-        toast.error("사유를 입력해주세요");
+        toast.error(TOAST.INFO.REASON_REQUIRED);
         return false;
       }
       if (!input.points || input.points === 0) {
-        toast.error("포인트를 입력해주세요 (0 제외)");
+        toast.error(TOAST.CONTRIBUTION.POINTS_REQUIRED);
         return false;
       }
       if (!input.date) {
-        toast.error("날짜를 입력해주세요");
+        toast.error(TOAST.DATE_REQUIRED);
         return false;
       }
       if (!input.grantedBy.trim()) {
-        toast.error("부여자를 입력해주세요");
+        toast.error(TOAST.CONTRIBUTION.GIVER_REQUIRED);
         return false;
       }
 
@@ -225,7 +226,7 @@ export function useContributionPoint(groupId: string) {
       };
       saveStore(updated);
       await mutate(updated, false);
-      toast.success("내역이 삭제되었습니다");
+      toast.success(TOAST.HISTORY.DELETED);
       return true;
     },
     [groupId, mutate]

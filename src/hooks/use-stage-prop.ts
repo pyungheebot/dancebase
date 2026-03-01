@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
@@ -69,11 +70,11 @@ export function useStagePropManagement(projectId: string) {
   // ── 소품 추가 ──
   function addProp(input: StagePropInput): StagePropItem | null {
     if (!input.name.trim()) {
-      toast.error("소품 이름을 입력해주세요");
+      toast.error(TOAST.PROP.NAME_REQUIRED);
       return null;
     }
     if (input.quantity < 1) {
-      toast.error("수량은 1 이상이어야 합니다");
+      toast.error(TOAST.PROP.QUANTITY_REQUIRED);
       return null;
     }
     const item: StagePropItem = {
@@ -84,7 +85,7 @@ export function useStagePropManagement(projectId: string) {
       createdAt: new Date().toISOString(),
     };
     persist({ ...store, props: [...store.props, item] });
-    toast.success("소품이 추가되었습니다");
+    toast.success(TOAST.PROP.ADDED);
     return item;
   }
 
@@ -92,7 +93,7 @@ export function useStagePropManagement(projectId: string) {
   function updateProp(id: string, fields: Partial<StagePropInput>): boolean {
     const target = store.props.find((p) => p.id === id);
     if (!target) {
-      toast.error("소품을 찾을 수 없습니다");
+      toast.error(TOAST.PROP.NOT_FOUND);
       return false;
     }
     const updated = store.props.map((p) =>
@@ -106,7 +107,7 @@ export function useStagePropManagement(projectId: string) {
         : p
     );
     persist({ ...store, props: updated });
-    toast.success("소품이 수정되었습니다");
+    toast.success(TOAST.PROP.UPDATED);
     return true;
   }
 
@@ -114,7 +115,7 @@ export function useStagePropManagement(projectId: string) {
   function deleteProp(id: string): boolean {
     const filtered = store.props.filter((p) => p.id !== id);
     persist({ ...store, props: filtered });
-    toast.success("소품이 삭제되었습니다");
+    toast.success(TOAST.PROP.DELETED);
     return true;
   }
 

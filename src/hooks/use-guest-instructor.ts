@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
@@ -85,11 +86,11 @@ export function useGuestInstructor(groupId: string) {
   const addInstructor = useCallback(
     async (input: AddGuestInstructorInput): Promise<boolean> => {
       if (!input.name.trim()) {
-        toast.error("강사 이름을 입력해주세요");
+        toast.error(TOAST.INSTRUCTOR.NAME_REQUIRED);
         return false;
       }
       if (!input.genre.trim()) {
-        toast.error("전문 장르를 입력해주세요");
+        toast.error(TOAST.INFO.GENRE_REQUIRED);
         return false;
       }
 
@@ -120,7 +121,7 @@ export function useGuestInstructor(groupId: string) {
       };
       saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
-      toast.success("강사가 등록되었습니다");
+      toast.success(TOAST.INSTRUCTOR.CREATED);
       return true;
     },
     [groupId, mutate]
@@ -135,7 +136,7 @@ export function useGuestInstructor(groupId: string) {
       const current = loadFromStorage<GuestInstructorData>(getStorageKey(groupId), {} as GuestInstructorData);
       const target = current.instructors.find((i) => i.id === id);
       if (!target) {
-        toast.error("강사 정보를 찾을 수 없습니다");
+        toast.error(TOAST.INSTRUCTOR.NOT_FOUND);
         return false;
       }
 
@@ -180,7 +181,7 @@ export function useGuestInstructor(groupId: string) {
       };
       saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
-      toast.success("강사 정보가 수정되었습니다");
+      toast.success(TOAST.INSTRUCTOR.UPDATED);
       return true;
     },
     [groupId, mutate]
@@ -198,7 +199,7 @@ export function useGuestInstructor(groupId: string) {
       };
       saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
-      toast.success("강사가 삭제되었습니다");
+      toast.success(TOAST.INSTRUCTOR.DELETED);
       return true;
     },
     [groupId, mutate]
@@ -208,22 +209,22 @@ export function useGuestInstructor(groupId: string) {
   const addLesson = useCallback(
     async (instructorId: string, input: AddGuestLessonInput): Promise<boolean> => {
       if (!input.date) {
-        toast.error("수업 날짜를 선택해주세요");
+        toast.error(TOAST.INSTRUCTOR.CLASS_DATE_REQUIRED);
         return false;
       }
       if (!input.topic.trim()) {
-        toast.error("수업 주제를 입력해주세요");
+        toast.error(TOAST.INSTRUCTOR.CLASS_TOPIC_REQUIRED);
         return false;
       }
       if (input.rating < 1 || input.rating > 5) {
-        toast.error("평점은 1~5 사이여야 합니다");
+        toast.error(TOAST.MISC.RATING_RANGE);
         return false;
       }
 
       const current = loadFromStorage<GuestInstructorData>(getStorageKey(groupId), {} as GuestInstructorData);
       const target = current.instructors.find((i) => i.id === instructorId);
       if (!target) {
-        toast.error("강사 정보를 찾을 수 없습니다");
+        toast.error(TOAST.INSTRUCTOR.NOT_FOUND);
         return false;
       }
 
@@ -254,7 +255,7 @@ export function useGuestInstructor(groupId: string) {
       };
       saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
-      toast.success("수업 이력이 추가되었습니다");
+      toast.success(TOAST.INSTRUCTOR.CLASS_ADDED);
       return true;
     },
     [groupId, mutate]
@@ -280,7 +281,7 @@ export function useGuestInstructor(groupId: string) {
       };
       saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
-      toast.success("수업 이력이 삭제되었습니다");
+      toast.success(TOAST.INSTRUCTOR.CLASS_DELETED);
       return true;
     },
     [groupId, mutate]

@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
@@ -89,7 +90,7 @@ export function useVenueManagement(projectId: string) {
     (input: VenueMgmtVenueInput): boolean => {
       const trimName = input.name.trim();
       if (!trimName) {
-        toast.error("공연장 이름을 입력해주세요");
+        toast.error(TOAST.VENUE.NAME_REQUIRED);
         return false;
       }
       const now = new Date().toISOString();
@@ -113,7 +114,7 @@ export function useVenueManagement(projectId: string) {
         updatedAt: now,
       };
       persist(next);
-      toast.success("공연장이 추가되었습니다");
+      toast.success(TOAST.VENUE.ADDED);
       return true;
     },
     [current, persist]
@@ -124,12 +125,12 @@ export function useVenueManagement(projectId: string) {
     (id: string, input: VenueMgmtVenueInput): boolean => {
       const trimName = input.name.trim();
       if (!trimName) {
-        toast.error("공연장 이름을 입력해주세요");
+        toast.error(TOAST.VENUE.NAME_REQUIRED);
         return false;
       }
       const idx = current.venues.findIndex((v) => v.id === id);
       if (idx === -1) {
-        toast.error("공연장을 찾을 수 없습니다");
+        toast.error(TOAST.VENUE.NOT_FOUND);
         return false;
       }
       const now = new Date().toISOString();
@@ -156,7 +157,7 @@ export function useVenueManagement(projectId: string) {
         updatedAt: now,
       };
       persist(next);
-      toast.success("공연장 정보가 수정되었습니다");
+      toast.success(TOAST.VENUE.UPDATED);
       return true;
     },
     [current, persist]
@@ -171,7 +172,7 @@ export function useVenueManagement(projectId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("공연장이 삭제되었습니다");
+      toast.success(TOAST.VENUE.DELETED);
     },
     [current, persist]
   );
@@ -216,7 +217,7 @@ export function useVenueManagement(projectId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("예약 상태가 변경되었습니다");
+      toast.success(TOAST.INFO.BOOKING_STATUS_CHANGED);
     },
     [current, persist]
   );

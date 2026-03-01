@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   EmergencyContactEntry,
@@ -75,15 +76,15 @@ export function useEmergencyContact(groupId: string) {
   const addContact = useCallback(
     async (input: AddEmergencyContactInput): Promise<boolean> => {
       if (!input.memberName.trim()) {
-        toast.error("멤버 이름을 입력해주세요");
+        toast.error(TOAST.MEMBER_NAME_REQUIRED);
         return false;
       }
       if (!input.contactName.trim()) {
-        toast.error("긴급 연락처 이름을 입력해주세요");
+        toast.error(TOAST.EMERGENCY_CONTACT.NAME_REQUIRED);
         return false;
       }
       if (!input.phone.trim()) {
-        toast.error("긴급 연락처 전화번호를 입력해주세요");
+        toast.error(TOAST.EMERGENCY_CONTACT.PHONE_REQUIRED);
         return false;
       }
 
@@ -116,7 +117,7 @@ export function useEmergencyContact(groupId: string) {
       const updated = [...entries, newEntry];
       saveEntries(groupId, updated);
       await mutate(updated, false);
-      toast.success("긴급 연락처가 추가되었습니다");
+      toast.success(TOAST.EMERGENCY_CONTACT.ADDED);
       return true;
     },
     [groupId, entries, mutate]
@@ -127,7 +128,7 @@ export function useEmergencyContact(groupId: string) {
     async (id: string, changes: UpdateEmergencyContactInput): Promise<boolean> => {
       const target = entries.find((e) => e.id === id);
       if (!target) {
-        toast.error("항목을 찾을 수 없습니다");
+        toast.error(TOAST.NOT_FOUND);
         return false;
       }
 
@@ -194,7 +195,7 @@ export function useEmergencyContact(groupId: string) {
 
       saveEntries(groupId, updated);
       await mutate(updated, false);
-      toast.success("긴급 연락처가 수정되었습니다");
+      toast.success(TOAST.EMERGENCY_CONTACT.UPDATED);
       return true;
     },
     [groupId, entries, mutate]
@@ -206,7 +207,7 @@ export function useEmergencyContact(groupId: string) {
       const filtered = entries.filter((e) => e.id !== id);
       saveEntries(groupId, filtered);
       await mutate(filtered, false);
-      toast.success("긴급 연락처가 삭제되었습니다");
+      toast.success(TOAST.EMERGENCY_CONTACT.DELETED);
       return true;
     },
     [groupId, entries, mutate]

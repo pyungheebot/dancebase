@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   AudienceCountEntry,
@@ -94,15 +95,15 @@ export function useAudienceCount(groupId: string, projectId: string) {
   const addRecord = useCallback(
     async (input: AddAudienceCountInput): Promise<boolean> => {
       if (!input.date) {
-        toast.error("공연 날짜를 입력해주세요");
+        toast.error(TOAST.AUDIENCE.DATE_REQUIRED);
         return false;
       }
       if (input.totalSeats <= 0) {
-        toast.error("총 좌석 수는 1 이상이어야 합니다");
+        toast.error(TOAST.AUDIENCE.SEAT_REQUIRED);
         return false;
       }
       if (input.actualCount < 0) {
-        toast.error("관객 수는 0 이상이어야 합니다");
+        toast.error(TOAST.AUDIENCE.COUNT_REQUIRED);
         return false;
       }
 
@@ -137,7 +138,7 @@ export function useAudienceCount(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("관객 수가 추가되었습니다");
+      toast.success(TOAST.AUDIENCE.ADDED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -149,7 +150,7 @@ export function useAudienceCount(groupId: string, projectId: string) {
       const current = loadSheet(groupId, projectId);
       const target = current.records.find((r) => r.id === id);
       if (!target) {
-        toast.error("항목을 찾을 수 없습니다");
+        toast.error(TOAST.NOT_FOUND);
         return false;
       }
 
@@ -196,7 +197,7 @@ export function useAudienceCount(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("항목이 수정되었습니다");
+      toast.success(TOAST.ITEM_UPDATED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -214,7 +215,7 @@ export function useAudienceCount(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("항목이 삭제되었습니다");
+      toast.success(TOAST.ITEM_DELETED);
       return true;
     },
     [groupId, projectId, mutate]

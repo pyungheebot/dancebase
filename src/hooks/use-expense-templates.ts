@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateFinance } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // ============================================
 // 타입 정의
@@ -118,7 +119,7 @@ export function useExpenseTemplates(groupId: string) {
     ) => {
       const template = templates.find((t) => t.id === templateId);
       if (!template || template.items.length === 0) {
-        toast.error("템플릿 항목이 없습니다");
+        toast.error(TOAST.TEMPLATE.EMPTY);
         return false;
       }
 
@@ -131,7 +132,7 @@ export function useExpenseTemplates(groupId: string) {
         } = await supabase.auth.getUser();
 
         if (!user) {
-          toast.error("로그인이 필요합니다");
+          toast.error(TOAST.LOGIN_REQUIRED);
           return false;
         }
 

@@ -6,6 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { invalidatePracticeVideos } from "@/lib/swr/invalidate";
 import type { PracticeVideo } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 export type PracticeVideoWithProfile = PracticeVideo & {
   profiles: { id: string; name: string; avatar_url: string | null } | null;
@@ -46,7 +47,7 @@ export function usePracticeVideos(groupId: string) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.LOGIN_REQUIRED);
       return false;
     }
 
@@ -63,11 +64,11 @@ export function usePracticeVideos(groupId: string) {
     });
 
     if (error) {
-      toast.error("영상 추가에 실패했습니다");
+      toast.error(TOAST.VIDEO.ADD_ERROR);
       return false;
     }
 
-    toast.success("영상이 추가되었습니다");
+    toast.success(TOAST.VIDEO.ADDED);
     invalidatePracticeVideos(groupId);
     mutate();
     return true;
@@ -82,11 +83,11 @@ export function usePracticeVideos(groupId: string) {
       .eq("id", id);
 
     if (error) {
-      toast.error("삭제에 실패했습니다");
+      toast.error(TOAST.DELETE_SIMPLE_ERROR);
       return;
     }
 
-    toast.success("영상이 삭제되었습니다");
+    toast.success(TOAST.VIDEO.DELETED);
     invalidatePracticeVideos(groupId);
     mutate();
   }

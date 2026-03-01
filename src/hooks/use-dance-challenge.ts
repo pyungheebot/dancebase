@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { DanceChallenge, ChallengeCategory, ChallengeParticipant } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
@@ -52,19 +53,19 @@ export function useDanceChallenge(groupId: string) {
     reward: string;
   }): boolean {
     if (!input.title.trim()) {
-      toast.error("챌린지 제목을 입력해주세요.");
+      toast.error(TOAST.CHALLENGE.TITLE_REQUIRED);
       return false;
     }
     if (!input.startDate || !input.endDate) {
-      toast.error("시작일과 종료일을 입력해주세요.");
+      toast.error(TOAST.DATE.START_END_REQUIRED);
       return false;
     }
     if (input.startDate > input.endDate) {
-      toast.error("종료일은 시작일보다 늦어야 합니다.");
+      toast.error(TOAST.DATE.END_LATER_THAN_START);
       return false;
     }
     if (!input.targetCount || input.targetCount < 1) {
-      toast.error("목표 횟수를 1 이상으로 입력해주세요.");
+      toast.error(TOAST.GOAL.COUNT_REQUIRED);
       return false;
     }
     try {
@@ -88,10 +89,10 @@ export function useDanceChallenge(groupId: string) {
         next.map((c) => ({ ...c, status: computeStatus(c.startDate, c.endDate) })),
         false
       );
-      toast.success("챌린지가 생성되었습니다.");
+      toast.success(TOAST.CHALLENGE.CREATED);
       return true;
     } catch {
-      toast.error("챌린지 생성에 실패했습니다.");
+      toast.error(TOAST.CHALLENGE.CREATE_ERROR);
       return false;
     }
   }
@@ -108,10 +109,10 @@ export function useDanceChallenge(groupId: string) {
         next.map((c) => ({ ...c, status: computeStatus(c.startDate, c.endDate) })),
         false
       );
-      toast.success("챌린지가 삭제되었습니다.");
+      toast.success(TOAST.CHALLENGE.DELETED);
       return true;
     } catch {
-      toast.error("챌린지 삭제에 실패했습니다.");
+      toast.error(TOAST.CHALLENGE.DELETE_ERROR);
       return false;
     }
   }
@@ -120,21 +121,21 @@ export function useDanceChallenge(groupId: string) {
 
   function joinChallenge(challengeId: string, name: string): boolean {
     if (!name.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.NAME_REQUIRED_DOT);
       return false;
     }
     try {
       const stored = loadFromStorage<DanceChallenge[]>(LS_KEY(groupId), []);
       const challenge = stored.find((c) => c.id === challengeId);
       if (!challenge) {
-        toast.error("챌린지를 찾을 수 없습니다.");
+        toast.error(TOAST.CHALLENGE.NOT_FOUND);
         return false;
       }
       const alreadyJoined = challenge.participants.some(
         (p) => p.name.toLowerCase() === name.trim().toLowerCase()
       );
       if (alreadyJoined) {
-        toast.error("이미 참여 중인 이름입니다.");
+        toast.error(TOAST.MISC.DUPLICATE_NAME);
         return false;
       }
       const newParticipant: ChallengeParticipant = {
@@ -156,7 +157,7 @@ export function useDanceChallenge(groupId: string) {
       toast.success(`${name.trim()}님이 챌린지에 참여했습니다.`);
       return true;
     } catch {
-      toast.error("챌린지 참여에 실패했습니다.");
+      toast.error(TOAST.CHALLENGE.JOIN_ERROR);
       return false;
     }
   }
@@ -195,13 +196,13 @@ export function useDanceChallenge(groupId: string) {
         false
       );
       if (clamped === 100) {
-        toast.success("챌린지를 완료했습니다!");
+        toast.success(TOAST.CHALLENGE.COMPLETED);
       } else {
-        toast.success("진행률이 업데이트되었습니다.");
+        toast.success(TOAST.ONBOARDING.PROGRESS_UPDATED);
       }
       return true;
     } catch {
-      toast.error("진행률 업데이트에 실패했습니다.");
+      toast.error(TOAST.ONBOARDING.PROGRESS_ERROR);
       return false;
     }
   }

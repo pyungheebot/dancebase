@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { EntitySettingRow } from "@/types";
 
 type UseEntitySettingsParams = {
@@ -65,7 +66,7 @@ export function useEntitySettings<T extends Record<string, unknown>>(
     if (error) {
       // 롤백
       mutate();
-      toast.error("설정 저장에 실패했습니다.");
+      toast.error(TOAST.SETTINGS.SAVE_ERROR);
       return { error: new Error(error.message) };
     }
 

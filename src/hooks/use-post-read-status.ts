@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidatePostReadStatus } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { PostReadStatus } from "@/types";
 import type { GroupMemberWithProfile } from "@/types";
 
@@ -126,7 +127,7 @@ export async function markPostAsRead(postId: string): Promise<boolean> {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    toast.error("로그인이 필요합니다");
+    toast.error(TOAST.LOGIN_REQUIRED);
     return false;
   }
 
@@ -138,7 +139,7 @@ export async function markPostAsRead(postId: string): Promise<boolean> {
     );
 
   if (error) {
-    toast.error("읽음 처리에 실패했습니다");
+    toast.error(TOAST.NOTIFICATION.READ_ERROR_NO_DOT);
     return false;
   }
 

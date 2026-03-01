@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import {
@@ -61,11 +62,11 @@ export function useGroupNoticeboard(groupId: string) {
         posts: [...(value.posts ?? []), newPost],
       };
       if (!persist(newValue)) {
-        toast.error("게시글 추가에 실패했습니다");
+        toast.error(TOAST.BOARD.CREATE_ERROR);
         return false;
       }
       await mutate(newValue);
-      toast.success("게시글이 등록되었습니다");
+      toast.success(TOAST.BOARD.CREATED);
       return true;
     },
     [value, persist, mutate]
@@ -82,11 +83,11 @@ export function useGroupNoticeboard(groupId: string) {
       );
       const newValue: NoticeboardData = { posts: newPosts };
       if (!persist(newValue)) {
-        toast.error("게시글 수정에 실패했습니다");
+        toast.error(TOAST.BOARD.UPDATE_ERROR);
         return false;
       }
       await mutate(newValue);
-      toast.success("게시글이 수정되었습니다");
+      toast.success(TOAST.BOARD.UPDATED);
       return true;
     },
     [value, persist, mutate]
@@ -98,11 +99,11 @@ export function useGroupNoticeboard(groupId: string) {
       const newPosts = (value.posts ?? []).filter((p) => p.id !== id);
       const newValue: NoticeboardData = { posts: newPosts };
       if (!persist(newValue)) {
-        toast.error("게시글 삭제에 실패했습니다");
+        toast.error(TOAST.BOARD.DELETE_ERROR);
         return false;
       }
       await mutate(newValue);
-      toast.success("게시글이 삭제되었습니다");
+      toast.success(TOAST.BOARD.DELETED);
       return true;
     },
     [value, persist, mutate]
@@ -127,11 +128,11 @@ export function useGroupNoticeboard(groupId: string) {
       );
       const newValue: NoticeboardData = { posts: newPosts };
       if (!persist(newValue)) {
-        toast.error("댓글 추가에 실패했습니다");
+        toast.error(TOAST.BOARD.COMMENT_CREATE_ERROR);
         return false;
       }
       await mutate(newValue);
-      toast.success("댓글이 등록되었습니다");
+      toast.success(TOAST.BOARD.COMMENT_CREATED);
       return true;
     },
     [value, persist, mutate]
@@ -147,11 +148,11 @@ export function useGroupNoticeboard(groupId: string) {
       );
       const newValue: NoticeboardData = { posts: newPosts };
       if (!persist(newValue)) {
-        toast.error("댓글 삭제에 실패했습니다");
+        toast.error(TOAST.BOARD.COMMENT_DELETE_ERROR);
         return false;
       }
       await mutate(newValue);
-      toast.success("댓글이 삭제되었습니다");
+      toast.success(TOAST.BOARD.COMMENT_DELETED);
       return true;
     },
     [value, persist, mutate]

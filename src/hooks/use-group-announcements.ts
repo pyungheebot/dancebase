@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type {
   GroupAnnouncementItem,
   GroupAnnouncementInput,
@@ -78,11 +79,11 @@ export function useGroupAnnouncements(groupId: string) {
         return false;
       }
       if (!input.title.trim()) {
-        toast.error("제목을 입력해주세요.");
+        toast.error(TOAST.TITLE_REQUIRED_DOT);
         return false;
       }
       if (!input.content.trim()) {
-        toast.error("내용을 입력해주세요.");
+        toast.error(TOAST.CONTENT_REQUIRED_DOT);
         return false;
       }
 
@@ -101,7 +102,7 @@ export function useGroupAnnouncements(groupId: string) {
       };
 
       persistAndUpdate([...announcements, newItem]);
-      toast.success("공지사항이 등록되었습니다.");
+      toast.success(TOAST.ANNOUNCEMENT.CREATED);
       return true;
     },
     [announcements, persistAndUpdate]
@@ -119,7 +120,7 @@ export function useGroupAnnouncements(groupId: string) {
       saveReadIds(groupId, newReadIds);
       setReadIds(newReadIds);
 
-      toast.success("공지사항이 삭제되었습니다.");
+      toast.success(TOAST.ANNOUNCEMENT.DELETED);
     },
     [announcements, groupId, persistAndUpdate, readIds]
   );

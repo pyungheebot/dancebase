@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { ContributionRecord, ContributionSummary, ContributionType } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
@@ -47,23 +48,23 @@ export function useContributionBoard(groupId: string) {
     awardedBy: string;
   }): boolean {
     if (!input.memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBER_NAME_REQUIRED_DOT);
       return false;
     }
     if (!input.awardedBy.trim()) {
-      toast.error("부여자 이름을 입력해주세요.");
+      toast.error(TOAST.CONTRIBUTION.GIVER_NAME_REQUIRED);
       return false;
     }
     if (!input.description.trim()) {
-      toast.error("활동 내용을 입력해주세요.");
+      toast.error(TOAST.ACTIVITY.CONTENT_REQUIRED);
       return false;
     }
     if (input.points < 1 || input.points > 10) {
-      toast.error("포인트는 1~10 사이여야 합니다.");
+      toast.error(TOAST.CONTRIBUTION.POINTS_RANGE);
       return false;
     }
     if (!input.date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.DATE_SELECT_DOT);
       return false;
     }
     try {
@@ -84,7 +85,7 @@ export function useContributionBoard(groupId: string) {
       toast.success(`${input.memberName}님의 기여가 기록되었습니다.`);
       return true;
     } catch {
-      toast.error("기여 기록 추가에 실패했습니다.");
+      toast.error(TOAST.CONTRIBUTION.ADD_ERROR);
       return false;
     }
   }
@@ -98,10 +99,10 @@ export function useContributionBoard(groupId: string) {
       if (next.length === stored.length) return false;
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("기여 기록이 삭제되었습니다.");
+      toast.success(TOAST.CONTRIBUTION.DELETED);
       return true;
     } catch {
-      toast.error("기여 기록 삭제에 실패했습니다.");
+      toast.error(TOAST.CONTRIBUTION.DELETE_ERROR);
       return false;
     }
   }

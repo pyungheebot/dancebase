@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { LearningPath, LearningStep, LearningStepStatus } from "@/types";
 import { removeFromStorage } from "@/lib/local-storage";
 
@@ -143,7 +144,7 @@ export function useLearningPath(groupId: string, userId: string) {
     (input: { currentLevel: string; targetLevel: string; genre: string }) => {
       const steps = buildSteps(input.genre, input.currentLevel, input.targetLevel);
       if (steps.length === 0) {
-        toast.error("해당 레벨 조합에 맞는 단계를 생성할 수 없습니다.");
+        toast.error(TOAST.MISC.SKILL_LEVEL_ERROR);
         return;
       }
       const now = new Date().toISOString();
@@ -159,7 +160,7 @@ export function useLearningPath(groupId: string, userId: string) {
       };
       setPath(newPath);
       savePath(groupId, userId, newPath);
-      toast.success("학습 경로가 생성되었습니다.");
+      toast.success(TOAST.LEARNING.CREATED);
     },
     [groupId, userId]
   );
@@ -168,7 +169,7 @@ export function useLearningPath(groupId: string, userId: string) {
   const deletePath = useCallback(() => {
     setPath(null);
     removePath(groupId, userId);
-    toast.success("학습 경로가 삭제되었습니다.");
+    toast.success(TOAST.LEARNING.DELETED);
   }, [groupId, userId]);
 
   /** 단계 완료 처리 → 다음 단계 잠금 해제 */
@@ -193,7 +194,7 @@ export function useLearningPath(groupId: string, userId: string) {
       const updatedPath: LearningPath = { ...path, steps: updated, updatedAt: now };
       setPath(updatedPath);
       savePath(groupId, userId, updatedPath);
-      toast.success("단계를 완료했습니다! 다음 단계가 열렸습니다.");
+      toast.success(TOAST.ONBOARDING.STEP_ADVANCED);
     },
     [groupId, userId, path]
   );
@@ -224,7 +225,7 @@ export function useLearningPath(groupId: string, userId: string) {
       const updatedPath: LearningPath = { ...path, steps: updated, updatedAt: now };
       setPath(updatedPath);
       savePath(groupId, userId, updatedPath);
-      toast.success("단계를 되돌렸습니다.");
+      toast.success(TOAST.ONBOARDING.STEP_REVERTED);
     },
     [groupId, userId, path]
   );

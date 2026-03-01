@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   AnnouncementTemplateEntry,
@@ -101,15 +102,15 @@ export function useAnnouncementTemplate(groupId: string) {
   const addTemplate = useCallback(
     async (input: AddAnnouncementTemplateInput): Promise<boolean> => {
       if (!input.name.trim()) {
-        toast.error("템플릿 이름을 입력해주세요");
+        toast.error(TOAST.TEMPLATE.NAME_REQUIRED);
         return false;
       }
       if (!input.titleTemplate.trim()) {
-        toast.error("제목 템플릿을 입력해주세요");
+        toast.error(TOAST.TEMPLATE.TITLE_REQUIRED);
         return false;
       }
       if (!input.bodyTemplate.trim()) {
-        toast.error("본문 템플릿을 입력해주세요");
+        toast.error(TOAST.TEMPLATE.BODY_REQUIRED);
         return false;
       }
 
@@ -148,7 +149,7 @@ export function useAnnouncementTemplate(groupId: string) {
       const updated = [...entries, newEntry];
       saveEntries(groupId, updated);
       await mutate(updated, false);
-      toast.success("템플릿이 추가되었습니다");
+      toast.success(TOAST.TEMPLATE.ADDED);
       return true;
     },
     [groupId, entries, mutate]
@@ -162,7 +163,7 @@ export function useAnnouncementTemplate(groupId: string) {
     ): Promise<boolean> => {
       const target = entries.find((e) => e.id === id);
       if (!target) {
-        toast.error("템플릿을 찾을 수 없습니다");
+        toast.error(TOAST.TEMPLATE.NOT_FOUND);
         return false;
       }
 
@@ -211,7 +212,7 @@ export function useAnnouncementTemplate(groupId: string) {
 
       saveEntries(groupId, updated);
       await mutate(updated, false);
-      toast.success("템플릿이 수정되었습니다");
+      toast.success(TOAST.TEMPLATE.UPDATED);
       return true;
     },
     [groupId, entries, mutate]
@@ -223,7 +224,7 @@ export function useAnnouncementTemplate(groupId: string) {
       const filtered = entries.filter((e) => e.id !== id);
       saveEntries(groupId, filtered);
       await mutate(filtered, false);
-      toast.success("템플릿이 삭제되었습니다");
+      toast.success(TOAST.TEMPLATE.DELETED);
       return true;
     },
     [groupId, entries, mutate]

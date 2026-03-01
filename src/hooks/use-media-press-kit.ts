@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   MediaPressKitEntry,
@@ -90,19 +91,19 @@ export function useMediaPressKit(groupId: string, projectId: string) {
   const addEntry = useCallback(
     async (input: AddMediaPressKitInput): Promise<boolean> => {
       if (!input.title.trim()) {
-        toast.error("보도자료 제목을 입력해주세요");
+        toast.error(TOAST.PRESS.TITLE_REQUIRED);
         return false;
       }
       if (!input.writtenAt) {
-        toast.error("작성일을 입력해주세요");
+        toast.error(TOAST.INFO.DATE_WRITTEN_REQUIRED);
         return false;
       }
       if (!input.content.trim()) {
-        toast.error("내용을 입력해주세요");
+        toast.error(TOAST.CONTENT_REQUIRED);
         return false;
       }
       if (!input.contactName.trim()) {
-        toast.error("홍보 담당자를 입력해주세요");
+        toast.error(TOAST.INFO.AMBASSADOR_REQUIRED);
         return false;
       }
 
@@ -131,7 +132,7 @@ export function useMediaPressKit(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("보도자료가 추가되었습니다");
+      toast.success(TOAST.PRESS.ADDED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -143,7 +144,7 @@ export function useMediaPressKit(groupId: string, projectId: string) {
       const current = loadSheet(groupId, projectId);
       const target = current.entries.find((e) => e.id === id);
       if (!target) {
-        toast.error("항목을 찾을 수 없습니다");
+        toast.error(TOAST.NOT_FOUND);
         return false;
       }
 
@@ -175,7 +176,7 @@ export function useMediaPressKit(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("보도자료가 수정되었습니다");
+      toast.success(TOAST.PRESS.UPDATED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -193,7 +194,7 @@ export function useMediaPressKit(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("보도자료가 삭제되었습니다");
+      toast.success(TOAST.PRESS.DELETED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -205,7 +206,7 @@ export function useMediaPressKit(groupId: string, projectId: string) {
       const current = loadSheet(groupId, projectId);
       const target = current.entries.find((e) => e.id === id);
       if (!target) {
-        toast.error("항목을 찾을 수 없습니다");
+        toast.error(TOAST.NOT_FOUND);
         return false;
       }
 
@@ -235,14 +236,14 @@ export function useMediaPressKit(groupId: string, projectId: string) {
   const addOutlet = useCallback(
     async (entryId: string, input: AddOutletInput): Promise<boolean> => {
       if (!input.name.trim()) {
-        toast.error("매체명을 입력해주세요");
+        toast.error(TOAST.PRESS.MEDIA_REQUIRED);
         return false;
       }
 
       const current = loadSheet(groupId, projectId);
       const target = current.entries.find((e) => e.id === entryId);
       if (!target) {
-        toast.error("보도자료를 찾을 수 없습니다");
+        toast.error(TOAST.PRESS.NOT_FOUND);
         return false;
       }
 
@@ -267,7 +268,7 @@ export function useMediaPressKit(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("매체가 추가되었습니다");
+      toast.success(TOAST.PRESS.MEDIA_ADDED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -336,7 +337,7 @@ export function useMediaPressKit(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("매체가 삭제되었습니다");
+      toast.success(TOAST.PRESS.MEDIA_DELETED);
       return true;
     },
     [groupId, projectId, mutate]

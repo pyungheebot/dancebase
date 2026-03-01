@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   ThankYouLetterEntry,
@@ -87,15 +88,15 @@ export function useThankYouLetter(groupId: string, projectId: string) {
   const addEntry = useCallback(
     async (input: AddThankYouLetterInput): Promise<boolean> => {
       if (!input.sponsorName.trim()) {
-        toast.error("후원사명을 입력해주세요");
+        toast.error(TOAST.THANK_YOU.SPONSOR_REQUIRED);
         return false;
       }
       if (!input.letterContent.trim()) {
-        toast.error("감사편지 내용을 입력해주세요");
+        toast.error(TOAST.THANK_YOU.CONTENT_REQUIRED);
         return false;
       }
       if (!input.managerName.trim()) {
-        toast.error("담당자를 입력해주세요");
+        toast.error(TOAST.INFO.ASSIGNEE_REQUIRED);
         return false;
       }
 
@@ -125,7 +126,7 @@ export function useThankYouLetter(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("감사편지가 추가되었습니다");
+      toast.success(TOAST.THANK_YOU.ADDED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -137,7 +138,7 @@ export function useThankYouLetter(groupId: string, projectId: string) {
       const current = loadSheet(groupId, projectId);
       const target = current.entries.find((e) => e.id === id);
       if (!target) {
-        toast.error("항목을 찾을 수 없습니다");
+        toast.error(TOAST.NOT_FOUND);
         return false;
       }
 
@@ -176,7 +177,7 @@ export function useThankYouLetter(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("감사편지가 수정되었습니다");
+      toast.success(TOAST.THANK_YOU.UPDATED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -194,7 +195,7 @@ export function useThankYouLetter(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("감사편지가 삭제되었습니다");
+      toast.success(TOAST.THANK_YOU.DELETED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -206,7 +207,7 @@ export function useThankYouLetter(groupId: string, projectId: string) {
       const current = loadSheet(groupId, projectId);
       const target = current.entries.find((e) => e.id === id);
       if (!target) {
-        toast.error("항목을 찾을 수 없습니다");
+        toast.error(TOAST.NOT_FOUND);
         return false;
       }
 
@@ -227,7 +228,7 @@ export function useThankYouLetter(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("발송 완료로 표시되었습니다");
+      toast.success(TOAST.THANK_YOU.SENT);
       return true;
     },
     [groupId, projectId, mutate]
@@ -239,7 +240,7 @@ export function useThankYouLetter(groupId: string, projectId: string) {
       const current = loadSheet(groupId, projectId);
       const target = current.entries.find((e) => e.id === id);
       if (!target) {
-        toast.error("항목을 찾을 수 없습니다");
+        toast.error(TOAST.NOT_FOUND);
         return false;
       }
 
@@ -260,7 +261,7 @@ export function useThankYouLetter(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("작성중으로 변경되었습니다");
+      toast.success(TOAST.INFO.MADE_DRAFT);
       return true;
     },
     [groupId, projectId, mutate]

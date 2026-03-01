@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { generateCSV, downloadCSV } from "@/lib/export/csv-exporter";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type {
   AttendanceExportRow,
   BoardActivityExportRow,
@@ -185,14 +186,14 @@ export function useAnalyticsExport(groupId: string, range: ExportDateRange) {
     try {
       const rows = await exportAttendance();
       if (rows.length === 0) {
-        toast.info("해당 기간에 출석 데이터가 없습니다.");
+        toast.info(TOAST.DATA.NO_ATTENDANCE);
         return;
       }
       const headers = ["날짜", "일정명", "멤버명", "출석상태"];
       const csvRows = rows.map((r) => [r.date, r.scheduleTitle, r.memberName, r.status]);
       const csv = generateCSV(headers, csvRows);
       downloadCSV(`출석데이터_${periodLabel}`, csv);
-      toast.success("출석 데이터를 내보냈습니다.");
+      toast.success(TOAST.ATTENDANCE.EXPORTED);
     } catch (err) {
       toast.error(`출석 데이터 내보내기 실패: ${err instanceof Error ? err.message : "알 수 없는 오류"}`);
     } finally {
@@ -208,14 +209,14 @@ export function useAnalyticsExport(groupId: string, range: ExportDateRange) {
     try {
       const rows = await exportBoardActivity();
       if (rows.length === 0) {
-        toast.info("해당 기간에 게시판 데이터가 없습니다.");
+        toast.info(TOAST.DATA.NO_BOARD);
         return;
       }
       const headers = ["날짜", "제목", "작성자", "댓글수"];
       const csvRows = rows.map((r) => [r.date, r.title, r.authorName, String(r.commentCount)]);
       const csv = generateCSV(headers, csvRows);
       downloadCSV(`게시판활동_${periodLabel}`, csv);
-      toast.success("게시판 활동 데이터를 내보냈습니다.");
+      toast.success(TOAST.BOARD.EXPORTED);
     } catch (err) {
       toast.error(`게시판 데이터 내보내기 실패: ${err instanceof Error ? err.message : "알 수 없는 오류"}`);
     } finally {
@@ -231,14 +232,14 @@ export function useAnalyticsExport(groupId: string, range: ExportDateRange) {
     try {
       const rows = await exportFinances();
       if (rows.length === 0) {
-        toast.info("해당 기간에 재무 데이터가 없습니다.");
+        toast.info(TOAST.DATA.NO_FINANCE);
         return;
       }
       const headers = ["날짜", "유형", "금액(원)", "항목명", "설명"];
       const csvRows = rows.map((r) => [r.date, r.type, String(r.amount), r.title, r.description]);
       const csv = generateCSV(headers, csvRows);
       downloadCSV(`재무데이터_${periodLabel}`, csv);
-      toast.success("재무 데이터를 내보냈습니다.");
+      toast.success(TOAST.REPORT.FINANCE_EXPORTED);
     } catch (err) {
       toast.error(`재무 데이터 내보내기 실패: ${err instanceof Error ? err.message : "알 수 없는 오류"}`);
     } finally {

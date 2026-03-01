@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateNotifications } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { Notification } from "@/types";
 
 export function useNotifications(limit = 10) {
@@ -100,7 +101,7 @@ export function useNotifications(limit = 10) {
     if (error) {
       // 롤백
       mutate();
-      toast.error("읽음 처리에 실패했습니다.");
+      toast.error(TOAST.NOTIFICATION.READ_ERROR);
     }
   };
 
@@ -126,7 +127,7 @@ export function useNotifications(limit = 10) {
     if (error) {
       // 롤백
       mutate();
-      toast.error("읽음 처리에 실패했습니다.");
+      toast.error(TOAST.NOTIFICATION.READ_ERROR);
     }
   };
 

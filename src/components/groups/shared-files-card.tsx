@@ -44,6 +44,7 @@ import {
 import { toast } from "sonner";
 import { useSharedFiles } from "@/hooks/use-shared-files";
 import type { SharedFileItem, SharedFileFolderItem, SharedFileCategory } from "@/types";
+import { validateUrl, sanitizeUrl } from "@/lib/validation";
 
 // ——————————————————————————————
 // 카테고리 설정
@@ -162,6 +163,11 @@ function AddFileDialog({
     }
     if (!url.trim()) {
       toast.error("URL을 입력해주세요.");
+      return;
+    }
+    const urlError = validateUrl(url);
+    if (urlError) {
+      toast.error(urlError);
       return;
     }
     onAdd({
@@ -469,7 +475,7 @@ function FileRow({ file, onDelete }: FileRowProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
           <a
-            href={file.url}
+            href={sanitizeUrl(file.url)}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-medium text-gray-800 hover:text-blue-600 hover:underline truncate max-w-[200px]"

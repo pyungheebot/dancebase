@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   FundraisingGoal,
@@ -70,15 +71,15 @@ export function useFundraisingGoal(groupId: string) {
     deadline: string;
   }): boolean {
     if (!input.title.trim()) {
-      toast.error("목표 제목을 입력해주세요.");
+      toast.error(TOAST.GOAL.TITLE_REQUIRED);
       return false;
     }
     if (input.targetAmount <= 0) {
-      toast.error("목표 금액은 0보다 커야 합니다.");
+      toast.error(TOAST.FUNDRAISING.AMOUNT_REQUIRED);
       return false;
     }
     if (!input.deadline) {
-      toast.error("마감일을 선택해주세요.");
+      toast.error(TOAST.INFO.DEADLINE_REQUIRED);
       return false;
     }
     try {
@@ -98,10 +99,10 @@ export function useFundraisingGoal(groupId: string) {
       const next = [...stored, newGoal];
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("모금 목표가 추가되었습니다.");
+      toast.success(TOAST.FUNDRAISING.GOAL_ADDED);
       return true;
     } catch {
-      toast.error("모금 목표 추가에 실패했습니다.");
+      toast.error(TOAST.FUNDRAISING.GOAL_ADD_ERROR);
       return false;
     }
   }
@@ -115,10 +116,10 @@ export function useFundraisingGoal(groupId: string) {
       if (next.length === stored.length) return false;
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("모금 목표가 삭제되었습니다.");
+      toast.success(TOAST.FUNDRAISING.GOAL_DELETED);
       return true;
     } catch {
-      toast.error("모금 목표 삭제에 실패했습니다.");
+      toast.error(TOAST.FUNDRAISING.GOAL_DELETE_ERROR);
       return false;
     }
   }
@@ -135,17 +136,17 @@ export function useFundraisingGoal(groupId: string) {
       const stored = loadFromStorage<FundraisingGoal[]>(STORAGE_KEY(groupId), []);
       const idx = stored.findIndex((g) => g.id === goalId);
       if (idx === -1) {
-        toast.error("목표를 찾을 수 없습니다.");
+        toast.error(TOAST.GOAL.NOT_FOUND);
         return false;
       }
       const updated = { ...stored[idx], ...patch };
       const next = stored.map((g) => (g.id === goalId ? updated : g));
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("모금 목표가 수정되었습니다.");
+      toast.success(TOAST.FUNDRAISING.GOAL_UPDATED);
       return true;
     } catch {
-      toast.error("모금 목표 수정에 실패했습니다.");
+      toast.error(TOAST.FUNDRAISING.GOAL_UPDATE_ERROR);
       return false;
     }
   }
@@ -157,23 +158,23 @@ export function useFundraisingGoal(groupId: string) {
     contribution: Omit<FundraisingContribution, "id">
   ): boolean {
     if (!contribution.donorName.trim()) {
-      toast.error("기부자 이름을 입력해주세요.");
+      toast.error(TOAST.FUNDRAISING.DONOR_REQUIRED);
       return false;
     }
     if (contribution.amount <= 0) {
-      toast.error("기부 금액은 0보다 커야 합니다.");
+      toast.error(TOAST.FUNDRAISING.DONATION_AMOUNT_REQUIRED);
       return false;
     }
     try {
       const stored = loadFromStorage<FundraisingGoal[]>(STORAGE_KEY(groupId), []);
       const idx = stored.findIndex((g) => g.id === goalId);
       if (idx === -1) {
-        toast.error("목표를 찾을 수 없습니다.");
+        toast.error(TOAST.GOAL.NOT_FOUND);
         return false;
       }
       const goal = stored[idx];
       if (goal.status !== "active") {
-        toast.error("활성 상태의 목표에만 기부를 추가할 수 있습니다.");
+        toast.error(TOAST.FUNDRAISING.ACTIVE_ONLY);
         return false;
       }
       const newContribution: FundraisingContribution = {
@@ -205,15 +206,15 @@ export function useFundraisingGoal(groupId: string) {
         return curr >= mp && prev < mp;
       });
       if (reachedMilestone === 100) {
-        toast.success("목표 금액을 달성했습니다! 모금이 완료되었습니다.");
+        toast.success(TOAST.FUNDRAISING.GOAL_ACHIEVED);
       } else if (reachedMilestone) {
         toast.success(`${reachedMilestone}% 달성! 기부가 추가되었습니다.`);
       } else {
-        toast.success("기부금이 추가되었습니다.");
+        toast.success(TOAST.FUNDRAISING.DONATION_ADDED);
       }
       return true;
     } catch {
-      toast.error("기부금 추가에 실패했습니다.");
+      toast.error(TOAST.FUNDRAISING.DONATION_ADD_ERROR);
       return false;
     }
   }
@@ -225,11 +226,11 @@ export function useFundraisingGoal(groupId: string) {
       const stored = loadFromStorage<FundraisingGoal[]>(STORAGE_KEY(groupId), []);
       const idx = stored.findIndex((g) => g.id === goalId);
       if (idx === -1) {
-        toast.error("목표를 찾을 수 없습니다.");
+        toast.error(TOAST.GOAL.NOT_FOUND);
         return false;
       }
       if (stored[idx].status === "cancelled") {
-        toast.error("이미 취소된 목표입니다.");
+        toast.error(TOAST.FUNDRAISING.ALREADY_CANCELLED);
         return false;
       }
       const next = stored.map((g) =>
@@ -237,10 +238,10 @@ export function useFundraisingGoal(groupId: string) {
       );
       saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
-      toast.success("모금이 취소되었습니다.");
+      toast.success(TOAST.FUNDRAISING.CANCELLED);
       return true;
     } catch {
-      toast.error("모금 취소에 실패했습니다.");
+      toast.error(TOAST.FUNDRAISING.CANCEL_ERROR);
       return false;
     }
   }

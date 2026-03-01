@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { WikiDocument, WikiCategory } from "@/types";
 
 const STORAGE_PREFIX = "dancebase:group-wiki:";
@@ -67,11 +68,11 @@ export function useGroupWiki(groupId: string) {
         return false;
       }
       if (!input.title.trim()) {
-        toast.error("제목을 입력해주세요.");
+        toast.error(TOAST.TITLE_REQUIRED_DOT);
         return false;
       }
       if (!input.content.trim()) {
-        toast.error("내용을 입력해주세요.");
+        toast.error(TOAST.CONTENT_REQUIRED_DOT);
         return false;
       }
 
@@ -89,7 +90,7 @@ export function useGroupWiki(groupId: string) {
       };
 
       persistAndUpdate([...documents, newDoc]);
-      toast.success("위키 문서가 작성되었습니다.");
+      toast.success(TOAST.WIKI.CREATED);
       return true;
     },
     [documents, groupId, persistAndUpdate]
@@ -98,11 +99,11 @@ export function useGroupWiki(groupId: string) {
   const updateDocument = useCallback(
     (id: string, input: WikiDocumentInput): boolean => {
       if (!input.title.trim()) {
-        toast.error("제목을 입력해주세요.");
+        toast.error(TOAST.TITLE_REQUIRED_DOT);
         return false;
       }
       if (!input.content.trim()) {
-        toast.error("내용을 입력해주세요.");
+        toast.error(TOAST.CONTENT_REQUIRED_DOT);
         return false;
       }
 
@@ -119,7 +120,7 @@ export function useGroupWiki(groupId: string) {
       );
 
       persistAndUpdate(updated);
-      toast.success("위키 문서가 수정되었습니다.");
+      toast.success(TOAST.WIKI.UPDATED);
       return true;
     },
     [documents, persistAndUpdate]
@@ -129,7 +130,7 @@ export function useGroupWiki(groupId: string) {
     (id: string): void => {
       const updated = documents.filter((doc) => doc.id !== id);
       persistAndUpdate(updated);
-      toast.success("위키 문서가 삭제되었습니다.");
+      toast.success(TOAST.WIKI.DELETED);
     },
     [documents, persistAndUpdate]
   );

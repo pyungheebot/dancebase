@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { GroupMemoryItem, MemoryCategory } from "@/types";
 
 const STORAGE_KEY_PREFIX = "dancebase:memory-album:";
@@ -41,7 +42,7 @@ export function useGroupMemoryAlbum(groupId: string) {
       const updated = [newItem, ...items].sort((a, b) => (a.date > b.date ? -1 : 1));
       setItems(updated);
       saveItems(groupId, updated);
-      toast.success("추억이 기록되었습니다.");
+      toast.success(TOAST.ALBUM.MEMORY_CREATED);
     },
     [groupId, items]
   );
@@ -52,7 +53,7 @@ export function useGroupMemoryAlbum(groupId: string) {
       if (updated.length === items.length) return;
       setItems(updated);
       saveItems(groupId, updated);
-      toast.success("추억이 삭제되었습니다.");
+      toast.success(TOAST.ALBUM.MEMORY_DELETED);
     },
     [groupId, items]
   );

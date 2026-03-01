@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { GroupChallengeItem, GroupChallengeStatus, GroupChallengeType } from "@/types";
 
 const STORAGE_KEY_PREFIX = "dancebase:challenge-manager:";
@@ -68,7 +69,7 @@ export function useGroupChallengeManager(groupId: string) {
       const updated = [newItem, ...challenges];
       setChallenges(updated);
       saveChallenges(groupId, updated);
-      toast.success("챌린지가 생성되었습니다.");
+      toast.success(TOAST.CHALLENGE.CREATED);
     },
     [groupId, challenges]
   );
@@ -79,7 +80,7 @@ export function useGroupChallengeManager(groupId: string) {
       if (updated.length === challenges.length) return;
       setChallenges(updated);
       saveChallenges(groupId, updated);
-      toast.success("챌린지가 삭제되었습니다.");
+      toast.success(TOAST.CHALLENGE.DELETED);
     },
     [groupId, challenges]
   );

@@ -69,3 +69,39 @@ export function formatCurrency(value: string | number): string {
   if (isNaN(num)) return "";
   return num.toLocaleString("ko-KR");
 }
+
+/**
+ * URL 유효성 검증. 빈 값은 허용 (선택 필드).
+ * @returns 오류 메시지 또는 null (유효)
+ */
+export function validateUrl(url: string): string | null {
+  if (!url || !url.trim()) return null;
+  try {
+    const normalized = url.match(/^https?:\/\//) ? url : `https://${url}`;
+    const parsed = new URL(normalized);
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      return "http 또는 https URL만 허용됩니다";
+    }
+    return null;
+  } catch {
+    return "올바른 URL 형식이 아닙니다";
+  }
+}
+
+/**
+ * URL을 안전하게 변환. javascript: 등 위험한 프로토콜 차단.
+ * 렌더링 시 href에 사용.
+ */
+export function sanitizeUrl(url: string | null | undefined): string {
+  if (!url || !url.trim()) return "#";
+  try {
+    const normalized = url.match(/^https?:\/\//) ? url : `https://${url}`;
+    const parsed = new URL(normalized);
+    if (["http:", "https:"].includes(parsed.protocol)) {
+      return parsed.href;
+    }
+    return "#";
+  } catch {
+    return "#";
+  }
+}

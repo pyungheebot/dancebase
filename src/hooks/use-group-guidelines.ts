@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { saveToStorage } from "@/lib/local-storage";
 import {
   type GroupGuidelineItem,
@@ -39,7 +40,7 @@ export function useGroupGuidelines(groupId: string) {
       }
       const trimmedTitle = title.trim();
       if (!trimmedTitle) {
-        toast.error("제목을 입력해주세요");
+        toast.error(TOAST.TITLE_REQUIRED);
         return false;
       }
 
@@ -56,7 +57,7 @@ export function useGroupGuidelines(groupId: string) {
       const next = [...items, newItem];
       setItems(next);
       saveToStorage(getStorageKey(groupId), next);
-      toast.success("규칙이 추가되었습니다");
+      toast.success(TOAST.RULE.ADDED);
       return true;
     },
     [groupId, items]
@@ -68,7 +69,7 @@ export function useGroupGuidelines(groupId: string) {
       const next = items.filter((i) => i.id !== id);
       setItems(next);
       saveToStorage(getStorageKey(groupId), next);
-      toast.success("규칙이 삭제되었습니다");
+      toast.success(TOAST.RULE.DELETED);
     },
     [groupId, items]
   );

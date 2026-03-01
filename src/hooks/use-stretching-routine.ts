@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { loadFromStorage } from "@/lib/local-storage";
 import type {
   StretchingRoutine,
@@ -89,7 +90,7 @@ export function useStretchingRoutine(memberId: string) {
 
   function addRoutine(input: { routineName: string }): boolean {
     if (!input.routineName.trim()) {
-      toast.error("루틴 이름을 입력해주세요.");
+      toast.error(TOAST.ROUTINE.NAME_REQUIRED);
       return false;
     }
     try {
@@ -104,10 +105,10 @@ export function useStretchingRoutine(memberId: string) {
       const nextRoutines = [...stored.routines, newRoutine];
       saveRoutines(memberId, nextRoutines);
       mutate({ ...stored, routines: nextRoutines }, false);
-      toast.success("루틴이 추가되었습니다.");
+      toast.success(TOAST.ROUTINE.ADDED);
       return true;
     } catch {
-      toast.error("루틴 추가에 실패했습니다.");
+      toast.error(TOAST.ROUTINE.ADD_ERROR);
       return false;
     }
   }
@@ -122,7 +123,7 @@ export function useStretchingRoutine(memberId: string) {
       const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const idx = stored.routines.findIndex((r) => r.id === routineId);
       if (idx === -1) {
-        toast.error("루틴을 찾을 수 없습니다.");
+        toast.error(TOAST.ROUTINE.NOT_FOUND);
         return false;
       }
       const updated = { ...stored.routines[idx], ...patch };
@@ -133,10 +134,10 @@ export function useStretchingRoutine(memberId: string) {
       ];
       saveRoutines(memberId, nextRoutines);
       mutate({ ...stored, routines: nextRoutines }, false);
-      toast.success("루틴이 수정되었습니다.");
+      toast.success(TOAST.ROUTINE.UPDATED);
       return true;
     } catch {
-      toast.error("루틴 수정에 실패했습니다.");
+      toast.error(TOAST.ROUTINE.UPDATE_ERROR);
       return false;
     }
   }
@@ -152,10 +153,10 @@ export function useStretchingRoutine(memberId: string) {
       saveRoutines(memberId, nextRoutines);
       saveLogs(memberId, nextLogs);
       mutate({ routines: nextRoutines, logs: nextLogs }, false);
-      toast.success("루틴이 삭제되었습니다.");
+      toast.success(TOAST.ROUTINE.DELETED);
       return true;
     } catch {
-      toast.error("루틴 삭제에 실패했습니다.");
+      toast.error(TOAST.ROUTINE.DELETE_ERROR);
       return false;
     }
   }
@@ -173,22 +174,22 @@ export function useStretchingRoutine(memberId: string) {
     }
   ): boolean {
     if (!input.name.trim()) {
-      toast.error("운동 이름을 입력해주세요.");
+      toast.error(TOAST.EXERCISE.NAME_REQUIRED);
       return false;
     }
     if (!input.durationSeconds || input.durationSeconds < 1) {
-      toast.error("유지 시간을 1초 이상으로 입력해주세요.");
+      toast.error(TOAST.EXERCISE.HOLD_TIME_REQUIRED);
       return false;
     }
     if (!input.sets || input.sets < 1) {
-      toast.error("세트 수를 1 이상으로 입력해주세요.");
+      toast.error(TOAST.EXERCISE.SET_COUNT_REQUIRED);
       return false;
     }
     try {
       const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const idx = stored.routines.findIndex((r) => r.id === routineId);
       if (idx === -1) {
-        toast.error("루틴을 찾을 수 없습니다.");
+        toast.error(TOAST.ROUTINE.NOT_FOUND);
         return false;
       }
       const newExercise: StretchingExercise = {
@@ -215,10 +216,10 @@ export function useStretchingRoutine(memberId: string) {
       ];
       saveRoutines(memberId, nextRoutines);
       mutate({ ...stored, routines: nextRoutines }, false);
-      toast.success("운동이 추가되었습니다.");
+      toast.success(TOAST.EXERCISE.ADDED);
       return true;
     } catch {
-      toast.error("운동 추가에 실패했습니다.");
+      toast.error(TOAST.EXERCISE.ADD_ERROR);
       return false;
     }
   }
@@ -234,13 +235,13 @@ export function useStretchingRoutine(memberId: string) {
       const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const routineIdx = stored.routines.findIndex((r) => r.id === routineId);
       if (routineIdx === -1) {
-        toast.error("루틴을 찾을 수 없습니다.");
+        toast.error(TOAST.ROUTINE.NOT_FOUND);
         return false;
       }
       const routine = stored.routines[routineIdx];
       const exIdx = routine.exercises.findIndex((e) => e.id === exerciseId);
       if (exIdx === -1) {
-        toast.error("운동을 찾을 수 없습니다.");
+        toast.error(TOAST.EXERCISE.NOT_FOUND);
         return false;
       }
       const updatedExercises = [
@@ -260,10 +261,10 @@ export function useStretchingRoutine(memberId: string) {
       ];
       saveRoutines(memberId, nextRoutines);
       mutate({ ...stored, routines: nextRoutines }, false);
-      toast.success("운동이 수정되었습니다.");
+      toast.success(TOAST.EXERCISE.UPDATED);
       return true;
     } catch {
-      toast.error("운동 수정에 실패했습니다.");
+      toast.error(TOAST.EXERCISE.UPDATE_ERROR);
       return false;
     }
   }
@@ -292,10 +293,10 @@ export function useStretchingRoutine(memberId: string) {
       ];
       saveRoutines(memberId, nextRoutines);
       mutate({ ...stored, routines: nextRoutines }, false);
-      toast.success("운동이 삭제되었습니다.");
+      toast.success(TOAST.EXERCISE.DELETED);
       return true;
     } catch {
-      toast.error("운동 삭제에 실패했습니다.");
+      toast.error(TOAST.EXERCISE.DELETE_ERROR);
       return false;
     }
   }
@@ -310,18 +311,18 @@ export function useStretchingRoutine(memberId: string) {
     notes?: string;
   }): boolean {
     if (!input.routineId) {
-      toast.error("루틴을 선택해주세요.");
+      toast.error(TOAST.ROUTINE.SELECT_REQUIRED);
       return false;
     }
     if (!input.date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.DATE_REQUIRED_DOT);
       return false;
     }
     if (
       input.flexibilityRating !== undefined &&
       (input.flexibilityRating < 1 || input.flexibilityRating > 5)
     ) {
-      toast.error("유연성 평가는 1~5 사이로 입력해주세요.");
+      toast.error(TOAST.EXERCISE.FLEXIBILITY_RANGE);
       return false;
     }
     try {
@@ -338,10 +339,10 @@ export function useStretchingRoutine(memberId: string) {
       const nextLogs = [newLog, ...stored.logs];
       saveLogs(memberId, nextLogs);
       mutate({ ...stored, logs: nextLogs }, false);
-      toast.success("운동 기록이 저장되었습니다.");
+      toast.success(TOAST.EXERCISE.LOG_SAVED);
       return true;
     } catch {
-      toast.error("운동 기록 저장에 실패했습니다.");
+      toast.error(TOAST.EXERCISE.LOG_SAVE_ERROR);
       return false;
     }
   }
@@ -355,10 +356,10 @@ export function useStretchingRoutine(memberId: string) {
       if (nextLogs.length === stored.logs.length) return false;
       saveLogs(memberId, nextLogs);
       mutate({ ...stored, logs: nextLogs }, false);
-      toast.success("운동 기록이 삭제되었습니다.");
+      toast.success(TOAST.EXERCISE.LOG_DELETED);
       return true;
     } catch {
-      toast.error("운동 기록 삭제에 실패했습니다.");
+      toast.error(TOAST.EXERCISE.LOG_DELETE_ERROR);
       return false;
     }
   }

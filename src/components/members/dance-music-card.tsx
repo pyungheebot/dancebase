@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/collapsible";
 import { useDanceMusic, DANCE_MUSIC_GENRES } from "@/hooks/use-dance-music";
 import type { DanceMusicPlaylist, DanceMusicTrack } from "@/types";
+import { validateUrl, sanitizeUrl } from "@/lib/validation";
 
 // ============================================================
 // Props
@@ -170,7 +171,7 @@ function TrackItem({
           )}
           {track.url && (
             <a
-              href={track.url}
+              href={sanitizeUrl(track.url)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[10px] text-blue-500 hover:underline flex items-center gap-0.5"
@@ -248,6 +249,11 @@ function TrackAddForm({
     }
     if (!form.artist.trim()) {
       toast.error("아티스트를 입력해주세요");
+      return;
+    }
+    const urlError = validateUrl(form.url);
+    if (urlError) {
+      toast.error(urlError);
       return;
     }
     onAdd(playlistId, form);

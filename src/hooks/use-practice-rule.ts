@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   PracticeRuleEntry,
@@ -83,7 +84,7 @@ export function usePracticeRule(groupId: string) {
       const updated = [...entries, newEntry];
       saveEntries(groupId, updated);
       await mutate(updated, false);
-      toast.success("규칙이 추가되었습니다");
+      toast.success(TOAST.RULE.ADDED);
       return true;
     },
     [groupId, entries, mutate]
@@ -94,7 +95,7 @@ export function usePracticeRule(groupId: string) {
     async (id: string, changes: UpdatePracticeRuleInput): Promise<boolean> => {
       const target = entries.find((e) => e.id === id);
       if (!target) {
-        toast.error("규칙을 찾을 수 없습니다");
+        toast.error(TOAST.RULE.NOT_FOUND);
         return false;
       }
 
@@ -119,7 +120,7 @@ export function usePracticeRule(groupId: string) {
 
       saveEntries(groupId, updated);
       await mutate(updated, false);
-      toast.success("규칙이 수정되었습니다");
+      toast.success(TOAST.RULE.UPDATED);
       return true;
     },
     [groupId, entries, mutate]
@@ -134,7 +135,7 @@ export function usePracticeRule(groupId: string) {
 
       saveEntries(groupId, filtered);
       await mutate(filtered, false);
-      toast.success("규칙이 삭제되었습니다");
+      toast.success(TOAST.RULE.DELETED);
       return true;
     },
     [groupId, entries, mutate]

@@ -50,6 +50,7 @@ import { useVideoReview } from "@/hooks/use-video-review";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { VideoReviewEntry, VideoReviewTimestamp, VideoReviewTimestampType } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
+import { validateUrl, sanitizeUrl } from "@/lib/validation";
 
 // ============================================================
 // 상수 / 헬퍼
@@ -171,6 +172,11 @@ function AddEntryDialog({ open, onClose, onSave }: AddEntryDialogProps) {
     }
     if (!date) {
       toast.error("촬영 날짜를 선택해주세요.");
+      return;
+    }
+    const urlError = validateUrl(videoUrl);
+    if (urlError) {
+      toast.error(urlError);
       return;
     }
 
@@ -585,7 +591,7 @@ function EntryItem({
       {/* 영상 링크 */}
       {entry.videoUrl && (
         <a
-          href={entry.videoUrl}
+          href={sanitizeUrl(entry.videoUrl)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1 text-[10px] text-blue-600 hover:underline"

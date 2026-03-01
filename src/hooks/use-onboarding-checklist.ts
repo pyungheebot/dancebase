@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { OnboardingProgress } from "@/types";
 
 // ============================================
@@ -75,13 +76,13 @@ export function useOnboardingChecklist(groupId: string, userId: string) {
         const justCompleted = updatedSteps.find((s) => s.id === stepId)?.completed;
         if (justCompleted) {
           if (allDone) {
-            toast.success("온보딩 완료!", {
+            toast.success(TOAST.ONBOARDING.COMPLETED, {
               description: "모든 단계를 완료했습니다. 그룹 활동을 마음껏 즐겨보세요!",
               duration: 4000,
             });
           } else {
             const stepTitle = updatedSteps.find((s) => s.id === stepId)?.title;
-            toast.success("단계 완료!", {
+            toast.success(TOAST.ONBOARDING.STEP_COMPLETED, {
               description: stepTitle,
               duration: 2000,
             });

@@ -47,6 +47,7 @@ import type {
   DanceChallengeResult,
 } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
+import { validateUrl, sanitizeUrl } from "@/lib/validation";
 
 // ============================================================
 // 레이블/색상 상수
@@ -176,6 +177,11 @@ function EntryDialog({ mode, initialValues, trigger, onSubmit }: EntryDialogProp
     }
     if (form.likeCount && isNaN(Number(form.likeCount))) {
       toast.error("좋아요 수는 숫자로 입력해주세요");
+      return;
+    }
+    const urlError = validateUrl(form.videoUrl);
+    if (urlError) {
+      toast.error(urlError);
       return;
     }
     onSubmit(form);
@@ -443,7 +449,7 @@ function EntryRow({ entry, onUpdate, onDelete }: EntryRowProps) {
               <div className="flex items-center gap-1.5 text-[11px]">
                 <Link2 className="h-3 w-3 text-muted-foreground shrink-0" />
                 <a
-                  href={entry.videoUrl}
+                  href={sanitizeUrl(entry.videoUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:underline truncate"

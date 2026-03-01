@@ -5,6 +5,7 @@ import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { formatYearMonth } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { EntityContext } from "@/types/entity-context";
 import type { AttendanceStatus } from "@/types";
 
@@ -69,7 +70,7 @@ export function useAttendanceAnalytics(ctx: EntityContext) {
 
       const { data: scheduleRows, error: schedErr } = await schedulesQuery;
       if (schedErr) {
-        toast.error("일정 데이터를 불러오지 못했습니다");
+        toast.error(TOAST.SCHEDULE.DATA_LOAD_ERROR);
         return;
       }
 
@@ -87,7 +88,7 @@ export function useAttendanceAnalytics(ctx: EntityContext) {
           .in("schedule_id", scheduleIds);
 
         if (attErr) {
-          toast.error("출석 데이터를 불러오지 못했습니다");
+          toast.error(TOAST.ATTENDANCE.DATA_LOAD_ERROR);
           return;
         }
         attendanceRows = (attData ?? []) as { user_id: string; status: AttendanceStatus; schedule_id: string }[];

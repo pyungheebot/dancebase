@@ -52,6 +52,7 @@ import { useInspirationBoard } from "@/hooks/use-inspiration-board";
 import { formatYearMonthDay } from "@/lib/date-utils";
 import type { InspirationCategory, InspirationBoardItem } from "@/types";
 import { cn } from "@/lib/utils";
+import { validateUrl, sanitizeUrl } from "@/lib/validation";
 
 // ============================================================
 // 카테고리 메타데이터
@@ -229,6 +230,11 @@ function AddItemDialog({
     e.preventDefault();
     if (!title.trim()) {
       toast.error("제목을 입력해 주세요.");
+      return;
+    }
+    const urlError = validateUrl(url);
+    if (urlError) {
+      toast.error(urlError);
       return;
     }
     await execute(async () => {
@@ -461,7 +467,7 @@ function InspirationItemCard({
       {/* URL 링크 */}
       {item.url && (
         <a
-          href={item.url}
+          href={sanitizeUrl(item.url)}
           target="_blank"
           rel="noopener noreferrer"
           className="text-[10px] text-blue-500 hover:underline flex items-center gap-0.5 w-fit"

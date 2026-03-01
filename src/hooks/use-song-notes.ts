@@ -6,6 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { invalidateSongNotes } from "@/lib/swr/invalidate";
 import type { SongNote } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 export type SongNoteWithProfile = SongNote & {
   profiles: {
@@ -50,7 +51,7 @@ export function useSongNotes(songId: string) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.LOGIN_REQUIRED);
       return false;
     }
 
@@ -61,11 +62,11 @@ export function useSongNotes(songId: string) {
     });
 
     if (error) {
-      toast.error("메모 추가에 실패했습니다");
+      toast.error(TOAST.MEMO.ADD_ERROR);
       return false;
     }
 
-    toast.success("메모가 추가되었습니다");
+    toast.success(TOAST.MEMO.ADDED);
     invalidateSongNotes(songId);
     mutate();
     return true;
@@ -80,11 +81,11 @@ export function useSongNotes(songId: string) {
       .eq("id", noteId);
 
     if (error) {
-      toast.error("메모 삭제에 실패했습니다");
+      toast.error(TOAST.MEMO.DELETE_ERROR);
       return;
     }
 
-    toast.success("메모가 삭제되었습니다");
+    toast.success(TOAST.MEMO.DELETED);
     invalidateSongNotes(songId);
     mutate();
   }

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { CultureDimension, CultureProfile, GroupCultureConfig } from "@/types";
 
@@ -81,10 +82,10 @@ export function useCultureAlignment(groupId: string) {
       };
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("그룹 이상 가치가 저장되었습니다.");
+      toast.success(TOAST.CULTURE.VALUES_SAVED);
       return true;
     } catch {
-      toast.error("이상 가치 저장에 실패했습니다.");
+      toast.error(TOAST.CULTURE.VALUES_SAVE_ERROR);
       return false;
     }
   }
@@ -96,7 +97,7 @@ export function useCultureAlignment(groupId: string) {
     scores: Record<CultureDimension, number>
   ): boolean {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBER_NAME_REQUIRED_DOT);
       return false;
     }
     try {
@@ -105,7 +106,7 @@ export function useCultureAlignment(groupId: string) {
         (p) => p.memberName.toLowerCase() === memberName.trim().toLowerCase()
       );
       if (duplicate) {
-        toast.error("이미 등록된 멤버 이름입니다.");
+        toast.error(TOAST.CULTURE.MEMBER_DUPLICATE);
         return false;
       }
       const newProfile: CultureProfile = {
@@ -123,7 +124,7 @@ export function useCultureAlignment(groupId: string) {
       toast.success(`${memberName.trim()}님의 프로필이 추가되었습니다.`);
       return true;
     } catch {
-      toast.error("프로필 추가에 실패했습니다.");
+      toast.error(TOAST.CULTURE.PROFILE_ADD_ERROR);
       return false;
     }
   }
@@ -138,7 +139,7 @@ export function useCultureAlignment(groupId: string) {
       const stored = loadFromStorage<GroupCultureConfig>(LS_KEY(groupId), DEFAULT_CONFIG);
       const exists = stored.profiles.some((p) => p.id === profileId);
       if (!exists) {
-        toast.error("프로필을 찾을 수 없습니다.");
+        toast.error(TOAST.CULTURE.PROFILE_NOT_FOUND);
         return false;
       }
       const next: GroupCultureConfig = {
@@ -151,10 +152,10 @@ export function useCultureAlignment(groupId: string) {
       };
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("프로필이 업데이트되었습니다.");
+      toast.success(TOAST.CULTURE.PROFILE_UPDATED);
       return true;
     } catch {
-      toast.error("프로필 업데이트에 실패했습니다.");
+      toast.error(TOAST.CULTURE.PROFILE_UPDATE_ERROR);
       return false;
     }
   }
@@ -171,10 +172,10 @@ export function useCultureAlignment(groupId: string) {
       if (next.profiles.length === stored.profiles.length) return false;
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("프로필이 삭제되었습니다.");
+      toast.success(TOAST.CULTURE.PROFILE_DELETED);
       return true;
     } catch {
-      toast.error("프로필 삭제에 실패했습니다.");
+      toast.error(TOAST.CULTURE.PROFILE_DELETE_ERROR);
       return false;
     }
   }

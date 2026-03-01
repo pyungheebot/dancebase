@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import {
@@ -53,11 +54,11 @@ export function useGroupMusicLibrary(groupId: string) {
       const trimTitle = input.title.trim();
       const trimArtist = input.artist.trim();
       if (!trimTitle) {
-        toast.error("트랙 제목을 입력해주세요");
+        toast.error(TOAST.SONG_NOTES.TRACK_TITLE_REQUIRED);
         return false;
       }
       if (!trimArtist) {
-        toast.error("아티스트명을 입력해주세요");
+        toast.error(TOAST.INFO.ARTIST_REQUIRED);
         return false;
       }
       const newTrack: GroupMusicTrack = {
@@ -74,7 +75,7 @@ export function useGroupMusicLibrary(groupId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("트랙이 추가되었습니다");
+      toast.success(TOAST.SONG_NOTES.TRACK_ADDED);
       return true;
     },
     [current, persist]
@@ -90,7 +91,7 @@ export function useGroupMusicLibrary(groupId: string) {
     ): boolean => {
       const idx = current.tracks.findIndex((t) => t.id === id);
       if (idx === -1) {
-        toast.error("트랙을 찾을 수 없습니다");
+        toast.error(TOAST.SONG_NOTES.TRACK_NOT_FOUND);
         return false;
       }
       const updatedTracks = current.tracks.map((t) =>
@@ -102,7 +103,7 @@ export function useGroupMusicLibrary(groupId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("트랙이 수정되었습니다");
+      toast.success(TOAST.SONG_NOTES.TRACK_UPDATED);
       return true;
     },
     [current, persist]
@@ -117,7 +118,7 @@ export function useGroupMusicLibrary(groupId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("트랙이 삭제되었습니다");
+      toast.success(TOAST.SONG_NOTES.TRACK_DELETED);
     },
     [current, persist]
   );
@@ -137,9 +138,9 @@ export function useGroupMusicLibrary(groupId: string) {
       };
       persist(next);
       if (!track.isFavorite) {
-        toast.success("즐겨찾기에 추가되었습니다");
+        toast.success(TOAST.BOOKMARK.ADDED);
       } else {
-        toast.success("즐겨찾기에서 제거되었습니다");
+        toast.success(TOAST.BOOKMARK.REMOVED);
       }
     },
     [current, persist]

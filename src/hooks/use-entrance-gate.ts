@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   EntranceGateEntry,
@@ -86,15 +87,15 @@ export function useEntranceGate(groupId: string, projectId: string) {
   const addGate = useCallback(
     async (input: AddEntranceGateInput): Promise<boolean> => {
       if (!input.gateName.trim()) {
-        toast.error("게이트 이름을 입력해주세요");
+        toast.error(TOAST.ENTRANCE.NAME_REQUIRED);
         return false;
       }
       if (input.gateNumber <= 0) {
-        toast.error("게이트 번호는 1 이상이어야 합니다");
+        toast.error(TOAST.ENTRANCE.NUMBER_REQUIRED);
         return false;
       }
       if (input.allowedTypes.length === 0) {
-        toast.error("허용 입장 유형을 하나 이상 선택해주세요");
+        toast.error(TOAST.ENTRANCE.ALLOW_TYPE_REQUIRED);
         return false;
       }
 
@@ -131,7 +132,7 @@ export function useEntranceGate(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("게이트가 추가되었습니다");
+      toast.success(TOAST.ENTRANCE.ADDED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -143,7 +144,7 @@ export function useEntranceGate(groupId: string, projectId: string) {
       const current = loadSheet(groupId, projectId);
       const target = current.gates.find((g) => g.id === id);
       if (!target) {
-        toast.error("게이트를 찾을 수 없습니다");
+        toast.error(TOAST.ENTRANCE.NOT_FOUND);
         return false;
       }
 
@@ -190,7 +191,7 @@ export function useEntranceGate(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("게이트가 수정되었습니다");
+      toast.success(TOAST.ENTRANCE.UPDATED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -208,7 +209,7 @@ export function useEntranceGate(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("게이트가 삭제되었습니다");
+      toast.success(TOAST.ENTRANCE.DELETED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -273,7 +274,7 @@ export function useEntranceGate(groupId: string, projectId: string) {
       };
       saveSheet(updated);
       await mutate(updated, false);
-      toast.success("카운트가 초기화되었습니다");
+      toast.success(TOAST.ENTRANCE.RESET);
       return true;
     },
     [groupId, projectId, mutate]
@@ -290,7 +291,7 @@ export function useEntranceGate(groupId: string, projectId: string) {
     };
     saveSheet(updated);
     await mutate(updated, false);
-    toast.success("모든 게이트 카운트가 초기화되었습니다");
+    toast.success(TOAST.ENTRANCE.RESET_ALL);
     return true;
   }, [groupId, projectId, mutate]);
 

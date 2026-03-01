@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { generateCSV, downloadCSV } from "@/lib/export/csv-exporter";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type {
   MemberActivityExportPeriod,
   MemberActivityExportItems,
@@ -70,7 +71,7 @@ export function useMemberActivityExport() {
 
         const { data: rows, error } = await query;
         if (error) {
-          toast.error("출석 기록을 불러오지 못했습니다.");
+          toast.error(TOAST.ATTENDANCE.LOAD_ERROR);
           return;
         }
 
@@ -100,7 +101,7 @@ export function useMemberActivityExport() {
 
         const { data: rows, error } = await query;
         if (error) {
-          toast.error("게시글 목록을 불러오지 못했습니다.");
+          toast.error(TOAST.BOARD.LOAD_ERROR);
           return;
         }
 
@@ -125,7 +126,7 @@ export function useMemberActivityExport() {
 
         const { data: rows, error } = await query;
         if (error) {
-          toast.error("댓글 목록을 불러오지 못했습니다.");
+          toast.error(TOAST.BOARD.COMMENT_LOAD_ERROR);
           return;
         }
 
@@ -143,7 +144,7 @@ export function useMemberActivityExport() {
       const totalRows =
         data.attendance.length + data.posts.length + data.comments.length;
       if (totalRows === 0) {
-        toast.error("선택한 기간에 내보낼 데이터가 없습니다.");
+        toast.error(TOAST.EXPORT_EMPTY);
         return;
       }
 
@@ -172,7 +173,7 @@ export function useMemberActivityExport() {
       }
 
       if (csvSections.length === 0) {
-        toast.error("선택한 기간에 내보낼 데이터가 없습니다.");
+        toast.error(TOAST.EXPORT_EMPTY);
         return;
       }
 
@@ -183,7 +184,7 @@ export function useMemberActivityExport() {
       toast.success(`${memberName}님의 활동 내역을 내보냈습니다.`);
     } catch (err) {
       console.error("활동 내보내기 오류:", err);
-      toast.error("내보내기 중 오류가 발생했습니다.");
+      toast.error(TOAST.EXPORT_ERROR);
     } finally {
       setLoading(false);
     }

@@ -44,6 +44,7 @@ import {
 } from "@/hooks/use-dance-video-portfolio";
 import type { DanceVideoItem } from "@/types";
 import { cn } from "@/lib/utils";
+import { validateUrl, sanitizeUrl } from "@/lib/validation";
 
 // ============================================================
 // 태그 클라우드 레벨별 스타일
@@ -126,6 +127,16 @@ function VideoDialog({ initial, onSave, trigger }: VideoDialogProps) {
     }
     if (!url.trim()) {
       toast.error("영상 URL을 입력해주세요.");
+      return;
+    }
+    const urlError = validateUrl(url);
+    if (urlError) {
+      toast.error(urlError);
+      return;
+    }
+    const thumbnailUrlError = validateUrl(thumbnailUrl);
+    if (thumbnailUrlError) {
+      toast.error(`썸네일 URL: ${thumbnailUrlError}`);
       return;
     }
     void executeSave(async () => {
@@ -400,7 +411,7 @@ function VideoCard({ video, onEdit, onDelete, onToggleFeatured }: VideoCardProps
         {/* 호버 액션 */}
         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
           <a
-            href={video.url}
+            href={sanitizeUrl(video.url)}
             target="_blank"
             rel="noopener noreferrer"
             className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors"

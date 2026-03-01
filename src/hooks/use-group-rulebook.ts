@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { type GroupRuleSection, type GroupRulebookData } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
@@ -55,7 +56,7 @@ export function useGroupRulebook(groupId: string) {
     ): boolean => {
       const trimTitle = title.trim();
       if (!trimTitle) {
-        toast.error("섹션 제목을 입력해주세요");
+        toast.error(TOAST.BLOCKING.SECTION_TITLE_REQUIRED);
         return false;
       }
       const maxOrder = current.sections.reduce(
@@ -77,7 +78,7 @@ export function useGroupRulebook(groupId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("규정 섹션이 추가되었습니다");
+      toast.success(TOAST.RULE.SECTION_ADDED);
       return true;
     },
     [current, persist]
@@ -91,7 +92,7 @@ export function useGroupRulebook(groupId: string) {
     ): boolean => {
       const idx = current.sections.findIndex((s) => s.id === id);
       if (idx === -1) {
-        toast.error("섹션을 찾을 수 없습니다");
+        toast.error(TOAST.BLOCKING.SECTION_NOT_FOUND);
         return false;
       }
       const updatedSections = current.sections.map((s) =>
@@ -105,7 +106,7 @@ export function useGroupRulebook(groupId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("규정 섹션이 수정되었습니다");
+      toast.success(TOAST.RULE.SECTION_UPDATED);
       return true;
     },
     [current, persist]
@@ -120,7 +121,7 @@ export function useGroupRulebook(groupId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("규정 섹션이 삭제되었습니다");
+      toast.success(TOAST.RULE.SECTION_DELETED);
     },
     [current, persist]
   );
@@ -164,7 +165,7 @@ export function useGroupRulebook(groupId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("버전이 업데이트되었습니다");
+      toast.success(TOAST.VERSION.UPDATED);
     },
     [current, persist]
   );
@@ -178,7 +179,7 @@ export function useGroupRulebook(groupId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("시행일이 업데이트되었습니다");
+      toast.success(TOAST.INFO.IMPLEMENTATION_DATE_UPDATED);
     },
     [current, persist]
   );

@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateGroupChallengeCard } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type {
   DanceGroupChallengeEntry,
   DanceGroupChallengeStore,
@@ -71,15 +72,15 @@ export function useGroupChallengeCard(groupId: string) {
       endDate: string;
     }): boolean => {
       if (!input.title.trim()) {
-        toast.error("제목을 입력해주세요");
+        toast.error(TOAST.TITLE_REQUIRED);
         return false;
       }
       if (!input.startDate || !input.endDate) {
-        toast.error("시작일과 종료일을 입력해주세요");
+        toast.error(TOAST.DATE.START_END_REQUIRED_NO_DOT);
         return false;
       }
       if (input.startDate > input.endDate) {
-        toast.error("종료일은 시작일 이후여야 합니다");
+        toast.error(TOAST.DATE.END_AFTER_START);
         return false;
       }
       const now = new Date().toISOString();
@@ -101,7 +102,7 @@ export function useGroupChallengeCard(groupId: string) {
       saveStore(groupId, updated);
       mutate(updated, false);
       invalidateGroupChallengeCard(groupId);
-      toast.success("챌린지가 생성되었습니다");
+      toast.success(TOAST.CHALLENGE.CREATED_NO_DOT);
       return true;
     },
     [groupId, entries, mutate]
@@ -120,11 +121,11 @@ export function useGroupChallengeCard(groupId: string) {
       }
     ): boolean => {
       if (!input.title.trim()) {
-        toast.error("제목을 입력해주세요");
+        toast.error(TOAST.TITLE_REQUIRED);
         return false;
       }
       if (input.startDate > input.endDate) {
-        toast.error("종료일은 시작일 이후여야 합니다");
+        toast.error(TOAST.DATE.END_AFTER_START);
         return false;
       }
       const now = new Date().toISOString();
@@ -147,7 +148,7 @@ export function useGroupChallengeCard(groupId: string) {
       saveStore(groupId, updated);
       mutate(updated, false);
       invalidateGroupChallengeCard(groupId);
-      toast.success("챌린지가 수정되었습니다");
+      toast.success(TOAST.CHALLENGE.UPDATED);
       return true;
     },
     [groupId, entries, mutate]
@@ -164,7 +165,7 @@ export function useGroupChallengeCard(groupId: string) {
       saveStore(groupId, updated);
       mutate(updated, false);
       invalidateGroupChallengeCard(groupId);
-      toast.success("챌린지가 삭제되었습니다");
+      toast.success(TOAST.CHALLENGE.DELETED_NO_DOT);
     },
     [groupId, entries, mutate]
   );
@@ -173,7 +174,7 @@ export function useGroupChallengeCard(groupId: string) {
   const addParticipant = useCallback(
     (challengeId: string, name: string): boolean => {
       if (!name.trim()) {
-        toast.error("참여자 이름을 입력해주세요");
+        toast.error(TOAST.STAFF_CALL.PARTICIPANT_NAME_REQUIRED);
         return false;
       }
       const challenge = entries.find((e) => e.id === challengeId);
@@ -182,7 +183,7 @@ export function useGroupChallengeCard(groupId: string) {
         (p) => p.name === name.trim()
       );
       if (alreadyExists) {
-        toast.error("이미 참여 중인 멤버입니다");
+        toast.error(TOAST.MISC.DUPLICATE_MEMBER);
         return false;
       }
       const now = new Date().toISOString();

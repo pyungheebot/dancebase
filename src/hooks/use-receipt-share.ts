@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateReceiptShareTokens } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { copyToClipboard } from "@/lib/clipboard";
 import type { ReceiptShareToken } from "@/types";
 
@@ -48,7 +49,7 @@ export function useReceiptShare(transactionId: string) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.LOGIN_REQUIRED);
       return null;
     }
 
@@ -67,11 +68,11 @@ export function useReceiptShare(transactionId: string) {
       .single();
 
     if (error) {
-      toast.error("공유 링크 생성에 실패했습니다");
+      toast.error(TOAST.LINK.SHARE_CREATE_ERROR);
       return null;
     }
 
-    toast.success("공유 링크가 생성되었습니다");
+    toast.success(TOAST.LINK.SHARE_CREATED);
     invalidateReceiptShareTokens(transactionId);
     return data as ReceiptShareToken;
   }
@@ -85,11 +86,11 @@ export function useReceiptShare(transactionId: string) {
       .eq("id", tokenId);
 
     if (error) {
-      toast.error("공유 링크 삭제에 실패했습니다");
+      toast.error(TOAST.LINK.SHARE_DELETE_ERROR);
       return false;
     }
 
-    toast.success("공유 링크가 삭제되었습니다");
+    toast.success(TOAST.LINK.SHARE_DELETED);
     invalidateReceiptShareTokens(transactionId);
     return true;
   }

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   ShowTimelineEvent,
@@ -88,18 +89,18 @@ export function useShowTimeline(groupId: string, projectId: string) {
   const addEvent = useCallback(
     async (input: AddShowTimelineEventInput): Promise<boolean> => {
       if (!input.title.trim()) {
-        toast.error("이벤트 제목을 입력해주세요");
+        toast.error(TOAST.SHOW_TIMELINE.EVENT_TITLE_REQUIRED);
         return false;
       }
       if (!input.startTime) {
-        toast.error("시작 시간을 입력해주세요");
+        toast.error(TOAST.DATE.START_TIME_REQUIRED);
         return false;
       }
       if (
         input.endTime &&
         timeToMinutes(input.endTime) < timeToMinutes(input.startTime)
       ) {
-        toast.error("종료 시간은 시작 시간 이후여야 합니다");
+        toast.error(TOAST.DATE.END_TIME_AFTER_START);
         return false;
       }
 
@@ -124,7 +125,7 @@ export function useShowTimeline(groupId: string, projectId: string) {
       const updated = [...current, newEvent];
       saveEvents(groupId, projectId, updated);
       await mutate(updated, false);
-      toast.success("이벤트가 추가되었습니다");
+      toast.success(TOAST.SHOW_TIMELINE.EVENT_ADDED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -139,7 +140,7 @@ export function useShowTimeline(groupId: string, projectId: string) {
       const current = loadEvents(groupId, projectId);
       const target = current.find((e) => e.id === id);
       if (!target) {
-        toast.error("이벤트를 찾을 수 없습니다");
+        toast.error(TOAST.SHOW_TIMELINE.EVENT_NOT_FOUND);
         return false;
       }
 
@@ -148,7 +149,7 @@ export function useShowTimeline(groupId: string, projectId: string) {
         merged.endTime &&
         timeToMinutes(merged.endTime) < timeToMinutes(merged.startTime)
       ) {
-        toast.error("종료 시간은 시작 시간 이후여야 합니다");
+        toast.error(TOAST.DATE.END_TIME_AFTER_START);
         return false;
       }
 
@@ -182,7 +183,7 @@ export function useShowTimeline(groupId: string, projectId: string) {
 
       saveEvents(groupId, projectId, updated);
       await mutate(updated, false);
-      toast.success("이벤트가 수정되었습니다");
+      toast.success(TOAST.SHOW_TIMELINE.EVENT_UPDATED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -195,7 +196,7 @@ export function useShowTimeline(groupId: string, projectId: string) {
       const filtered = current.filter((e) => e.id !== id);
       saveEvents(groupId, projectId, filtered);
       await mutate(filtered, false);
-      toast.success("이벤트가 삭제되었습니다");
+      toast.success(TOAST.SHOW_TIMELINE.EVENT_DELETED);
       return true;
     },
     [groupId, projectId, mutate]

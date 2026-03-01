@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { OnboardingTasksData } from "@/types";
 import { saveToStorage } from "@/lib/local-storage";
 
@@ -55,12 +56,12 @@ export function useOnboardingTasks(groupId: string, userId: string) {
         const justCompleted = updatedTasks.find((t) => t.id === taskId)?.completed;
         if (justCompleted) {
           if (allDone) {
-            toast.success("온보딩 완료!", {
+            toast.success(TOAST.ONBOARDING.COMPLETED, {
               description: "모든 과제를 완료했습니다. 그룹 활동을 즐겨보세요!",
               duration: 4000,
             });
           } else {
-            toast.success("과제 완료!", {
+            toast.success(TOAST.ONBOARDING.TASK_COMPLETED, {
               description: updatedTasks.find((t) => t.id === taskId)?.title,
               duration: 2000,
             });

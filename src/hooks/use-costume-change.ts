@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type { CostumeChangeEntry, CostumeChangeLocation } from "@/types";
 
@@ -110,7 +111,7 @@ export function useCostumeChange(groupId: string, projectId: string) {
       const updated = [...current, newEntry];
       saveEntries(groupId, projectId, updated);
       await mutate(updated, false);
-      toast.success("의상 변경 항목이 추가되었습니다");
+      toast.success(TOAST.COSTUME_CHANGE.ADDED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -122,7 +123,7 @@ export function useCostumeChange(groupId: string, projectId: string) {
       const current = loadEntries(groupId, projectId);
       const target = current.find((e) => e.id === id);
       if (!target) {
-        toast.error("항목을 찾을 수 없습니다");
+        toast.error(TOAST.NOT_FOUND);
         return false;
       }
 
@@ -171,7 +172,7 @@ export function useCostumeChange(groupId: string, projectId: string) {
 
       saveEntries(groupId, projectId, updated);
       await mutate(updated, false);
-      toast.success("의상 변경 항목이 수정되었습니다");
+      toast.success(TOAST.COSTUME_CHANGE.UPDATED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -187,7 +188,7 @@ export function useCostumeChange(groupId: string, projectId: string) {
 
       saveEntries(groupId, projectId, filtered);
       await mutate(filtered, false);
-      toast.success("의상 변경 항목이 삭제되었습니다");
+      toast.success(TOAST.COSTUME_CHANGE.DELETED);
       return true;
     },
     [groupId, projectId, mutate]

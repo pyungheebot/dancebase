@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PracticeEvalSession,
@@ -43,19 +44,19 @@ export function usePracticeEvaluation(groupId: string) {
     notes?: string;
   }): string | null {
     if (!input.title.trim()) {
-      toast.error("평가 세션 제목을 입력해주세요.");
+      toast.error(TOAST.EVALUATION.SESSION_TITLE_REQUIRED);
       return null;
     }
     if (!input.date) {
-      toast.error("평가 날짜를 입력해주세요.");
+      toast.error(TOAST.EVALUATION.DATE_REQUIRED);
       return null;
     }
     if (!input.evaluator.trim()) {
-      toast.error("평가자를 입력해주세요.");
+      toast.error(TOAST.EVALUATION.EVALUATOR_REQUIRED);
       return null;
     }
     if (input.criteria.length === 0) {
-      toast.error("평가 기준을 하나 이상 추가해주세요.");
+      toast.error(TOAST.EVALUATION.CRITERIA_REQUIRED);
       return null;
     }
     try {
@@ -73,10 +74,10 @@ export function usePracticeEvaluation(groupId: string) {
       const next = [newSession, ...stored];
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("평가 세션이 생성되었습니다.");
+      toast.success(TOAST.EVALUATION.SESSION_CREATED);
       return newSession.id;
     } catch {
-      toast.error("평가 세션 생성에 실패했습니다.");
+      toast.error(TOAST.EVALUATION.SESSION_CREATE_ERROR);
       return null;
     }
   }
@@ -93,7 +94,7 @@ export function usePracticeEvaluation(groupId: string) {
       const stored = loadFromStorage<PracticeEvalSession[]>(LS_KEY(groupId), []);
       const idx = stored.findIndex((s) => s.id === sessionId);
       if (idx === -1) {
-        toast.error("평가 세션을 찾을 수 없습니다.");
+        toast.error(TOAST.EVALUATION.SESSION_NOT_FOUND);
         return false;
       }
       const next = [
@@ -103,10 +104,10 @@ export function usePracticeEvaluation(groupId: string) {
       ];
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("평가 세션이 수정되었습니다.");
+      toast.success(TOAST.EVALUATION.SESSION_UPDATED);
       return true;
     } catch {
-      toast.error("평가 세션 수정에 실패했습니다.");
+      toast.error(TOAST.EVALUATION.SESSION_UPDATE_ERROR);
       return false;
     }
   }
@@ -120,10 +121,10 @@ export function usePracticeEvaluation(groupId: string) {
       if (next.length === stored.length) return false;
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("평가 세션이 삭제되었습니다.");
+      toast.success(TOAST.EVALUATION.SESSION_DELETED);
       return true;
     } catch {
-      toast.error("평가 세션 삭제에 실패했습니다.");
+      toast.error(TOAST.EVALUATION.SESSION_DELETE_ERROR);
       return false;
     }
   }
@@ -135,11 +136,11 @@ export function usePracticeEvaluation(groupId: string) {
     criteria: { name: string; maxScore: number }
   ): boolean {
     if (!criteria.name.trim()) {
-      toast.error("기준 이름을 입력해주세요.");
+      toast.error(TOAST.EVALUATION.CRITERIA_NAME_REQUIRED);
       return false;
     }
     if (criteria.maxScore < 1) {
-      toast.error("최대 점수는 1 이상이어야 합니다.");
+      toast.error(TOAST.EVALUATION.MAX_SCORE_REQUIRED);
       return false;
     }
     try {
@@ -157,7 +158,7 @@ export function usePracticeEvaluation(groupId: string) {
       mutate(next, false);
       return true;
     } catch {
-      toast.error("기준 추가에 실패했습니다.");
+      toast.error(TOAST.EVALUATION.CRITERIA_ADD_ERROR);
       return false;
     }
   }
@@ -186,7 +187,7 @@ export function usePracticeEvaluation(groupId: string) {
       mutate(next, false);
       return true;
     } catch {
-      toast.error("기준 삭제에 실패했습니다.");
+      toast.error(TOAST.EVALUATION.CRITERIA_DELETE_ERROR);
       return false;
     }
   }
@@ -200,7 +201,7 @@ export function usePracticeEvaluation(groupId: string) {
     feedback?: string
   ): boolean {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBER_NAME_REQUIRED_DOT);
       return false;
     }
     try {
@@ -233,7 +234,7 @@ export function usePracticeEvaluation(groupId: string) {
       toast.success(`${memberName.trim()}님의 평가가 저장되었습니다.`);
       return true;
     } catch {
-      toast.error("평가 저장에 실패했습니다.");
+      toast.error(TOAST.EVALUATION.SAVE_ERROR);
       return false;
     }
   }
@@ -255,10 +256,10 @@ export function usePracticeEvaluation(groupId: string) {
       });
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("평가 결과가 삭제되었습니다.");
+      toast.success(TOAST.EVALUATION.RESULT_DELETED);
       return true;
     } catch {
-      toast.error("평가 결과 삭제에 실패했습니다.");
+      toast.error(TOAST.EVALUATION.RESULT_DELETE_ERROR);
       return false;
     }
   }

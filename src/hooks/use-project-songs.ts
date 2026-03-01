@@ -6,6 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { invalidateProjectSongs } from "@/lib/swr/invalidate";
 import type { ProjectSong } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 export function useProjectSongs(projectId: string) {
   const fetcher = async (): Promise<ProjectSong[]> => {
@@ -55,7 +56,7 @@ export function useProjectSongs(projectId: string) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.LOGIN_REQUIRED);
       return false;
     }
 
@@ -74,11 +75,11 @@ export function useProjectSongs(projectId: string) {
     });
 
     if (error) {
-      toast.error("곡 추가에 실패했습니다");
+      toast.error(TOAST.SONG.ADD_ERROR);
       return false;
     }
 
-    toast.success("곡이 추가되었습니다");
+    toast.success(TOAST.SONG.ADDED);
     invalidateProjectSongs(projectId);
     mutate();
     return true;
@@ -100,7 +101,7 @@ export function useProjectSongs(projectId: string) {
       .eq("id", song.id);
 
     if (error) {
-      toast.error("상태 변경에 실패했습니다");
+      toast.error(TOAST.STATUS_ERROR);
       return;
     }
 
@@ -120,7 +121,7 @@ export function useProjectSongs(projectId: string) {
       .eq("id", songId);
 
     if (error) {
-      toast.error("상태 변경에 실패했습니다");
+      toast.error(TOAST.STATUS_ERROR);
       return;
     }
 
@@ -137,11 +138,11 @@ export function useProjectSongs(projectId: string) {
       .eq("id", songId);
 
     if (error) {
-      toast.error("삭제에 실패했습니다");
+      toast.error(TOAST.DELETE_SIMPLE_ERROR);
       return;
     }
 
-    toast.success("곡이 삭제되었습니다");
+    toast.success(TOAST.SONG.DELETED);
     invalidateProjectSongs(projectId);
     mutate();
   }

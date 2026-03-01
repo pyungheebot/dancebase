@@ -6,6 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { invalidateSongParts } from "@/lib/swr/invalidate";
 import type { SongPart, SongPartType } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 export type SongPartWithProfile = SongPart & {
   profiles: {
@@ -57,7 +58,7 @@ export function useSongParts(songId: string | null) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.LOGIN_REQUIRED);
       return false;
     }
 
@@ -77,14 +78,14 @@ export function useSongParts(songId: string | null) {
 
     if (error) {
       if (error.code === "23505") {
-        toast.error("해당 멤버에게 이미 같은 파트 타입이 배정되어 있습니다");
+        toast.error(TOAST.PART.DUPLICATE);
       } else {
-        toast.error("파트 배정에 실패했습니다");
+        toast.error(TOAST.PART.ASSIGN_ERROR);
       }
       return false;
     }
 
-    toast.success("파트가 배정되었습니다");
+    toast.success(TOAST.PART.ASSIGNED);
     invalidateSongParts(targetSongId);
     mutate();
     return true;
@@ -104,11 +105,11 @@ export function useSongParts(songId: string | null) {
       .eq("id", partId);
 
     if (error) {
-      toast.error("파트 수정에 실패했습니다");
+      toast.error(TOAST.PART.UPDATE_ERROR);
       return false;
     }
 
-    toast.success("파트가 수정되었습니다");
+    toast.success(TOAST.PART.UPDATED);
     invalidateSongParts(songId);
     mutate();
     return true;
@@ -125,11 +126,11 @@ export function useSongParts(songId: string | null) {
       .eq("id", partId);
 
     if (error) {
-      toast.error("파트 삭제에 실패했습니다");
+      toast.error(TOAST.PART.DELETE_ERROR);
       return;
     }
 
-    toast.success("파트가 삭제되었습니다");
+    toast.success(TOAST.PART.DELETED);
     invalidateSongParts(songId);
     mutate();
   }
@@ -145,7 +146,7 @@ export function useSongParts(songId: string | null) {
       .eq("id", partId);
 
     if (error) {
-      toast.error("순서 변경에 실패했습니다");
+      toast.error(TOAST.ORDER_ERROR);
       return;
     }
 

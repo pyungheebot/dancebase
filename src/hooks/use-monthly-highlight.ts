@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
@@ -111,7 +112,7 @@ export function useMonthlyHighlight(groupId: string) {
       };
       saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
-      toast.success("하이라이트가 등록되었습니다.");
+      toast.success(TOAST.HIGHLIGHT.CREATED);
       return true;
     },
     [groupId, mutate]
@@ -128,7 +129,7 @@ export function useMonthlyHighlight(groupId: string) {
       };
       saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
-      toast.success("하이라이트가 삭제되었습니다.");
+      toast.success(TOAST.HIGHLIGHT.DELETED);
     },
     [groupId, mutate]
   );

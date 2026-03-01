@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { EventRsvpItem, EventRsvpMember, EventRsvpResponse } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
@@ -34,11 +35,11 @@ export function useEventRsvp(groupId: string) {
     memberNames?: string[];
   }): boolean {
     if (!input.title.trim()) {
-      toast.error("이벤트 제목을 입력해주세요.");
+      toast.error(TOAST.SHOW_TIMELINE.EVENT_TITLE_REQUIRED_DOT);
       return false;
     }
     if (!input.date) {
-      toast.error("이벤트 날짜를 입력해주세요.");
+      toast.error(TOAST.SHOW_TIMELINE.EVENT_DATE_REQUIRED);
       return false;
     }
     try {
@@ -62,10 +63,10 @@ export function useEventRsvp(groupId: string) {
       const next = [...stored, newEvent];
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("이벤트가 추가되었습니다.");
+      toast.success(TOAST.SHOW_TIMELINE.EVENT_ADDED_DOT);
       return true;
     } catch {
-      toast.error("이벤트 추가에 실패했습니다.");
+      toast.error(TOAST.SHOW_TIMELINE.EVENT_ADD_ERROR);
       return false;
     }
   }
@@ -80,7 +81,7 @@ export function useEventRsvp(groupId: string) {
       const stored = loadFromStorage<EventRsvpItem[]>(LS_KEY(groupId), []);
       const idx = stored.findIndex((e) => e.id === eventId);
       if (idx === -1) {
-        toast.error("이벤트를 찾을 수 없습니다.");
+        toast.error(TOAST.SHOW_TIMELINE.EVENT_NOT_FOUND_DOT);
         return false;
       }
       const updated = { ...stored[idx], ...patch };
@@ -91,10 +92,10 @@ export function useEventRsvp(groupId: string) {
       ];
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("이벤트가 수정되었습니다.");
+      toast.success(TOAST.SHOW_TIMELINE.EVENT_UPDATED_DOT);
       return true;
     } catch {
-      toast.error("이벤트 수정에 실패했습니다.");
+      toast.error(TOAST.SHOW_TIMELINE.EVENT_UPDATE_ERROR);
       return false;
     }
   }
@@ -108,10 +109,10 @@ export function useEventRsvp(groupId: string) {
       if (next.length === stored.length) return false;
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
-      toast.success("이벤트가 삭제되었습니다.");
+      toast.success(TOAST.SHOW_TIMELINE.EVENT_DELETED_DOT);
       return true;
     } catch {
-      toast.error("이벤트 삭제에 실패했습니다.");
+      toast.error(TOAST.SHOW_TIMELINE.EVENT_DELETE_ERROR);
       return false;
     }
   }
@@ -125,14 +126,14 @@ export function useEventRsvp(groupId: string) {
     note?: string
   ): boolean {
     if (!memberName.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.NAME_REQUIRED_DOT);
       return false;
     }
     try {
       const stored = loadFromStorage<EventRsvpItem[]>(LS_KEY(groupId), []);
       const event = stored.find((e) => e.id === eventId);
       if (!event) {
-        toast.error("이벤트를 찾을 수 없습니다.");
+        toast.error(TOAST.SHOW_TIMELINE.EVENT_NOT_FOUND_DOT);
         return false;
       }
       const existingIdx = event.responses.findIndex(
@@ -166,7 +167,7 @@ export function useEventRsvp(groupId: string) {
       toast.success(`${memberName.trim()}님이 '${LABELS[response]}'으로 응답했습니다.`);
       return true;
     } catch {
-      toast.error("응답 등록에 실패했습니다.");
+      toast.error(TOAST.MISC.RESPONDED_ERROR);
       return false;
     }
   }

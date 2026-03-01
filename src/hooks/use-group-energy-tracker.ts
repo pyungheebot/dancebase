@@ -5,6 +5,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { invalidateGroupEnergyTracker } from "@/lib/swr/invalidate";
 import type { EnergyRecord, EnergyDimension } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 const MAX_RECORDS = 100;
 
@@ -189,7 +190,7 @@ export function useGroupEnergyTracker(groupId: string) {
 
     invalidateGroupEnergyTracker(groupId);
     mutate(loadRecords(groupId));
-    toast.success("에너지 기록이 저장되었습니다");
+    toast.success(TOAST.ENERGY.SAVED);
   }
 
   // 기록 삭제
@@ -200,7 +201,7 @@ export function useGroupEnergyTracker(groupId: string) {
 
     invalidateGroupEnergyTracker(groupId);
     mutate(loadRecords(groupId));
-    toast.success("기록이 삭제되었습니다");
+    toast.success(TOAST.ENERGY.DELETED);
   }
 
   return {

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   StageBlockingEntry,
@@ -96,7 +97,7 @@ export function useStageBlocking(groupId: string, projectId: string) {
   const addNote = useCallback(
     async (input: AddStageBlockingInput): Promise<boolean> => {
       if (!input.songTitle.trim()) {
-        toast.error("곡 제목을 입력해주세요");
+        toast.error(TOAST.SONG.TITLE_REQUIRED);
         return false;
       }
 
@@ -131,7 +132,7 @@ export function useStageBlocking(groupId: string, projectId: string) {
       };
       saveEntry(updated);
       await mutate(updated, false);
-      toast.success("동선 노트가 추가되었습니다");
+      toast.success(TOAST.BLOCKING.ADDED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -143,12 +144,12 @@ export function useStageBlocking(groupId: string, projectId: string) {
       const current = loadEntry(groupId, projectId);
       const target = current.notes.find((n) => n.id === id);
       if (!target) {
-        toast.error("노트를 찾을 수 없습니다");
+        toast.error(TOAST.BLOCKING.NOTE_NOT_FOUND);
         return false;
       }
 
       if (changes.songTitle !== undefined && !changes.songTitle.trim()) {
-        toast.error("곡 제목을 입력해주세요");
+        toast.error(TOAST.SONG.TITLE_REQUIRED);
         return false;
       }
 
@@ -207,7 +208,7 @@ export function useStageBlocking(groupId: string, projectId: string) {
       };
       saveEntry(updated);
       await mutate(updated, false);
-      toast.success("동선 노트가 수정되었습니다");
+      toast.success(TOAST.BLOCKING.UPDATED);
       return true;
     },
     [groupId, projectId, mutate]
@@ -225,7 +226,7 @@ export function useStageBlocking(groupId: string, projectId: string) {
       };
       saveEntry(updated);
       await mutate(updated, false);
-      toast.success("동선 노트가 삭제되었습니다");
+      toast.success(TOAST.BLOCKING.DELETED);
       return true;
     },
     [groupId, projectId, mutate]

@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
@@ -66,11 +67,11 @@ export function useIntercom(projectId: string) {
     (input: IntercomChannelInput): boolean => {
       const trimName = input.name.trim();
       if (!trimName) {
-        toast.error("채널명을 입력해주세요");
+        toast.error(TOAST.INTERCOM.NAME_REQUIRED);
         return false;
       }
       if (!input.frequency.trim()) {
-        toast.error("주파수/채널 번호를 입력해주세요");
+        toast.error(TOAST.INTERCOM.FREQ_REQUIRED);
         return false;
       }
       const now = new Date().toISOString();
@@ -89,7 +90,7 @@ export function useIntercom(projectId: string) {
         updatedAt: now,
       };
       persist(next);
-      toast.success("채널이 추가되었습니다");
+      toast.success(TOAST.INTERCOM.ADDED);
       return true;
     },
     [current, persist]
@@ -100,16 +101,16 @@ export function useIntercom(projectId: string) {
     (id: string, input: IntercomChannelInput): boolean => {
       const trimName = input.name.trim();
       if (!trimName) {
-        toast.error("채널명을 입력해주세요");
+        toast.error(TOAST.INTERCOM.NAME_REQUIRED);
         return false;
       }
       if (!input.frequency.trim()) {
-        toast.error("주파수/채널 번호를 입력해주세요");
+        toast.error(TOAST.INTERCOM.FREQ_REQUIRED);
         return false;
       }
       const idx = current.channels.findIndex((c) => c.id === id);
       if (idx === -1) {
-        toast.error("채널을 찾을 수 없습니다");
+        toast.error(TOAST.INTERCOM.NOT_FOUND);
         return false;
       }
       const now = new Date().toISOString();
@@ -131,7 +132,7 @@ export function useIntercom(projectId: string) {
         updatedAt: now,
       };
       persist(next);
-      toast.success("채널이 수정되었습니다");
+      toast.success(TOAST.INTERCOM.UPDATED);
       return true;
     },
     [current, persist]
@@ -146,7 +147,7 @@ export function useIntercom(projectId: string) {
         updatedAt: new Date().toISOString(),
       };
       persist(next);
-      toast.success("채널이 삭제되었습니다");
+      toast.success(TOAST.INTERCOM.DELETED);
     },
     [current, persist]
   );
@@ -156,11 +157,11 @@ export function useIntercom(projectId: string) {
     (channelId: string, input: IntercomPersonInput): boolean => {
       const trimName = input.name.trim();
       if (!trimName) {
-        toast.error("이름을 입력해주세요");
+        toast.error(TOAST.NAME_REQUIRED);
         return false;
       }
       if (!input.callSign.trim()) {
-        toast.error("호출부호를 입력해주세요");
+        toast.error(TOAST.INFO.CALLSIGN_REQUIRED);
         return false;
       }
       const now = new Date().toISOString();
@@ -180,7 +181,7 @@ export function useIntercom(projectId: string) {
         updatedAt: now,
       };
       persist(next);
-      toast.success("인원이 추가되었습니다");
+      toast.success(TOAST.STAFF_CALL.PARTICIPANT_ADDED);
       return true;
     },
     [current, persist]
@@ -205,7 +206,7 @@ export function useIntercom(projectId: string) {
         updatedAt: now,
       };
       persist(next);
-      toast.success("인원이 삭제되었습니다");
+      toast.success(TOAST.STAFF_CALL.PARTICIPANT_DELETED);
     },
     [current, persist]
   );

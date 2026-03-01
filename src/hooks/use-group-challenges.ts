@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateGroupChallenges } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { GroupChallenge } from "@/types";
 
 type GroupChallengesResult = {
@@ -98,7 +99,7 @@ export function useGroupChallenges(groupId: string): GroupChallengesResult {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.LOGIN_REQUIRED);
       return false;
     }
 
@@ -113,11 +114,11 @@ export function useGroupChallenges(groupId: string): GroupChallengesResult {
     });
 
     if (error) {
-      toast.error("챌린지 생성에 실패했습니다");
+      toast.error(TOAST.CHALLENGE.CREATE_ERROR_NO_DOT);
       return false;
     }
 
-    toast.success("챌린지가 생성되었습니다");
+    toast.success(TOAST.CHALLENGE.CREATED_NO_DOT);
     invalidateGroupChallenges(groupId);
     return true;
   };
@@ -131,11 +132,11 @@ export function useGroupChallenges(groupId: string): GroupChallengesResult {
       .eq("id", id);
 
     if (error) {
-      toast.error("챌린지 삭제에 실패했습니다");
+      toast.error(TOAST.CHALLENGE.DELETE_ERROR_NO_DOT);
       return false;
     }
 
-    toast.success("챌린지가 삭제되었습니다");
+    toast.success(TOAST.CHALLENGE.DELETED_NO_DOT);
     invalidateGroupChallenges(groupId);
     return true;
   };

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { ActivityRetrospective } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { removeFromStorage } from "@/lib/local-storage";
 
 const CACHE_KEY_PREFIX = "dancebase:retrospective:";
@@ -192,7 +193,7 @@ export function useActivityRetrospective(groupId: string) {
       return report;
     } catch (err) {
       console.error("[useActivityRetrospective] generateReport error:", err);
-      toast.error("리포트 생성에 실패했습니다.");
+      toast.error(TOAST.REPORT.CREATE_ERROR);
       return null;
     }
   }

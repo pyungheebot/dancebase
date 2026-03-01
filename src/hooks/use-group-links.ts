@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useEntitySettings } from "@/hooks/use-entity-settings";
 import {
   GROUP_LINKS_SETTING_KEY,
@@ -37,11 +38,11 @@ export function useGroupLinks(groupId: string) {
       const { error } = await save({ links: newLinks });
 
       if (error) {
-        toast.error("링크 추가에 실패했습니다");
+        toast.error(TOAST.LINK.ADD_ERROR);
         return false;
       }
 
-      toast.success("링크가 추가되었습니다");
+      toast.success(TOAST.LINK.ADDED);
       return true;
     },
     [links, save]
@@ -55,11 +56,11 @@ export function useGroupLinks(groupId: string) {
       const { error } = await save({ links: newLinks });
 
       if (error) {
-        toast.error("링크 수정에 실패했습니다");
+        toast.error(TOAST.LINK.UPDATE_ERROR);
         return false;
       }
 
-      toast.success("링크가 수정되었습니다");
+      toast.success(TOAST.LINK.UPDATED);
       return true;
     },
     [links, save]
@@ -73,11 +74,11 @@ export function useGroupLinks(groupId: string) {
       const { error } = await save({ links: newLinks });
 
       if (error) {
-        toast.error("링크 삭제에 실패했습니다");
+        toast.error(TOAST.LINK.DELETE_ERROR);
         return false;
       }
 
-      toast.success("링크가 삭제되었습니다");
+      toast.success(TOAST.LINK.DELETED);
       return true;
     },
     [links, save]
@@ -101,7 +102,7 @@ export function useGroupLinks(groupId: string) {
       const { error } = await save({ links: reordered });
 
       if (error) {
-        toast.error("순서 변경에 실패했습니다");
+        toast.error(TOAST.ORDER_ERROR);
         return false;
       }
 

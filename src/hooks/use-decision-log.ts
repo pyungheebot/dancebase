@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type {
   DecisionLogItem,
   DecisionCategory,
@@ -69,11 +70,11 @@ export function useDecisionLog(groupId: string) {
         return false;
       }
       if (!input.title.trim()) {
-        toast.error("제목을 입력해주세요.");
+        toast.error(TOAST.TITLE_REQUIRED_DOT);
         return false;
       }
       if (!input.decidedBy.trim()) {
-        toast.error("결정자를 입력해주세요.");
+        toast.error(TOAST.DECISION.DECIDER_REQUIRED);
         return false;
       }
 
@@ -89,7 +90,7 @@ export function useDecisionLog(groupId: string) {
       };
 
       persistAndUpdate([...items, newItem]);
-      toast.success("의사결정이 기록되었습니다.");
+      toast.success(TOAST.DECISION.CREATED);
       return true;
     },
     [items, groupId, persistAndUpdate]
@@ -99,7 +100,7 @@ export function useDecisionLog(groupId: string) {
     (id: string): void => {
       const updated = items.filter((item) => item.id !== id);
       persistAndUpdate(updated);
-      toast.success("의사결정 기록이 삭제되었습니다.");
+      toast.success(TOAST.DECISION.DELETED);
     },
     [items, persistAndUpdate]
   );
