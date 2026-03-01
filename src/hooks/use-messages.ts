@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
@@ -61,7 +61,15 @@ export function useConversations() {
   };
 }
 
+const PAGE_SIZE = 50;
+
 export function useConversation(partnerId: string) {
+  const [olderMessages, setOlderMessages] = useState<Message[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  // 가장 오래된 커서: 이전 메시지 로드 시 이 타임스탬프보다 이전 것을 조회
+  const oldestCursorRef = useRef<string | null>(null);
+
   // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 최신 메시지 자동 갱신
   const { data, isLoading, mutate } = useSWR(
     swrKeys.conversation(partnerId),
@@ -74,13 +82,15 @@ export function useConversation(partnerId: string) {
 
       const [profileRes, messagesRes] = await Promise.all([
         supabase.from("profiles").select("name, avatar_url").eq("id", partnerId).single(),
+        // 최신 PAGE_SIZE개만 내림차순으로 조회 후 역순 정렬
         supabase
           .from("messages")
           .select("*")
           .or(
             `and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`
           )
-          .order("created_at", { ascending: true }),
+          .order("created_at", { ascending: false })
+          .limit(PAGE_SIZE),
       ]);
 
       // 읽음 처리
@@ -94,13 +104,72 @@ export function useConversation(partnerId: string) {
           if (error) console.error("Failed to mark messages as read:", error);
         });
 
+      const fetched = ((messagesRes.data as Message[]) ?? []).reverse();
+
+      // hasMore: PAGE_SIZE개가 가득 찼으면 더 있을 수 있음
+      const nextHasMore = fetched.length === PAGE_SIZE;
+
       return {
-        messages: (messagesRes.data as Message[]) ?? [],
+        messages: fetched,
         partnerName: profileRes.data?.name ?? "",
         partnerAvatarUrl: (profileRes.data?.avatar_url as string | null) ?? null,
+        hasMore: nextHasMore,
       };
     },
+    {
+      onSuccess: (result) => {
+        if (!result) return;
+        // SWR 성공 시 olderMessages 초기화 및 커서 설정
+        setOlderMessages([]);
+        setHasMore(result.hasMore ?? false);
+        if (result.messages.length > 0) {
+          oldestCursorRef.current = result.messages[0].created_at;
+        } else {
+          oldestCursorRef.current = null;
+        }
+      },
+    }
   );
+
+  // 이전 메시지 불러오기 (커서 기반)
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || !oldestCursorRef.current) return;
+    setLoadingMore(true);
+
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: olderData, error } = await supabase
+        .from("messages")
+        .select("*")
+        .or(
+          `and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`
+        )
+        .lt("created_at", oldestCursorRef.current)
+        .order("created_at", { ascending: false })
+        .limit(PAGE_SIZE);
+
+      if (error) {
+        console.error("Failed to load older messages:", error);
+        return;
+      }
+
+      const fetched = ((olderData as Message[]) ?? []).reverse();
+
+      if (fetched.length > 0) {
+        oldestCursorRef.current = fetched[0].created_at;
+        setOlderMessages((prev) => [...fetched, ...prev]);
+      }
+
+      setHasMore(fetched.length === PAGE_SIZE);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, partnerId]);
 
   // 낙관적 메시지 추가
   const addOptimisticMessage = (msg: Message) => {
@@ -116,11 +185,24 @@ export function useConversation(partnerId: string) {
   // 낙관적 메시지를 서버 데이터로 교체
   const replaceOptimistic = () => mutate();
 
+  // olderMessages + SWR messages 합산 (중복 제거)
+  const allMessages = useMemo(() => {
+    const swrMessages = data?.messages ?? [];
+    if (olderMessages.length === 0) return swrMessages;
+    // SWR로 새로 갱신될 경우 older에 중복이 생길 수 있으므로 id 기준 dedup
+    const swrIds = new Set(swrMessages.map((m) => m.id));
+    const uniqueOlder = olderMessages.filter((m) => !swrIds.has(m.id));
+    return [...uniqueOlder, ...swrMessages];
+  }, [olderMessages, data?.messages]);
+
   return {
-    messages: data?.messages ?? [],
+    messages: allMessages,
     partnerName: data?.partnerName ?? "",
     partnerAvatarUrl: data?.partnerAvatarUrl ?? null,
     loading: isLoading,
+    hasMore,
+    loadingMore,
+    loadMore,
     refetch: () => mutate(),
     addOptimisticMessage,
     replaceOptimistic,

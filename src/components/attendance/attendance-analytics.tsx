@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Loader2, TrendingUp, Users, BarChart3, AlertTriangle } from "lucide-react";
+import { Loader2, TrendingUp, Users, BarChart3, AlertTriangle, BarChart2 } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -140,7 +141,12 @@ export function AttendanceAnalytics({ ctx }: AttendanceAnalyticsProps) {
         </h3>
 
         {monthlyStats.every((m) => m.totalSchedules === 0) ? (
-          <p className="text-xs text-muted-foreground py-2">최근 6개월간 출석 데이터가 없습니다</p>
+          <EmptyState
+            icon={BarChart2}
+            title="출석 데이터가 없습니다"
+            description="최근 6개월간 일정 출석 기록이 없습니다"
+            className="border-0 bg-transparent py-4"
+          />
         ) : (
           <div className="space-y-2">
             {monthlyStats.map((stat) => (

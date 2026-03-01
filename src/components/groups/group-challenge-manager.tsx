@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useGroupChallengeManager } from "@/hooks/use-group-challenge-manager";
 import { Trophy, Plus, Trash2, Users, Calendar } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import type { GroupChallengeItem, GroupChallengeType } from "@/types";
 
 const STATUS_COLORS = {
@@ -171,7 +172,14 @@ export function GroupChallengeManager({ groupId }: { groupId: string }) {
               </Button>
             ))}
           </div>
-          {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">{STATUS_LABELS[tab]} 챌린지가 없습니다.</p>}
+          {items.length === 0 && (
+            <EmptyState
+              icon={Trophy}
+              title={`${STATUS_LABELS[tab]} 챌린지가 없습니다`}
+              description="새 챌린지를 만들어 그룹원들과 함께 도전해보세요"
+              className="border-0 bg-transparent"
+            />
+          )}
           {items.map((c) => (
             <ChallengeCard key={c.id} challenge={c} onDelete={deleteChallenge} onJoin={joinChallenge} onLeave={leaveChallenge} />
           ))}

@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useGroupMemoryAlbum } from "@/hooks/use-group-memory-album";
-import { BookHeart, Plus, Trash2 } from "lucide-react";
+import { BookHeart, Plus, Trash2, Image } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import type { MemoryCategory } from "@/types";
 
 const CATEGORIES: MemoryCategory[] = ["공연", "연습", "모임", "축하", "대회", "기타"];
@@ -95,7 +96,14 @@ export function GroupMemoryAlbum({ groupId }: { groupId: string }) {
             </Select>
           </div>
 
-          {items.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">기록된 추억이 없습니다.</p>}
+          {items.length === 0 && (
+            <EmptyState
+              icon={Image}
+              title="기록된 추억이 없습니다"
+              description="소중한 순간을 앨범에 담아보세요"
+              className="border-0 bg-transparent"
+            />
+          )}
 
           {/* 타임라인 */}
           <div className="relative pl-6">

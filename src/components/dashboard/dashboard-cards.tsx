@@ -37,7 +37,7 @@ export function ScheduleCard({
       </div>
       <div className="px-2.5 py-1.5">
         {schedules.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground py-1">예정된 일정이 없습니다</p>
+          <p className="text-[11px] text-muted-foreground py-2 text-center">예정된 일정이 없습니다</p>
         ) : (
           <div className="space-y-px">
             {schedules.map((s) => (
@@ -112,7 +112,7 @@ export function AttendanceCard({
             )}
           </div>
         ) : (
-          <p className="text-[11px] text-muted-foreground py-1">예정된 일정이 없습니다</p>
+          <p className="text-[11px] text-muted-foreground py-2 text-center">예정된 일정이 없습니다</p>
         )}
       </div>
     </div>
@@ -145,7 +145,7 @@ export function PostsCard({
       </div>
       <div className="px-2.5 py-1.5">
         {posts.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground py-1">게시글이 없습니다</p>
+          <p className="text-[11px] text-muted-foreground py-2 text-center">게시글이 없습니다</p>
         ) : (
           <div className="space-y-px">
             {posts.map((post) => (
@@ -202,7 +202,7 @@ export function FinanceCard({
       </div>
       <div className="px-2.5 py-1.5">
         {transactions.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground py-1">거래 내역이 없습니다</p>
+          <p className="text-[11px] text-muted-foreground py-2 text-center">거래 내역이 없습니다</p>
         ) : (
           <div className="space-y-px">
             {transactions.map((txn) => (

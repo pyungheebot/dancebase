@@ -3,6 +3,7 @@
 import { FileText, MessageSquare, CheckCircle, Loader2 } from "lucide-react";
 import { useMemberActivityTimeline } from "@/hooks/use-member-activity-timeline";
 import type { ActivityType } from "@/hooks/use-member-activity-timeline";
+import { formatRelative } from "@/lib/date-utils";
 
 // 활동 타입별 아이콘 및 색상
 const ACTIVITY_CONFIG: Record<
@@ -23,23 +24,6 @@ const ACTIVITY_CONFIG: Record<
   },
 };
 
-// 상대 시간 포맷
-function formatRelativeTime(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / (1000 * 60));
-  const diffHour = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHour / 24);
-
-  if (diffMin < 1) return "방금 전";
-  if (diffMin < 60) return `${diffMin}분 전`;
-  if (diffHour < 24) return `${diffHour}시간 전`;
-  if (diffDay < 7) return `${diffDay}일 전`;
-  if (diffDay < 30) return `${Math.floor(diffDay / 7)}주 전`;
-  if (diffDay < 365) return `${Math.floor(diffDay / 30)}개월 전`;
-  return `${Math.floor(diffDay / 365)}년 전`;
-}
 
 interface MemberActivityTimelineProps {
   userId: string;
@@ -77,7 +61,7 @@ export function MemberActivityTimeline({ userId }: MemberActivityTimelineProps) 
                     {item.description}
                   </p>
                   <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-                    {formatRelativeTime(item.occurredAt)}
+                    {formatRelative(item.occurredAt)}
                   </p>
                 </div>
               </li>

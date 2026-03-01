@@ -29,7 +29,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle, UserPlus, Camera, LayoutList, Trash2, ShieldCheck } from "lucide-react";
+import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle, UserPlus, Camera, LayoutList, Trash2, ShieldCheck, Users } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -809,7 +810,12 @@ export function SettingsContent({
                   멤버의 역할을 변경합니다. 리더 본인의 역할은 변경할 수 없습니다.
                 </p>
                 {ctx.members.length === 0 ? (
-                  <p className="text-xs text-muted-foreground py-2 text-center">멤버가 없습니다</p>
+                  <EmptyState
+                    icon={Users}
+                    title="멤버가 없습니다"
+                    description="그룹에 멤버를 초대해보세요"
+                    className="border-0 bg-transparent"
+                  />
                 ) : (
                   ctx.members.map((member) => {
                     const isSelf = member.userId === user?.id;

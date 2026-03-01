@@ -8,8 +8,9 @@ import { useConversations } from "@/hooks/use-messages";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, SquarePen } from "lucide-react";
+import { Loader2, MessageCircle, SquarePen } from "lucide-react";
 import { NewConversationDialog } from "./new-conversation-dialog";
+import { EmptyState } from "@/components/shared/empty-state";
 
 export function ConversationList() {
   const pathname = usePathname();
@@ -39,9 +40,13 @@ export function ConversationList() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : conversations.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-sm text-muted-foreground">메시지가 없습니다</p>
-          </div>
+          <EmptyState
+            icon={MessageCircle}
+            title="메시지가 없습니다"
+            description="새 대화를 시작해보세요"
+            action={{ label: "새 대화", onClick: () => setNewDialogOpen(true) }}
+            className="border-0 bg-transparent"
+          />
         ) : (
           <div className="py-1">
             {conversations.map((conv) => {

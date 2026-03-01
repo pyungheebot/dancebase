@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemberInteractionScore } from "@/hooks/use-member-interaction-score";
-import {ChevronDown, ChevronUp} from "lucide-react";
+import { ChevronDown, ChevronUp, Activity } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const LEVEL_CONFIG = {
@@ -58,7 +59,12 @@ export function MemberInteractionCard({ groupId }: { groupId: string }) {
         <CollapsibleContent>
           <CardContent className="space-y-3">
             {!data.hasData && (
-              <p className="text-sm text-muted-foreground text-center py-4">최근 30일 활동 데이터가 없습니다.</p>
+              <EmptyState
+                icon={Activity}
+                title="활동 데이터가 없습니다"
+                description="최근 30일 활동 기록이 없습니다"
+                className="border-0 bg-transparent"
+              />
             )}
 
             {/* 범례 */}

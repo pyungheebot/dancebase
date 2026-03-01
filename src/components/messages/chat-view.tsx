@@ -119,6 +119,9 @@ export function ChatView({ partnerId }: ChatViewProps) {
     partnerName,
     partnerAvatarUrl,
     loading,
+    hasMore,
+    loadingMore,
+    loadMore,
     refetch,
     addOptimisticMessage,
     replaceOptimistic,
@@ -126,12 +129,58 @@ export function ChatView({ partnerId }: ChatViewProps) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const supabaseRef = useRef(createClient());
+  // 이전 메시지 수를 추적해 loadMore 후 스크롤 점프 방지
+  const prevMessageCountRef = useRef(messages.length);
+  const isLoadingMoreRef = useRef(false);
 
+  // 새 메시지(실시간/전송) 시에만 하단 스크롤
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (isLoadingMoreRef.current) {
+      // loadMore 직후에는 스크롤 위치를 유지
+      isLoadingMoreRef.current = false;
+      prevMessageCountRef.current = messages.length;
+      return;
+    }
+    const addedCount = messages.length - prevMessageCountRef.current;
+    prevMessageCountRef.current = messages.length;
+    if (addedCount > 0 && addedCount <= 3) {
+      // 적은 수의 메시지 추가 = 실시간/전송 → 하단 스크롤
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else if (prevMessageCountRef.current === messages.length) {
+      // 초기 로딩 완료 시 하단으로
+      bottomRef.current?.scrollIntoView({ behavior: "instant" });
+    }
   }, [messages]);
+
+  // 초기 로딩 완료 후 하단으로 스크롤
+  const initialScrollDone = useRef(false);
+  useEffect(() => {
+    if (!loading && !initialScrollDone.current && messages.length > 0) {
+      initialScrollDone.current = true;
+      bottomRef.current?.scrollIntoView({ behavior: "instant" });
+    }
+  }, [loading, messages.length]);
+
+  // loadMore 호출 시 스크롤 위치 보존
+  const handleLoadMore = useCallback(async () => {
+    const container = scrollContainerRef.current;
+    if (!container) {
+      loadMore();
+      return;
+    }
+    // 현재 스크롤 높이 저장
+    const prevScrollHeight = container.scrollHeight;
+    isLoadingMoreRef.current = true;
+    await loadMore();
+    // 다음 렌더 후 스크롤 위치 복원
+    requestAnimationFrame(() => {
+      const newScrollHeight = container.scrollHeight;
+      container.scrollTop = newScrollHeight - prevScrollHeight;
+    });
+  }, [loadMore]);
 
   // Realtime 구독: 새 메시지 수신 + 읽음 상태 업데이트
   useEffect(() => {
@@ -285,7 +334,24 @@ export function ChatView({ partnerId }: ChatViewProps) {
       </div>
 
       {/* 메시지 목록 */}
-      <div className="flex-1 overflow-y-auto px-4 py-2">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-2">
+        {/* 이전 메시지 불러오기 버튼 */}
+        {hasMore && (
+          <div className="flex justify-center py-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="text-xs h-7"
+            >
+              {loadingMore && (
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              )}
+              이전 메시지 불러오기
+            </Button>
+          </div>
+        )}
         {messages.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground py-12">
             메시지를 보내 대화를 시작하세요
