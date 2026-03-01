@@ -416,12 +416,12 @@ function SponsorDialog({
 
   const handleSubmit = () => {
     if (!form.name.trim()) {
-      toast.error("스폰서 이름을 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_SPONSOR.NAME_REQUIRED);
       return;
     }
     const amount = Number(form.amount.replace(/,/g, ""));
     if (form.amount && (isNaN(amount) || amount < 0)) {
-      toast.error("후원 금액을 올바르게 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_SPONSOR.AMOUNT_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -631,7 +631,7 @@ function GoalDialog({
     }
     const num = Number(value.replace(/,/g, ""));
     if (isNaN(num) || num < 0) {
-      toast.error("올바른 금액을 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_SPONSOR.FEE_AMOUNT_REQUIRED);
       return;
     }
     onSave(num);
@@ -717,7 +717,7 @@ export function PerformanceSponsorCard({ projectId }: { projectId: string }) {
       status: form.status,
       notes: form.notes.trim(),
     });
-    toast.success("스폰서가 추가되었습니다.");
+    toast.success(TOAST.PERFORMANCE_SPONSOR.ADDED);
   };
 
   const handleUpdate = (form: SponsorFormData) => {
@@ -737,14 +737,14 @@ export function PerformanceSponsorCard({ projectId }: { projectId: string }) {
       status: form.status,
       notes: form.notes.trim(),
     });
-    if (ok) toast.success("스폰서 정보가 수정되었습니다.");
+    if (ok) toast.success(TOAST.PERFORMANCE_SPONSOR.UPDATED);
     else toast.error(TOAST.UPDATE_ERROR);
     setEditTarget(null);
   };
 
   const handleDelete = (id: string) => {
     const ok = deleteSponsor(id);
-    if (ok) toast.success("스폰서가 삭제되었습니다.");
+    if (ok) toast.success(TOAST.PERFORMANCE_SPONSOR.DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   };
 
@@ -752,7 +752,7 @@ export function PerformanceSponsorCard({ projectId }: { projectId: string }) {
     setTotalGoal(goal);
     if (goal != null)
       toast.success(`목표 금액이 ${formatKRW(goal)}로 설정되었습니다.`);
-    else toast.success("목표 금액이 해제되었습니다.");
+    else toast.success(TOAST.UPDATE_SUCCESS);
   };
 
   // ── 등급별 그룹 ────────────────────────────────────────

@@ -31,6 +31,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 
 // ============================================
@@ -131,7 +132,7 @@ function AddVersionForm({ onAdd, onClose }: AddVersionFormProps) {
 
   function handleAddSection() {
     if (sections.length >= 20) {
-      toast.error("구간은 최대 20개까지 추가할 수 있습니다.");
+      toast.error(TOAST.CHOREO_VERSION.SECTION_MAX);
       return;
     }
     setSections((prev) => [
@@ -152,7 +153,7 @@ function AddVersionForm({ onAdd, onClose }: AddVersionFormProps) {
 
   async function handleSubmit() {
     if (!label.trim()) {
-      toast.error("버전 라벨을 입력하세요. (예: 초안, 수정본)");
+      toast.error(TOAST.CHOREO_VERSION.LABEL_REQUIRED);
       return;
     }
     const validSections = sections.filter((s) => s.sectionName.trim());
@@ -167,10 +168,10 @@ function AddVersionForm({ onAdd, onClose }: AddVersionFormProps) {
         createdBy,
       });
       if (ok) {
-        toast.success("새 버전이 추가되었습니다.");
+        toast.success(TOAST.CHOREO_VERSION.VERSION_ADDED);
         onClose();
       } else {
-        toast.error("버전은 최대 20개까지 추가할 수 있습니다.");
+        toast.error(TOAST.CHOREO_VERSION.VERSION_MAX);
       }
     });
   }
@@ -601,7 +602,7 @@ export function ChoreographyVersionCard({
   function handleSaveTitle() {
     updateSongTitle(titleInput.trim());
     setEditingTitle(false);
-    toast.success("곡 제목이 저장되었습니다.");
+    toast.success(TOAST.CHOREO_VERSION.SONG_TITLE_SAVED);
   }
 
   // 비교 선택 토글
@@ -611,7 +612,7 @@ export function ChoreographyVersionCard({
         return prev.filter((id) => id !== versionId);
       }
       if (prev.length >= 2) {
-        toast.error("두 버전만 선택할 수 있습니다.");
+        toast.error(TOAST.CHOREO_VERSION.COMPARE_MAX);
         return prev;
       }
       return [...prev, versionId];
@@ -622,7 +623,7 @@ export function ChoreographyVersionCard({
   // 비교 실행
   function handleRunCompare() {
     if (selectedForCompare.length !== 2) {
-      toast.error("비교할 두 버전을 선택하세요.");
+      toast.error(TOAST.CHOREO_VERSION.COMPARE_SELECT);
       return;
     }
     const [idA, idB] = selectedForCompare;

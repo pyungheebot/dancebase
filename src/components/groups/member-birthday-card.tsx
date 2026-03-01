@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Cake,
   Plus,
@@ -81,11 +82,11 @@ function CelebrationSection({
 
   function handleAdd() {
     if (!message.trim()) {
-      toast.error("축하 메시지를 입력해주세요.");
+      toast.error(TOAST.MEMBER_BIRTHDAY.MESSAGE_REQUIRED);
       return;
     }
     onAdd(birthdayId, fromName.trim() || "익명", message.trim());
-    toast.success("축하 메시지가 추가되었습니다.");
+    toast.success(TOAST.MEMBER_BIRTHDAY.MESSAGE_ADDED);
     setFromName("");
     setMessage("");
   }
@@ -298,17 +299,17 @@ function BirthdayDialog({
 
   function handleSave() {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBER_BIRTHDAY.NAME_REQUIRED);
       return;
     }
     const mm = Number(birthMonth);
     const dd = Number(birthDay);
     if (!birthMonth || isNaN(mm) || mm < 1 || mm > 12) {
-      toast.error("생일 월을 1~12 사이로 입력해주세요.");
+      toast.error(TOAST.MEMBER_BIRTHDAY.MONTH_RANGE);
       return;
     }
     if (!birthDay || isNaN(dd) || dd < 1 || dd > 31) {
-      toast.error("생일 일을 1~31 사이로 입력해주세요.");
+      toast.error(TOAST.MEMBER_BIRTHDAY.DAY_RANGE);
       return;
     }
     onSave(

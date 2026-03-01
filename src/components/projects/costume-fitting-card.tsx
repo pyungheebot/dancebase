@@ -46,6 +46,7 @@ import {
   CircleDot,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useCostumeFitting } from "@/hooks/use-costume-fitting";
 import type {
   CostumeFittingEntry,
@@ -148,11 +149,11 @@ function FittingDialog({
 
   const handleSubmit = () => {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.FITTING.MEMBER_REQUIRED);
       return;
     }
     if (!costumeName.trim()) {
-      toast.error("의상 이름을 입력해주세요.");
+      toast.error(TOAST.FITTING.COSTUME_REQUIRED);
       return;
     }
     onSubmit({
@@ -596,16 +597,16 @@ export function CostumeFittingCard({
   ) => {
     if (dialogMode === "add") {
       addEntry(data);
-      toast.success("핏팅 기록이 추가되었습니다.");
+      toast.success(TOAST.FITTING.RECORD_ADDED);
     } else if (editingEntry) {
       updateEntry(editingEntry.id, data);
-      toast.success("핏팅 기록이 수정되었습니다.");
+      toast.success(TOAST.FITTING.RECORD_UPDATED);
     }
   };
 
   const handleDelete = (entryId: string) => {
     deleteEntry(entryId);
-    toast.success("핏팅 기록이 삭제되었습니다.");
+    toast.success(TOAST.FITTING.RECORD_DELETED);
   };
 
   const handleStatusChange = (

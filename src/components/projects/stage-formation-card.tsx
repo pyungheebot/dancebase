@@ -17,6 +17,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -98,13 +99,13 @@ function SceneFormDialog({
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("씬 이름을 입력해주세요.");
+      toast.error(TOAST.STAGE_FORMATION.SCENE_NAME_REQUIRED);
       return;
     }
     const dur =
       durationSec.trim() === "" ? null : parseInt(durationSec, 10);
     if (dur !== null && (isNaN(dur) || dur < 0)) {
-      toast.error("올바른 지속 시간을 입력해주세요.");
+      toast.error(TOAST.STAGE_FORMATION.DURATION_REQUIRED);
       return;
     }
     onSubmit({
@@ -241,17 +242,17 @@ function PositionFormDialog({
 
   const handleSubmit = () => {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.STAGE_FORMATION.MEMBER_REQUIRED);
       return;
     }
     const xVal = parseFloat(x);
     const yVal = parseFloat(y);
     if (isNaN(xVal) || xVal < 0 || xVal > 100) {
-      toast.error("가로 위치는 0~100 사이 값을 입력해주세요.");
+      toast.error(TOAST.STAGE_FORMATION.X_RANGE);
       return;
     }
     if (isNaN(yVal) || yVal < 0 || yVal > 100) {
-      toast.error("세로 위치는 0~100 사이 값을 입력해주세요.");
+      toast.error(TOAST.STAGE_FORMATION.Y_RANGE);
       return;
     }
     onSubmit({
@@ -397,11 +398,11 @@ function StageSettingsDialog({
     const w = parseFloat(width);
     const d = parseFloat(depth);
     if (isNaN(w) || w <= 0) {
-      toast.error("올바른 무대 너비를 입력해주세요.");
+      toast.error(TOAST.STAGE_FORMATION.STAGE_WIDTH_REQUIRED);
       return;
     }
     if (isNaN(d) || d <= 0) {
-      toast.error("올바른 무대 깊이를 입력해주세요.");
+      toast.error(TOAST.STAGE_FORMATION.STAGE_DEPTH_REQUIRED);
       return;
     }
     onSave(w, d, localNotes.trim());
@@ -812,13 +813,13 @@ export function StageFormationCard({ projectId }: StageFormationCardProps) {
     if (editTargetScene) {
       const ok = updateScene(editTargetScene.id, params);
       if (ok) {
-        toast.success("씬이 수정되었습니다.");
+        toast.success(TOAST.STAGE_FORMATION.SCENE_UPDATED);
       } else {
-        toast.error("씬 수정에 실패했습니다.");
+        toast.error(TOAST.STAGE_FORMATION.SCENE_UPDATE_ERROR);
       }
     } else {
       addScene(params);
-      toast.success("씬이 추가되었습니다.");
+      toast.success(TOAST.STAGE_FORMATION.SCENE_ADDED);
       // 새로 추가한 씬으로 이동
       setActiveSceneIdx(scenes.length);
     }
@@ -830,12 +831,12 @@ export function StageFormationCard({ projectId }: StageFormationCardProps) {
   const handleDeleteScene = (sceneId: string) => {
     const ok = deleteScene(sceneId);
     if (ok) {
-      toast.success("씬이 삭제되었습니다.");
+      toast.success(TOAST.STAGE_FORMATION.SCENE_DELETED);
       if (activeSceneIdx >= scenes.length - 1) {
         setActiveSceneIdx(Math.max(0, scenes.length - 2));
       }
     } else {
-      toast.error("씬 삭제에 실패했습니다.");
+      toast.error(TOAST.STAGE_FORMATION.SCENE_DELETE_ERROR);
     }
   };
 
@@ -851,16 +852,16 @@ export function StageFormationCard({ projectId }: StageFormationCardProps) {
     if (editTargetPosition) {
       const ok = updatePosition(activeScene.id, editTargetPosition.id, params);
       if (ok) {
-        toast.success("포지션이 수정되었습니다.");
+        toast.success(TOAST.STAGE_FORMATION.POSITION_UPDATED);
       } else {
-        toast.error("포지션 수정에 실패했습니다.");
+        toast.error(TOAST.STAGE_FORMATION.POSITION_UPDATE_ERROR);
       }
     } else {
       const result = addPosition(activeScene.id, params);
       if (result) {
-        toast.success("포지션이 추가되었습니다.");
+        toast.success(TOAST.STAGE_FORMATION.POSITION_ADDED);
       } else {
-        toast.error("포지션 추가에 실패했습니다.");
+        toast.error(TOAST.STAGE_FORMATION.POSITION_ADD_ERROR);
       }
     }
     setPositionDialogOpen(false);
@@ -872,9 +873,9 @@ export function StageFormationCard({ projectId }: StageFormationCardProps) {
     if (!activeScene) return;
     const ok = removePosition(activeScene.id, posId);
     if (ok) {
-      toast.success("포지션이 삭제되었습니다.");
+      toast.success(TOAST.STAGE_FORMATION.POSITION_DELETED);
     } else {
-      toast.error("포지션 삭제에 실패했습니다.");
+      toast.error(TOAST.STAGE_FORMATION.POSITION_DELETE_ERROR);
     }
   };
 
@@ -886,7 +887,7 @@ export function StageFormationCard({ projectId }: StageFormationCardProps) {
   ) => {
     setStageSize(newWidth, newDepth);
     setNotes(newNotes);
-    toast.success("무대 설정이 저장되었습니다.");
+    toast.success(TOAST.STAGE_FORMATION.STAGE_SAVED);
     setStageSettingsOpen(false);
   };
 

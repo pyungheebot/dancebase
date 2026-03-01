@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Package,
   ChevronDown,
@@ -83,19 +84,19 @@ function AddItemForm({ onAdd, onClose }: AddItemFormProps) {
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("장비 이름을 입력해주세요.");
+      toast.error(TOAST.EQUIPMENT_INVENTORY.NAME_REQUIRED);
       return;
     }
     if (quantity < 1) {
-      toast.error("수량은 1 이상이어야 합니다.");
+      toast.error(TOAST.EQUIPMENT_INVENTORY.QUANTITY_MIN);
       return;
     }
     const ok = onAdd({ name: name.trim(), category, quantity, condition, location: location.trim(), note: note.trim() });
     if (ok) {
-      toast.success("장비가 등록되었습니다.");
+      toast.success(TOAST.EQUIPMENT_INVENTORY.REGISTERED);
       onClose();
     } else {
-      toast.error("장비 등록에 실패했습니다.");
+      toast.error(TOAST.EQUIPMENT_INVENTORY.REGISTER_ERROR);
     }
   };
 
@@ -192,20 +193,20 @@ function CheckoutForm({ items, onCheckout, onClose }: CheckoutFormProps) {
 
   const handleSubmit = () => {
     if (!equipmentId) {
-      toast.error("장비를 선택해주세요.");
+      toast.error(TOAST.EQUIPMENT_INVENTORY.SELECT_REQUIRED);
       return;
     }
     if (!borrowerName.trim()) {
-      toast.error("대여자 이름을 입력해주세요.");
+      toast.error(TOAST.EQUIPMENT_INVENTORY.RENTER_REQUIRED);
       return;
     }
     if (!expectedReturn) {
-      toast.error("반납 예정일을 선택해주세요.");
+      toast.error(TOAST.EQUIPMENT_INVENTORY.RETURN_DATE_REQUIRED);
       return;
     }
     const result = onCheckout(equipmentId, borrowerName.trim(), expectedReturn, note.trim());
     if (result.ok) {
-      toast.success("대여 처리가 완료되었습니다.");
+      toast.success(TOAST.EQUIPMENT_INVENTORY.RENTAL_DONE);
       onClose();
     } else {
       toast.error(result.error ?? "대여 처리에 실패했습니다.");
@@ -429,23 +430,23 @@ export function EquipmentInventoryCard({ groupId }: EquipmentInventoryCardProps)
   const handleDelete = (item: EquipmentItem) => {
     const active = getCheckoutsForItem(item.id).filter((c) => !c.returnedAt).length;
     if (active > 0) {
-      toast.error("대여 중인 장비는 삭제할 수 없습니다. 먼저 반납 처리해주세요.");
+      toast.error(TOAST.EQUIPMENT_INVENTORY.RENTAL_ACTIVE_DELETE_ERROR);
       return;
     }
     const ok = deleteItem(item.id);
     if (ok) {
-      toast.success("장비가 삭제되었습니다.");
+      toast.success(TOAST.EQUIPMENT_INVENTORY.DELETED);
     } else {
-      toast.error("장비 삭제에 실패했습니다.");
+      toast.error(TOAST.EQUIPMENT_INVENTORY.DELETE_ERROR);
     }
   };
 
   const handleReturn = (checkoutId: string) => {
     const ok = returnCheckout(checkoutId);
     if (ok) {
-      toast.success("반납 처리가 완료되었습니다.");
+      toast.success(TOAST.EQUIPMENT_INVENTORY.RETURN_DONE);
     } else {
-      toast.error("반납 처리에 실패했습니다.");
+      toast.error(TOAST.EQUIPMENT_INVENTORY.RETURN_ERROR);
     }
   };
 
@@ -473,7 +474,7 @@ export function EquipmentInventoryCard({ groupId }: EquipmentInventoryCardProps)
             variant="ghost"
             size="sm"
             className="h-7 w-7 p-0 text-gray-400"
-            onClick={() => { refetch(); toast.success("새로고침했습니다."); }}
+            onClick={() => { refetch(); toast.success(TOAST.EQUIPMENT_INVENTORY.REFRESHED); }}
             title="새로고침"
           >
             <RefreshCw className="h-3.5 w-3.5" />

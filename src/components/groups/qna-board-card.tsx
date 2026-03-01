@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useQnaBoard,
   QNA_CATEGORIES,
@@ -126,7 +127,7 @@ function AddAnswerForm({
 
   const handleSubmit = () => {
     if (!content.trim()) {
-      toast.error("답변 내용을 입력해주세요.");
+      toast.error(TOAST.QNA_BOARD.ANSWER_REQUIRED_DOT);
       return;
     }
     onSubmit(content.trim(), authorName.trim());
@@ -192,7 +193,7 @@ function QuestionItem({
   const handleAddAnswer = (content: string, authorName: string) => {
     onAddAnswer(content, authorName);
     setShowAnswerForm(false);
-    toast.success("답변이 등록되었습니다.");
+    toast.success(TOAST.QNA_BOARD.ANSWER_REGISTERED);
   };
 
   return (
@@ -343,11 +344,11 @@ function AddQuestionForm({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.QNA_BOARD_CARD.TITLE_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("질문 내용을 입력해주세요.");
+      toast.error(TOAST.QNA_BOARD_CARD.CONTENT_REQUIRED);
       return;
     }
     onSubmit({ title: title.trim(), content: content.trim(), authorName: authorName.trim(), category });
@@ -471,13 +472,13 @@ export function QnaBoardCard({ groupId }: QnaBoardCardProps) {
     category: string;
   }) => {
     addQuestion(params);
-    toast.success("질문이 등록되었습니다.");
+    toast.success(TOAST.QNA_BOARD_CARD.REGISTERED);
     setShowAddForm(false);
   };
 
   const handleDeleteQuestion = (questionId: string) => {
     deleteQuestion(questionId);
-    toast.success("질문이 삭제되었습니다.");
+    toast.success(TOAST.QNA_BOARD_CARD.DELETED);
   };
 
   const STATUS_FILTER_OPTIONS: { value: QnaStatusFilter; label: string }[] = [

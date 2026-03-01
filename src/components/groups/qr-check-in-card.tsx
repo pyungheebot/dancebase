@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useQrCheckIn } from "@/hooks/use-qr-check-in";
 import type { QrCheckInSession, QrCheckInRecord } from "@/types";
 
@@ -119,7 +120,7 @@ function SessionCard({
   const handleManualCheckIn = () => {
     const name = manualName.trim();
     if (!name) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.QR_CHECK_IN.MEMBER_REQUIRED);
       return;
     }
     onCheckIn(session.id, name);
@@ -130,11 +131,11 @@ function SessionCard({
     const code = qrInput.trim().toUpperCase();
     const name = qrName.trim();
     if (!code) {
-      toast.error("QR 코드를 입력해주세요.");
+      toast.error(TOAST.QR_CHECK_IN.QR_REQUIRED);
       return;
     }
     if (!name) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.QR_CHECK_IN.MEMBER_REQUIRED);
       return;
     }
     onCheckInByQr(code, name);
@@ -517,31 +518,31 @@ export function QrCheckInCard({ groupId, memberNames = [] }: Props) {
   const handleCreate = () => {
     const title = formTitle.trim();
     if (!title) {
-      toast.error("세션 제목을 입력해주세요.");
+      toast.error(TOAST.QR_CHECK_IN.SESSION_TITLE_REQUIRED);
       return;
     }
     if (!formDate) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.QR_CHECK_IN.DATE_REQUIRED);
       return;
     }
     if (!formStartTime) {
-      toast.error("시작 시간을 입력해주세요.");
+      toast.error(TOAST.QR_CHECK_IN.START_TIME_REQUIRED);
       return;
     }
     createSession(title, formDate, formStartTime);
-    toast.success("새 출석 세션이 생성되었습니다.");
+    toast.success(TOAST.QR_CHECK_IN.SESSION_CREATED);
     setShowCreateDialog(false);
     setFormTitle("");
   };
 
   const handleEnd = (sessionId: string) => {
     endSession(sessionId);
-    toast.success("세션이 종료되었습니다.");
+    toast.success(TOAST.QR_CHECK_IN.SESSION_ENDED);
   };
 
   const handleDelete = (sessionId: string) => {
     deleteSession(sessionId);
-    toast.success("세션이 삭제되었습니다.");
+    toast.success(TOAST.QR_CHECK_IN.SESSION_DELETED);
   };
 
   const handleCheckIn = (sessionId: string, memberName: string) => {

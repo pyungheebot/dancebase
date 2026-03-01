@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePracticeQueue } from "@/hooks/use-practice-queue";
 import type { PracticeQueue, PracticeQueueItem, QueueItemStatus } from "@/types";
 
@@ -91,7 +92,7 @@ function CreateQueueDialog({ open, onOpenChange, onConfirm }: CreateQueueDialogP
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("큐 이름을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_QUEUE.QUEUE_NAME_REQUIRED);
       return;
     }
     onConfirm(trimmed);
@@ -172,7 +173,7 @@ function AddItemDialog({ open, onOpenChange, onAdd }: AddItemDialogProps) {
 
     const trimTitle = songTitle.trim();
     if (!trimTitle) {
-      toast.error("곡명을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_QUEUE.SONG_NAME_REQUIRED);
       return;
     }
 
@@ -183,7 +184,7 @@ function AddItemDialog({ open, onOpenChange, onAdd }: AddItemDialogProps) {
 
     const repeat = parseInt(repeatCount, 10);
     if (isNaN(repeat) || repeat < 1 || repeat > 20) {
-      toast.error("반복 횟수는 1~20 사이로 입력해주세요.");
+      toast.error(TOAST.PRACTICE_QUEUE.REPEAT_RANGE);
       return;
     }
 
@@ -197,7 +198,7 @@ function AddItemDialog({ open, onOpenChange, onAdd }: AddItemDialogProps) {
 
     reset();
     onOpenChange(false);
-    toast.success("곡이 추가되었습니다.");
+    toast.success(TOAST.PRACTICE_QUEUE.SONG_ADDED);
   }
 
   return (
@@ -645,7 +646,7 @@ export function PracticeQueueCard({ groupId, projectId }: PracticeQueueCardProps
       toast.success(`"${name}" 큐가 생성되었습니다.`);
       setCardOpen(true);
     } else {
-      toast.error("큐 생성에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_QUEUE.QUEUE_CREATE_ERROR);
     }
   }
 
@@ -654,7 +655,7 @@ export function PracticeQueueCard({ groupId, projectId }: PracticeQueueCardProps
     if (ok) {
       toast.success(`"${queue.name}" 큐가 삭제되었습니다.`);
     } else {
-      toast.error("큐 삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -664,16 +665,16 @@ export function PracticeQueueCard({ groupId, projectId }: PracticeQueueCardProps
   ) {
     const ok = addItem(queueId, song);
     if (!ok) {
-      toast.error("곡 추가에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_QUEUE.SONG_ADD_ERROR);
     }
   }
 
   function handleRemoveItem(queueId: string, itemId: string) {
     const ok = removeItem(queueId, itemId);
     if (ok) {
-      toast.success("곡이 삭제되었습니다.");
+      toast.success(TOAST.PRACTICE_QUEUE.SONG_DELETED);
     } else {
-      toast.error("곡 삭제에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_QUEUE.SONG_DELETE_ERROR);
     }
   }
 
@@ -683,7 +684,7 @@ export function PracticeQueueCard({ groupId, projectId }: PracticeQueueCardProps
     if (isLast && currentItem?.status === "playing") {
       // 마지막 곡 완료
       nextSong(queue.id);
-      toast.success("모든 곡을 완료했습니다!");
+      toast.success(TOAST.PRACTICE_QUEUE.ALL_COMPLETED);
     } else {
       nextSong(queue.id);
     }
@@ -702,7 +703,7 @@ export function PracticeQueueCard({ groupId, projectId }: PracticeQueueCardProps
     if (ok) {
       toast.success(`"${queue.name}" 큐를 처음부터 시작합니다.`);
     } else {
-      toast.error("큐 초기화에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_QUEUE.QUEUE_RESET_ERROR);
     }
   }
 

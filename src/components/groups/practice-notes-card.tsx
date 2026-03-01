@@ -110,24 +110,24 @@ function AddNoteDialog({ hook, currentMemberName }: AddNoteDialogProps) {
 
   const handleSubmit = () => {
     if (!author.trim()) {
-      toast.error("작성자 이름을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_NOTES.AUTHOR_REQUIRED);
       return;
     }
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_NOTES.TITLE_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("내용을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_NOTES.CONTENT_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_NOTES.DATE_REQUIRED);
       return;
     }
     const ok = hook.addNote({ author, date, title, content, tags: selectedTags });
     if (ok) {
-      toast.success("연습 노트가 등록되었습니다.");
+      toast.success(TOAST.PRACTICE_NOTES.NOTE_REGISTERED);
       setAuthor(currentMemberName ?? "");
       setDate(new Date().toISOString().slice(0, 10));
       setTitle("");
@@ -135,7 +135,7 @@ function AddNoteDialog({ hook, currentMemberName }: AddNoteDialogProps) {
       setSelectedTags([]);
       setOpen(false);
     } else {
-      toast.error("노트 등록에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_NOTES.NOTE_REGISTER_ERROR);
     }
   };
 
@@ -278,19 +278,19 @@ function CommentThread({
 
   const handleAddComment = () => {
     if (!commentAuthor.trim()) {
-      toast.error("코멘트 작성자 이름을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_NOTES.COMMENT_AUTHOR_REQUIRED);
       return;
     }
     if (!commentContent.trim()) {
-      toast.error("코멘트 내용을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_NOTES.COMMENT_REQUIRED);
       return;
     }
     const ok = onAddComment(note.id, commentAuthor, commentContent);
     if (ok !== false) {
       setCommentContent("");
-      toast.success("코멘트가 등록되었습니다.");
+      toast.success(TOAST.PRACTICE_NOTES.COMMENT_REGISTERED);
     } else {
-      toast.error("코멘트 등록에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_NOTES.COMMENT_REGISTER_ERROR);
     }
   };
 
@@ -518,7 +518,7 @@ export function PracticeNotesCard({
 
   const handleDelete = (id: string) => {
     const ok = hook.deleteNote(id);
-    if (ok) toast.success("노트가 삭제되었습니다.");
+    if (ok) toast.success(TOAST.PRACTICE_NOTES.NOTE_DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   };
 
@@ -532,7 +532,7 @@ export function PracticeNotesCard({
 
   const handleDeleteComment = (noteId: string, commentId: string) => {
     const ok = hook.deleteComment(noteId, commentId);
-    if (ok) toast.success("코멘트가 삭제되었습니다.");
+    if (ok) toast.success(TOAST.PRACTICE_NOTES.COMMENT_DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   };
 

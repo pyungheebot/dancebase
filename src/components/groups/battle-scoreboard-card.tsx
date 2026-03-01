@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Swords,
   ChevronDown,
@@ -123,19 +124,19 @@ function AddMatchDialog({ onAdd }: AddMatchDialogProps) {
 
   const handleSubmit = () => {
     if (!participant1.trim()) {
-      toast.error("참가자 1 이름을 입력해주세요.");
+      toast.error(TOAST.BATTLE_SCOREBOARD.PLAYER1_REQUIRED);
       return;
     }
     if (!participant2.trim()) {
-      toast.error("참가자 2 이름을 입력해주세요.");
+      toast.error(TOAST.BATTLE_SCOREBOARD.PLAYER2_REQUIRED);
       return;
     }
     if (participant1.trim() === participant2.trim()) {
-      toast.error("참가자 이름이 동일합니다.");
+      toast.error(TOAST.BATTLE_SCOREBOARD.SAME_NAME);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.BATTLE_SCOREBOARD.DATE_REQUIRED);
       return;
     }
 
@@ -155,7 +156,7 @@ function AddMatchDialog({ onAdd }: AddMatchDialogProps) {
     });
 
     if (ok) {
-      toast.success("매치가 기록되었습니다.");
+      toast.success(TOAST.BATTLE_SCOREBOARD.MATCH_RECORDED);
       // 폼 초기화
       setDate(todayStr());
       setType("solo");
@@ -166,7 +167,7 @@ function AddMatchDialog({ onAdd }: AddMatchDialogProps) {
       setNote("");
       setDialogOpen(false);
     } else {
-      toast.error("매치 기록에 실패했습니다.");
+      toast.error(TOAST.BATTLE_SCOREBOARD.MATCH_RECORD_ERROR);
     }
   };
 
@@ -605,9 +606,9 @@ export function BattleScoreboardCard({ groupId }: BattleScoreboardCardProps) {
   const handleDelete = (id: string) => {
     const ok = deleteMatch(id);
     if (ok) {
-      toast.success("매치가 삭제되었습니다.");
+      toast.success(TOAST.BATTLE_SCOREBOARD.MATCH_DELETED);
     } else {
-      toast.error("매치 삭제에 실패했습니다.");
+      toast.error(TOAST.BATTLE_SCOREBOARD.MATCH_DELETE_ERROR);
     }
   };
 

@@ -229,7 +229,7 @@ function PersonDialog({
 
   function handleSubmit() {
     if (!name.trim()) {
-      toast.error("이름을 입력해주세요");
+      toast.error(TOAST.SHOW_CREDITS.NAME_REQUIRED);
       return;
     }
     onSave(name, role);
@@ -726,15 +726,15 @@ export function ShowCreditsCard({
 
   function handleAddSection(type: CreditSectionType, customTitle?: string) {
     addSection(type, customTitle);
-    toast.success("섹션이 추가되었습니다");
+    toast.success(TOAST.SHOW_CREDITS.SECTION_ADDED);
   }
 
   function handleDeleteSection(sectionId: string) {
     const ok = deleteSection(sectionId);
     if (ok) {
-      toast.success("섹션이 삭제되었습니다");
+      toast.success(TOAST.SHOW_CREDITS.SECTION_DELETED);
     } else {
-      toast.error("섹션 삭제에 실패했습니다");
+      toast.error(TOAST.SHOW_CREDITS.SECTION_DELETE_ERROR);
     }
     setDeleteSectionId(null);
   }
@@ -744,7 +744,7 @@ export function ShowCreditsCard({
     if (result) {
       toast.success(`${name}님이 추가되었습니다`);
     } else {
-      toast.error("인원 추가에 실패했습니다");
+      toast.error(TOAST.SHOW_CREDITS.MEMBER_ADD_ERROR);
     }
   }
 
@@ -771,17 +771,17 @@ export function ShowCreditsCard({
 
   function handleMoveUp(sectionId: string) {
     const ok = moveSectionUp(sectionId);
-    if (!ok) toast.error("이동할 수 없습니다");
+    if (!ok) toast.error(TOAST.SHOW_CREDITS.MOVE_ERROR);
   }
 
   function handleMoveDown(sectionId: string) {
     const ok = moveSectionDown(sectionId);
-    if (!ok) toast.error("이동할 수 없습니다");
+    if (!ok) toast.error(TOAST.SHOW_CREDITS.MOVE_ERROR);
   }
 
   function handleEditTitle(sectionId: string, title: string) {
     const ok = updateSectionTitle(sectionId, title);
-    if (!ok) toast.error("제목 수정에 실패했습니다");
+    if (!ok) toast.error(TOAST.SHOW_CREDITS.TITLE_UPDATE_ERROR);
   }
 
   return (

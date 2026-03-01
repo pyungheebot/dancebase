@@ -46,6 +46,7 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useConsentForm } from "@/hooks/use-consent-form";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type { ConsentFormItem, ConsentFormType, ConsentFormStatus } from "@/types";
@@ -132,7 +133,7 @@ function ItemFormDialog({
 
   const handleSubmit = () => {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.CONSENT.MEMBER_NAME_REQUIRED);
       return;
     }
     onSubmit({
@@ -243,7 +244,7 @@ function BulkCreateDialog({ open, onClose, onSubmit }: BulkCreateDialogProps) {
       .map((n) => n.trim())
       .filter((n) => n.length > 0);
     if (names.length === 0) {
-      toast.error("멤버 이름을 한 줄에 한 명씩 입력해주세요.");
+      toast.error(TOAST.CONSENT.BATCH_MEMBER_FORMAT);
       return;
     }
     onSubmit(names, formType);
@@ -490,7 +491,7 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
     notes?: string;
   }) => {
     addItem(params);
-    toast.success("동의서 항목이 추가되었습니다.");
+    toast.success(TOAST.CONSENT.ITEM_ADDED);
   };
 
   // 수정 핸들러
@@ -506,9 +507,9 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
       notes: params.notes ?? null,
     });
     if (ok) {
-      toast.success("동의서 항목이 수정되었습니다.");
+      toast.success(TOAST.CONSENT.ITEM_UPDATED);
     } else {
-      toast.error("항목 수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
     setEditItem(null);
   };
@@ -517,9 +518,9 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
   const handleSign = (itemId: string) => {
     const ok = signItem(itemId);
     if (ok) {
-      toast.success("서명 처리되었습니다.");
+      toast.success(TOAST.CONSENT.SIGNED);
     } else {
-      toast.error("서명 처리에 실패했습니다.");
+      toast.error(TOAST.CONSENT.SIGN_ERROR);
     }
   };
 
@@ -527,9 +528,9 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
   const handleDecline = (itemId: string) => {
     const ok = declineItem(itemId);
     if (ok) {
-      toast.success("거부 처리되었습니다.");
+      toast.success(TOAST.CONSENT.REJECTED);
     } else {
-      toast.error("거부 처리에 실패했습니다.");
+      toast.error(TOAST.CONSENT.REJECT_ERROR);
     }
   };
 
@@ -539,9 +540,9 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
     if (!id) return;
     const ok = deleteItem(id);
     if (ok) {
-      toast.success("항목이 삭제되었습니다.");
+      toast.success(TOAST.ITEM_DELETED);
     } else {
-      toast.error("항목 삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 
@@ -551,7 +552,7 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
     if (count > 0) {
       toast.success(`${count}명의 동의서 항목이 생성되었습니다.`);
     } else {
-      toast.error("생성할 항목이 없습니다.");
+      toast.error(TOAST.CONSENT.NO_ITEMS);
     }
   };
 

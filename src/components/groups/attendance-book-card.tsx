@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAttendanceBook } from "@/hooks/use-attendance-book";
 import type { BookAttendanceStatus } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -97,15 +98,15 @@ function CreateSheetDialog({ open, onClose, memberNames, onConfirm }: CreateShee
 
   function handleSubmit() {
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.ATTENDANCE_BOOK.DATE_REQUIRED);
       return;
     }
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.ATTENDANCE_BOOK.TITLE_REQUIRED);
       return;
     }
     if (memberNames.length === 0) {
-      toast.error("그룹에 멤버가 없습니다.");
+      toast.error(TOAST.ATTENDANCE_BOOK.NO_MEMBERS);
       return;
     }
     onConfirm({ date, title: title.trim(), memberNames });
@@ -201,13 +202,13 @@ export function AttendanceBookCard({ groupId, memberNames }: AttendanceBookCardP
 
   function handleCreate(params: { date: string; title: string; memberNames: string[] }) {
     createSheet(params);
-    toast.success("출석부가 생성되었습니다.");
+    toast.success(TOAST.ATTENDANCE_BOOK.CREATED);
   }
 
   function handleDelete(sheetId: string) {
     deleteSheet(sheetId);
     if (expandedSheet === sheetId) setExpandedSheet(null);
-    toast.success("출석부가 삭제되었습니다.");
+    toast.success(TOAST.ATTENDANCE_BOOK.DELETED);
   }
 
   function handleToggleStatus(sheetId: string, memberName: string, current: BookAttendanceStatus) {
@@ -217,7 +218,7 @@ export function AttendanceBookCard({ groupId, memberNames }: AttendanceBookCardP
 
   function handleBulkPresent(sheetId: string) {
     bulkSetPresent(sheetId);
-    toast.success("전체 출석 처리되었습니다.");
+    toast.success(TOAST.ATTENDANCE_BOOK.ALL_PRESENT);
   }
 
   return (

@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupTimeline } from "@/hooks/use-group-timeline";
 import type {
   GroupTimelineEvent,
@@ -156,11 +157,11 @@ function EventFormDialog({
 
   async function handleSubmit() {
     if (!form.date.trim()) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.GROUP_TIMELINE.DATE_REQUIRED);
       return;
     }
     if (!form.title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.GROUP_TIMELINE.TITLE_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -415,9 +416,9 @@ export function GroupTimelineCard({ groupId }: { groupId: string }) {
   async function handleAdd(form: FormState) {
     try {
       await addEvent(form);
-      toast.success("이벤트가 추가되었습니다.");
+      toast.success(TOAST.GROUP_TIMELINE.EVENT_ADDED);
     } catch {
-      toast.error("이벤트 추가에 실패했습니다.");
+      toast.error(TOAST.GROUP_TIMELINE.EVENT_ADD_ERROR);
       throw new Error("add failed");
     }
   }
@@ -427,9 +428,9 @@ export function GroupTimelineCard({ groupId }: { groupId: string }) {
     if (!editTarget) return;
     try {
       await updateEvent(editTarget.id, form);
-      toast.success("이벤트가 수정되었습니다.");
+      toast.success(TOAST.GROUP_TIMELINE.EVENT_UPDATED);
     } catch {
-      toast.error("이벤트 수정에 실패했습니다.");
+      toast.error(TOAST.GROUP_TIMELINE.EVENT_UPDATE_ERROR);
       throw new Error("update failed");
     }
   }
@@ -438,9 +439,9 @@ export function GroupTimelineCard({ groupId }: { groupId: string }) {
   async function handleDelete(id: string) {
     try {
       await deleteEvent(id);
-      toast.success("이벤트가 삭제되었습니다.");
+      toast.success(TOAST.GROUP_TIMELINE.EVENT_DELETED);
     } catch {
-      toast.error("이벤트 삭제에 실패했습니다.");
+      toast.error(TOAST.GROUP_TIMELINE.EVENT_DELETE_ERROR);
     }
   }
 

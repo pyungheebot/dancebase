@@ -289,11 +289,11 @@ export function WardrobeTrackerCard({ projectId }: { projectId: string }) {
   // 저장
   const handleSave = () => {
     if (!form.name.trim()) {
-      toast.error("의상명을 입력해주세요.");
+      toast.error(TOAST.WARDROBE.COSTUME_NAME_REQUIRED);
       return;
     }
     if (!form.memberName.trim()) {
-      toast.error("배정 멤버명을 입력해주세요.");
+      toast.error(TOAST.WARDROBE.MEMBER_REQUIRED);
       return;
     }
 
@@ -308,7 +308,7 @@ export function WardrobeTrackerCard({ projectId }: { projectId: string }) {
         returned: form.returned,
       });
       if (ok) {
-        toast.success("의상 정보가 수정되었습니다.");
+        toast.success(TOAST.WARDROBE.COSTUME_UPDATED);
       } else {
         toast.error(TOAST.UPDATE_ERROR);
         return;
@@ -323,7 +323,7 @@ export function WardrobeTrackerCard({ projectId }: { projectId: string }) {
         status: form.status,
         returned: form.returned,
       });
-      toast.success("의상이 추가되었습니다.");
+      toast.success(TOAST.WARDROBE.COSTUME_ADDED);
     }
     setDialogOpen(false);
   };
@@ -332,7 +332,7 @@ export function WardrobeTrackerCard({ projectId }: { projectId: string }) {
   const handleDelete = (id: string) => {
     const ok = deleteItem(id);
     if (ok) {
-      toast.success("의상이 삭제되었습니다.");
+      toast.success(TOAST.WARDROBE.COSTUME_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

@@ -61,6 +61,7 @@ import {
   Clapperboard,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSoundCue } from "@/hooks/use-sound-cue";
 import type {
   SoundCueEntry,
@@ -186,12 +187,12 @@ function CueDialog({
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("큐 이름을 입력해주세요.");
+      toast.error(TOAST.SOUND_CUE.CUE_NAME_REQUIRED);
       return;
     }
     const num = parseInt(cueNumber, 10);
     if (isNaN(num) || num < 1) {
-      toast.error("올바른 큐 번호를 입력해주세요.");
+      toast.error(TOAST.SOUND_CUE.CUE_NUMBER_REQUIRED);
       return;
     }
 
@@ -471,7 +472,7 @@ function SheetDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("시트 제목을 입력해주세요.");
+      toast.error(TOAST.SOUND_CUE.SHEET_TITLE_REQUIRED);
       return;
     }
     onSubmit(title.trim());
@@ -879,10 +880,10 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
     if (sheetDialogMode === "add") {
       const newSheet = addSheet(title);
       setSelectedSheetId(newSheet.id);
-      toast.success("큐시트가 추가되었습니다.");
+      toast.success(TOAST.SOUND_CUE.SHEET_ADDED);
     } else if (editingSheet) {
       updateSheet(editingSheet.id, title);
-      toast.success("큐시트가 수정되었습니다.");
+      toast.success(TOAST.SOUND_CUE.SHEET_UPDATED);
     }
   };
 
@@ -891,7 +892,7 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
     if (selectedSheetId === sheetId) {
       setSelectedSheetId(null);
     }
-    toast.success("큐시트가 삭제되었습니다.");
+    toast.success(TOAST.SOUND_CUE.SHEET_DELETED);
   };
 
   const handleAddCueOpen = () => {
@@ -910,17 +911,17 @@ export function SoundCueCard({ groupId, projectId }: SoundCueCardProps) {
     if (!selectedSheet) return;
     if (cueDialogMode === "add") {
       addCue(selectedSheet.id, data);
-      toast.success("큐가 추가되었습니다.");
+      toast.success(TOAST.SOUND_CUE.CUE_ADDED);
     } else if (editingCue) {
       updateCue(selectedSheet.id, editingCue.id, data);
-      toast.success("큐가 수정되었습니다.");
+      toast.success(TOAST.SOUND_CUE.CUE_UPDATED);
     }
   };
 
   const handleDeleteCue = (cueId: string) => {
     if (!selectedSheet) return;
     deleteCue(selectedSheet.id, cueId);
-    toast.success("큐가 삭제되었습니다.");
+    toast.success(TOAST.SOUND_CUE.CUE_DELETED);
   };
 
   const handleToggleActive = (cueId: string) => {

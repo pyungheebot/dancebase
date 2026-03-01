@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSessionRating } from "@/hooks/use-session-rating";
 import type { SessionRatingEntry, SessionRatingAvg } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -200,27 +201,27 @@ function AddRatingDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!sessionDate) {
-      toast.error("세션 날짜를 선택해주세요.");
+      toast.error(TOAST.SESSION_RATING_CARD.DATE_REQUIRED);
       return;
     }
     if (!sessionTitle.trim()) {
-      toast.error("세션명을 입력해주세요.");
+      toast.error(TOAST.SESSION_RATING_CARD.SESSION_REQUIRED);
       return;
     }
     if (!raterName.trim()) {
-      toast.error("평가자 이름을 입력해주세요.");
+      toast.error(TOAST.SESSION_RATING.EVALUATOR_REQUIRED);
       return;
     }
     if (satisfaction === 0) {
-      toast.error("만족도 별점을 선택해주세요.");
+      toast.error(TOAST.SESSION_RATING_CARD.RATING_REQUIRED);
       return;
     }
     if (efficiency === 0) {
-      toast.error("효율 별점을 선택해주세요.");
+      toast.error(TOAST.SESSION_RATING.EFFICIENCY_REQUIRED);
       return;
     }
     if (difficulty === 0) {
-      toast.error("난이도 별점을 선택해주세요.");
+      toast.error(TOAST.SESSION_RATING.DIFFICULTY_REQUIRED);
       return;
     }
 
@@ -235,10 +236,10 @@ function AddRatingDialog({
     });
 
     if (!ok) {
-      toast.error("평가 추가에 실패했습니다. (최대 200개)");
+      toast.error(TOAST.SESSION_RATING.ADD_ERROR);
       return;
     }
-    toast.success("평가가 등록되었습니다.");
+    toast.success(TOAST.SESSION_RATING.REGISTERED);
     reset();
     onOpenChange(false);
   };
@@ -508,7 +509,7 @@ function SessionAvgItem({
                 entry={entry}
                 onDelete={(id) => {
                   onDeleteEntry(id);
-                  toast.success("평가가 삭제되었습니다.");
+                  toast.success(TOAST.SESSION_RATING.DELETED);
                 }}
               />
             ))

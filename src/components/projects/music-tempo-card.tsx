@@ -38,6 +38,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
@@ -155,7 +156,7 @@ function AddEntryForm({ onAdd, onClose, initialBpm }: AddEntryFormProps) {
 
   function handleSubmit() {
     if (!songTitle.trim()) {
-      toast.error("곡명을 입력해주세요.");
+      toast.error(TOAST.SONG.TITLE_REQUIRED);
       return;
     }
     if (bpm < BPM_MIN || bpm > BPM_MAX) {
@@ -164,7 +165,7 @@ function AddEntryForm({ onAdd, onClose, initialBpm }: AddEntryFormProps) {
     }
     const ok = onAdd({ songTitle, artist, bpm, sections, note });
     if (ok) {
-      toast.success("곡이 등록되었습니다.");
+      toast.success(TOAST.MUSIC_CUESHEET.CREATED);
       onClose();
     } else {
       toast.error(`곡은 최대 30개까지 등록할 수 있습니다.`);

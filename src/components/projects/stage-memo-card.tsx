@@ -43,6 +43,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useStageMemo } from "@/hooks/use-stage-memo";
 import type {
   StageMemoBoard,
@@ -117,7 +118,7 @@ function CreateBoardDialog({ open, onClose, onSubmit }: CreateBoardDialogProps) 
     e.preventDefault();
     const trimmed = title.trim();
     if (!trimmed) {
-      toast.error("보드 제목을 입력해주세요.");
+      toast.error(TOAST.STAGE_MEMO.BOARD_TITLE_REQUIRED);
       return;
     }
     onSubmit(trimmed);
@@ -217,7 +218,7 @@ function AddNoteDialog({
     e.preventDefault();
     const trimmedContent = content.trim();
     if (!trimmedContent) {
-      toast.error("메모 내용을 입력해주세요.");
+      toast.error(TOAST.STAGE_MEMO.MEMO_CONTENT_REQUIRED);
       return;
     }
     const tags = tagsInput
@@ -824,7 +825,7 @@ export function StageMemoCard({ groupId, projectId }: StageMemoCardProps) {
   function handleDeleteBoard(boardId: string) {
     deleteBoard(boardId);
     if (selectedBoardId === boardId) setSelectedBoardId(null);
-    toast.success("보드를 삭제했습니다.");
+    toast.success(TOAST.STAGE_MEMO.BOARD_DELETED);
   }
 
   function handleAddNoteClick(zone?: StageMemoZone) {
@@ -903,7 +904,7 @@ export function StageMemoCard({ groupId, projectId }: StageMemoCardProps) {
                   }}
                   onDeleteNote={(noteId) => {
                     deleteNote(selectedBoard.id, noteId);
-                    toast.success("메모를 삭제했습니다.");
+                    toast.success(TOAST.STAGE_MEMO.MEMO_DELETED);
                   }}
                 />
               ) : boards.length === 0 ? (
@@ -954,7 +955,7 @@ export function StageMemoCard({ groupId, projectId }: StageMemoCardProps) {
         onClose={() => setShowCreateBoardDialog(false)}
         onSubmit={(title) => {
           const board = addBoard(title);
-          toast.success("보드를 만들었습니다.");
+          toast.success(TOAST.STAGE_MEMO.BOARD_CREATED);
           setSelectedBoardId(board.id);
         }}
       />
@@ -967,7 +968,7 @@ export function StageMemoCard({ groupId, projectId }: StageMemoCardProps) {
         onSubmit={(zone, priority, content, author, tags) => {
           if (!selectedBoardId) return;
           addNote(selectedBoardId, { zone, priority, content, author, tags });
-          toast.success("메모를 추가했습니다.");
+          toast.success(TOAST.STAGE_MEMO.MEMO_ADDED);
         }}
       />
     </>

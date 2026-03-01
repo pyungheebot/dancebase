@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSharedFiles } from "@/hooks/use-shared-files";
 import type { SharedFileItem, SharedFileFolderItem, SharedFileCategory } from "@/types";
 import { validateUrl, sanitizeUrl } from "@/lib/validation";
@@ -158,11 +159,11 @@ function AddFileDialog({
 
   function handleSubmit() {
     if (!name.trim()) {
-      toast.error("파일 이름을 입력해주세요.");
+      toast.error(TOAST.SHARED_FILE.NAME_REQUIRED);
       return;
     }
     if (!url.trim()) {
-      toast.error("URL을 입력해주세요.");
+      toast.error(TOAST.SHARED_FILES.URL_REQUIRED);
       return;
     }
     const urlError = validateUrl(url);
@@ -182,7 +183,7 @@ function AddFileDialog({
     });
     reset();
     onOpenChange(false);
-    toast.success("파일이 추가되었습니다.");
+    toast.success(TOAST.SHARED_FILE.ADDED);
   }
 
   return (
@@ -337,13 +338,13 @@ function AddFolderDialog({
 
   function handleSubmit() {
     if (!name.trim()) {
-      toast.error("폴더 이름을 입력해주세요.");
+      toast.error(TOAST.SHARED_FILE.FOLDER_NAME_REQUIRED);
       return;
     }
     onAdd(name.trim(), parentId);
     setName("");
     onOpenChange(false);
-    toast.success("폴더가 생성되었습니다.");
+    toast.success(TOAST.SHARED_FILE.FOLDER_CREATED);
   }
 
   return (
@@ -407,12 +408,12 @@ function RenameFolderDialog({
   function handleSubmit() {
     if (!folder) return;
     if (!name.trim()) {
-      toast.error("폴더 이름을 입력해주세요.");
+      toast.error(TOAST.SHARED_FILES.FOLDER_REQUIRED);
       return;
     }
     onRename(folder.id, name.trim());
     onOpenChange(false);
-    toast.success("폴더 이름이 변경되었습니다.");
+    toast.success(TOAST.SHARED_FILE.FOLDER_RENAMED);
   }
 
   return (
@@ -517,7 +518,7 @@ function FileRow({ file, onDelete }: FileRowProps) {
         className="shrink-0 p-0.5 rounded text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
         onClick={() => {
           onDelete(file.id);
-          toast.success("파일이 삭제되었습니다.");
+          toast.success(TOAST.SHARED_FILE.DELETED);
         }}
         title="삭제"
       >
@@ -572,7 +573,7 @@ function FolderRow({
           onClick={(e) => {
             e.stopPropagation();
             onDelete(folder.id);
-            toast.success("폴더가 삭제되었습니다.");
+            toast.success(TOAST.SHARED_FILE.FOLDER_DELETED);
           }}
           title="삭제"
         >

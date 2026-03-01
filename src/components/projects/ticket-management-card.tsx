@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useTicketManagement,
   type TicketMgmtEventStats,
@@ -145,11 +146,11 @@ function AddEventDialog({ open, onOpenChange, onAdd }: AddEventDialogProps) {
     e.preventDefault();
     const name = eventName.trim();
     if (!name) {
-      toast.error("이벤트 이름을 입력해주세요.");
+      toast.error(TOAST.CHECKIN_EVENT.NAME_REQUIRED);
       return;
     }
     onAdd(name, eventDate);
-    toast.success("이벤트가 추가되었습니다.");
+    toast.success(TOAST.SHOW_TIMELINE.EVENT_ADDED);
     reset();
     onOpenChange(false);
   }
@@ -243,21 +244,21 @@ function AddTierDialog({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (existingTypes.includes(type)) {
-      toast.error("이미 동일한 유형의 티어가 존재합니다.");
+      toast.error(TOAST.TICKET.TIER_DUPLICATE);
       return;
     }
     const priceNum = Number(price);
     const seatsNum = Number(totalSeats);
     if (isNaN(priceNum) || priceNum < 0) {
-      toast.error("가격은 0 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.TICKET.TIER_PRICE_REQUIRED);
       return;
     }
     if (isNaN(seatsNum) || seatsNum <= 0) {
-      toast.error("총 좌석 수는 1 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.TICKET.TIER_SEAT_REQUIRED);
       return;
     }
     onAdd(type, priceNum, seatsNum, description.trim());
-    toast.success("티어가 추가되었습니다.");
+    toast.success(TOAST.TICKET.TIER_ADDED);
     reset();
     onOpenChange(false);
   }
@@ -391,11 +392,11 @@ function AddSaleDialog({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (event.tiers.length === 0) {
-      toast.error("먼저 티어를 추가해주세요.");
+      toast.error(TOAST.TICKET.TIER_ADD_REQUIRED);
       return;
     }
     if (qty <= 0) {
-      toast.error("수량은 1 이상을 입력해주세요.");
+      toast.error(TOAST.TICKET.QUANTITY_REQUIRED);
       return;
     }
     if (
@@ -415,7 +416,7 @@ function AddSaleDialog({
       seatInfo: seatInfo.trim() || undefined,
       notes: notes.trim() || undefined,
     });
-    toast.success("판매가 등록되었습니다.");
+    toast.success(TOAST.TICKET.SALES_ADDED);
     reset();
     onOpenChange(false);
   }
@@ -675,7 +676,7 @@ function EventPanel({
                               className="h-5 w-5 p-0 text-destructive hover:text-destructive"
                               onClick={() => {
                                 onDeleteTier(event.id, tier.id);
-                                toast.success("티어가 삭제되었습니다.");
+                                toast.success(TOAST.TICKET.TIER_DELETED);
                               }}
                             >
                               <Trash2 className="h-2.5 w-2.5" />
@@ -788,7 +789,7 @@ function EventPanel({
                             className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive flex-shrink-0"
                             onClick={() => {
                               onDeleteSale(event.id, sale.id);
-                              toast.success("판매 기록이 삭제되었습니다.");
+                              toast.success(TOAST.TICKET.SALES_DELETED);
                             }}
                           >
                             <Trash2 className="h-3 w-3" />

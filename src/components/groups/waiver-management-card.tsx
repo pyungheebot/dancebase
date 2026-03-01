@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   FileCheck,
   PenLine,
@@ -331,16 +332,16 @@ function NewWaiverTab({
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      toast.error("동의서 제목을 입력해주세요.");
+      toast.error(TOAST.WAIVER.TITLE_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("동의서 본문을 입력해주세요.");
+      toast.error(TOAST.WAIVER.CONTENT_REQUIRED);
       return;
     }
     const days = expiresInDays ? parseInt(expiresInDays, 10) : undefined;
     if (expiresInDays && (isNaN(days!) || days! <= 0)) {
-      toast.error("유효기간은 1 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.WAIVER_MANAGEMENT.VALIDITY_MIN);
       return;
     }
     await execute(async () => {
@@ -475,11 +476,11 @@ function SignModal({
 
   const handleSign = () => {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.WAIVER_MANAGEMENT.MEMBER_REQUIRED);
       return;
     }
     if (!confirmed) {
-      toast.error("내용을 확인하고 동의 체크박스를 선택해주세요.");
+      toast.error(TOAST.WAIVER.AGREE_CHECK);
       return;
     }
     onSign(memberId.trim() || crypto.randomUUID(), memberName.trim());
@@ -604,8 +605,8 @@ export function WaiverManagementCard({ groupId }: WaiverManagementCardProps) {
   // ─── 핸들러 ──────────────────────────────────────────────────────
   const handleDelete = (id: string) => {
     const ok = removeTemplate(id);
-    if (ok) toast.success("동의서가 삭제되었습니다.");
-    else toast.error("동의서 삭제에 실패했습니다.");
+    if (ok) toast.success(TOAST.WAIVER.DELETED);
+    else toast.error(TOAST.WAIVER.DELETE_ERROR);
   };
 
   const handleAddTemplate = (input: {
@@ -617,10 +618,10 @@ export function WaiverManagementCard({ groupId }: WaiverManagementCardProps) {
   }) => {
     const ok = addTemplate(input);
     if (ok) {
-      toast.success("동의서가 등록되었습니다.");
+      toast.success(TOAST.WAIVER.REGISTERED);
       setTab("list");
     } else {
-      toast.error("동의서 등록에 실패했습니다.");
+      toast.error(TOAST.WAIVER.REGISTER_ERROR);
     }
   };
 
@@ -635,14 +636,14 @@ export function WaiverManagementCard({ groupId }: WaiverManagementCardProps) {
       toast.success(`${memberName}님의 서명이 완료되었습니다.`);
       setSigningTemplate(null);
     } else {
-      toast.error("이미 유효한 서명이 존재하거나 처리 중 오류가 발생했습니다.");
+      toast.error(TOAST.WAIVER_MANAGEMENT.SIGNATURE_EXISTS);
     }
   };
 
   const handleUnsign = (signatureId: string) => {
     const ok = unsign(signatureId);
-    if (ok) toast.success("서명이 취소되었습니다.");
-    else toast.error("서명 취소에 실패했습니다.");
+    if (ok) toast.success(TOAST.WAIVER_MANAGEMENT.SIGNATURE_CANCELLED);
+    else toast.error(TOAST.WAIVER_MANAGEMENT.CANCEL_ERROR);
   };
 
   // ─── 통계 ────────────────────────────────────────────────────────

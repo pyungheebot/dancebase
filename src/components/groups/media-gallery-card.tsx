@@ -38,6 +38,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMediaGallery, type AddItemParams } from "@/hooks/use-media-gallery";
 import type { MediaAlbum, MediaGalleryItem } from "@/types";
 
@@ -138,11 +139,11 @@ function AddMediaDialog({ open, onClose, albums, onAdd }: AddMediaDialogProps) {
 
   function handleSubmit() {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.MEDIA_GALLERY.TITLE_REQUIRED);
       return;
     }
     if (!url.trim()) {
-      toast.error("미디어 URL을 입력해주세요.");
+      toast.error(TOAST.MEDIA_GALLERY.URL_REQUIRED);
       return;
     }
     onAdd({
@@ -367,7 +368,7 @@ function CreateAlbumDialog({ open, onClose, onCreate }: CreateAlbumDialogProps) 
 
   function handleSubmit() {
     if (!name.trim()) {
-      toast.error("앨범 이름을 입력해주세요.");
+      toast.error(TOAST.MEDIA_GALLERY.ALBUM_REQUIRED);
       return;
     }
     onCreate({
@@ -508,12 +509,12 @@ export function MediaGalleryCard({ groupId }: MediaGalleryCardProps) {
 
   function handleAddItem(params: AddItemParams) {
     addItem(params);
-    toast.success("미디어가 추가되었습니다.");
+    toast.success(TOAST.MEDIA_GALLERY.ADDED);
   }
 
   function handleDeleteItem(itemId: string) {
     deleteItem(itemId);
-    toast.success("미디어가 삭제되었습니다.");
+    toast.success(TOAST.MEDIA_GALLERY.DELETED);
   }
 
   function handleCreateAlbum(params: {

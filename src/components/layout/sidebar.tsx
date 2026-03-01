@@ -100,13 +100,49 @@ type SidebarProps = {
   onNavigate?: () => void;
 };
 
-function UnreadCount() {
+function MessageNavItem({
+  href,
+  icon,
+  label,
+  isActive,
+  onNavigate,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  isActive: boolean;
+  onNavigate?: () => void;
+}) {
   const { count } = useUnreadCount();
-  if (count <= 0) return null;
+  const ariaLabel =
+    count > 0
+      ? `${label}, 읽지 않은 메시지 ${count > 99 ? "99개 이상" : `${count}개`}`
+      : label;
+
   return (
-    <Badge variant="secondary" className="h-4 min-w-[16px] px-1 text-[10px] leading-none font-normal">
-      {count > 99 ? "99+" : count}
-    </Badge>
+    <Link
+      href={href}
+      onClick={onNavigate}
+      aria-label={ariaLabel}
+      className={cn(
+        "flex items-center gap-2 rounded-sm px-2 py-1 text-sm transition-colors",
+        isActive
+          ? "bg-sidebar-accent font-medium"
+          : "hover:bg-sidebar-accent/60 text-sidebar-foreground/70"
+      )}
+    >
+      {icon}
+      <span className="flex-1">{label}</span>
+      {count > 0 && (
+        <Badge
+          variant="secondary"
+          className="h-4 min-w-[16px] px-1 text-[10px] leading-none font-normal"
+          aria-hidden="true"
+        >
+          {count > 99 ? "99+" : count}
+        </Badge>
+      )}
+    </Link>
   );
 }
 
@@ -317,23 +353,33 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
       {/* 메인 네비게이션 */}
       <nav className="flex-1 overflow-y-auto px-2 py-1 space-y-4">
         <div className="space-y-0.5">
-          {mainNav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-2 rounded-sm px-2 py-1 text-sm transition-colors",
-                isActive(item.href)
-                  ? "bg-sidebar-accent font-medium"
-                  : "hover:bg-sidebar-accent/60 text-sidebar-foreground/70"
-              )}
-            >
-              {item.icon}
-              <span className="flex-1">{item.label}</span>
-              {item.label === "메시지" && <UnreadCount />}
-            </Link>
-          ))}
+          {mainNav.map((item) =>
+            item.label === "메시지" ? (
+              <MessageNavItem
+                key={item.href}
+                href={item.href}
+                icon={item.icon}
+                label={item.label}
+                isActive={isActive(item.href)}
+                onNavigate={onNavigate}
+              />
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-2 rounded-sm px-2 py-1 text-sm transition-colors",
+                  isActive(item.href)
+                    ? "bg-sidebar-accent font-medium"
+                    : "hover:bg-sidebar-accent/60 text-sidebar-foreground/70"
+                )}
+              >
+                {item.icon}
+                <span className="flex-1">{item.label}</span>
+              </Link>
+            )
+          )}
         </div>
 
         {/* 내 그룹 섹션 */}

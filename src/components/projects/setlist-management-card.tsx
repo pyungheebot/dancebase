@@ -36,6 +36,7 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // ============================================
 // 타입 아이콘 및 레이블
@@ -221,18 +222,18 @@ export function SetlistManagementCard({
 
   const handleEventSave = () => {
     if (!eventName.trim()) {
-      toast.error("공연 이름을 입력해주세요.");
+      toast.error(TOAST.SETLIST_MGMT.SHOW_NAME_REQUIRED);
       return;
     }
     updateEventInfo(eventName.trim(), eventDate);
     setEditingEvent(false);
-    toast.success("공연 정보가 저장되었습니다.");
+    toast.success(TOAST.SETLIST_MGMT.SHOW_INFO_SAVED);
   };
 
   // 항목 추가
   const handleAddItem = () => {
     if (!form.title.trim()) {
-      toast.error("항목 제목을 입력해주세요.");
+      toast.error(TOAST.SETLIST_MGMT.ITEM_TITLE_REQUIRED);
       return;
     }
 
@@ -253,14 +254,14 @@ export function SetlistManagementCard({
       note: form.note.trim(),
     });
 
-    toast.success("항목이 추가되었습니다.");
+    toast.success(TOAST.SETLIST_MGMT.ITEM_ADDED);
     setForm(DEFAULT_FORM);
     setShowForm(false);
   };
 
   const handleRemove = (id: string) => {
     removeItem(id);
-    toast.success("항목이 삭제되었습니다.");
+    toast.success(TOAST.SETLIST_MGMT.ITEM_DELETED);
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   ChevronDown,
   ChevronUp,
@@ -69,7 +70,7 @@ function CueItemForm({ initial = EMPTY_FORM, onSubmit, onCancel, submitLabel }: 
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("항목명을 입력해 주세요.");
+      toast.error(TOAST.CUE_SHEET.NAME_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -290,9 +291,9 @@ export function CueSheetCard({ projectId }: { projectId: string }) {
     try {
       await addItem(values);
       setShowAddForm(false);
-      toast.success("큐 항목이 추가되었습니다.");
+      toast.success(TOAST.CUE_SHEET.ITEM_ADDED);
     } catch {
-      toast.error("항목 추가에 실패했습니다.");
+      toast.error(TOAST.ITEM_ADD_ERROR);
     }
   }
 
@@ -301,9 +302,9 @@ export function CueSheetCard({ projectId }: { projectId: string }) {
     try {
       await updateItem(id, values);
       setEditingId(null);
-      toast.success("큐 항목이 수정되었습니다.");
+      toast.success(TOAST.CUE_SHEET.ITEM_UPDATED);
     } catch {
-      toast.error("항목 수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
   }
 
@@ -311,9 +312,9 @@ export function CueSheetCard({ projectId }: { projectId: string }) {
   async function handleDelete(id: string) {
     try {
       await removeItem(id);
-      toast.success("큐 항목이 삭제되었습니다.");
+      toast.success(TOAST.CUE_SHEET.ITEM_DELETED);
     } catch {
-      toast.error("항목 삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -322,7 +323,7 @@ export function CueSheetCard({ projectId }: { projectId: string }) {
     try {
       await moveUp(id);
     } catch {
-      toast.error("순서 변경에 실패했습니다.");
+      toast.error(TOAST.ORDER_ERROR);
     }
   }
 
@@ -330,7 +331,7 @@ export function CueSheetCard({ projectId }: { projectId: string }) {
     try {
       await moveDown(id);
     } catch {
-      toast.error("순서 변경에 실패했습니다.");
+      toast.error(TOAST.ORDER_ERROR);
     }
   }
 
@@ -339,7 +340,7 @@ export function CueSheetCard({ projectId }: { projectId: string }) {
     try {
       await cycleStatus(id);
     } catch {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   }
 

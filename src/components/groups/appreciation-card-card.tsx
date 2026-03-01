@@ -37,6 +37,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAppreciationCard } from "@/hooks/use-appreciation-card";
 import type { AppreciationCardCategory, AppreciationCardEntry } from "@/types";
 
@@ -219,15 +220,15 @@ function SendCardDialog({
 
   function handleSend() {
     if (!toMember) {
-      toast.error("받는 멤버를 선택해주세요.");
+      toast.error(TOAST.APPRECIATION_CARD.RECIPIENT_REQUIRED);
       return;
     }
     if (!category) {
-      toast.error("카테고리를 선택해주세요.");
+      toast.error(TOAST.APPRECIATION_CARD.CATEGORY_REQUIRED);
       return;
     }
     if (!message.trim()) {
-      toast.error("메시지를 입력해주세요.");
+      toast.error(TOAST.APPRECIATION_CARD.MESSAGE_REQUIRED);
       return;
     }
     onSend(
@@ -458,12 +459,12 @@ export function AppreciationCardCard({
 
   function handleDelete(id: string) {
     deleteCard(id);
-    toast.success("감사 카드가 삭제되었습니다.");
+    toast.success(TOAST.APPRECIATION_CARD.DELETED);
   }
 
   function handleLike(id: string) {
     if (!currentMemberName) {
-      toast.error("좋아요를 누르려면 멤버 이름이 필요합니다.");
+      toast.error(TOAST.APPRECIATION_CARD.LIKE_NAME_REQUIRED);
       return;
     }
     toggleLike(id, currentMemberName);

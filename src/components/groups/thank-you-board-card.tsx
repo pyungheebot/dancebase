@@ -35,6 +35,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useThankYouBoard } from "@/hooks/use-thank-you-board";
 import type { ThankYouCategory, ThankYouMessage } from "@/types";
 
@@ -225,15 +226,15 @@ function SendMessageDialog({
 
   function handleSend() {
     if (!toMember) {
-      toast.error("받는 멤버를 선택해주세요.");
+      toast.error(TOAST.THANK_YOU_BOARD.MEMBER_REQUIRED);
       return;
     }
     if (!category) {
-      toast.error("카테고리를 선택해주세요.");
+      toast.error(TOAST.THANK_YOU_BOARD.CATEGORY_REQUIRED);
       return;
     }
     if (!message.trim()) {
-      toast.error("메시지를 입력해주세요.");
+      toast.error(TOAST.THANK_YOU_BOARD.MESSAGE_REQUIRED);
       return;
     }
     onSend(
@@ -438,12 +439,12 @@ export function ThankYouBoardCard({
 
   function handleDelete(id: string) {
     deleteMessage(id);
-    toast.success("메시지가 삭제되었습니다.");
+    toast.success(TOAST.THANK_YOU_BOARD.MESSAGE_DELETED);
   }
 
   function handleLike(id: string) {
     if (!currentMemberName) {
-      toast.error("좋아요를 누르려면 멤버 이름이 필요합니다.");
+      toast.error(TOAST.THANK_YOU_BOARD.LIKE_REQUIRED);
       return;
     }
     toggleLike(id, currentMemberName);

@@ -36,6 +36,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // ============================================
 // 완성도 색상 헬퍼
@@ -149,7 +150,7 @@ function AddEntryDialog({
 
   const handleSubmit = () => {
     if (!date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.REHEARSAL_LOG.DATE_REQUIRED);
       return;
     }
     const songs = songsInput
@@ -306,7 +307,7 @@ function EntryRow({
 
   const handleDelete = () => {
     onDelete(entry.id);
-    toast.success("기록이 삭제되었습니다.");
+    toast.success(TOAST.REHEARSAL_LOG.RECORD_DELETED);
     setDeleteConfirmOpen(false);
   };
 
@@ -315,7 +316,7 @@ function EntryRow({
     const ok = onAddIssue(entry.id, newIssueText.trim());
     if (ok) {
       setNewIssueText("");
-      toast.success("이슈가 추가되었습니다.");
+      toast.success(TOAST.REHEARSAL_LOG.ISSUE_ADDED);
     }
   };
 

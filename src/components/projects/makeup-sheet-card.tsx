@@ -45,6 +45,7 @@ import {
   Layers,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMakeupSheet } from "@/hooks/use-makeup-sheet";
 import type { MakeupSheetArea, MakeupSheetLook, MakeupSheetProduct } from "@/types";
 
@@ -122,7 +123,7 @@ function ProductDialog({
 
   const handleSubmit = () => {
     if (!productName.trim()) {
-      toast.error("제품명을 입력해주세요.");
+      toast.error(TOAST.MAKEUP_SHEET.PRODUCT_NAME_REQUIRED);
       return;
     }
     onSubmit({
@@ -283,11 +284,11 @@ function LookDialog({ open, mode, initial, onClose, onSubmit }: LookDialogProps)
 
   const handleSubmit = () => {
     if (!lookName.trim()) {
-      toast.error("룩 이름을 입력해주세요.");
+      toast.error(TOAST.MAKEUP_SHEET.LOOK_NAME_REQUIRED);
       return;
     }
     if (!performanceName.trim()) {
-      toast.error("공연 이름을 입력해주세요.");
+      toast.error(TOAST.MAKEUP_SHEET.SHOW_NAME_REQUIRED);
       return;
     }
     onSubmit({
@@ -570,10 +571,10 @@ export function MakeupSheetCard({
     if (lookDialogMode === "add") {
       const newLook = addLook(data);
       setSelectedLookId(newLook.id);
-      toast.success("룩이 추가되었습니다.");
+      toast.success(TOAST.MAKEUP_SHEET.LOOK_ADDED);
     } else if (editingLook) {
       updateLook(editingLook.id, data);
-      toast.success("룩이 수정되었습니다.");
+      toast.success(TOAST.MAKEUP_SHEET.LOOK_UPDATED);
     }
   };
 
@@ -582,7 +583,7 @@ export function MakeupSheetCard({
     if (selectedLookId === lookId) {
       setSelectedLookId(null);
     }
-    toast.success("룩이 삭제되었습니다.");
+    toast.success(TOAST.MAKEUP_SHEET.LOOK_DELETED);
   };
 
   // ── 제품 핸들러 ───────────────────────────────────────────
@@ -606,17 +607,17 @@ export function MakeupSheetCard({
 
     if (productDialogMode === "add") {
       addProduct(effectiveLook.id, data);
-      toast.success("제품이 추가되었습니다.");
+      toast.success(TOAST.MAKEUP_SHEET.PRODUCT_ADDED);
     } else if (editingProduct) {
       updateProduct(effectiveLook.id, editingProduct.id, data);
-      toast.success("제품이 수정되었습니다.");
+      toast.success(TOAST.MAKEUP_SHEET.PRODUCT_UPDATED);
     }
   };
 
   const handleDeleteProduct = (productId: string) => {
     if (!effectiveLook) return;
     deleteProduct(effectiveLook.id, productId);
-    toast.success("제품이 삭제되었습니다.");
+    toast.success(TOAST.MAKEUP_SHEET.PRODUCT_DELETED);
   };
 
   // ── 멤버 핸들러 ───────────────────────────────────────────
@@ -627,7 +628,7 @@ export function MakeupSheetCard({
     if (!trimmed) return;
     const ok = assignMember(effectiveLook.id, trimmed);
     if (!ok) {
-      toast.error("이미 배정된 멤버입니다.");
+      toast.error(TOAST.MAKEUP_SHEET.MEMBER_DUPLICATE);
     } else {
       toast.success(`${trimmed} 멤버가 배정되었습니다.`);
     }

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useWeeklyTimetable,
   SLOT_TYPE_COLORS,
@@ -69,17 +70,17 @@ function SlotForm({ initialDay, onSubmit, onClose, conflictSlot }: SlotFormProps
 
   function handleSubmit() {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.WEEKLY_TIMETABLE.TITLE_REQUIRED);
       return;
     }
     if (!startTime || !endTime) {
-      toast.error("시간을 입력해주세요.");
+      toast.error(TOAST.WEEKLY_TIMETABLE.TIME_REQUIRED);
       return;
     }
     const [sh, sm] = startTime.split(":").map(Number);
     const [eh, em] = endTime.split(":").map(Number);
     if (sh * 60 + sm >= eh * 60 + em) {
-      toast.error("종료 시간은 시작 시간보다 늦어야 합니다.");
+      toast.error(TOAST.WEEKLY_TIMETABLE.END_AFTER_START);
       return;
     }
     onSubmit({
@@ -297,23 +298,23 @@ export function WeeklyTimetableCard({ groupId }: WeeklyTimetableCardProps) {
   function handleAdd(data: Omit<TimetableSlot, "id">) {
     const result = addSlot(data);
     if (result.ok) {
-      toast.success("슬롯이 추가되었습니다.");
+      toast.success(TOAST.WEEKLY_TIMETABLE.SLOT_ADDED);
       setShowForm(false);
       setConflictSlot(null);
     } else if (result.conflict) {
       setConflictSlot(result.conflict);
       toast.error(`시간 충돌: "${result.conflict.title}"과 겹칩니다.`);
     } else {
-      toast.error("슬롯 추가에 실패했습니다.");
+      toast.error(TOAST.WEEKLY_TIMETABLE.SLOT_ADD_ERROR);
     }
   }
 
   function handleDelete(id: string) {
     const ok = deleteSlot(id);
     if (ok) {
-      toast.success("슬롯이 삭제되었습니다.");
+      toast.success(TOAST.WEEKLY_TIMETABLE.SLOT_DELETED);
     } else {
-      toast.error("슬롯 삭제에 실패했습니다.");
+      toast.error(TOAST.WEEKLY_TIMETABLE.SLOT_DELETE_ERROR);
     }
   }
 

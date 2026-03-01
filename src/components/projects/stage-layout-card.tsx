@@ -56,6 +56,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useStageLayout } from "@/hooks/use-stage-layout";
 import type {
   StageLayoutItemType,
@@ -222,7 +223,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
   // ── 플랜 추가 핸들러 ──
   async function handleAddPlan() {
     if (!planForm.planName.trim()) {
-      toast.error("플랜 이름을 입력해주세요.");
+      toast.error(TOAST.STAGE_LAYOUT.PLAN_NAME_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -234,7 +235,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
       setSelectedPlanId(newPlan.id);
       setPlanForm(DEFAULT_PLAN_FORM);
       setAddPlanDialogOpen(false);
-      toast.success("플랜이 추가되었습니다.");
+      toast.success(TOAST.STAGE_LAYOUT.PLAN_ADDED);
     });
   }
 
@@ -246,9 +247,9 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
         const remaining = plans.filter((p) => p.id !== planId);
         setSelectedPlanId(remaining[0]?.id ?? null);
       }
-      toast.success("플랜이 삭제되었습니다.");
+      toast.success(TOAST.STAGE_LAYOUT.PLAN_DELETED);
     } catch {
-      toast.error("플랜 삭제에 실패했습니다.");
+      toast.error(TOAST.STAGE_LAYOUT.PLAN_DELETE_ERROR);
     }
   }
 
@@ -256,7 +257,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
   async function handleAddItem() {
     if (!effectivePlanId) return;
     if (!itemForm.label.trim()) {
-      toast.error("라벨을 입력해주세요.");
+      toast.error(TOAST.STAGE_LAYOUT.LABEL_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -272,7 +273,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
       });
       setItemForm(DEFAULT_ITEM_FORM);
       setAddItemDialogOpen(false);
-      toast.success("아이템이 추가되었습니다.");
+      toast.success(TOAST.STAGE_LAYOUT.ITEM_ADDED);
     });
   }
 
@@ -297,7 +298,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
   async function handleUpdateItem() {
     if (!effectivePlanId || !editingItem) return;
     if (!itemForm.label.trim()) {
-      toast.error("라벨을 입력해주세요.");
+      toast.error(TOAST.STAGE_LAYOUT.LABEL_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -313,7 +314,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
       });
       setEditItemDialogOpen(false);
       setEditingItem(null);
-      toast.success("아이템이 수정되었습니다.");
+      toast.success(TOAST.STAGE_LAYOUT.ITEM_UPDATED);
     });
   }
 
@@ -323,9 +324,9 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
     try {
       await deleteItem(effectivePlanId, itemId);
       setActiveItemId(null);
-      toast.success("아이템이 삭제되었습니다.");
+      toast.success(TOAST.STAGE_LAYOUT.ITEM_DELETED);
     } catch {
-      toast.error("아이템 삭제에 실패했습니다.");
+      toast.error(TOAST.STAGE_LAYOUT.ITEM_DELETE_ERROR);
     }
   }
 

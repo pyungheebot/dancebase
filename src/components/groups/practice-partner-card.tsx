@@ -39,6 +39,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   usePracticePartner,
   SKILL_LEVEL_LABELS,
@@ -164,13 +165,13 @@ function AddMemberDialog({ open, onClose, onAdd }: AddMemberDialogProps) {
   const handleSubmit = () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_PARTNER.NAME_REQUIRED);
       return;
     }
     onAdd(trimmed, skillLevel, selectedTimes);
     reset();
     onClose();
-    toast.success("멤버가 등록되었습니다.");
+    toast.success(TOAST.PRACTICE_PARTNER.MEMBER_REGISTERED);
   };
 
   return (
@@ -343,13 +344,13 @@ function ManualMatchDialog({
 
   const handleSubmit = () => {
     if (!selectedA || !selectedB || selectedA === selectedB) {
-      toast.error("서로 다른 두 멤버를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_PARTNER.DIFFERENT_MEMBERS);
       return;
     }
     onMatch(selectedA, selectedB);
     reset();
     onClose();
-    toast.success("매칭이 생성되었습니다.");
+    toast.success(TOAST.PRACTICE_PARTNER.MATCH_CREATED);
   };
 
   const availableForB = unmatched.filter((m) => m.id !== selectedA);
@@ -456,13 +457,13 @@ function RatingDialog({
 
   const handleSubmit = () => {
     if (rating === 0) {
-      toast.error("별점을 선택해주세요.");
+      toast.error(TOAST.PRACTICE_PARTNER.RATING_REQUIRED);
       return;
     }
     onRate(rating, note.trim() || undefined);
     reset();
     onClose();
-    toast.success("평가가 등록되었습니다.");
+    toast.success(TOAST.PRACTICE_PARTNER.REVIEW_REGISTERED);
   };
 
   if (!match) return null;
@@ -689,16 +690,16 @@ export function PracticePartnerCard({ groupId }: PracticePartnerCardProps) {
 
   const handleRandomMatch = () => {
     if (unmatchedMembers.length < 2) {
-      toast.error("매칭 가능한 멤버가 2명 이상이어야 합니다.");
+      toast.error(TOAST.PRACTICE_PARTNER.MIN_MEMBERS);
       return;
     }
     randomMatch();
-    toast.success("랜덤 매칭이 완료되었습니다.");
+    toast.success(TOAST.PRACTICE_PARTNER.RANDOM_MATCHED);
   };
 
   const handleEndMatch = (matchId: string) => {
     endMatch(matchId);
-    toast.success("매칭이 해제되었습니다.");
+    toast.success(TOAST.PRACTICE_PARTNER.MATCH_RELEASED);
   };
 
   const openRating = (
@@ -843,7 +844,7 @@ export function PracticePartnerCard({ groupId }: PracticePartnerCardProps) {
                           type="button"
                           onClick={() => {
                             removeMember(m.id);
-                            toast.success("멤버가 삭제되었습니다.");
+                            toast.success(TOAST.PRACTICE_PARTNER.MEMBER_DELETED);
                           }}
                           className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 ml-1"
                           title="멤버 삭제"

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   BookText,
   ChevronDown,
@@ -155,11 +156,11 @@ function TermItem({
 
   const handleSave = () => {
     if (!editTerm.trim()) {
-      toast.error("용어명을 입력해주세요.");
+      toast.error(TOAST.DANCE_GLOSSARY.TERM_REQUIRED);
       return;
     }
     if (!editDef.trim()) {
-      toast.error("정의를 입력해주세요.");
+      toast.error(TOAST.DANCE_GLOSSARY.DEFINITION_REQUIRED);
       return;
     }
     onEdit(entry.id, {
@@ -169,7 +170,7 @@ function TermItem({
       relatedTerms: editRelated,
       example: editExample || undefined,
     });
-    toast.success("용어가 수정되었습니다.");
+    toast.success(TOAST.DANCE_GLOSSARY.TERM_UPDATED);
     setEditing(false);
   };
 
@@ -356,21 +357,21 @@ function AddTermDialog({
 
   const handleSubmit = async () => {
     if (!term.trim()) {
-      toast.error("용어명을 입력해주세요.");
+      toast.error(TOAST.DANCE_GLOSSARY_CARD.TERM_REQUIRED);
       return;
     }
     if (!definition.trim()) {
-      toast.error("정의를 입력해주세요.");
+      toast.error(TOAST.DANCE_GLOSSARY_CARD.DEFINITION_REQUIRED);
       return;
     }
     await execute(async () => {
       const ok = onAdd({ term, definition, category, relatedTerms, example, addedBy });
       if (ok) {
-        toast.success("용어가 등록되었습니다.");
+        toast.success(TOAST.DANCE_GLOSSARY.TERM_REGISTERED);
         reset();
         onClose();
       } else {
-        toast.error("용어 등록에 실패했습니다.");
+        toast.error(TOAST.DANCE_GLOSSARY.TERM_REGISTER_ERROR);
       }
     });
   };
@@ -627,7 +628,7 @@ export function DanceGlossaryCard({ groupId }: DanceGlossaryCardProps) {
 
   const handleDelete = (id: string) => {
     deleteTerm(id);
-    toast.success("용어가 삭제되었습니다.");
+    toast.success(TOAST.DANCE_GLOSSARY.TERM_DELETED);
   };
 
   const handleJump = (key: string) => {

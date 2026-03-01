@@ -300,11 +300,11 @@ function FeedDialog({ open, editTarget, onClose, onSave }: FeedDialogProps) {
 
   const handleSave = () => {
     if (!message.trim()) {
-      toast.error("메시지를 입력해주세요.");
+      toast.error(TOAST.LIVE_FEED.MESSAGE_REQUIRED);
       return;
     }
     if (!author.trim()) {
-      toast.error("작성자를 입력해주세요.");
+      toast.error(TOAST.LIVE_FEED.AUTHOR_REQUIRED);
       return;
     }
     onSave({
@@ -474,13 +474,13 @@ export function LiveShowFeedCard({ groupId, projectId }: LiveShowFeedCardProps) 
     if (editTarget) {
       const ok = updateEntry(editTarget.id, params);
       if (ok) {
-        toast.success("피드가 수정되었습니다.");
+        toast.success(TOAST.LIVE_FEED.UPDATED);
       } else {
         toast.error(TOAST.UPDATE_ERROR);
       }
     } else {
       addEntry(params);
-      toast.success("피드가 추가되었습니다.");
+      toast.success(TOAST.LIVE_FEED.ADDED);
     }
     setDialogOpen(false);
     setEditTarget(null);
@@ -490,7 +490,7 @@ export function LiveShowFeedCard({ groupId, projectId }: LiveShowFeedCardProps) 
     if (!deleteTargetId) return;
     const ok = deleteEntry(deleteTargetId);
     if (ok) {
-      toast.success("피드가 삭제되었습니다.");
+      toast.success(TOAST.LIVE_FEED.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

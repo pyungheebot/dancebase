@@ -244,7 +244,7 @@ export function TechRequirementsCard({
   // ── 아이템 저장 ──
   async function handleItemSave() {
     if (!itemForm.title.trim()) {
-      toast.error("장비명을 입력해주세요.");
+      toast.error(TOAST.TECH_REQ.EQUIPMENT_REQUIRED);
       return;
     }
 
@@ -252,7 +252,7 @@ export function TechRequirementsCard({
     try {
       const qty = itemForm.quantity ? parseInt(itemForm.quantity, 10) : undefined;
       if (itemForm.quantity && (isNaN(qty!) || qty! < 1)) {
-        toast.error("수량은 1 이상의 숫자여야 합니다.");
+        toast.error(TOAST.TECH_REQ.QUANTITY_REQUIRED);
         return;
       }
 
@@ -273,10 +273,10 @@ export function TechRequirementsCard({
 
       if (editTarget) {
         await updateItem(editTarget.id, payload);
-        toast.success("장비 정보가 수정되었습니다.");
+        toast.success(TOAST.TECH_REQ.EQUIPMENT_UPDATED);
       } else {
         await addItem(payload);
-        toast.success("장비가 추가되었습니다.");
+        toast.success(TOAST.TECH_REQ.EQUIPMENT_ADDED);
       }
       setItemDialogOpen(false);
     } catch {
@@ -306,7 +306,7 @@ export function TechRequirementsCard({
           : `'${item.title}' 확보 완료로 변경되었습니다.`
       );
     } catch {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   }
 

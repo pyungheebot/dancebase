@@ -166,15 +166,15 @@ function AddVersionDialog({ posterId, onAdd }: AddVersionDialogProps) {
 
   function handleSubmit() {
     if (!title.trim()) {
-      toast.error("버전 제목을 입력해주세요.");
+      toast.error(TOAST.POSTER.VERSION_TITLE_REQUIRED);
       return;
     }
     if (!designer.trim()) {
-      toast.error("디자이너 이름을 입력해주세요.");
+      toast.error(TOAST.POSTER.DESIGNER_REQUIRED);
       return;
     }
     if (!description.trim()) {
-      toast.error("설명을 입력해주세요.");
+      toast.error(TOAST.POSTER.DESCRIPTION_REQUIRED);
       return;
     }
 
@@ -187,7 +187,7 @@ function AddVersionDialog({ posterId, onAdd }: AddVersionDialogProps) {
     });
 
     if (result) {
-      toast.success("버전이 추가되었습니다.");
+      toast.success(TOAST.POSTER.VERSION_ADDED);
       setTitle("");
       setDesigner("");
       setDescription("");
@@ -196,7 +196,7 @@ function AddVersionDialog({ posterId, onAdd }: AddVersionDialogProps) {
       setColors([]);
       setOpen(false);
     } else {
-      toast.error("버전 추가에 실패했습니다.");
+      toast.error(TOAST.POSTER.VERSION_ADD_ERROR);
     }
   }
 
@@ -319,14 +319,14 @@ function AddProjectForm({ onAdd, onClose }: AddProjectFormProps) {
 
   function handleSubmit() {
     if (!posterName.trim()) {
-      toast.error("포스터 이름을 입력해주세요.");
+      toast.error(TOAST.POSTER.NAME_REQUIRED);
       return;
     }
     onAdd({
       posterName: posterName.trim(),
       deadline: deadline || undefined,
     });
-    toast.success("포스터 프로젝트가 추가되었습니다.");
+    toast.success(TOAST.POSTER.PROJECT_ADDED);
     onClose();
   }
 
@@ -411,21 +411,21 @@ function VersionDetail({
 
   function handleVote() {
     if (!selectedMember) {
-      toast.error("투표할 멤버를 선택해주세요.");
+      toast.error(TOAST.POSTER.VOTER_REQUIRED);
       return;
     }
     if (rating === 0) {
-      toast.error("별점을 선택해주세요.");
+      toast.error(TOAST.POSTER.RATING_REQUIRED);
       return;
     }
     const ok = onVote(posterId, version.id, selectedMember, rating, comment || undefined);
     if (ok) {
-      toast.success("투표가 등록되었습니다.");
+      toast.success(TOAST.POSTER.VOTE_REGISTERED);
       setSelectedMember("");
       setRating(0);
       setComment("");
     } else {
-      toast.error("투표 등록에 실패했습니다.");
+      toast.error(TOAST.POSTER.VOTE_ERROR);
     }
   }
 
@@ -434,25 +434,25 @@ function VersionDetail({
     if (ok) {
       toast.success(`상태가 "${STATUS_LABELS[status]}"로 변경되었습니다.`);
     } else {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   }
 
   function handleSelectFinal() {
     const ok = onSelectFinal(posterId, version.id);
     if (ok) {
-      toast.success("최종 포스터로 선정되었습니다.");
+      toast.success(TOAST.POSTER.FINALIZED);
     } else {
-      toast.error("최종 선정에 실패했습니다.");
+      toast.error(TOAST.POSTER.FINALIZE_ERROR);
     }
   }
 
   function handleDelete() {
     const ok = onDelete(posterId, version.id);
     if (ok) {
-      toast.success("버전이 삭제되었습니다.");
+      toast.success(TOAST.POSTER.VERSION_DELETED);
     } else {
-      toast.error("버전 삭제에 실패했습니다.");
+      toast.error(TOAST.POSTER.VERSION_DELETE_ERROR);
     }
   }
 
@@ -678,7 +678,7 @@ function PosterProjectRow({
   function handleDeletePoster() {
     const ok = onDeletePoster(poster.id);
     if (ok) {
-      toast.success("포스터 프로젝트가 삭제되었습니다.");
+      toast.success(TOAST.POSTER.PROJECT_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSharedLibrary } from "@/hooks/use-shared-library";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { SharedLibFileType, SharedLibItem } from "@/types";
@@ -135,11 +136,11 @@ function AddItemDialog({
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("자료 제목을 입력해주세요.");
+      toast.error(TOAST.SHARED_LIBRARY.TITLE_REQUIRED);
       return;
     }
     if (!form.uploadedBy.trim()) {
-      toast.error("업로더 이름을 입력해주세요.");
+      toast.error(TOAST.SHARED_LIBRARY.UPLOADER_REQUIRED);
       return;
     }
     const urlError = validateUrl(form.url);
@@ -165,7 +166,7 @@ function AddItemDialog({
 
     setOpen(false);
     setForm(emptyForm());
-    toast.success("자료가 추가되었습니다.");
+    toast.success(TOAST.SHARED_LIBRARY.ADDED);
   }
 
   function set(field: keyof ItemForm, value: string) {
@@ -413,7 +414,7 @@ function LibraryItemRow({
         description={`"${item.title}" 자료를 삭제하시겠습니까?`}
         onConfirm={() => {
           onDelete(item.id);
-          toast.success("자료가 삭제되었습니다.");
+          toast.success(TOAST.SHARED_LIBRARY.DELETED);
           setDeleteConfirmOpen(false);
         }}
         destructive

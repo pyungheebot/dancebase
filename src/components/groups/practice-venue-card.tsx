@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   MapPin,
   Star,
@@ -203,7 +204,7 @@ function AddVenueDialog({ onAdd }: AddVenueDialogProps) {
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      toast.error("장소명을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_VENUE.NAME_REQUIRED);
       return;
     }
     const cost = costPerHour.trim() ? Number(costPerHour) : undefined;
@@ -211,15 +212,15 @@ function AddVenueDialog({ onAdd }: AddVenueDialogProps) {
     const sz = size.trim() ? Number(size) : undefined;
 
     if (cost !== undefined && (isNaN(cost) || cost < 0)) {
-      toast.error("시간당 비용을 올바르게 입력해주세요.");
+      toast.error(TOAST.PRACTICE_VENUE.HOURLY_COST_INVALID);
       return;
     }
     if (cap !== undefined && (isNaN(cap) || cap < 1)) {
-      toast.error("수용 인원을 올바르게 입력해주세요.");
+      toast.error(TOAST.PRACTICE_VENUE.CAPACITY_INVALID);
       return;
     }
     if (sz !== undefined && (isNaN(sz) || sz < 1)) {
-      toast.error("면적을 올바르게 입력해주세요.");
+      toast.error(TOAST.PRACTICE_VENUE.AREA_INVALID);
       return;
     }
 
@@ -238,7 +239,7 @@ function AddVenueDialog({ onAdd }: AddVenueDialogProps) {
       lastUsedAt: lastUsedAt || undefined,
     });
 
-    toast.success("장소가 등록되었습니다.");
+    toast.success(TOAST.PRACTICE_VENUE.REGISTERED);
     setOpen(false);
     resetForm();
   };
@@ -438,11 +439,11 @@ function RateVenueDialog({
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      toast.error("평점을 선택해주세요.");
+      toast.error(TOAST.PRACTICE_VENUE.RATING_REQUIRED);
       return;
     }
     await onRate(venue.id, rating);
-    toast.success("평점이 등록되었습니다.");
+    toast.success(TOAST.PRACTICE_VENUE.RATING_REGISTERED);
     setOpen(false);
     setRating(0);
   };
@@ -530,7 +531,7 @@ function StatusEditor({
         className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
         onClick={async () => {
           await onUpdateStatus(venue.id, status);
-          toast.success("상태가 변경되었습니다.");
+          toast.success(TOAST.PRACTICE_VENUE.STATUS_CHANGED);
           setEditing(false);
         }}
       >
@@ -663,7 +664,7 @@ function VenueItem({
             className="h-5 w-5 p-0 text-gray-300 hover:text-red-500"
             onClick={async () => {
               await onDelete(venue.id);
-              toast.success("장소가 삭제되었습니다.");
+              toast.success(TOAST.PRACTICE_VENUE.DELETED);
             }}
           >
             <Trash2 className="h-2.5 w-2.5" />

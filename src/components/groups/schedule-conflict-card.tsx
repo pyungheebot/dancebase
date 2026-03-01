@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useScheduleConflict } from "@/hooks/use-schedule-conflict";
 import type { PersonalScheduleType, ScheduleConflictResult } from "@/types";
 
@@ -164,23 +165,23 @@ function AddScheduleDialog({
 
   const handleSubmit = () => {
     if (!form.memberName) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.SCHEDULE_CONFLICT_CARD.MEMBER_REQUIRED);
       return;
     }
     if (!form.title.trim()) {
-      toast.error("일정 제목을 입력해주세요.");
+      toast.error(TOAST.SCHEDULE_CONFLICT_CARD.TITLE_REQUIRED);
       return;
     }
     if (!form.date && !form.recurring) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.SCHEDULE_CONFLICT_CARD.DATE_REQUIRED);
       return;
     }
     if (!form.startTime || !form.endTime) {
-      toast.error("시작 시간과 종료 시간을 입력해주세요.");
+      toast.error(TOAST.SCHEDULE_CONFLICT_CARD.TIME_REQUIRED);
       return;
     }
     if (form.startTime >= form.endTime) {
-      toast.error("종료 시간은 시작 시간보다 늦어야 합니다.");
+      toast.error(TOAST.SCHEDULE_CONFLICT_CARD.END_AFTER_START);
       return;
     }
 
@@ -196,7 +197,7 @@ function AddScheduleDialog({
     );
     setForm(DEFAULT_FORM);
     onClose();
-    toast.success("개인 일정이 등록되었습니다.");
+    toast.success(TOAST.SCHEDULE_CONFLICT_CARD.SCHEDULE_ADDED);
   };
 
   const handleClose = () => {
@@ -504,15 +505,15 @@ export function ScheduleConflictCard({
 
   const handleCheckConflicts = () => {
     if (!conflictDate) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.SCHEDULE_CONFLICT_CARD.DATE_SELECT);
       return;
     }
     if (!conflictStart || !conflictEnd) {
-      toast.error("시작 시간과 종료 시간을 입력해주세요.");
+      toast.error(TOAST.SCHEDULE_CONFLICT_CARD.TIME_REQUIRED);
       return;
     }
     if (conflictStart >= conflictEnd) {
-      toast.error("종료 시간은 시작 시간보다 늦어야 합니다.");
+      toast.error(TOAST.SCHEDULE_CONFLICT_CARD.END_AFTER_START);
       return;
     }
     const results = checkConflicts(conflictDate, conflictStart, conflictEnd);
@@ -523,7 +524,7 @@ export function ScheduleConflictCard({
     deleteSchedule(id);
     // 충돌 결과 초기화 (데이터 변경으로 재확인 필요)
     setConflictResults(null);
-    toast.success("일정이 삭제되었습니다.");
+    toast.success(TOAST.SCHEDULE_CONFLICT_CARD.SCHEDULE_DELETED);
   };
 
   return (

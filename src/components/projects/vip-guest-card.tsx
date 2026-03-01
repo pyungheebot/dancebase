@@ -198,7 +198,7 @@ export function VipGuestCard({
   // 저장
   async function handleSave() {
     if (!form.name.trim()) {
-      toast.error("게스트 이름을 입력해주세요.");
+      toast.error(TOAST.VIP_GUEST.NAME_REQUIRED);
       return;
     }
     await executeSave(async () => {
@@ -216,7 +216,7 @@ export function VipGuestCard({
           specialRequest: form.specialRequest,
         });
         if (ok) {
-          toast.success("게스트 정보가 수정되었습니다.");
+          toast.success(TOAST.VIP_GUEST.INFO_UPDATED);
         } else {
           toast.error(TOAST.UPDATE_ERROR);
         }
@@ -233,7 +233,7 @@ export function VipGuestCard({
           seatNumber: form.seatNumber || undefined,
           specialRequest: form.specialRequest || undefined,
         });
-        toast.success("VIP 게스트가 추가되었습니다.");
+        toast.success(TOAST.VIP_GUEST.ADDED);
       }
       setDialogOpen(false);
     });
@@ -257,7 +257,7 @@ export function VipGuestCard({
     if (ok) {
       toast.success(`상태가 "${STATUS_LABELS[status]}"(으)로 변경되었습니다.`);
     } else {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Clock,
   MapPin,
@@ -96,15 +97,15 @@ function RundownItemForm({
 
   function handleSubmit() {
     if (!form.startTime || !form.endTime) {
-      toast.error("시작 시간과 종료 시간을 입력해 주세요.");
+      toast.error(TOAST.RUNDOWN.TIME_REQUIRED);
       return;
     }
     if (!form.activity.trim()) {
-      toast.error("활동명을 입력해 주세요.");
+      toast.error(TOAST.RUNDOWN.ACTIVITY_REQUIRED);
       return;
     }
     if (timeToMinutes(form.endTime) <= timeToMinutes(form.startTime)) {
-      toast.error("종료 시간은 시작 시간보다 늦어야 합니다.");
+      toast.error(TOAST.RUNDOWN.END_AFTER_START);
       return;
     }
     onSubmit(form);
@@ -226,7 +227,7 @@ function RundownItemCard({
   function handleUpdate(form: FormState) {
     onUpdate(form);
     setEditing(false);
-    toast.success("항목이 수정되었습니다.");
+    toast.success(TOAST.RUNDOWN.ITEM_UPDATED);
   }
 
   const duration = formatDuration(item.startTime, item.endTime);
@@ -393,7 +394,7 @@ export function StageRundownCard({ projectId }: { projectId: string }) {
   function handleAdd(form: FormState) {
     addItem(form);
     setShowForm(false);
-    toast.success("런다운 항목이 추가되었습니다.");
+    toast.success(TOAST.RUNDOWN.ITEM_ADDED);
   }
 
   function handleRemove(itemId: string, activity: string) {

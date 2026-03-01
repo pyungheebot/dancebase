@@ -128,6 +128,7 @@ export function ChatView({ partnerId }: ChatViewProps) {
   } = useConversation(partnerId);
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
+  const [liveAnnouncement, setLiveAnnouncement] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -200,6 +201,7 @@ export function ChatView({ partnerId }: ChatViewProps) {
         (payload: { new: Record<string, unknown> }) => {
           if (payload.new && payload.new.sender_id === partnerId) {
             refetch();
+            setLiveAnnouncement(`${partnerName ?? "상대방"}님의 새 메시지가 도착했습니다`);
           }
         }
       )
@@ -311,6 +313,15 @@ export function ChatView({ partnerId }: ChatViewProps) {
 
   return (
     <div className="flex flex-col h-full">
+      {/* 스크린리더 전용 실시간 알림 영역 */}
+      <div
+        aria-live="assertive"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {liveAnnouncement}
+      </div>
+
       {/* 채팅 헤더 */}
       <div className="flex items-center gap-3 px-4 py-3 border-b shrink-0">
         <Button
@@ -334,7 +345,13 @@ export function ChatView({ partnerId }: ChatViewProps) {
       </div>
 
       {/* 메시지 목록 */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-2">
+      <div
+        ref={scrollContainerRef}
+        role="log"
+        aria-label={`${partnerName ?? "상대방"}와의 대화 내용`}
+        aria-live="polite"
+        className="flex-1 overflow-y-auto px-4 py-2"
+      >
         {/* 이전 메시지 불러오기 버튼 */}
         {hasMore && (
           <div className="flex justify-center py-3">
@@ -377,6 +394,7 @@ export function ChatView({ partnerId }: ChatViewProps) {
               }
             }}
             maxLength={5000}
+            aria-label="메시지 입력"
             className="flex-1 min-h-[40px] max-h-[120px] resize-none rounded-full border bg-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             rows={1}
           />
@@ -385,6 +403,7 @@ export function ChatView({ partnerId }: ChatViewProps) {
             className="h-10 w-10 rounded-full shrink-0"
             onClick={handleSend}
             disabled={!content.trim() || sending}
+            aria-disabled={!content.trim() || sending}
             aria-label="전송"
           >
             <Send className="h-4 w-4" />

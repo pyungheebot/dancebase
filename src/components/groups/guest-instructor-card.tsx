@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useGuestInstructor,
   calcAverageRating,
@@ -660,7 +661,7 @@ export function GuestInstructorCard({ groupId }: GuestInstructorCardProps) {
             className="h-7 w-7 p-0 text-gray-400"
             onClick={() => {
               refetch();
-              toast.success("새로고침했습니다.");
+              toast.success(TOAST.GUEST_INSTRUCTOR.REFRESHED);
             }}
             title="새로고침"
           >

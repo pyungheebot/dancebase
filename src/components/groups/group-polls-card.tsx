@@ -31,6 +31,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupPolls } from "@/hooks/use-group-polls";
 import type { GroupPoll } from "@/types";
 
@@ -70,12 +71,12 @@ function CreatePollDialog({
   const handleSubmit = () => {
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion) {
-      toast.error("투표 질문을 입력해주세요");
+      toast.error(TOAST.GROUP_POLLS.QUESTION_REQUIRED);
       return;
     }
     const validOptions = options.map((o) => o.trim()).filter(Boolean);
     if (validOptions.length < 2) {
-      toast.error("선택지를 2개 이상 입력해주세요");
+      toast.error(TOAST.GROUP_POLLS.OPTIONS_MIN);
       return;
     }
 
@@ -87,7 +88,7 @@ function CreatePollDialog({
       expiresAt: null,
     });
 
-    toast.success("투표가 생성되었습니다");
+    toast.success(TOAST.GROUP_VOTE.CREATED);
     setOpen(false);
     setQuestion("");
     setOptions(["", ""]);
@@ -319,7 +320,7 @@ function PollItem({
 
     if (poll.type === "single") {
       onVote(poll.id, [optionId]);
-      toast.success("투표했습니다");
+      toast.success(TOAST.GROUP_POLLS.VOTED);
     } else {
       setPendingIds((prev) =>
         prev.includes(optionId)
@@ -331,12 +332,12 @@ function PollItem({
 
   const handleMultiSubmit = () => {
     if (pendingIds.length === 0) {
-      toast.error("선택지를 하나 이상 선택해주세요");
+      toast.error(TOAST.GROUP_POLLS.OPTION_REQUIRED);
       return;
     }
     onVote(poll.id, pendingIds);
     setPendingIds([]);
-    toast.success("투표했습니다");
+    toast.success(TOAST.GROUP_POLLS.VOTED);
   };
 
   const isOptionSelected = (optionId: string): boolean => {
@@ -377,7 +378,7 @@ function PollItem({
             className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive shrink-0"
             onClick={() => {
               onDelete(poll.id);
-              toast.success("투표가 삭제되었습니다");
+              toast.success(TOAST.GROUP_POLLS.DELETED);
             }}
           >
             <Trash2 className="h-3 w-3" />
@@ -421,7 +422,7 @@ function PollItem({
           className="h-7 text-xs w-full text-muted-foreground"
           onClick={() => {
             onUnvote(poll.id);
-            toast.success("투표가 취소되었습니다");
+            toast.success(TOAST.GROUP_POLLS.CANCELLED);
           }}
         >
           투표 취소

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useFocusTimer, phaseLabel } from "@/hooks/use-focus-timer";
 import type { FocusTimerPhase, FocusTimerSession } from "@/types";
 import { formatMonthDay } from "@/lib/date-utils";
@@ -437,7 +438,7 @@ export function FocusTimerCard({ groupId }: FocusTimerCardProps) {
                     unit="분"
                     onChange={(v) => {
                       if (isRunning) {
-                        toast.error("타이머 실행 중에는 설정을 변경할 수 없습니다.");
+                        toast.error(TOAST.TIMER.NO_CHANGE_RUNNING);
                         return;
                       }
                       updateConfig({ focusDuration: v });
@@ -451,7 +452,7 @@ export function FocusTimerCard({ groupId }: FocusTimerCardProps) {
                     unit="분"
                     onChange={(v) => {
                       if (isRunning) {
-                        toast.error("타이머 실행 중에는 설정을 변경할 수 없습니다.");
+                        toast.error(TOAST.FOCUS_TIMER.SETTING_ERROR);
                         return;
                       }
                       updateConfig({ shortBreak: v });
@@ -465,7 +466,7 @@ export function FocusTimerCard({ groupId }: FocusTimerCardProps) {
                     unit="분"
                     onChange={(v) => {
                       if (isRunning) {
-                        toast.error("타이머 실행 중에는 설정을 변경할 수 없습니다.");
+                        toast.error(TOAST.FOCUS_TIMER.SETTING_ERROR);
                         return;
                       }
                       updateConfig({ longBreak: v });
@@ -479,7 +480,7 @@ export function FocusTimerCard({ groupId }: FocusTimerCardProps) {
                     unit="회"
                     onChange={(v) => {
                       if (isRunning) {
-                        toast.error("타이머 실행 중에는 설정을 변경할 수 없습니다.");
+                        toast.error(TOAST.FOCUS_TIMER.SETTING_ERROR);
                         return;
                       }
                       updateConfig({ cyclesBeforeLongBreak: v });

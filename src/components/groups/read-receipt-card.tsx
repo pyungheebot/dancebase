@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   CheckCheck,
   ChevronDown,
@@ -118,7 +119,7 @@ function MemberTagInput({
     const trimmed = inputVal.trim();
     if (!trimmed) return;
     if (value.includes(trimmed)) {
-      toast.error("이미 추가된 멤버입니다.");
+      toast.error(TOAST.READ_RECEIPT.MEMBER_EXISTS);
       return;
     }
     onChange([...value, trimmed]);
@@ -219,15 +220,15 @@ function AnnouncementFormDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.READ_RECEIPT.TITLE_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("내용을 입력해주세요.");
+      toast.error(TOAST.READ_RECEIPT.CONTENT_REQUIRED);
       return;
     }
     if (targetMembers.length === 0) {
-      toast.error("대상 멤버를 1명 이상 추가해주세요.");
+      toast.error(TOAST.READ_RECEIPT.TARGET_REQUIRED);
       return;
     }
     onSubmit({ title, content, author, priority, targetMembers });
@@ -468,17 +469,17 @@ function AnnouncementItem({
 
   const handleRead = () => {
     onMarkAsRead();
-    toast.success("읽음으로 표시했습니다.");
+    toast.success(TOAST.READ_RECEIPT.READ_MARKED);
   };
 
   const handleUnread = () => {
     onUnmarkAsRead();
-    toast.success("읽음을 취소했습니다.");
+    toast.success(TOAST.READ_RECEIPT.READ_CANCELLED);
   };
 
   const handleDelete = () => {
     onDelete();
-    toast.success("공지를 삭제했습니다.");
+    toast.success(TOAST.READ_RECEIPT.NOTICE_DELETED);
   };
 
   return (
@@ -706,7 +707,7 @@ export function ReadReceiptCard({
     targetMembers: string[];
   }) => {
     addAnnouncement(params);
-    toast.success("공지가 등록되었습니다.");
+    toast.success(TOAST.READ_RECEIPT.NOTICE_REGISTERED);
   };
 
   return (

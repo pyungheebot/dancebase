@@ -111,27 +111,27 @@ function WriteDialog({ hook }: WriteDialogProps) {
 
   const handleSubmit = () => {
     if (!authorName.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.IMPRESSION_WALL.NAME_REQUIRED);
       return;
     }
     if (!eventTitle.trim()) {
-      toast.error("공연/연습명을 입력해주세요.");
+      toast.error(TOAST.IMPRESSION_WALL.PERFORMANCE_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("소감 내용을 입력해주세요.");
+      toast.error(TOAST.IMPRESSION_WALL.CONTENT_REQUIRED);
       return;
     }
     const ok = hook.addPost(authorName, eventTitle, mood, content);
     if (ok) {
-      toast.success("소감이 등록되었습니다.");
+      toast.success(TOAST.IMPRESSION_WALL.REGISTERED);
       setAuthorName("");
       setEventTitle("");
       setMood("happy");
       setContent("");
       setOpen(false);
     } else {
-      toast.error("소감 등록에 실패했습니다.");
+      toast.error(TOAST.IMPRESSION_WALL.REGISTER_ERROR);
     }
   };
 
@@ -421,13 +421,13 @@ export function ImpressionWallCard({ groupId }: ImpressionWallCardProps) {
 
   const handleLike = (id: string) => {
     const ok = hook.likePost(id);
-    if (!ok) toast.error("좋아요 처리에 실패했습니다.");
+    if (!ok) toast.error(TOAST.IMPRESSION_WALL.LIKE_ERROR);
   };
 
   const handleDelete = (id: string) => {
     const ok = hook.deletePost(id);
     if (ok) {
-      toast.success("소감이 삭제되었습니다.");
+      toast.success(TOAST.IMPRESSION_WALL.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

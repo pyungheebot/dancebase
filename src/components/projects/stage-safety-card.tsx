@@ -51,6 +51,7 @@ import {
   FileCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useStageSafety,
   type CreateInspectionParams,
@@ -274,7 +275,7 @@ function InspectionCard({
 
   function handleAddItem() {
     if (!newDesc.trim()) {
-      toast.error("점검 내용을 입력해주세요.");
+      toast.error(TOAST.STAGE_SAFETY.CHECK_CONTENT_REQUIRED);
       return;
     }
     onAddItem({
@@ -288,7 +289,7 @@ function InspectionCard({
     setNewNotes("");
     setNewInspector("");
     setAddItemOpen(false);
-    toast.success("점검 항목이 추가되었습니다.");
+    toast.success(TOAST.STAGE_SAFETY.CHECK_ITEM_ADDED);
   }
 
   return (
@@ -580,11 +581,11 @@ function CreateInspectionDialog({
 
   function handleCreate() {
     if (!title.trim()) {
-      toast.error("점검 제목을 입력해주세요.");
+      toast.error(TOAST.STAGE_SAFETY.CHECK_TITLE_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("점검 일자를 선택해주세요.");
+      toast.error(TOAST.STAGE_SAFETY.CHECK_DATE_REQUIRED);
       return;
     }
     onCreate({
@@ -599,7 +600,7 @@ function CreateInspectionDialog({
         inspectorName: signedBy.trim() || null,
       })),
     });
-    toast.success("점검 기록이 생성되었습니다.");
+    toast.success(TOAST.STAGE_SAFETY.CHECK_CREATED);
     handleClose();
   }
 
@@ -872,21 +873,21 @@ export function StageSafetyCard({ projectId }: { projectId: string }) {
                   inspection={inspection}
                   onDelete={() => {
                     deleteInspection(inspection.id);
-                    toast.success("점검 기록이 삭제되었습니다.");
+                    toast.success(TOAST.STAGE_SAFETY.CHECK_DELETED);
                   }}
                   onStatusChange={(itemId, status) => {
                     updateCheckItem(inspection.id, itemId, { status });
                   }}
                   onRemoveItem={(itemId) => {
                     removeCheckItem(inspection.id, itemId);
-                    toast.success("항목이 삭제되었습니다.");
+                    toast.success(TOAST.ITEM_DELETED);
                   }}
                   onAddItem={(params) => {
                     addCheckItem(inspection.id, params);
                   }}
                   onSetOverall={(status, signedBy) => {
                     setOverallStatus(inspection.id, status, signedBy);
-                    toast.success("전체 결과가 업데이트되었습니다.");
+                    toast.success(TOAST.STAGE_SAFETY.RESULT_UPDATED);
                   }}
                 />
               ))}

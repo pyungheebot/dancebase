@@ -50,6 +50,7 @@ import {
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useBackstageComm } from "@/hooks/use-backstage-comm";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
@@ -326,15 +327,15 @@ function MessageForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.content.trim()) {
-      toast.error("메시지 내용을 입력하세요.");
+      toast.error(TOAST.BACKSTAGE_COMM.MESSAGE_REQUIRED);
       return;
     }
     if (!form.senderName.trim()) {
-      toast.error("발신자 이름을 입력하세요.");
+      toast.error(TOAST.BACKSTAGE_COMM.SENDER_REQUIRED);
       return;
     }
     if (form.targetScope !== "all" && !form.targetLabel.trim()) {
-      toast.error("수신 대상(개인/팀)의 이름을 입력하세요.");
+      toast.error(TOAST.BACKSTAGE_COMM.RECIPIENT_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -545,12 +546,12 @@ export function BackstageCommCard({
             : undefined,
       },
     });
-    toast.success("메시지가 전송되었습니다.");
+    toast.success(TOAST.BACKSTAGE_COMM.MESSAGE_SENT);
   }
 
   function handleDelete(id: string) {
     deleteMessage(id);
-    toast.success("메시지가 삭제되었습니다.");
+    toast.success(TOAST.BACKSTAGE_COMM.MESSAGE_DELETED);
   }
 
   const displayMessages: BackstageCommMessage[] =

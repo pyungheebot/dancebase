@@ -31,6 +31,7 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
@@ -121,15 +122,15 @@ function CreateEventDialog({
 
   const handleSubmit = () => {
     if (!eventName.trim()) {
-      toast.error("이벤트명을 입력해주세요.");
+      toast.error(TOAST.CHECKIN_EVENT.NAME_REQUIRED);
       return;
     }
     if (!eventDate) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.CHECKIN_EVENT.DATE_REQUIRED);
       return;
     }
     if (!callTime) {
-      toast.error("집합 시간을 입력해주세요.");
+      toast.error(TOAST.CHECKIN_EVENT.GATHERING_TIME_REQUIRED);
       return;
     }
     onSubmit(eventName.trim(), eventDate, callTime);
@@ -327,7 +328,7 @@ function EventPanel({
 
   const handleDeleteEvent = () => {
     onDeleteEvent(event.id);
-    toast.success("이벤트가 삭제되었습니다.");
+    toast.success(TOAST.CHECKIN_EVENT.DELETED);
   };
 
   const handleAddMember = () => {
@@ -337,7 +338,7 @@ function EventPanel({
       setNewName("");
       toast.success(`"${newName.trim()}" 멤버가 추가되었습니다.`);
     } else {
-      toast.error("멤버 추가에 실패했습니다.");
+      toast.error(TOAST.CHECKIN_EVENT.MEMBER_ADD_ERROR);
     }
   };
 
@@ -559,7 +560,7 @@ export function PerformanceCheckinCard({
       toast.success(`"${eventName}" 체크인 이벤트가 생성되었습니다.`);
       setOpen(true);
     } else {
-      toast.error("이벤트 생성에 실패했습니다. 필수 항목을 확인해주세요.");
+      toast.error(TOAST.CHECKIN_EVENT.CREATE_ERROR);
     }
   };
 

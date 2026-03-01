@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Music,
   ChevronDown,
@@ -198,11 +199,11 @@ function AddEntryDialog({
 
   function handleSubmit() {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.GENRE_EXPLORER.TITLE_REQUIRED);
       return;
     }
     if (!description.trim()) {
-      toast.error("설명을 입력해주세요.");
+      toast.error(TOAST.GENRE_EXPLORER.DESC_REQUIRED);
       return;
     }
     const songs = songsRaw
@@ -214,7 +215,7 @@ function AddEntryDialog({
       .map((t) => t.trim())
       .filter(Boolean);
     onAdd(genre, title, description, difficulty, songs, tips, addedBy);
-    toast.success("장르 정보가 추가되었습니다.");
+    toast.success(TOAST.GENRE_EXPLORER.ADDED);
     resetForm();
     setOpen(false);
   }
@@ -366,7 +367,7 @@ function InterestDialog({
 
   function handleSet() {
     if (!selectedMember) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.GENRE_EXPLORER.MEMBER_REQUIRED);
       return;
     }
     onSet(selectedMember, selectedGenre, expLevel);
@@ -379,11 +380,11 @@ function InterestDialog({
       (i) => i.memberName === selectedMember && i.genre === selectedGenre && i.interest
     );
     if (!exists) {
-      toast.error("등록된 관심 장르가 없습니다.");
+      toast.error(TOAST.GENRE_EXPLORER.NO_GENRES);
       return;
     }
     onRemove(selectedMember, selectedGenre);
-    toast.success("관심 장르가 해제되었습니다.");
+    toast.success(TOAST.GENRE_EXPLORER.GENRE_REMOVED);
   }
 
   const currentInterest = interests.find(
@@ -659,7 +660,7 @@ export function GenreExplorerCard({
                     entry={entry}
                     onDelete={() => {
                       deleteEntry(entry.id);
-                      toast.success("장르 정보가 삭제되었습니다.");
+                      toast.success(TOAST.GENRE_EXPLORER.DELETED);
                     }}
                   />
                 ))}

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupPracticeFeedback } from "@/hooks/use-group-practice-feedback";
 import type { GroupPracticeFeedbackEntry } from "@/types";
 
@@ -340,19 +341,19 @@ function AddFeedbackDialog({
     e.preventDefault();
 
     if (!form.authorName.trim()) {
-      toast.error("작성자 이름을 입력해주세요.");
+      toast.error(TOAST.GROUP_PRACTICE_FEEDBACK.AUTHOR_REQUIRED);
       return;
     }
     if (!form.practiceDate) {
-      toast.error("연습 날짜를 입력해주세요.");
+      toast.error(TOAST.GROUP_PRACTICE_FEEDBACK.DATE_REQUIRED);
       return;
     }
     if (!form.positives.trim()) {
-      toast.error("잘한 점을 입력해주세요.");
+      toast.error(TOAST.GROUP_PRACTICE_FEEDBACK.GOOD_REQUIRED);
       return;
     }
     if (!form.improvements.trim()) {
-      toast.error("개선할 점을 입력해주세요.");
+      toast.error(TOAST.GROUP_PRACTICE_FEEDBACK.IMPROVE_REQUIRED);
       return;
     }
 
@@ -548,12 +549,12 @@ export function GroupPracticeFeedbackCard({
     params: Omit<GroupPracticeFeedbackEntry, "id" | "createdAt">
   ) => {
     addEntry(params);
-    toast.success("피드백이 등록되었습니다.");
+    toast.success(TOAST.PRACTICE_FEEDBACK.REGISTERED);
   };
 
   const handleDelete = (id: string) => {
     deleteEntry(id);
-    toast.success("피드백이 삭제되었습니다.");
+    toast.success(TOAST.PRACTICE_FEEDBACK.DELETED);
   };
 
   return (

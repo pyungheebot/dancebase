@@ -49,6 +49,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { useDressRehearsal } from "@/hooks/use-dress-rehearsal";
 import type {
@@ -128,11 +129,11 @@ function SessionFormDialog({
 
   const handleSubmit = async () => {
     if (!date.trim()) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.DRESS_REHEARSAL.DATE_REQUIRED);
       return;
     }
     if (!venue.trim()) {
-      toast.error("장소를 입력해주세요.");
+      toast.error(TOAST.DRESS_REHEARSAL.VENUE_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -262,11 +263,11 @@ function IssueFormDialog({
 
   const handleSubmit = async () => {
     if (!section.trim()) {
-      toast.error("장면/섹션을 입력해주세요.");
+      toast.error(TOAST.DRESS_REHEARSAL.SCENE_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("이슈 내용을 입력해주세요.");
+      toast.error(TOAST.DRESS_REHEARSAL.ISSUE_REQUIRED);
       return;
     }
     await executeIssue(async () => {
@@ -729,16 +730,16 @@ export function DressRehearsalCard({ projectId }: DressRehearsalCardProps) {
 
   const handleAddSession = (params: { date: string; time: string; venue: string }) => {
     addSession(params);
-    toast.success("리허설 회차가 추가되었습니다.");
+    toast.success(TOAST.DRESS_REHEARSAL.SESSION_ADDED);
   };
 
   const handleEditSession = (params: { date: string; time: string; venue: string }) => {
     if (!editSession) return;
     const ok = updateSession(editSession.id, params);
     if (ok) {
-      toast.success("회차 정보가 수정되었습니다.");
+      toast.success(TOAST.DRESS_REHEARSAL.SESSION_UPDATED);
     } else {
-      toast.error("회차 수정에 실패했습니다.");
+      toast.error(TOAST.DRESS_REHEARSAL.SESSION_UPDATE_ERROR);
     }
     setEditSession(null);
   };
@@ -747,9 +748,9 @@ export function DressRehearsalCard({ projectId }: DressRehearsalCardProps) {
     if (!deleteSessionTarget) return;
     const ok = deleteSession(deleteSessionTarget);
     if (ok) {
-      toast.success("회차가 삭제되었습니다.");
+      toast.success(TOAST.DRESS_REHEARSAL.SESSION_DELETED);
     } else {
-      toast.error("회차 삭제에 실패했습니다.");
+      toast.error(TOAST.DRESS_REHEARSAL.SESSION_DELETE_ERROR);
     }
     setDeleteSessionTarget(null);
   };
@@ -764,9 +765,9 @@ export function DressRehearsalCard({ projectId }: DressRehearsalCardProps) {
     if (!issueDialogSessionId) return;
     const result = addIssue(issueDialogSessionId, params);
     if (result) {
-      toast.success("이슈가 추가되었습니다.");
+      toast.success(TOAST.DRESS_REHEARSAL.ISSUE_ADDED);
     } else {
-      toast.error("이슈 추가에 실패했습니다.");
+      toast.error(TOAST.DRESS_REHEARSAL.ISSUE_ADD_ERROR);
     }
     setIssueDialogSessionId(null);
   };
@@ -781,9 +782,9 @@ export function DressRehearsalCard({ projectId }: DressRehearsalCardProps) {
     if (!editIssueContext) return;
     const ok = updateIssue(editIssueContext.sessionId, editIssueContext.issue.id, params);
     if (ok) {
-      toast.success("이슈가 수정되었습니다.");
+      toast.success(TOAST.DRESS_REHEARSAL.ISSUE_UPDATED);
     } else {
-      toast.error("이슈 수정에 실패했습니다.");
+      toast.error(TOAST.DRESS_REHEARSAL.ISSUE_UPDATE_ERROR);
     }
     setEditIssueContext(null);
   };
@@ -792,9 +793,9 @@ export function DressRehearsalCard({ projectId }: DressRehearsalCardProps) {
     if (!deleteIssueTarget) return;
     const ok = deleteIssue(deleteIssueTarget.sessionId, deleteIssueTarget.issueId);
     if (ok) {
-      toast.success("이슈가 삭제되었습니다.");
+      toast.success(TOAST.DRESS_REHEARSAL.ISSUE_DELETED);
     } else {
-      toast.error("이슈 삭제에 실패했습니다.");
+      toast.error(TOAST.DRESS_REHEARSAL.ISSUE_DELETE_ERROR);
     }
     setDeleteIssueTarget(null);
   };
@@ -804,11 +805,11 @@ export function DressRehearsalCard({ projectId }: DressRehearsalCardProps) {
     const issue = session?.issues.find((i) => i.id === issueId);
     const ok = toggleIssueResolved(sessionId, issueId);
     if (!ok) {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
       return;
     }
     if (issue && !issue.resolved) {
-      toast.success("이슈를 해결 처리했습니다.");
+      toast.success(TOAST.DRESS_REHEARSAL.ISSUE_RESOLVED);
     }
   };
 

@@ -61,6 +61,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useAudienceGuide,
   SECTION_TYPE_LABELS,
@@ -180,12 +181,12 @@ function FAQEditItem({
 
   function handleSave() {
     if (!q.trim() || !a.trim()) {
-      toast.error("질문과 답변을 모두 입력해 주세요.");
+      toast.error(TOAST.AUDIENCE_GUIDE.QA_REQUIRED);
       return;
     }
     onUpdate(sectionId, faq.id, { question: q.trim(), answer: a.trim() });
     setEditing(false);
-    toast.success("FAQ가 수정되었습니다.");
+    toast.success(TOAST.AUDIENCE_GUIDE.FAQ_UPDATED);
   }
 
   function handleCancel() {
@@ -277,7 +278,7 @@ function FAQEditItem({
           className="h-6 w-6 p-0 text-destructive hover:text-destructive"
           onClick={() => {
             onRemove(sectionId, faq.id);
-            toast.success("FAQ가 삭제되었습니다.");
+            toast.success(TOAST.AUDIENCE_GUIDE.FAQ_DELETED);
           }}
           title="삭제"
         >
@@ -343,30 +344,30 @@ function SectionEditCard({
 
   function handleTitleSave() {
     if (!titleDraft.trim()) {
-      toast.error("섹션 제목을 입력해 주세요.");
+      toast.error(TOAST.AUDIENCE_GUIDE.SECTION_TITLE_REQUIRED);
       return;
     }
     onUpdate(section.id, { title: titleDraft.trim() });
     setEditingTitle(false);
-    toast.success("제목이 수정되었습니다.");
+    toast.success(TOAST.AUDIENCE_GUIDE.TITLE_UPDATED);
   }
 
   function handleContentSave() {
     onUpdate(section.id, { content: contentDraft });
     setEditingContent(false);
-    toast.success("내용이 저장되었습니다.");
+    toast.success(TOAST.AUDIENCE_GUIDE.CONTENT_SAVED);
   }
 
   function handleAddFAQ() {
     if (!faqQ.trim() || !faqA.trim()) {
-      toast.error("질문과 답변을 모두 입력해 주세요.");
+      toast.error(TOAST.AUDIENCE_GUIDE.QA_REQUIRED);
       return;
     }
     onAddFAQ(section.id, faqQ, faqA);
     setFaqQ("");
     setFaqA("");
     setShowFAQForm(false);
-    toast.success("FAQ가 추가되었습니다.");
+    toast.success(TOAST.AUDIENCE_GUIDE.FAQ_ADDED);
   }
 
   return (
@@ -444,7 +445,7 @@ function SectionEditCard({
               className="h-6 w-6 p-0 text-destructive hover:text-destructive"
               onClick={() => {
                 onRemove(section.id);
-                toast.success("섹션이 삭제되었습니다.");
+                toast.success(TOAST.AUDIENCE_GUIDE.SECTION_DELETED);
               }}
               title="삭제"
             >
@@ -788,7 +789,7 @@ export function AudienceGuideCard({
 
   function handleAddSection() {
     if (!newSectionTitle.trim()) {
-      toast.error("섹션 제목을 입력해 주세요.");
+      toast.error(TOAST.AUDIENCE_GUIDE.SECTION_TITLE_REQUIRED);
       return;
     }
     addSection(newSectionType, newSectionTitle, newSectionContent);
@@ -796,12 +797,12 @@ export function AudienceGuideCard({
     setNewSectionContent("");
     setNewSectionType("general");
     setAddDialogOpen(false);
-    toast.success("섹션이 추가되었습니다.");
+    toast.success(TOAST.AUDIENCE_GUIDE.SECTION_ADDED);
   }
 
   function handleSaveInfo() {
     if (!infoDraft.title.trim()) {
-      toast.error("매뉴얼 제목을 입력해 주세요.");
+      toast.error(TOAST.AUDIENCE_GUIDE.MANUAL_TITLE_REQUIRED);
       return;
     }
     updateManualInfo({
@@ -809,7 +810,7 @@ export function AudienceGuideCard({
       description: infoDraft.description.trim(),
     });
     setEditingInfo(false);
-    toast.success("매뉴얼 정보가 저장되었습니다.");
+    toast.success(TOAST.AUDIENCE_GUIDE.MANUAL_INFO_SAVED);
   }
 
   // 편집 탭 열릴 때 draft 동기화

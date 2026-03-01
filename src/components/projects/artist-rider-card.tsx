@@ -38,6 +38,7 @@ import {
   Music2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useArtistRider } from "@/hooks/use-artist-rider";
 import type {
   ShowRiderItem,
@@ -295,15 +296,15 @@ function ItemFormDialog({
 
   function handleSubmit() {
     if (!form.artistName.trim()) {
-      toast.error("아티스트/팀명을 입력해 주세요.");
+      toast.error(TOAST.ARTIST_RIDER.ARTIST_REQUIRED);
       return;
     }
     if (!form.request.trim()) {
-      toast.error("요청 내용을 입력해 주세요.");
+      toast.error(TOAST.ARTIST_RIDER.REQUEST_REQUIRED);
       return;
     }
     if (form.quantity < 1) {
-      toast.error("수량은 1 이상이어야 합니다.");
+      toast.error(TOAST.ARTIST_RIDER.QUANTITY_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -469,17 +470,17 @@ export function ArtistRiderCard({ projectId }: { projectId: string }) {
   function handleDialogSubmit(formData: Omit<ShowRiderItem, "id">) {
     if (editTarget) {
       updateItem(editTarget.id, formData);
-      toast.success("항목이 수정되었습니다.");
+      toast.success(TOAST.ARTIST_RIDER.ITEM_UPDATED);
     } else {
       addItem(formData);
-      toast.success("항목이 추가되었습니다.");
+      toast.success(TOAST.ARTIST_RIDER.ITEM_ADDED);
     }
     setDialogOpen(false);
   }
 
   function handleDelete(itemId: string) {
     removeItem(itemId);
-    toast.success("항목이 삭제되었습니다.");
+    toast.success(TOAST.ARTIST_RIDER.ITEM_DELETED);
   }
 
   function handleStatusChange(itemId: string, status: ShowRiderStatus) {

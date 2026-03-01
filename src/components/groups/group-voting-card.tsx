@@ -135,7 +135,7 @@ function VoteItem({
     if (expired) return;
     const success = onCastVote(vote.id, [optionId], DUMMY_USER_ID);
     if (!success) {
-      toast.error("투표할 수 없습니다.");
+      toast.error(TOAST.GROUP_VOTING.CANNOT_VOTE);
     }
   };
 
@@ -149,21 +149,21 @@ function VoteItem({
 
   const handleMultiSubmit = () => {
     if (multiSelected.length === 0) {
-      toast.error("하나 이상의 선택지를 선택하세요.");
+      toast.error(TOAST.GROUP_VOTING.OPTION_REQUIRED);
       return;
     }
     const success = onCastVote(vote.id, multiSelected, DUMMY_USER_ID);
     if (success) {
-      toast.success("투표가 반영되었습니다.");
+      toast.success(TOAST.GROUP_VOTING.REFLECTED);
     } else {
-      toast.error("투표할 수 없습니다.");
+      toast.error(TOAST.GROUP_VOTING.CANNOT_VOTE);
     }
   };
 
   const handleDelete = () => {
     const success = onDelete(vote.id);
     if (success) {
-      toast.success("투표가 삭제되었습니다.");
+      toast.success(TOAST.GROUP_VOTING.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -323,7 +323,7 @@ function CreateVoteDialog({
 
   const addOption = () => {
     if (options.length >= 6) {
-      toast.error("선택지는 최대 6개까지 추가할 수 있습니다.");
+      toast.error(TOAST.GROUP_VOTING.OPTIONS_MAX);
       return;
     }
     setOptions((prev) => [...prev, ""]);
@@ -331,7 +331,7 @@ function CreateVoteDialog({
 
   const removeOption = (idx: number) => {
     if (options.length <= 2) {
-      toast.error("선택지는 최소 2개 이상이어야 합니다.");
+      toast.error(TOAST.GROUP_VOTING.OPTIONS_MIN);
       return;
     }
     setOptions((prev) => prev.filter((_, i) => i !== idx));
@@ -343,12 +343,12 @@ function CreateVoteDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("투표 제목을 입력하세요.");
+      toast.error(TOAST.GROUP_VOTING.TITLE_REQUIRED);
       return;
     }
     const filledOptions = options.map((o) => o.trim()).filter(Boolean);
     if (filledOptions.length < 2) {
-      toast.error("선택지를 2개 이상 입력하세요.");
+      toast.error(TOAST.GROUP_VOTING.OPTIONS_INPUT_MIN);
       return;
     }
     onAdd(
@@ -362,7 +362,7 @@ function CreateVoteDialog({
       },
       DUMMY_USER_ID
     );
-    toast.success("투표가 생성되었습니다.");
+    toast.success(TOAST.GROUP_VOTE.CREATED_DOT);
     reset();
     setOpen(false);
   };

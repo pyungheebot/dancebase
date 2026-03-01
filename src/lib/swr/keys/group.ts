@@ -1,5 +1,9 @@
 // 그룹, 하위그룹, 가입신청 관련 키
 export const groupKeys = {
+  // 독립 엔티티 ID (get_independent_entity_ids RPC 캐싱용)
+  independentEntities: (groupId: string) =>
+    `/groups/${groupId}/independent-entities` as const,
+
   // 그룹
   groups: () => "/groups" as const,
   groupDetail: (groupId: string) => `/groups/${groupId}` as const,

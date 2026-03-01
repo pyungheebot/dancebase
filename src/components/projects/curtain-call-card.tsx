@@ -192,7 +192,7 @@ export function CurtainCallCard({
   // ── 플랜 저장 ──
   async function handlePlanSave() {
     if (!planForm.planName.trim()) {
-      toast.error("플랜 이름을 입력해주세요.");
+      toast.error(TOAST.CURTAIN_CALL.PLAN_NAME_REQUIRED);
       return;
     }
     setPlanSaving(true);
@@ -205,11 +205,11 @@ export function CurtainCallCard({
       };
       if (editPlanTarget) {
         await updatePlan(editPlanTarget.id, payload);
-        toast.success("플랜이 수정되었습니다.");
+        toast.success(TOAST.CURTAIN_CALL.PLAN_UPDATED);
       } else {
         const newPlan = await addPlan(payload);
         setSelectedPlanId(newPlan.id);
-        toast.success("플랜이 추가되었습니다.");
+        toast.success(TOAST.CURTAIN_CALL.PLAN_ADDED);
       }
       setPlanDialogOpen(false);
     } catch {
@@ -257,7 +257,7 @@ export function CurtainCallCard({
   async function handleStepSave() {
     if (!currentPlan) return;
     if (!stepForm.description.trim()) {
-      toast.error("설명을 입력해주세요.");
+      toast.error(TOAST.CURTAIN_CALL.DESCRIPTION_REQUIRED);
       return;
     }
     setStepSaving(true);
@@ -266,7 +266,7 @@ export function CurtainCallCard({
         ? parseInt(stepForm.durationSeconds, 10)
         : undefined;
       if (stepForm.durationSeconds && (isNaN(dur!) || dur! < 1)) {
-        toast.error("소요시간은 1 이상의 숫자여야 합니다.");
+        toast.error(TOAST.CURTAIN_CALL.DURATION_RANGE);
         return;
       }
       const payload: Omit<CurtainCallStep, "id" | "order"> = {
@@ -278,10 +278,10 @@ export function CurtainCallCard({
       };
       if (editStepTarget) {
         await updateStep(currentPlan.id, editStepTarget.id, payload);
-        toast.success("스텝이 수정되었습니다.");
+        toast.success(TOAST.CURTAIN_CALL.STEP_UPDATED);
       } else {
         await addStep(currentPlan.id, payload);
-        toast.success("스텝이 추가되었습니다.");
+        toast.success(TOAST.CURTAIN_CALL.STEP_ADDED);
       }
       setStepDialogOpen(false);
     } catch {
@@ -296,7 +296,7 @@ export function CurtainCallCard({
     if (!currentPlan) return;
     try {
       await deleteStep(currentPlan.id, step.id);
-      toast.success("스텝이 삭제되었습니다.");
+      toast.success(TOAST.CURTAIN_CALL.STEP_DELETED);
     } catch {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -314,7 +314,7 @@ export function CurtainCallCard({
     try {
       await reorderSteps(currentPlan.id, sorted.map((s) => s.id));
     } catch {
-      toast.error("순서 변경에 실패했습니다.");
+      toast.error(TOAST.ORDER_ERROR);
     }
   }
 

@@ -49,6 +49,7 @@ import {
   Filter,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSafetyChecklist } from "@/hooks/use-safety-checklist";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
@@ -187,7 +188,7 @@ function ItemFormDialog({
 
   const handleSubmit = () => {
     if (!content.trim()) {
-      toast.error("항목 내용을 입력해주세요.");
+      toast.error(TOAST.SAFETY_CHECKLIST.CONTENT_REQUIRED);
       return;
     }
     setSaving(true);
@@ -500,7 +501,7 @@ export function SafetyChecklistCard({
     notes?: string;
   }) => {
     addItem(params);
-    toast.success("항목이 추가되었습니다.");
+    toast.success(TOAST.SAFETY_CHECKLIST.ITEM_ADDED);
   };
 
   // 항목 수정 핸들러
@@ -514,9 +515,9 @@ export function SafetyChecklistCard({
     if (!editItem) return;
     const ok = updateItem(editItem.id, params);
     if (ok) {
-      toast.success("항목이 수정되었습니다.");
+      toast.success(TOAST.SAFETY_CHECKLIST.ITEM_UPDATED);
     } else {
-      toast.error("항목 수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
     setEditItem(null);
   };
@@ -528,7 +529,7 @@ export function SafetyChecklistCard({
   ) => {
     const ok = updateStatus(itemId, status);
     if (!ok) {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   };
 
@@ -538,16 +539,16 @@ export function SafetyChecklistCard({
     if (!id) return;
     const ok = deleteItem(id);
     if (ok) {
-      toast.success("항목이 삭제되었습니다.");
+      toast.success(TOAST.SAFETY_CHECKLIST.ITEM_DELETED);
     } else {
-      toast.error("항목 삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 
   // 전체 초기화 핸들러
   const handleReset = () => {
     resetAll();
-    toast.success("모든 항목이 미확인 상태로 초기화되었습니다.");
+    toast.success(TOAST.SAFETY_CHECKLIST.ALL_RESET);
     setResetDialogOpen(false);
   };
 

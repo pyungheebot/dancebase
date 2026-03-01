@@ -40,6 +40,7 @@ import {
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // ============================================
 // 멤버 색상 팔레트
@@ -196,11 +197,11 @@ function AddSnapshotDialog({
 
   function handleSubmit() {
     if (!name.trim()) {
-      toast.error("대형 이름을 입력해주세요.");
+      toast.error(TOAST.FORMATION_NOTE.NAME_REQUIRED);
       return;
     }
     if (timestamp && !/^\d{1,2}:\d{2}$/.test(timestamp.trim())) {
-      toast.error("시간은 MM:SS 형식으로 입력해주세요. (예: 1:30)");
+      toast.error(TOAST.FORMATION_NOTE.TIME_FORMAT);
       return;
     }
 
@@ -349,11 +350,11 @@ function PositionEditor({
     const x = Math.min(100, Math.max(0, Number(xInput)));
     const y = Math.min(100, Math.max(0, Number(yInput)));
     if (isNaN(x) || isNaN(y)) {
-      toast.error("좌표 값이 유효하지 않습니다.");
+      toast.error(TOAST.FORMATION_NOTE.COORD_INVALID);
       return;
     }
     onUpdatePosition(snapshotId, selectedMember, x, y);
-    toast.success("위치를 업데이트했습니다.");
+    toast.success(TOAST.FORMATION_NOTE.POSITION_UPDATED);
   }
 
   return (
@@ -483,13 +484,13 @@ export function FormationNoteCard({
   ) {
     addSnapshot(name, timestamp, positions, notes);
     setSelectedIdx(snapshots.length); // 새로 추가된 항목으로 이동
-    toast.success("스냅샷이 추가되었습니다.");
+    toast.success(TOAST.FORMATION_NOTE.SNAPSHOT_ADDED);
   }
 
   function handleDelete(id: string) {
     deleteSnapshot(id);
     setSelectedIdx((prev) => Math.max(0, prev - 1));
-    toast.success("스냅샷이 삭제되었습니다.");
+    toast.success(TOAST.FORMATION_NOTE.SNAPSHOT_DELETED);
   }
 
   function handlePrev() {

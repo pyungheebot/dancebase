@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   FileText,
   ChevronDown,
@@ -245,19 +246,19 @@ export function AttendanceExcuseCard({ groupId }: AttendanceExcuseCardProps) {
 
   const handleSubmit = () => {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력하세요.");
+      toast.error(TOAST.ATTENDANCE_EXCUSE.MEMBER_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택하세요.");
+      toast.error(TOAST.ATTENDANCE_EXCUSE.DATE_REQUIRED);
       return;
     }
     if (!detail.trim()) {
-      toast.error("상세 사유를 입력하세요.");
+      toast.error(TOAST.ATTENDANCE_EXCUSE.REASON_REQUIRED);
       return;
     }
     submitExcuse(memberName, date, type, reason, detail);
-    toast.success("사유서가 제출되었습니다.");
+    toast.success(TOAST.ATTENDANCE_EXCUSE.SUBMITTED);
     setMemberName("");
     setDate(new Date().toISOString().slice(0, 10));
     setType("absent");
@@ -268,17 +269,17 @@ export function AttendanceExcuseCard({ groupId }: AttendanceExcuseCardProps) {
 
   const handleApprove = (itemId: string) => {
     approveExcuse(itemId, approverName);
-    toast.success("사유서를 승인했습니다.");
+    toast.success(TOAST.ATTENDANCE_EXCUSE.APPROVED);
   };
 
   const handleReject = (itemId: string) => {
     rejectExcuse(itemId, approverName);
-    toast.success("사유서를 반려했습니다.");
+    toast.success(TOAST.ATTENDANCE_EXCUSE.REJECTED);
   };
 
   const handleRemove = (itemId: string) => {
     removeExcuse(itemId);
-    toast.success("사유서가 삭제되었습니다.");
+    toast.success(TOAST.ATTENDANCE_EXCUSE.DELETED);
   };
 
   return (

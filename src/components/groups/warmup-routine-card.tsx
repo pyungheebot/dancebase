@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useWarmupRoutine } from "@/hooks/use-warmup-routine";
 import type { WarmupExercise, WarmupExerciseType } from "@/types";
 
@@ -116,14 +117,14 @@ function CreateRoutineDialog({
   const handleSubmit = () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("루틴 이름을 입력해주세요.");
+      toast.error(TOAST.WARMUP_ROUTINE.NAME_REQUIRED);
       return;
     }
     onCreate(trimmed, createdBy);
     setName("");
     setCreatedBy("");
     onClose();
-    toast.success("루틴이 생성되었습니다.");
+    toast.success(TOAST.WARMUP_ROUTINE.CREATED);
   };
 
   const handleClose = () => {
@@ -223,12 +224,12 @@ function AddExerciseDialog({ open, onClose, onAdd }: AddExerciseDialogProps) {
 
   const handleSubmit = () => {
     if (!form.name.trim()) {
-      toast.error("운동 이름을 입력해주세요.");
+      toast.error(TOAST.WARMUP_ROUTINE.EXERCISE_REQUIRED);
       return;
     }
     const duration = parseInt(form.durationStr, 10);
     if (!form.durationStr || isNaN(duration) || duration <= 0) {
-      toast.error("올바른 시간(초)을 입력해주세요.");
+      toast.error(TOAST.WARMUP_ROUTINE.TIME_INVALID);
       return;
     }
     const repetitions = form.repetitionsStr
@@ -244,7 +245,7 @@ function AddExerciseDialog({ open, onClose, onAdd }: AddExerciseDialogProps) {
     );
     setForm(DEFAULT_EXERCISE_FORM);
     onClose();
-    toast.success("운동이 추가되었습니다.");
+    toast.success(TOAST.WARMUP_ROUTINE.EXERCISE_ADDED);
   };
 
   const handleClose = () => {
@@ -527,13 +528,13 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
   const handleDeleteRoutine = (id: string) => {
     deleteRoutine(id);
     if (selectedRoutineId === id) setSelectedRoutineId("");
-    toast.success("루틴이 삭제되었습니다.");
+    toast.success(TOAST.WARMUP_ROUTINE.ROUTINE_DELETED);
   };
 
   const handleRemoveExercise = (exerciseId: string) => {
     if (!selectedRoutine) return;
     removeExercise(selectedRoutine.id, exerciseId);
-    toast.success("운동이 삭제되었습니다.");
+    toast.success(TOAST.WARMUP_ROUTINE.EXERCISE_DELETED);
   };
 
   const handleMoveExercise = (

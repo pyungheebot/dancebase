@@ -123,20 +123,20 @@ function AddRuleDialog({
 
   const handleSubmit = () => {
     if (!description.trim()) {
-      toast.error("위반 상세 내용을 입력하세요.");
+      toast.error(TOAST.GROUP_PENALTY.VIOLATION_REQUIRED);
       return;
     }
     if (!penaltyContent.trim()) {
-      toast.error("벌칙 내용을 입력하세요.");
+      toast.error(TOAST.GROUP_PENALTY.PENALTY_REQUIRED);
       return;
     }
     const demeritNum = parseInt(demerits, 10);
     if (isNaN(demeritNum) || demeritNum < 1) {
-      toast.error("벌점은 1 이상이어야 합니다.");
+      toast.error(TOAST.GROUP_PENALTY.POINTS_MIN);
       return;
     }
     onAdd(violationType, description, penaltyContent, demeritNum);
-    toast.success("벌칙 규칙이 추가되었습니다.");
+    toast.success(TOAST.GROUP_PENALTY.RULE_ADDED);
     reset();
     setOpen(false);
   };
@@ -278,20 +278,20 @@ function AddRecordDialog({
 
   const handleSubmit = () => {
     if (!memberName.trim()) {
-      toast.error("멤버명을 입력하세요.");
+      toast.error(TOAST.GROUP_PENALTY.MEMBER_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택하세요.");
+      toast.error(TOAST.GROUP_PENALTY.DATE_REQUIRED);
       return;
     }
     const demeritNum = parseInt(demerits, 10);
     if (isNaN(demeritNum) || demeritNum < 1) {
-      toast.error("벌점은 1 이상이어야 합니다.");
+      toast.error(TOAST.GROUP_PENALTY.POINTS_MIN);
       return;
     }
     onAdd(memberName, violationType, date, demeritNum, memo);
-    toast.success("벌칙 기록이 추가되었습니다.");
+    toast.success(TOAST.GROUP_PENALTY.RECORD_ADDED);
     reset();
     setOpen(false);
   };
@@ -416,7 +416,7 @@ function RuleItem({
   const handleDelete = () => {
     const ok = onDelete(rule.id);
     if (ok) {
-      toast.success("규칙이 삭제되었습니다.");
+      toast.success(TOAST.GROUP_PENALTY.RULE_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -464,7 +464,7 @@ function RecordItem({
   const handleDelete = () => {
     const ok = onDelete(record.id);
     if (ok) {
-      toast.success("기록이 삭제되었습니다.");
+      toast.success(TOAST.GROUP_PENALTY.RECORD_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -717,7 +717,7 @@ export function GroupPenaltyCard({ groupId }: { groupId: string }) {
                   description="모든 벌점 기록이 삭제됩니다. 이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?"
                   onConfirm={() => {
                     resetNow();
-                    toast.success("벌점 기록이 초기화되었습니다.");
+                    toast.success(TOAST.GROUP_PENALTY.POINTS_RESET);
                   }}
                   destructive
                 />

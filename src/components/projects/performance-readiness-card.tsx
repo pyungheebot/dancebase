@@ -38,6 +38,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
@@ -179,7 +180,7 @@ function AddItemForm({ checklistId, onAdd, onClose }: AddItemFormProps) {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("항목 이름을 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_READINESS.ITEM_NAME_REQUIRED);
       return;
     }
     const ok = onAdd(checklistId, {
@@ -190,14 +191,14 @@ function AddItemForm({ checklistId, onAdd, onClose }: AddItemFormProps) {
       note: note.trim(),
     });
     if (ok) {
-      toast.success("항목이 추가되었습니다.");
+      toast.success(TOAST.PERFORMANCE_READINESS.ITEM_ADDED);
       setTitle("");
       setAssignee("");
       setDueDate("");
       setNote("");
       onClose();
     } else {
-      toast.error("항목 추가에 실패했습니다.");
+      toast.error(TOAST.PERFORMANCE_READINESS.ITEM_ADD_ERROR);
     }
   };
 
@@ -483,7 +484,7 @@ function ChecklistPanel({
 
   const handleDelete = () => {
     onDelete(checklist.id);
-    toast.success("체크리스트가 삭제되었습니다.");
+    toast.success(TOAST.PERFORMANCE_READINESS.CHECKLIST_DELETED);
   };
 
   return (
@@ -600,11 +601,11 @@ function CreateChecklistForm({ onCreate, onClose }: CreateChecklistFormProps) {
 
   const handleSubmit = () => {
     if (!eventName.trim()) {
-      toast.error("공연/행사 이름을 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_READINESS.SHOW_NAME_REQUIRED);
       return;
     }
     onCreate({ eventName: eventName.trim(), eventDate });
-    toast.success("체크리스트가 생성되었습니다.");
+    toast.success(TOAST.PERFORMANCE_READINESS.CHECKLIST_CREATED);
     setEventName("");
     setEventDate("");
     onClose();

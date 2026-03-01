@@ -3,38 +3,45 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { useIndependentEntityIds } from "@/hooks/use-independent-entities";
 import type { Schedule, AttendanceWithProfile } from "@/types";
 
 export function useSchedules(groupId: string, projectId?: string | null) {
-  const fetcher = async () => {
-    const supabase = createClient();
-    let query = supabase
-      .from("schedules")
-      .select("id, group_id, project_id, title, description, location, address, latitude, longitude, attendance_method, starts_at, ends_at, created_by, late_threshold, attendance_deadline, require_checkout, recurrence_id, max_attendees")
-      .eq("group_id", groupId)
-      .order("starts_at", { ascending: true });
-
-    if (projectId) {
-      query = query.eq("project_id", projectId);
-    } else {
-      // 그룹 뷰: 독립 프로젝트 제외, 통합 프로젝트 포함
-      const { data: independentEntities } = await supabase.rpc(
-        "get_independent_entity_ids",
-        { p_group_id: groupId, p_feature: "schedule" }
-      );
-      const excludeProjectIds = (independentEntities || []).map((e: { entity_id: string }) => e.entity_id);
-      if (excludeProjectIds.length > 0) {
-        query = query.not("project_id", "in", `(${excludeProjectIds.join(",")})`);
-      }
-    }
-
-    const { data } = await query;
-    return (data ?? []) as Schedule[];
-  };
+  // 그룹 뷰일 때만 독립 엔티티 ID 조회 (SWR 캐시 공유로 중복 RPC 방지)
+  const { data: independentEntities } = useIndependentEntityIds(
+    !projectId ? groupId : undefined,
+  );
 
   const { data, isLoading, mutate } = useSWR(
-    swrKeys.schedules(groupId, projectId),
-    fetcher,
+    // independentEntities가 로드되거나 projectId가 있을 때만 fetcher 실행
+    projectId !== undefined
+      ? swrKeys.schedules(groupId, projectId)
+      : independentEntities !== undefined
+        ? swrKeys.schedules(groupId, projectId)
+        : null,
+    async () => {
+      const supabase = createClient();
+      let query = supabase
+        .from("schedules")
+        .select("id, group_id, project_id, title, description, location, address, latitude, longitude, attendance_method, starts_at, ends_at, created_by, late_threshold, attendance_deadline, require_checkout, recurrence_id, max_attendees")
+        .eq("group_id", groupId)
+        .order("starts_at", { ascending: true });
+
+      if (projectId) {
+        query = query.eq("project_id", projectId);
+      } else {
+        // 그룹 뷰: 독립 프로젝트 제외 (SWR 캐시에서 이미 로드된 데이터 활용)
+        const excludeProjectIds = (independentEntities || [])
+          .filter((e) => e.feature === "schedule")
+          .map((e) => e.entity_id);
+        if (excludeProjectIds.length > 0) {
+          query = query.not("project_id", "in", `(${excludeProjectIds.join(",")})`);
+        }
+      }
+
+      const { data } = await query;
+      return (data ?? []) as Schedule[];
+    },
   );
 
   return {

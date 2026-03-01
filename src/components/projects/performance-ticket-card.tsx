@@ -19,6 +19,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -258,17 +259,17 @@ function TierDialog({
 
   function handleSave() {
     if (!name.trim()) {
-      toast.error("등급 이름을 입력해주세요.");
+      toast.error(TOAST.TICKET.GRADE_NAME_REQUIRED);
       return;
     }
     const priceNum = Number(price);
     const qtyNum = Number(totalQuantity);
     if (isNaN(priceNum) || priceNum < 0) {
-      toast.error("올바른 가격을 입력해주세요.");
+      toast.error(TOAST.TICKET.GRADE_PRICE_REQUIRED);
       return;
     }
     if (isNaN(qtyNum) || qtyNum <= 0) {
-      toast.error("수량은 1 이상이어야 합니다.");
+      toast.error(TOAST.TICKET.QUANTITY_REQUIRED);
       return;
     }
     onSave({ name: name.trim(), price: priceNum, totalQuantity: qtyNum, color });
@@ -375,16 +376,16 @@ function AllocationDialog({
 
   function handleSave() {
     if (!tierId) {
-      toast.error("등급을 선택해주세요.");
+      toast.error(TOAST.TICKET.GRADE_SELECT_REQUIRED);
       return;
     }
     if (!recipientName.trim()) {
-      toast.error("수령인 이름을 입력해주세요.");
+      toast.error(TOAST.TICKET.RECIPIENT_REQUIRED);
       return;
     }
     const qty = Number(quantity);
     if (isNaN(qty) || qty <= 0) {
-      toast.error("수량은 1 이상이어야 합니다.");
+      toast.error(TOAST.TICKET.QUANTITY_REQUIRED);
       return;
     }
     onSave({
@@ -510,7 +511,7 @@ function GoalDialog({
     }
     const num = Number(value);
     if (isNaN(num) || num <= 0) {
-      toast.error("올바른 목표 수량을 입력해주세요.");
+      toast.error(TOAST.TICKET.TARGET_QUANTITY_REQUIRED);
       return;
     }
     onSave(num);
@@ -744,7 +745,7 @@ export function PerformanceTicketCard({ projectId }: { projectId: string }) {
                               className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                               onClick={() => {
                                 deleteTier(s.tier.id);
-                                toast.success("등급이 삭제되었습니다.");
+                                toast.success(TOAST.TICKET.GRADE_DELETED);
                               }}
                             >
                               <Trash2 className="h-3 w-3" />
@@ -886,7 +887,7 @@ export function PerformanceTicketCard({ projectId }: { projectId: string }) {
                                           title="취소 처리"
                                           onClick={() => {
                                             cancelAllocation(alloc.id);
-                                            toast.success("취소 처리되었습니다.");
+                                            toast.success(TOAST.TICKET.CANCELLED);
                                           }}
                                         >
                                           <X className="h-3 w-3" />
@@ -898,7 +899,7 @@ export function PerformanceTicketCard({ projectId }: { projectId: string }) {
                                         className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                                         onClick={() => {
                                           deleteAllocation(alloc.id);
-                                          toast.success("배분이 삭제되었습니다.");
+                                          toast.success(TOAST.TICKET.ALLOCATION_DELETED);
                                         }}
                                       >
                                         <Trash2 className="h-3 w-3" />
@@ -937,10 +938,10 @@ export function PerformanceTicketCard({ projectId }: { projectId: string }) {
         onSave={(data) => {
           if (tierDialog.initial) {
             updateTier(tierDialog.initial.id, data);
-            toast.success("등급이 수정되었습니다.");
+            toast.success(TOAST.TICKET.GRADE_UPDATED);
           } else {
             addTier(data);
-            toast.success("등급이 추가되었습니다.");
+            toast.success(TOAST.TICKET.GRADE_ADDED);
           }
         }}
       />
@@ -954,10 +955,10 @@ export function PerformanceTicketCard({ projectId }: { projectId: string }) {
         onSave={(data) => {
           if (allocationDialog.initial) {
             updateAllocation(allocationDialog.initial.id, data);
-            toast.success("배분이 수정되었습니다.");
+            toast.success(TOAST.TICKET.ALLOCATION_UPDATED);
           } else {
             addAllocation(data);
-            toast.success("배분이 추가되었습니다.");
+            toast.success(TOAST.TICKET.ALLOCATION_ADDED);
           }
         }}
       />

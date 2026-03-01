@@ -309,11 +309,11 @@ function AddEventDialog({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("이벤트 제목을 입력해주세요.");
+      toast.error(TOAST.EVENT_CALENDAR.TITLE_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.EVENT_CALENDAR.DATE_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -326,7 +326,7 @@ function AddEventDialog({
         location,
         description,
       });
-      toast.success("이벤트가 추가되었습니다.");
+      toast.success(TOAST.EVENT_CALENDAR.ADDED);
       handleClose();
     });
   }
@@ -739,7 +739,7 @@ export function EventCalendarCard({ groupId }: EventCalendarCardProps) {
 
   function handleDelete(id: string) {
     const ok = deleteEvent(id);
-    if (ok) toast.success("이벤트가 삭제되었습니다.");
+    if (ok) toast.success(TOAST.EVENT_CALENDAR.DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 
@@ -756,7 +756,7 @@ export function EventCalendarCard({ groupId }: EventCalendarCardProps) {
             : "미정으로";
       toast.success(`${label} 응답했습니다.`);
     } else {
-      toast.error("RSVP 처리에 실패했습니다.");
+      toast.error(TOAST.EVENT_CALENDAR.RSVP_ERROR);
     }
   }
 

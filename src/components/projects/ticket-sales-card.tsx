@@ -92,14 +92,14 @@ function AddTierDialog({ open, onClose, onSubmit }: AddTierDialogProps) {
   const { pending: loading, execute } = useAsyncAction();
 
   async function handleSubmit() {
-    if (!name.trim()) { toast.error("등급명을 입력해주세요."); return; }
+    if (!name.trim()) { toast.error(TOAST.TICKET_SALES.NAME_REQUIRED); return; }
     const priceNum = Number(price);
     const qtyNum = Number(totalQty);
-    if (isNaN(priceNum) || priceNum < 0) { toast.error("올바른 가격을 입력해주세요."); return; }
-    if (isNaN(qtyNum) || qtyNum <= 0) { toast.error("총 수량은 1 이상이어야 합니다."); return; }
+    if (isNaN(priceNum) || priceNum < 0) { toast.error(TOAST.TICKET_SALES.PRICE_REQUIRED); return; }
+    if (isNaN(qtyNum) || qtyNum <= 0) { toast.error(TOAST.TICKET_SALES.TOTAL_QUANTITY_REQUIRED); return; }
     await execute(async () => {
       await onSubmit({ name: name.trim(), price: priceNum, totalQty: qtyNum });
-      toast.success("등급이 추가되었습니다.");
+      toast.success(TOAST.TICKET_SALES.GRADE_ADDED);
       setName(""); setPrice(""); setTotalQty("");
       onClose();
     });
@@ -192,14 +192,14 @@ function AddRecordDialog({ open, onClose, tiers, onSubmit }: AddRecordDialogProp
   const { pending: loading, execute } = useAsyncAction();
 
   async function handleSubmit() {
-    if (!buyerName.trim()) { toast.error("구매자명을 입력해주세요."); return; }
-    if (!tierId) { toast.error("등급을 선택해주세요."); return; }
+    if (!buyerName.trim()) { toast.error(TOAST.TICKET_SALES.BUYER_REQUIRED); return; }
+    if (!tierId) { toast.error(TOAST.TICKET_SALES.GRADE_SELECT_REQUIRED); return; }
     const qtyNum = Number(qty);
-    if (isNaN(qtyNum) || qtyNum <= 0) { toast.error("수량은 1 이상이어야 합니다."); return; }
-    if (!date) { toast.error("날짜를 입력해주세요."); return; }
+    if (isNaN(qtyNum) || qtyNum <= 0) { toast.error(TOAST.TICKET_SALES.QUANTITY_REQUIRED); return; }
+    if (!date) { toast.error(TOAST.TICKET_SALES.DATE_REQUIRED); return; }
     await execute(async () => {
       await onSubmit({ buyerName: buyerName.trim(), tierId, qty: qtyNum, date });
-      toast.success("판매 기록이 추가되었습니다.");
+      toast.success(TOAST.TICKET_SALES.SALES_ADDED);
       setBuyerName(""); setTierId(""); setQty("1"); setDate(today);
       onClose();
     });
@@ -536,7 +536,7 @@ export function TicketSalesCard({ projectId }: { projectId: string }) {
                                 className="h-5 w-5 p-0 text-gray-400 hover:text-red-500"
                                 onClick={() => {
                                   removeRecord(record.id).catch(() => toast.error(TOAST.DELETE_ERROR));
-                                  toast.success("기록이 삭제되었습니다.");
+                                  toast.success(TOAST.RECORD.DELETED);
                                 }}
                               >
                                 <Trash2 className="h-3 w-3" />
@@ -625,7 +625,7 @@ export function TicketSalesCard({ projectId }: { projectId: string }) {
         onConfirm={() => {
           if (!deleteTierTarget) return;
           removeTier(deleteTierTarget.id).catch(() => toast.error(TOAST.DELETE_ERROR));
-          toast.success("등급이 삭제되었습니다.");
+          toast.success(TOAST.TICKET_SALES.GRADE_DELETED);
           setDeleteTierTarget(null);
         }}
         destructive

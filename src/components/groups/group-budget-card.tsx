@@ -118,20 +118,20 @@ function TransactionDialog({
 
   async function handleSubmit() {
     if (!form.category) {
-      toast.error("카테고리를 선택해주세요");
+      toast.error(TOAST.GROUP_BUDGET.CATEGORY_REQUIRED);
       return;
     }
     if (!form.description.trim()) {
-      toast.error("내용을 입력해주세요");
+      toast.error(TOAST.GROUP_BUDGET.CONTENT_REQUIRED);
       return;
     }
     const parsedAmount = parseInt(form.amount.replace(/,/g, ""), 10);
     if (!parsedAmount || parsedAmount <= 0) {
-      toast.error("올바른 금액을 입력해주세요");
+      toast.error(TOAST.GROUP_BUDGET.AMOUNT_INVALID);
       return;
     }
     if (!form.date) {
-      toast.error("날짜를 선택해주세요");
+      toast.error(TOAST.GROUP_BUDGET.DATE_REQUIRED);
       return;
     }
 
@@ -321,11 +321,11 @@ function CategoryManagerDialog({
 
   async function handleAdd() {
     if (!newName.trim()) {
-      toast.error("카테고리명을 입력해주세요");
+      toast.error(TOAST.GROUP_BUDGET.CATEGORY_NAME_REQUIRED);
       return;
     }
     await onAdd({ name: newName.trim(), icon: newIcon });
-    toast.success("카테고리가 추가되었습니다");
+    toast.success(TOAST.GROUP_BUDGET.CATEGORY_ADDED);
     setNewName("");
     setNewIcon("📌");
   }
@@ -428,15 +428,15 @@ function BudgetLimitDialog({
   async function handleSave() {
     if (value === "") {
       await onSave(null);
-      toast.success("예산 한도가 해제되었습니다");
+      toast.success(TOAST.GROUP_BUDGET.BUDGET_LIMIT_RELEASED);
     } else {
       const parsed = parseInt(value, 10);
       if (!parsed || parsed <= 0) {
-        toast.error("올바른 금액을 입력해주세요");
+        toast.error(TOAST.GROUP_BUDGET.AMOUNT_INVALID);
         return;
       }
       await onSave(parsed);
-      toast.success("월별 예산 한도가 설정되었습니다");
+      toast.success(TOAST.GROUP_BUDGET.MONTHLY_BUDGET_SET);
     }
     onClose();
   }
@@ -625,7 +625,7 @@ export function GroupBudgetCard({ groupId }: { groupId: string }) {
   async function handleDelete(txId: string) {
     const ok = await deleteTransaction(txId);
     if (ok) {
-      toast.success("거래가 삭제되었습니다");
+      toast.success(TOAST.GROUP_BUDGET.TRANSACTION_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

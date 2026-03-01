@@ -52,6 +52,7 @@ import {
 
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type {
   MemberAvailabilityDay,
   MemberAvailabilityLevel,
@@ -215,7 +216,7 @@ function MemberDetailDialog({
   const handleAddSlot = () => {
     if (!entry) return;
     if (startTime >= endTime) {
-      toast.error("종료 시각은 시작 시각보다 늦어야 합니다.");
+      toast.error(TOAST.MEMBER_AVAILABILITY.END_AFTER_START);
       return;
     }
     onUpsertSlot(entry.id, selectedDay, {
@@ -225,7 +226,7 @@ function MemberDetailDialog({
       note: slotNote.trim() || undefined,
     });
     setSlotNote("");
-    toast.success("시간대가 추가되었습니다.");
+    toast.success(TOAST.MEMBER_AVAILABILITY.SLOT_ADDED);
   };
 
   if (!entry) return null;
@@ -576,12 +577,12 @@ export function MemberAvailabilityCard({ groupId }: { groupId: string }) {
   const handleAddMember = () => {
     const name = newName.trim();
     if (!name) {
-      toast.error("멤버 이름을 입력하세요.");
+      toast.error(TOAST.MEMBER_AVAILABILITY.MEMBER_REQUIRED);
       return;
     }
     const ok = addMember(name);
     if (!ok) {
-      toast.error("이미 같은 이름의 멤버가 있습니다.");
+      toast.error(TOAST.MEMBER_AVAILABILITY.MEMBER_EXISTS);
       return;
     }
     setNewName("");

@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useGroupAnniversary,
   calcYearsSince,
@@ -328,11 +329,11 @@ function AnniversaryDialog({
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("기념일 제목을 입력해주세요.");
+      toast.error(TOAST.GROUP_ANNIVERSARY.TITLE_REQUIRED);
       return;
     }
     if (!form.date) {
-      toast.error("기념일 날짜를 선택해주세요.");
+      toast.error(TOAST.GROUP_ANNIVERSARY.DATE_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -522,10 +523,10 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
 
     if (dialogMode === "add") {
       addAnniversary(payload);
-      toast.success("기념일이 추가되었습니다.");
+      toast.success(TOAST.GROUP_ANNIVERSARY.ADDED);
     } else if (editTarget) {
       updateAnniversary(editTarget.id, payload);
-      toast.success("기념일이 수정되었습니다.");
+      toast.success(TOAST.GROUP_ANNIVERSARY.UPDATED);
     }
     setDialogOpen(false);
   }
@@ -534,7 +535,7 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
     const target = deleteConfirm.confirm();
     if (!target) return;
     deleteAnniversary(target.id);
-    toast.success("기념일이 삭제되었습니다.");
+    toast.success(TOAST.GROUP_ANNIVERSARY.DELETED);
   }
 
   if (loading) {

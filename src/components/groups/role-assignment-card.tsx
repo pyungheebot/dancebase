@@ -24,6 +24,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useRoleAssignment,
   ROLE_STATUS_LABELS,
@@ -55,15 +56,15 @@ function AddItemForm({ hook, onClose }: AddItemFormProps) {
 
   const handleSubmit = () => {
     if (!roleName.trim()) {
-      toast.error("역할 이름을 입력하세요.");
+      toast.error(TOAST.ROLE_ASSIGNMENT.ROLE_REQUIRED);
       return;
     }
     if (!assignee.trim()) {
-      toast.error("담당자를 입력하세요.");
+      toast.error(TOAST.ROLE_ASSIGNMENT.ASSIGNEE_REQUIRED);
       return;
     }
     if (!startDate) {
-      toast.error("시작일을 입력하세요.");
+      toast.error(TOAST.ROLE_ASSIGNMENT.START_DATE_REQUIRED);
       return;
     }
 
@@ -79,7 +80,7 @@ function AddItemForm({ hook, onClose }: AddItemFormProps) {
       toast.success(`"${roleName}" 역할이 추가되었습니다.`);
       onClose();
     } else {
-      toast.error("역할 추가에 실패했습니다.");
+      toast.error(TOAST.ROLE_ASSIGNMENT.ADD_ERROR);
     }
   };
 
@@ -186,7 +187,7 @@ function ChangeAssigneeForm({ item, hook, onClose }: ChangeAssigneeFormProps) {
 
   const handleSubmit = () => {
     if (!nextAssignee.trim()) {
-      toast.error("새 담당자를 입력하세요.");
+      toast.error(TOAST.ROLE_ASSIGNMENT.NEW_ASSIGNEE_REQUIRED);
       return;
     }
     const ok = hook.changeAssignee(
@@ -199,7 +200,7 @@ function ChangeAssigneeForm({ item, hook, onClose }: ChangeAssigneeFormProps) {
       toast.success(`담당자가 "${nextAssignee}"으로 변경되었습니다.`);
       onClose();
     } else {
-      toast.error("담당자 변경에 실패했습니다.");
+      toast.error(TOAST.ROLE_ASSIGNMENT.CHANGE_ERROR);
     }
   };
 

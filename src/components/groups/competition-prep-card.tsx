@@ -130,15 +130,15 @@ function AddEventDialog({
 
   async function handleSubmit() {
     if (!name.trim()) {
-      toast.error("대회명을 입력해주세요.");
+      toast.error(TOAST.COMPETITION_PREP.COMPETITION_NAME_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("대회 날짜를 선택해주세요.");
+      toast.error(TOAST.COMPETITION_PREP.DATE_REQUIRED);
       return;
     }
     if (!location.trim()) {
-      toast.error("장소를 입력해주세요.");
+      toast.error(TOAST.COMPETITION_PREP.VENUE_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -152,7 +152,7 @@ function AddEventDialog({
           registrationDeadline: regDeadline || undefined,
           notes: notes.trim() || undefined,
         });
-        toast.success("대회가 추가되었습니다.");
+        toast.success(TOAST.COMPETITION_PREP.COMPETITION_ADDED);
         setName("");
         setDate("");
         setLocation("");
@@ -162,7 +162,7 @@ function AddEventDialog({
         setNotes("");
         setOpen(false);
       } catch {
-        toast.error("대회 추가에 실패했습니다.");
+        toast.error(TOAST.COMPETITION_PREP.COMPETITION_ADD_ERROR);
       }
     });
   }
@@ -296,7 +296,7 @@ function AddItemDialog({
 
   async function handleSubmit() {
     if (!task.trim()) {
-      toast.error("과제명을 입력해주세요.");
+      toast.error(TOAST.COMPETITION_PREP.TASK_NAME_REQUIRED);
       return;
     }
     await executeTask(async () => {
@@ -308,7 +308,7 @@ function AddItemDialog({
           dueDate: dueDate || undefined,
           notes: notes.trim() || undefined,
         });
-        toast.success("체크 항목이 추가되었습니다.");
+        toast.success(TOAST.COMPETITION_PREP.CHECK_ITEM_ADDED);
         setTask("");
         setCategory("other");
         setAssignee("");
@@ -316,7 +316,7 @@ function AddItemDialog({
         setNotes("");
         setOpen(false);
       } catch {
-        toast.error("항목 추가에 실패했습니다.");
+        toast.error(TOAST.COMPETITION_PREP.CHECK_ITEM_ADD_ERROR);
       }
     });
   }
@@ -477,7 +477,7 @@ function EventPanel({
   async function handleDeleteEvent() {
     try {
       await onDeleteEvent(event.id);
-      toast.success("대회가 삭제되었습니다.");
+      toast.success(TOAST.COMPETITION_PREP.COMPETITION_DELETED);
     } catch {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -486,7 +486,7 @@ function EventPanel({
   async function handleDeleteItem(itemId: string) {
     try {
       await onDeleteItem(event.id, itemId);
-      toast.success("항목이 삭제되었습니다.");
+      toast.success(TOAST.COMPETITION_PREP.ITEM_DELETED);
     } catch {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -496,7 +496,7 @@ function EventPanel({
     try {
       await onToggle(event.id, itemId);
     } catch {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   }
 

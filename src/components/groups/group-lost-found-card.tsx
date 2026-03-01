@@ -127,15 +127,15 @@ function ItemFormDialog({
 
   const handleSubmit = () => {
     if (!itemName.trim()) {
-      toast.error("물품명을 입력하세요.");
+      toast.error(TOAST.GROUP_LOST_FOUND.ITEM_REQUIRED);
       return;
     }
     if (!reporterName.trim()) {
-      toast.error("신고자명을 입력하세요.");
+      toast.error(TOAST.GROUP_LOST_FOUND.REPORTER_REQUIRED);
       return;
     }
     if (!lostDate) {
-      toast.error("분실 날짜를 선택하세요.");
+      toast.error(TOAST.GROUP_LOST_FOUND.DATE_REQUIRED);
       return;
     }
     onSave({
@@ -320,14 +320,14 @@ function LostFoundItemCard({
     if (ok) {
       toast.success(`상태가 "${s}"(으)로 변경되었습니다.`);
     } else {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.GROUP_LOST_FOUND.STATUS_ERROR);
     }
   };
 
   const handleDelete = () => {
     const ok = onDelete(item.id);
     if (ok) {
-      toast.success("분실물이 삭제되었습니다.");
+      toast.success(TOAST.GROUP_LOST_FOUND.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -362,7 +362,7 @@ function LostFoundItemCard({
             onSave={(payload) => {
               const ok = onUpdate(item.id, payload);
               if (ok) {
-                toast.success("분실물 정보가 수정되었습니다.");
+                toast.success(TOAST.GROUP_LOST_FOUND.UPDATED);
               } else {
                 toast.error(TOAST.UPDATE_ERROR);
               }
@@ -616,7 +616,7 @@ export function GroupLostFoundCard({ groupId }: { groupId: string }) {
                 }
                 onSave={(payload) => {
                   addItem(payload);
-                  toast.success("분실물이 등록되었습니다.");
+                  toast.success(TOAST.GROUP_LOST_FOUND.REGISTERED);
                 }}
               />
             </div>

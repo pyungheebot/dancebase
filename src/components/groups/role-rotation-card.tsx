@@ -24,6 +24,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useRoleRotation } from "@/hooks/use-role-rotation";
 import type { RotationAssignment } from "@/types";
 
@@ -50,7 +51,7 @@ function RoleSettingsSection({ hook }: RoleSettingsSectionProps) {
 
   const handleAddRole = () => {
     if (!roleName.trim()) {
-      toast.error("역할 이름을 입력하세요.");
+      toast.error(TOAST.ROLE_ROTATION.ROLE_REQUIRED);
       return;
     }
     const ok = hook.addRole(roleName, roleIcon, roleDesc);
@@ -60,7 +61,7 @@ function RoleSettingsSection({ hook }: RoleSettingsSectionProps) {
       setRoleIcon("");
       setRoleDesc("");
     } else {
-      toast.error("역할 추가에 실패했습니다.");
+      toast.error(TOAST.ROLE_ROTATION.ROLE_ADD_ERROR);
     }
   };
 
@@ -69,7 +70,7 @@ function RoleSettingsSection({ hook }: RoleSettingsSectionProps) {
     if (ok) {
       toast.success(`"${name}" 역할이 삭제되었습니다.`);
     } else {
-      toast.error("역할 삭제에 실패했습니다.");
+      toast.error(TOAST.ROLE_ROTATION.ROLE_DELETE_ERROR);
     }
   };
 
@@ -167,7 +168,7 @@ function MemberSettingsSection({ hook }: MemberSettingsSectionProps) {
 
   const handleAddMember = () => {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력하세요.");
+      toast.error(TOAST.ROLE_ROTATION.MEMBER_REQUIRED);
       return;
     }
     const ok = hook.addMember(memberName);
@@ -175,7 +176,7 @@ function MemberSettingsSection({ hook }: MemberSettingsSectionProps) {
       toast.success(`"${memberName}" 멤버가 추가되었습니다.`);
       setMemberName("");
     } else {
-      toast.error("이미 등록된 멤버이거나 추가에 실패했습니다.");
+      toast.error(TOAST.ROLE_ROTATION.MEMBER_EXISTS);
     }
   };
 
@@ -184,7 +185,7 @@ function MemberSettingsSection({ hook }: MemberSettingsSectionProps) {
     if (ok) {
       toast.success(`"${name}" 멤버가 삭제되었습니다.`);
     } else {
-      toast.error("멤버 삭제에 실패했습니다.");
+      toast.error(TOAST.ROLE_ROTATION.MEMBER_DELETE_ERROR);
     }
   };
 
@@ -259,22 +260,22 @@ function ScheduleSection({ hook }: ScheduleSectionProps) {
   const handleGenerate = () => {
     const n = Number(weeks);
     if (!n || n < 1 || n > 52) {
-      toast.error("주 수는 1~52 사이로 입력하세요.");
+      toast.error(TOAST.ROLE_ROTATION.WEEKS_RANGE);
       return;
     }
     if (hook.totalRoles === 0) {
-      toast.error("먼저 역할을 추가해주세요.");
+      toast.error(TOAST.ROLE_ROTATION.NO_ROLES);
       return;
     }
     if (hook.totalMembers === 0) {
-      toast.error("먼저 멤버를 추가해주세요.");
+      toast.error(TOAST.ROLE_ROTATION.NO_MEMBERS);
       return;
     }
     const ok = hook.generateSchedule(n);
     if (ok) {
       toast.success(`${n}주 분량의 배정표가 생성되었습니다.`);
     } else {
-      toast.error("스케줄 생성에 실패했습니다.");
+      toast.error(TOAST.ROLE_ROTATION.SCHEDULE_ERROR);
     }
   };
 
@@ -349,7 +350,7 @@ function CurrentWeekSection({ hook }: CurrentWeekSectionProps) {
 
   const handleToggle = (id: string) => {
     const ok = hook.toggleCompleted(id);
-    if (!ok) toast.error("상태 변경에 실패했습니다.");
+    if (!ok) toast.error(TOAST.ROLE_ROTATION.STATUS_ERROR);
   };
 
   if (assignments.length === 0) {

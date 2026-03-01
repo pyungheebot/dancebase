@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { CollapsibleCard } from "@/components/shared/collapsible-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,7 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
   async function handleAddMember() {
     const trimmed = newMemberName.trim();
     if (!trimmed) {
-      toast.error("멤버명을 입력해주세요.");
+      toast.error(TOAST.GROUP_STREAK.MEMBER_NAME_REQUIRED);
       return;
     }
     if (
@@ -64,7 +65,7 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
         (m) => m.name.toLowerCase() === trimmed.toLowerCase()
       )
     ) {
-      toast.error("이미 등록된 멤버명입니다.");
+      toast.error(TOAST.GROUP_STREAK.MEMBER_EXISTS);
       return;
     }
     setAddingMember(true);
@@ -73,7 +74,7 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
       setNewMemberName("");
       toast.success(`${trimmed} 멤버가 추가되었습니다.`);
     } catch {
-      toast.error("멤버 추가에 실패했습니다.");
+      toast.error(TOAST.GROUP_STREAK.MEMBER_ADD_ERROR);
     } finally {
       setAddingMember(false);
     }
@@ -86,7 +87,7 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
       if (selectedMemberId === memberId) setSelectedMemberId(null);
       toast.success(`${memberName} 멤버가 삭제되었습니다.`);
     } catch {
-      toast.error("멤버 삭제에 실패했습니다.");
+      toast.error(TOAST.GROUP_STREAK.MEMBER_DELETE_ERROR);
     }
   }
 
@@ -101,7 +102,7 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
       await upsertRecord(memberId, date, !currentAttended);
       toast.success(!currentAttended ? "출석 처리되었습니다." : "결석으로 변경되었습니다.");
     } catch {
-      toast.error("출석 기록 저장에 실패했습니다.");
+      toast.error(TOAST.GROUP_STREAK.ATTENDANCE_SAVE_ERROR);
     } finally {
       setSavingRecord(false);
     }

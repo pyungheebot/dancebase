@@ -23,7 +23,9 @@ function UnreadBadge() {
   if (count <= 0) return null;
   return (
     <Badge className="absolute -top-0.5 -right-0.5 h-3.5 min-w-[14px] px-0.5 text-[9px] leading-none">
+      <span className="sr-only">읽지 않은 메시지 </span>
       {count > 99 ? "99+" : count}
+      <span className="sr-only">개</span>
     </Badge>
   );
 }
@@ -41,22 +43,30 @@ function NotificationDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-6 w-6" aria-label="알림">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-6 w-6"
+          aria-label={count > 0 ? `알림, 읽지 않은 알림 ${count > 99 ? "99개 이상" : `${count}개`}` : "알림"}
+        >
           <Bell className="h-3.5 w-3.5" />
           {count > 0 && (
-            <Badge className="absolute -top-0.5 -right-0.5 h-3.5 min-w-[14px] px-0.5 text-[9px] leading-none">
+            <Badge className="absolute -top-0.5 -right-0.5 h-3.5 min-w-[14px] px-0.5 text-[9px] leading-none" aria-hidden="true">
+              <span className="sr-only">읽지 않은 알림 </span>
               {count > 99 ? "99+" : count}
+              <span className="sr-only">개</span>
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-72">
+      <DropdownMenuContent align="end" className="w-72" aria-label="알림 목록">
         <div className="flex items-center justify-between px-2 py-1.5">
           <span className="text-xs font-semibold">알림</span>
           {count > 0 && (
             <button
               onClick={markAllAsRead}
               className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="알림 모두 읽음 처리"
             >
               모두 읽음
             </button>
@@ -73,10 +83,11 @@ function NotificationDropdown() {
               key={n.id}
               className={`flex flex-col items-start gap-0.5 px-2 py-2 cursor-pointer ${!n.is_read ? "bg-blue-50/50" : ""}`}
               onClick={() => handleNotificationClick(n.id, n.link)}
+              aria-label={`${!n.is_read ? "읽지 않음. " : ""}${n.title}. ${n.message}`}
             >
               <div className="flex items-center gap-1.5 w-full">
                 {!n.is_read && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0" aria-hidden="true" />
                 )}
                 <span className={`text-xs font-medium truncate ${n.is_read ? "ml-3" : ""}`}>
                   {n.title}

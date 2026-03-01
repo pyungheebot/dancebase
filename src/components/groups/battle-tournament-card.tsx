@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Swords,
   ChevronDown,
@@ -111,15 +112,15 @@ function CreateTournamentDialog({
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("토너먼트 이름을 입력해주세요.");
+      toast.error(TOAST.BATTLE_TOURNAMENT.NAME_REQUIRED);
       return;
     }
     if (selectedParticipants.length < 2) {
-      toast.error("참가자를 2명 이상 선택해주세요.");
+      toast.error(TOAST.BATTLE_TOURNAMENT.MIN_PARTICIPANTS);
       return;
     }
     onCreate(name.trim(), format, selectedParticipants, "관리자");
-    toast.success("토너먼트가 생성되었습니다.");
+    toast.success(TOAST.BATTLE_TOURNAMENT.CREATED);
     setName("");
     setFormat("single_elimination");
     setSelectedParticipants([]);
@@ -602,10 +603,10 @@ export function BattleTournamentCard({
   const handleStart = (id: string) => {
     const ok = startTournament(id);
     if (ok) {
-      toast.success("토너먼트가 시작되었습니다.");
+      toast.success(TOAST.BATTLE_TOURNAMENT.STARTED);
       setSelectedId(id);
     } else {
-      toast.error("토너먼트 시작에 실패했습니다.");
+      toast.error(TOAST.BATTLE_TOURNAMENT.START_ERROR);
     }
   };
 
@@ -618,28 +619,28 @@ export function BattleTournamentCard({
   ) => {
     const ok = recordResult(tournamentId, matchId, winner, score1, score2);
     if (ok) {
-      toast.success("결과가 기록되었습니다.");
+      toast.success(TOAST.BATTLE_TOURNAMENT.RESULT_RECORDED);
     } else {
-      toast.error("결과 기록에 실패했습니다.");
+      toast.error(TOAST.BATTLE_TOURNAMENT.RESULT_ERROR);
     }
   };
 
   const handleComplete = (id: string) => {
     const ok = completeTournament(id);
     if (ok) {
-      toast.success("토너먼트가 완료되었습니다.");
+      toast.success(TOAST.BATTLE_TOURNAMENT.COMPLETED);
     } else {
-      toast.error("토너먼트 완료에 실패했습니다.");
+      toast.error(TOAST.BATTLE_TOURNAMENT.COMPLETE_ERROR);
     }
   };
 
   const handleDelete = (id: string) => {
     const ok = deleteTournament(id);
     if (ok) {
-      toast.success("토너먼트가 삭제되었습니다.");
+      toast.success(TOAST.BATTLE_TOURNAMENT.DELETED);
       if (selectedId === id) setSelectedId(null);
     } else {
-      toast.error("토너먼트 삭제에 실패했습니다.");
+      toast.error(TOAST.BATTLE_TOURNAMENT.DELETE_ERROR);
     }
   };
 

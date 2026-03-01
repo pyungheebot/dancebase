@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Wallet,
   ChevronDown,
@@ -80,12 +81,12 @@ function FeeSettingRow({
   function handleSave() {
     const parsed = Number(inputVal.replace(/,/g, ""));
     if (isNaN(parsed) || parsed < 0) {
-      toast.error("올바른 금액을 입력해주세요.");
+      toast.error(TOAST.MEMBERSHIP_FEE_CARD.AMOUNT_INVALID);
       return;
     }
     onSave(parsed);
     setEditing(false);
-    toast.success("월 회비 금액이 저장됐습니다.");
+    toast.success(TOAST.MEMBERSHIP_FEE_CARD.FEE_SAVED);
   }
 
   if (!editing) {
@@ -194,7 +195,7 @@ export function MembershipFeeCard({
 
   function handleGenerate() {
     if (memberNames.length === 0) {
-      toast.error("멤버 목록이 없습니다.");
+      toast.error(TOAST.MEMBERSHIP_FEE_CARD.NO_MEMBERS);
       return;
     }
     generateMonthPayments(selectedMonth, memberNames);

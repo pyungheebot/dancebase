@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Pin,
   PinOff,
@@ -176,11 +177,11 @@ function AddMemoForm({
 
   const handleSubmit = async () => {
     if (!content.trim()) {
-      toast.error("내용을 입력해주세요.");
+      toast.error(TOAST.SHARED_MEMO.CONTENT_REQUIRED);
       return;
     }
     if (isFull) {
-      toast.error("메모는 최대 30개까지 저장할 수 있습니다.");
+      toast.error(TOAST.SHARED_MEMO_CARD.MAX_LIMIT);
       return;
     }
     await execute(async () => {
@@ -191,13 +192,13 @@ function AddMemoForm({
         expiresAt: expiresAt || undefined,
       });
       if (ok) {
-        toast.success("메모가 추가되었습니다.");
+        toast.success(TOAST.SHARED_MEMO_CARD.ADDED);
         setContent("");
         setAuthor("");
         setExpiresAt("");
         setColor("yellow");
       } else {
-        toast.error("메모 추가에 실패했습니다.");
+        toast.error(TOAST.SHARED_MEMO_CARD.ADD_ERROR);
       }
     });
   };
@@ -287,7 +288,7 @@ export function SharedMemoCard({ groupId }: SharedMemoCardProps) {
 
   const handleDelete = (id: string) => {
     deleteMemo(id);
-    toast.success("메모가 삭제되었습니다.");
+    toast.success(TOAST.SHARED_MEMO_CARD.DELETED);
   };
 
   return (

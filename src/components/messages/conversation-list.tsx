@@ -51,7 +51,7 @@ export function ConversationList() {
             className="border-0 bg-transparent"
           />
         ) : (
-          <div className="py-1">
+          <div role="list" className="py-1">
             {conversations.map((conv) => {
               const isActive = pathname === `/messages/${conv.partner_id}`;
               const hasUnread = conv.unread_count > 0;
@@ -59,7 +59,9 @@ export function ConversationList() {
               return (
                 <Link
                   key={conv.partner_id}
+                  role="listitem"
                   href={`/messages/${conv.partner_id}`}
+                  aria-label={`${conv.partner_name}${hasUnread ? `, 읽지 않은 메시지 ${conv.unread_count}개` : ""}`}
                   className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50 ${
                     isActive ? "bg-muted" : ""
                   }`}
@@ -75,7 +77,11 @@ export function ConversationList() {
                       </AvatarFallback>
                     </Avatar>
                     {hasUnread && (
-                      <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-blue-500 border-2 border-background" />
+                      <span
+                        className="absolute top-0 right-0 h-3 w-3 rounded-full bg-blue-500 border-2 border-background"
+                        aria-label="읽지 않은 메시지"
+                        aria-hidden="true"
+                      />
                     )}
                   </div>
 

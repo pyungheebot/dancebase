@@ -257,7 +257,7 @@ export function ShowProgramCard({
 
   async function handleInfoSave() {
     if (!infoForm.showTitle.trim()) {
-      toast.error("공연 제목을 입력해주세요.");
+      toast.error(TOAST.SHOW_PROGRAM.SHOW_TITLE_REQUIRED);
       return;
     }
     setInfoSaving(true);
@@ -271,7 +271,7 @@ export function ShowProgramCard({
         closingMessage: infoForm.closingMessage.trim() || undefined,
         specialThanks: infoForm.specialThanks.trim() || undefined,
       });
-      toast.success("공연 정보가 저장되었습니다.");
+      toast.success(TOAST.SHOW_PROGRAM.INFO_SAVED);
       setInfoDialogOpen(false);
     } catch {
       toast.error(TOAST.SAVE_ERROR);
@@ -302,7 +302,7 @@ export function ShowProgramCard({
 
   async function handlePieceSave() {
     if (!pieceForm.title.trim()) {
-      toast.error("작품/곡명을 입력해주세요.");
+      toast.error(TOAST.SHOW_PROGRAM.PIECE_REQUIRED);
       return;
     }
     setPieceSaving(true);
@@ -321,10 +321,10 @@ export function ShowProgramCard({
       };
       if (editPieceTarget) {
         await updatePiece(editPieceTarget.id, payload);
-        toast.success("프로그램 항목이 수정되었습니다.");
+        toast.success(TOAST.SHOW_PROGRAM.PROGRAM_UPDATED);
       } else {
         await addPiece(payload);
-        toast.success("프로그램 항목이 추가되었습니다.");
+        toast.success(TOAST.SHOW_PROGRAM.PROGRAM_ADDED);
       }
       setPieceDialogOpen(false);
     } catch {
@@ -351,7 +351,7 @@ export function ShowProgramCard({
       if (dir === "up") await movePieceUp(piece.id);
       else await movePieceDown(piece.id);
     } catch {
-      toast.error("순서 변경에 실패했습니다.");
+      toast.error(TOAST.ORDER_ERROR);
     }
   }
 
@@ -378,7 +378,7 @@ export function ShowProgramCard({
       .map((s) => s.trim())
       .filter(Boolean);
     if (names.length === 0) {
-      toast.error("담당자 이름을 입력해주세요.");
+      toast.error(TOAST.SHOW_PROGRAM.CREDIT_MANAGER_REQUIRED);
       return;
     }
     setCreditSaving(true);
@@ -390,10 +390,10 @@ export function ShowProgramCard({
       };
       if (editCreditTarget) {
         await updateCredit(editCreditTarget.id, payload);
-        toast.success("크레딧이 수정되었습니다.");
+        toast.success(TOAST.SHOW_PROGRAM.CREDIT_UPDATED);
       } else {
         await addCredit(payload);
-        toast.success("크레딧이 추가되었습니다.");
+        toast.success(TOAST.SHOW_PROGRAM.CREDIT_ADDED);
       }
       setCreditDialogOpen(false);
     } catch {
@@ -435,7 +435,7 @@ export function ShowProgramCard({
 
   async function handleSponsorSave() {
     if (!sponsorForm.name.trim()) {
-      toast.error("스폰서명을 입력해주세요.");
+      toast.error(TOAST.SHOW_PROGRAM.SPONSOR_NAME_REQUIRED);
       return;
     }
     setSponsorSaving(true);
@@ -447,10 +447,10 @@ export function ShowProgramCard({
       };
       if (editSponsorTarget) {
         await updateSponsor(editSponsorTarget.id, payload);
-        toast.success("스폰서가 수정되었습니다.");
+        toast.success(TOAST.SHOW_PROGRAM.SPONSOR_UPDATED);
       } else {
         await addSponsor(payload);
-        toast.success("스폰서가 추가되었습니다.");
+        toast.success(TOAST.SHOW_PROGRAM.SPONSOR_ADDED);
       }
       setSponsorDialogOpen(false);
     } catch {

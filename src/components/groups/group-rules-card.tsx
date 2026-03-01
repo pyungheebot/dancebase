@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupRules } from "@/hooks/use-group-rules";
 import type { GroupRuleCategory, GroupRuleEntry } from "@/types";
 
@@ -164,15 +165,15 @@ function RuleDialog({
 
   const handleSubmit = () => {
     if (!form.title.trim()) {
-      toast.error("규칙 제목을 입력해주세요.");
+      toast.error(TOAST.GROUP_RULES.RULE_TITLE_REQUIRED);
       return;
     }
     if (!form.content.trim()) {
-      toast.error("규칙 내용을 입력해주세요.");
+      toast.error(TOAST.GROUP_RULES.RULE_CONTENT_REQUIRED);
       return;
     }
     if (!form.createdBy.trim()) {
-      toast.error("작성자를 선택해주세요.");
+      toast.error(TOAST.GROUP_RULES_CARD.AUTHOR_REQUIRED);
       return;
     }
     onSubmit(form.category, form.title, form.content, form.createdBy);
@@ -584,9 +585,9 @@ export function GroupRulesCard({
   ) => {
     const ok = addRule(category, title, content, createdBy);
     if (ok) {
-      toast.success("규칙이 추가되었습니다.");
+      toast.success(TOAST.GROUP_RULES.RULE_ADDED);
     } else {
-      toast.error("규칙 추가에 실패했습니다.");
+      toast.error(TOAST.GROUP_RULES.RULE_ADD_ERROR);
     }
   };
 
@@ -599,16 +600,16 @@ export function GroupRulesCard({
     if (!editTarget) return;
     const ok = updateRule(editTarget.id, { category, title, content });
     if (ok) {
-      toast.success("규칙이 수정되었습니다.");
+      toast.success(TOAST.GROUP_RULES.RULE_UPDATED);
     } else {
-      toast.error("규칙 수정에 실패했습니다.");
+      toast.error(TOAST.GROUP_RULES.RULE_UPDATE_ERROR);
     }
     setEditTarget(null);
   };
 
   const handleDelete = (id: string) => {
     deleteRule(id);
-    toast.success("규칙이 삭제되었습니다.");
+    toast.success(TOAST.GROUP_RULES.RULE_DELETED);
   };
 
   const handleToggleActive = (id: string) => {
@@ -626,7 +627,7 @@ export function GroupRulesCard({
     if (!currentMemberName) return;
     const ok = acknowledgeRule(ruleId, currentMemberName);
     if (ok) {
-      toast.success("규칙을 확인했습니다.");
+      toast.success(TOAST.GROUP_RULES.RULE_CONFIRMED);
     }
   };
 

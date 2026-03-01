@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Cloud,
   CloudRain,
@@ -151,17 +152,17 @@ function AddForecastForm({ onAdd, onCancel }: AddForecastFormProps) {
 
   function handleSubmit() {
     if (!date) {
-      toast.error("공연 날짜를 입력해주세요.");
+      toast.error(TOAST.WEATHER.DATE_REQUIRED);
       return;
     }
     const temp = Number(temperature);
     const hum = Number(humidity);
     if (isNaN(temp)) {
-      toast.error("기온을 숫자로 입력해주세요.");
+      toast.error(TOAST.WEATHER.TEMP_REQUIRED);
       return;
     }
     if (isNaN(hum) || hum < 0 || hum > 100) {
-      toast.error("습도는 0~100 사이의 숫자로 입력해주세요.");
+      toast.error(TOAST.WEATHER.HUMIDITY_RANGE);
       return;
     }
     onAdd({ date, condition, temperature: temp, humidity: hum, windNote });
@@ -257,7 +258,7 @@ function AddPlanForm({ onAdd, onCancel }: AddPlanFormProps) {
 
   function handleSubmit() {
     if (!action.trim()) {
-      toast.error("대응 내용을 입력해주세요.");
+      toast.error(TOAST.WEATHER.RESPONSE_REQUIRED);
       return;
     }
     const equipment = equipmentInput
@@ -354,34 +355,34 @@ export function StageWeatherCard({ projectId }: { projectId: string }) {
   function handleAddForecast(payload: Parameters<typeof addForecast>[0]) {
     addForecast(payload);
     setShowAddForecast(false);
-    toast.success("날씨 예보가 추가되었습니다.");
+    toast.success(TOAST.WEATHER.FORECAST_ADDED);
   }
 
   function handleRemoveForecast(id: string) {
     removeForecast(id);
-    toast.success("예보가 삭제되었습니다.");
+    toast.success(TOAST.WEATHER.FORECAST_DELETED);
   }
 
   function handleAddCheckItem(forecastId: string) {
     const label = (newItemInputs[forecastId] ?? "").trim();
     if (!label) {
-      toast.error("체크리스트 항목을 입력해주세요.");
+      toast.error(TOAST.WEATHER.CHECKLIST_REQUIRED);
       return;
     }
     addCheckItem(forecastId, label);
     setNewItemInputs((prev) => ({ ...prev, [forecastId]: "" }));
-    toast.success("항목이 추가되었습니다.");
+    toast.success(TOAST.WEATHER.CHECKLIST_ITEM_ADDED);
   }
 
   function handleAddPlan(payload: Parameters<typeof addPlan>[0]) {
     addPlan(payload);
     setShowAddPlan(false);
-    toast.success("대응 플랜이 추가되었습니다.");
+    toast.success(TOAST.WEATHER.RESPONSE_PLAN_ADDED);
   }
 
   function handleRemovePlan(id: string) {
     removePlan(id);
-    toast.success("플랜이 삭제되었습니다.");
+    toast.success(TOAST.WEATHER.PLAN_DELETED);
   }
 
   return (

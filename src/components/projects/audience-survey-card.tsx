@@ -218,15 +218,15 @@ function SurveyFormDialog({
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.TITLE_REQUIRED_DOT);
       return;
     }
     if (!form.date) {
-      toast.error("수집 날짜를 선택해주세요.");
+      toast.error(TOAST.AUDIENCE_SURVEY.DATE_REQUIRED);
       return;
     }
     if (form.responseCount < 0) {
-      toast.error("응답 수는 0 이상이어야 합니다.");
+      toast.error(TOAST.AUDIENCE_SURVEY.RESPONSE_COUNT_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -514,7 +514,7 @@ export function AudienceSurveyCard({
       freeComments,
       notes: data.notes || undefined,
     });
-    toast.success("설문 결과가 추가되었습니다.");
+    toast.success(TOAST.AUDIENCE_SURVEY.RESULT_ADDED);
     setAddOpen(false);
   }
 
@@ -533,7 +533,7 @@ export function AudienceSurveyCard({
       notes: data.notes || undefined,
     });
     if (ok) {
-      toast.success("설문 결과가 수정되었습니다.");
+      toast.success(TOAST.AUDIENCE_SURVEY.RESULT_UPDATED);
     } else {
       toast.error(TOAST.UPDATE_ERROR);
     }
@@ -545,7 +545,7 @@ export function AudienceSurveyCard({
     if (!id) return;
     const ok = deleteEntry(id);
     if (ok) {
-      toast.success("설문 결과가 삭제되었습니다.");
+      toast.success(TOAST.AUDIENCE_SURVEY.RESULT_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

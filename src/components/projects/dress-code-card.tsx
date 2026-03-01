@@ -45,6 +45,7 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useDressCode } from "@/hooks/use-dress-code";
 import type { DressCodeCategory, DressCodeGuideItem, DressCodeSet } from "@/types";
 
@@ -109,11 +110,11 @@ function GuideDialog({ open, mode, initial, onClose, onSubmit }: GuideDialogProp
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("항목 제목을 입력해주세요.");
+      toast.error(TOAST.DRESS_CODE.ITEM_TITLE_REQUIRED);
       return;
     }
     if (!description.trim()) {
-      toast.error("항목 설명을 입력해주세요.");
+      toast.error(TOAST.DRESS_CODE.ITEM_DESC_REQUIRED);
       return;
     }
     onSubmit({
@@ -585,21 +586,21 @@ export function DressCodeCard({
 
   const handleAddSet = () => {
     if (!newSetName.trim()) {
-      toast.error("공연명을 입력해주세요.");
+      toast.error(TOAST.DRESS_CODE.SHOW_NAME_REQUIRED);
       return;
     }
     const newSet = addSet(newSetName.trim());
     setSelectedSetId(newSet.id);
     setNewSetName("");
     setAddSetDialogOpen(false);
-    toast.success("드레스 코드 세트가 추가되었습니다.");
+    toast.success(TOAST.DRESS_CODE.SET_ADDED);
   };
 
   const handleDeleteSet = (setId: string) => {
     const ok = deleteSet(setId);
     if (ok) {
       if (effectiveSetId === setId) setSelectedSetId(null);
-      toast.success("드레스 코드 세트가 삭제되었습니다.");
+      toast.success(TOAST.DRESS_CODE.SET_DELETED);
     }
   };
 
@@ -607,9 +608,9 @@ export function DressCodeCard({
     if (!effectiveSetId) return;
     const result = addGuide(effectiveSetId, data);
     if (result) {
-      toast.success("가이드 항목이 추가되었습니다.");
+      toast.success(TOAST.DRESS_CODE.GUIDE_ADDED);
     } else {
-      toast.error("가이드 항목 추가에 실패했습니다.");
+      toast.error(TOAST.DRESS_CODE.GUIDE_ADD_ERROR);
     }
   };
 
@@ -621,9 +622,9 @@ export function DressCodeCard({
     if (!effectiveSetId || !guideDialog.editTarget) return;
     const ok = updateGuide(effectiveSetId, guideDialog.editTarget.id, data);
     if (ok) {
-      toast.success("가이드 항목이 수정되었습니다.");
+      toast.success(TOAST.DRESS_CODE.GUIDE_UPDATED);
     } else {
-      toast.error("가이드 항목 수정에 실패했습니다.");
+      toast.error(TOAST.DRESS_CODE.GUIDE_UPDATE_ERROR);
     }
   };
 
@@ -631,9 +632,9 @@ export function DressCodeCard({
     if (!effectiveSetId) return;
     const ok = deleteGuide(effectiveSetId, guideId);
     if (ok) {
-      toast.success("가이드 항목이 삭제되었습니다.");
+      toast.success(TOAST.DRESS_CODE.GUIDE_DELETED);
     } else {
-      toast.error("가이드 항목 삭제에 실패했습니다.");
+      toast.error(TOAST.DRESS_CODE.GUIDE_DELETE_ERROR);
     }
   };
 

@@ -30,6 +30,7 @@ import {
   Music2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useStyleVote } from "@/hooks/use-style-vote";
 import type { StyleVoteSession } from "@/types";
 
@@ -53,7 +54,7 @@ function CreateSessionForm({
     e.preventDefault();
     const trimmed = topic.trim();
     if (!trimmed) {
-      toast.error("투표 주제를 입력해주세요.");
+      toast.error(TOAST.STYLE_VOTE.TOPIC_REQUIRED);
       return;
     }
     onSubmit(trimmed, maxVotes);
@@ -123,7 +124,7 @@ function AddCandidateForm({
     e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      toast.error("후보 제목을 입력해주세요.");
+      toast.error(TOAST.STYLE_VOTE.CANDIDATE_TITLE_REQUIRED);
       return;
     }
     onSubmit(trimmedTitle, description.trim(), proposedBy.trim() || defaultProposer);
@@ -260,10 +261,10 @@ function SessionPanel({
                   e.stopPropagation();
                   if (isOpen) {
                     onClose();
-                    toast.success("투표를 마감했습니다.");
+                    toast.success(TOAST.STYLE_VOTE.SESSION_CLOSED);
                   } else {
                     onReopen();
-                    toast.success("투표를 다시 열었습니다.");
+                    toast.success(TOAST.STYLE_VOTE.SESSION_REOPENED);
                   }
                 }}
                 title={isOpen ? "투표 마감" : "투표 다시 열기"}
@@ -282,7 +283,7 @@ function SessionPanel({
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete();
-                  toast.success("투표 세션을 삭제했습니다.");
+                  toast.success(TOAST.STYLE_VOTE.SESSION_DELETED);
                 }}
                 title="세션 삭제"
               >
@@ -360,7 +361,7 @@ function SessionPanel({
                             }`}
                             onClick={() => {
                               if (!isOpen) {
-                                toast.error("마감된 투표입니다.");
+                                toast.error(TOAST.STYLE_VOTE.CLOSED_SESSION);
                                 return;
                               }
                               if (!canVote) {
@@ -371,7 +372,7 @@ function SessionPanel({
                               }
                               onCastVote(candidate.id);
                               if (voted) {
-                                toast.success("투표를 취소했습니다.");
+                                toast.success(TOAST.STYLE_VOTE.VOTE_CANCELLED);
                               } else {
                                 toast.success(`"${candidate.title}"에 투표했습니다.`);
                               }
@@ -394,7 +395,7 @@ function SessionPanel({
                               className="h-6 text-[10px] px-1 text-destructive hover:text-destructive"
                               onClick={() => {
                                 onRemoveCandidate(candidate.id);
-                                toast.success("후보를 삭제했습니다.");
+                                toast.success(TOAST.STYLE_VOTE.CANDIDATE_DELETED);
                               }}
                               title="후보 삭제"
                             >
@@ -467,7 +468,7 @@ function SessionPanel({
                     onSubmit={(title, description, proposedBy) => {
                       onAddCandidate(title, description, proposedBy);
                       setShowAddCandidate(false);
-                      toast.success("후보를 추가했습니다.");
+                      toast.success(TOAST.STYLE_VOTE.CANDIDATE_ADDED);
                     }}
                     onCancel={() => setShowAddCandidate(false)}
                   />
@@ -601,7 +602,7 @@ export function StyleVoteCard({ groupId, currentUserName }: StyleVoteCardProps) 
                 onSubmit={(topic, maxVotes) => {
                   createSession(topic, maxVotes);
                   setShowCreateForm(false);
-                  toast.success("투표 세션을 생성했습니다.");
+                  toast.success(TOAST.STYLE_VOTE.SESSION_CREATED);
                 }}
                 onCancel={() => setShowCreateForm(false)}
               />

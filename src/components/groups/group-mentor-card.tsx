@@ -246,11 +246,11 @@ function AddSessionDialog({
   function handleSave() {
     if (!matchId) return;
     if (!content.trim()) {
-      toast.error("세션 내용을 입력해주세요.");
+      toast.error(TOAST.GROUP_MENTOR_CARD.SESSION_CONTENT_REQUIRED);
       return;
     }
     if (rating === 0) {
-      toast.error("평가 점수를 선택해주세요.");
+      toast.error(TOAST.GROUP_MENTOR_CARD.RATING_REQUIRED);
       return;
     }
     onSave(matchId, { date, content: content.trim(), rating });
@@ -361,15 +361,15 @@ function MatchDialog({ open, mode, initial, onClose, onSave }: MatchDialogProps)
 
   function handleSave() {
     if (!mentorName.trim()) {
-      toast.error("멘토 이름을 입력해주세요.");
+      toast.error(TOAST.GROUP_MENTOR_CARD.MENTOR_REQUIRED);
       return;
     }
     if (!menteeName.trim()) {
-      toast.error("멘티 이름을 입력해주세요.");
+      toast.error(TOAST.GROUP_MENTOR_CARD.MENTEE_REQUIRED);
       return;
     }
     if (mentorName.trim() === menteeName.trim()) {
-      toast.error("멘토와 멘티는 다른 사람이어야 합니다.");
+      toast.error(TOAST.GROUP_MENTOR_CARD.SAME_PERSON_ERROR);
       return;
     }
     onSave({
@@ -720,7 +720,7 @@ export function GroupMentorCard({ groupId }: { groupId: string }) {
       endDate: data.endDate || null,
       status: data.status,
     });
-    toast.success("멘토링 매칭이 추가되었습니다.");
+    toast.success(TOAST.GROUP_MENTOR_CARD.MATCHING_ADDED);
   }
 
   function handleEdit(data: {
@@ -740,13 +740,13 @@ export function GroupMentorCard({ groupId }: { groupId: string }) {
       endDate: data.endDate || null,
       status: data.status,
     });
-    if (ok) toast.success("매칭이 수정되었습니다.");
+    if (ok) toast.success(TOAST.GROUP_MENTOR_CARD.MATCHING_UPDATED);
     else toast.error(TOAST.UPDATE_ERROR);
   }
 
   function handleDelete(id: string) {
     const ok = deleteMatch(id);
-    if (ok) toast.success("매칭이 삭제되었습니다.");
+    if (ok) toast.success(TOAST.GROUP_MENTOR_CARD.MATCHING_DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 
@@ -760,13 +760,13 @@ export function GroupMentorCard({ groupId }: { groupId: string }) {
     session: Omit<GroupMentorSession, "id" | "createdAt">
   ) {
     const result = addSession(matchId, session);
-    if (result) toast.success("세션이 기록되었습니다.");
-    else toast.error("세션 추가에 실패했습니다.");
+    if (result) toast.success(TOAST.GROUP_MENTOR_CARD.SESSION_RECORDED);
+    else toast.error(TOAST.GROUP_MENTOR_CARD.SESSION_ADD_ERROR);
   }
 
   function handleDeleteSession(matchId: string, sessionId: string) {
     const ok = deleteSession(matchId, sessionId);
-    if (ok) toast.success("세션이 삭제되었습니다.");
+    if (ok) toast.success(TOAST.GROUP_MENTOR_CARD.SESSION_DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 

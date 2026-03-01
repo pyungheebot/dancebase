@@ -50,6 +50,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useStageEffect } from "@/hooks/use-stage-effect";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
@@ -261,29 +262,29 @@ function EntryDialog({
 
   function handleSubmit() {
     if (!form.cueNumber.trim()) {
-      toast.error("큐 번호를 입력해주세요.");
+      toast.error(TOAST.STAGE_EFFECT.CUE_NUMBER_REQUIRED);
       return;
     }
     if (!form.triggerTime.trim()) {
-      toast.error("트리거 시점을 입력해주세요. (예: 01:30)");
+      toast.error(TOAST.STAGE_EFFECT.TRIGGER_REQUIRED);
       return;
     }
     const timeRegex = /^\d{1,2}:\d{2}$/;
     if (!timeRegex.test(form.triggerTime.trim())) {
-      toast.error("트리거 시점 형식이 올바르지 않습니다. (예: 01:30)");
+      toast.error(TOAST.STAGE_EFFECT.TRIGGER_FORMAT);
       return;
     }
     const dur = parseInt(form.durationSec, 10);
     if (isNaN(dur) || dur < 0) {
-      toast.error("올바른 지속 시간(초)을 입력해주세요.");
+      toast.error(TOAST.STAGE_EFFECT.DURATION_REQUIRED);
       return;
     }
     if (!form.position.trim()) {
-      toast.error("무대 위치를 입력해주세요.");
+      toast.error(TOAST.STAGE_EFFECT.POSITION_REQUIRED);
       return;
     }
     if (form.intensity === "custom" && !form.intensityCustom.trim()) {
-      toast.error("커스텀 강도 값을 입력해주세요.");
+      toast.error(TOAST.STAGE_EFFECT.INTENSITY_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -872,10 +873,10 @@ export function StageEffectCard({
         operator: form.operator || undefined,
         notes: form.notes || undefined,
       });
-      toast.success("큐가 추가되었습니다.");
+      toast.success(TOAST.STAGE_EFFECT.CUE_ADDED);
       setAddOpen(false);
     } catch {
-      toast.error("큐 추가에 실패했습니다.");
+      toast.error(TOAST.STAGE_EFFECT.CUE_ADD_ERROR);
     }
   }
 
@@ -897,9 +898,9 @@ export function StageEffectCard({
       notes: form.notes || undefined,
     });
     if (ok) {
-      toast.success("큐가 수정되었습니다.");
+      toast.success(TOAST.STAGE_EFFECT.CUE_UPDATED);
     } else {
-      toast.error("큐 수정에 실패했습니다.");
+      toast.error(TOAST.STAGE_EFFECT.CUE_UPDATE_ERROR);
     }
     setEditTarget(null);
   }
@@ -910,9 +911,9 @@ export function StageEffectCard({
     if (!entry) return;
     const ok = deleteEntry(entry.id);
     if (ok) {
-      toast.success("큐가 삭제되었습니다.");
+      toast.success(TOAST.STAGE_EFFECT.CUE_DELETED);
     } else {
-      toast.error("큐 삭제에 실패했습니다.");
+      toast.error(TOAST.STAGE_EFFECT.CUE_DELETE_ERROR);
     }
   }
 

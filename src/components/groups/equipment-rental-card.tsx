@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Package,
   ChevronDown,
@@ -358,11 +359,11 @@ export function EquipmentRentalCard({ groupId, memberNames = [] }: Props) {
   async function handleSaveItem() {
     const { name, category, totalQuantity, description } = itemForm;
     if (!name.trim()) {
-      toast.error("장비 이름을 입력해주세요.");
+      toast.error(TOAST.EQUIPMENT_RENTAL.NAME_REQUIRED);
       return;
     }
     if (totalQuantity < 1) {
-      toast.error("수량은 1 이상이어야 합니다.");
+      toast.error(TOAST.EQUIPMENT_RENTAL.QUANTITY_MIN);
       return;
     }
 
@@ -381,7 +382,7 @@ export function EquipmentRentalCard({ groupId, memberNames = [] }: Props) {
           availableQuantity: newAvail,
           description: description.trim() || undefined,
         });
-        toast.success("장비 정보가 수정되었습니다.");
+        toast.success(TOAST.EQUIPMENT_RENTAL.UPDATED);
       } else {
         await addItem({
           name: name.trim(),
@@ -390,11 +391,11 @@ export function EquipmentRentalCard({ groupId, memberNames = [] }: Props) {
           availableQuantity: totalQuantity,
           description: description.trim() || undefined,
         });
-        toast.success("장비가 추가되었습니다.");
+        toast.success(TOAST.EQUIPMENT_RENTAL.ADDED);
       }
       setItemDialog({ open: false, editing: null });
     } catch {
-      toast.error("저장 중 오류가 발생했습니다.");
+      toast.error(TOAST.EQUIPMENT_RENTAL.SAVE_ERROR);
     }
   }
 
@@ -403,9 +404,9 @@ export function EquipmentRentalCard({ groupId, memberNames = [] }: Props) {
   async function handleDeleteItem(id: string) {
     try {
       await deleteItem(id);
-      toast.success("장비가 삭제되었습니다.");
+      toast.success(TOAST.EQUIPMENT_RENTAL.DELETED);
     } catch {
-      toast.error("삭제 중 오류가 발생했습니다.");
+      toast.error(TOAST.EQUIPMENT_RENTAL.DELETE_ERROR);
     }
   }
 
@@ -424,11 +425,11 @@ export function EquipmentRentalCard({ groupId, memberNames = [] }: Props) {
   async function handleRent() {
     const { borrower, dueDate } = rentForm;
     if (!borrower.trim()) {
-      toast.error("대여자를 입력해주세요.");
+      toast.error(TOAST.GROUP_EQUIPMENT.RENTER_REQUIRED);
       return;
     }
     if (!dueDate) {
-      toast.error("반납 예정일을 선택해주세요.");
+      toast.error(TOAST.EQUIPMENT_RENTAL.RETURN_DATE_REQUIRED);
       return;
     }
     if (!rentDialog.item) return;
@@ -438,7 +439,7 @@ export function EquipmentRentalCard({ groupId, memberNames = [] }: Props) {
       toast.success(`${rentDialog.item.name} 대여 처리 완료`);
       setRentDialog({ open: false, item: null });
     } catch {
-      toast.error("대여 처리 중 오류가 발생했습니다.");
+      toast.error(TOAST.GROUP_EQUIPMENT.RENTAL_ERROR);
     }
   }
 
@@ -451,9 +452,9 @@ export function EquipmentRentalCard({ groupId, memberNames = [] }: Props) {
   ) {
     try {
       await returnItem(itemId, rentalId, condition);
-      toast.success("반납 처리 완료");
+      toast.success(TOAST.EQUIPMENT_RENTAL.RETURN_DONE);
     } catch {
-      toast.error("반납 처리 중 오류가 발생했습니다.");
+      toast.error(TOAST.EQUIPMENT_RENTAL.RETURN_ERROR);
     }
   }
 

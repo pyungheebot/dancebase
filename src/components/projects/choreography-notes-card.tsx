@@ -31,6 +31,7 @@ import {
   AlignLeft,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 
 // ============================================
@@ -95,11 +96,11 @@ function AddSectionForm({ noteId, onAdd, sectionCount }: AddSectionFormProps) {
 
   async function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("구간 제목을 입력하세요.");
+      toast.error(TOAST.CHOREO_NOTES.SECTION_TITLE_REQUIRED);
       return;
     }
     if (!form.startTime.trim() || !form.endTime.trim()) {
-      toast.error("시작/종료 시간을 입력하세요.");
+      toast.error(TOAST.CHOREO_NOTES.SECTION_TIME_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -111,11 +112,11 @@ function AddSectionForm({ noteId, onAdd, sectionCount }: AddSectionFormProps) {
         formation: form.formation.trim(),
       });
       if (ok) {
-        toast.success("구간이 추가되었습니다.");
+        toast.success(TOAST.CHOREO_NOTES.SECTION_ADDED);
         setForm(EMPTY_SECTION_FORM);
         setOpen(false);
       } else {
-        toast.error("구간은 노트당 최대 20개까지 추가할 수 있습니다.");
+        toast.error(TOAST.CHOREO_NOTES.SECTION_MAX);
       }
     });
   }
@@ -392,16 +393,16 @@ export function ChoreographyNotesCard({
 
   function handleAddNote() {
     if (!newTitle.trim()) {
-      toast.error("곡명을 입력하세요.");
+      toast.error(TOAST.CHOREO_NOTES.SONG_REQUIRED);
       return;
     }
     const ok = addNote(newTitle.trim());
     if (ok) {
-      toast.success("안무 노트가 추가되었습니다.");
+      toast.success(TOAST.CHOREO_NOTES.NOTE_ADDED);
       setNewTitle("");
       setDialogOpen(false);
     } else {
-      toast.error("안무 노트는 최대 5개까지 추가할 수 있습니다.");
+      toast.error(TOAST.CHOREO_NOTES.NOTE_MAX);
     }
   }
 

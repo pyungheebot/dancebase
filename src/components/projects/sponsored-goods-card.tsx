@@ -214,16 +214,16 @@ export function SponsoredGoodsCard({
   // ── 아이템 저장 ──
   async function handleItemSave() {
     if (!itemForm.itemName.trim()) {
-      toast.error("물품명을 입력해주세요.");
+      toast.error(TOAST.SPONSORED_GOODS.ITEM_NAME_REQUIRED);
       return;
     }
     if (!itemForm.sponsor.trim()) {
-      toast.error("스폰서명을 입력해주세요.");
+      toast.error(TOAST.SPONSORED_GOODS.SPONSOR_NAME_REQUIRED);
       return;
     }
     const qty = parseInt(itemForm.quantity, 10);
     if (isNaN(qty) || qty < 1) {
-      toast.error("수량은 1 이상의 숫자여야 합니다.");
+      toast.error(TOAST.SPONSORED_GOODS.QUANTITY_REQUIRED);
       return;
     }
 
@@ -245,10 +245,10 @@ export function SponsoredGoodsCard({
 
       if (editTarget) {
         await updateItem(editTarget.id, payload);
-        toast.success("물품 정보가 수정되었습니다.");
+        toast.success(TOAST.SPONSORED_GOODS.ITEM_UPDATED);
       } else {
         await addItem(payload);
-        toast.success("협찬품이 추가되었습니다.");
+        toast.success(TOAST.SPONSORED_GOODS.ITEM_ADDED);
       }
       setItemDialogOpen(false);
     } catch {
@@ -275,9 +275,9 @@ export function SponsoredGoodsCard({
   ) {
     try {
       await updateStatus(itemId, status);
-      toast.success("상태가 변경되었습니다.");
+      toast.success(TOAST.UPDATE_SUCCESS);
     } catch {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   }
 
@@ -294,12 +294,12 @@ export function SponsoredGoodsCard({
     if (!distTarget) return;
     const memberName = distMember.trim();
     if (!memberName) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.SPONSORED_GOODS.MEMBER_REQUIRED);
       return;
     }
     const qty = parseInt(distQty, 10);
     if (isNaN(qty) || qty < 1) {
-      toast.error("수량은 1 이상이어야 합니다.");
+      toast.error(TOAST.SPONSORED_GOODS.DISTRIBUTE_QUANTITY_REQUIRED);
       return;
     }
     const remaining = getRemainingQuantity(distTarget.id);
@@ -315,10 +315,10 @@ export function SponsoredGoodsCard({
         toast.success(`${memberName}에게 ${qty}개 배분되었습니다.`);
         setDistDialogOpen(false);
       } else {
-        toast.error("배분에 실패했습니다.");
+        toast.error(TOAST.SPONSORED_GOODS.DISTRIBUTE_ERROR);
       }
     } catch {
-      toast.error("배분에 실패했습니다.");
+      toast.error(TOAST.SPONSORED_GOODS.DISTRIBUTE_ERROR);
     } finally {
       setDistSaving(false);
     }

@@ -104,19 +104,19 @@ function CreateCapsuleDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("캡슐 제목을 입력해주세요.");
+      toast.error(TOAST.TIME_CAPSULE_CARD.TITLE_REQUIRED);
       return;
     }
     if (!openDate) {
-      toast.error("개봉일을 선택해주세요.");
+      toast.error(TOAST.TIME_CAPSULE.OPEN_DATE_PAST);
       return;
     }
     const success = onCreate(title.trim(), dateToYMD(openDate));
     if (!success) {
-      toast.error("타임캡슐은 최대 30개까지 생성할 수 있습니다.");
+      toast.error(TOAST.TIME_CAPSULE.MAX_EXCEEDED);
       return;
     }
-    toast.success("타임캡슐이 생성되었습니다.");
+    toast.success(TOAST.TIME_CAPSULE.CREATED);
     reset();
     onOpenChange(false);
   };
@@ -262,7 +262,7 @@ function CreateEntryDialog({
     const trimmed = repertoireInput.trim();
     if (!trimmed) return;
     if (repertoire.includes(trimmed)) {
-      toast.error("이미 추가된 레퍼토리입니다.");
+      toast.error(TOAST.TIME_CAPSULE_CARD.ALREADY_ADDED);
       return;
     }
     setRepertoire((prev) => [...prev, trimmed]);
@@ -276,11 +276,11 @@ function CreateEntryDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("캡슐 제목을 입력해주세요.");
+      toast.error(TOAST.TIME_CAPSULE_CARD.TITLE_REQUIRED);
       return;
     }
     if (!openDate) {
-      toast.error("개봉 예정일을 선택해주세요.");
+      toast.error(TOAST.TIME_CAPSULE.OPEN_DATE_REQUIRED);
       return;
     }
     const success = onCreate({
@@ -291,10 +291,10 @@ function CreateEntryDialog({
       photoUrl: photoUrl.trim() || undefined,
     });
     if (!success) {
-      toast.error("타임캡슐은 최대 30개까지 생성할 수 있습니다.");
+      toast.error(TOAST.TIME_CAPSULE_CARD.MAX_LIMIT);
       return;
     }
-    toast.success("스냅샷 타임캡슐이 생성되었습니다.");
+    toast.success(TOAST.TIME_CAPSULE_CARD.CREATED);
     reset();
     onOpenChange(false);
   };
@@ -510,19 +510,19 @@ function AddMessageForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!authorName.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.TIME_CAPSULE_CARD.NAME_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("메시지 내용을 입력해주세요.");
+      toast.error(TOAST.TIME_CAPSULE_CARD.MESSAGE_REQUIRED);
       return;
     }
     const success = onAdd(capsuleId, authorName.trim(), content.trim());
     if (!success) {
-      toast.error("메시지 추가에 실패했습니다.");
+      toast.error(TOAST.TIME_CAPSULE_CARD.MESSAGE_ADD_ERROR);
       return;
     }
-    toast.success("메시지가 추가되었습니다.");
+    toast.success(TOAST.TIME_CAPSULE_CARD.MESSAGE_ADDED);
     setAuthorName("");
     setContent("");
     setExpanded(false);
@@ -694,8 +694,8 @@ function CapsuleItem({
           className="h-7 text-xs w-full bg-amber-500 hover:bg-amber-600 text-white"
           onClick={() => {
             const ok = onOpen(capsule.id);
-            if (ok) toast.success("타임캡슐이 개봉되었습니다!");
-            else toast.error("개봉에 실패했습니다.");
+            if (ok) toast.success(TOAST.TIME_CAPSULE.OPENED);
+            else toast.error(TOAST.TIME_CAPSULE.OPEN_ERROR);
           }}
         >
           <LockOpen className="h-3 w-3 mr-1" />
@@ -801,8 +801,8 @@ function CapsuleItem({
             className="h-7 text-xs w-full border-dashed text-muted-foreground hover:text-foreground hover:border-solid"
             onClick={() => {
               const ok = onSeal(capsule.id);
-              if (ok) toast.success("타임캡슐이 봉인되었습니다.");
-              else toast.error("봉인에 실패했습니다.");
+              if (ok) toast.success(TOAST.TIME_CAPSULE.SEALED);
+              else toast.error(TOAST.TIME_CAPSULE_CARD.SEAL_ERROR);
             }}
           >
             <Lock className="h-3 w-3 mr-1" />
@@ -980,8 +980,8 @@ function EntryItem({
           className="h-7 text-xs w-full bg-amber-500 hover:bg-amber-600 text-white"
           onClick={() => {
             const ok = onOpen(entry.id);
-            if (ok) toast.success("스냅샷 타임캡슐이 개봉되었습니다!");
-            else toast.error("개봉에 실패했습니다.");
+            if (ok) toast.success(TOAST.TIME_CAPSULE_CARD.OPENED);
+            else toast.error(TOAST.TIME_CAPSULE_CARD.OPEN_ERROR);
           }}
         >
           <LockOpen className="h-3 w-3 mr-1" />
@@ -1167,8 +1167,8 @@ function EntryItem({
             className="h-7 text-xs w-full border-dashed text-muted-foreground hover:text-foreground hover:border-solid"
             onClick={() => {
               const ok = onSeal(entry.id);
-              if (ok) toast.success("스냅샷 타임캡슐이 봉인되었습니다.");
-              else toast.error("봉인에 실패했습니다.");
+              if (ok) toast.success(TOAST.TIME_CAPSULE_CARD.SEALED);
+              else toast.error(TOAST.TIME_CAPSULE_CARD.SEAL_ERROR);
             }}
           >
             <Lock className="h-3 w-3 mr-1" />
@@ -1221,7 +1221,7 @@ export function TimeCapsuleCard({ groupId }: TimeCapsuleCardProps) {
 
   const handleDelete = (id: string) => {
     deleteCapsule(id);
-    toast.success("타임캡슐이 삭제되었습니다.");
+    toast.success(TOAST.TIME_CAPSULE.DELETED);
   };
 
   const sortedCapsules = [...capsules].sort((a, b) => {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Flag,
   ChevronDown,
@@ -122,21 +123,21 @@ function AddMissionDialog({ memberNames, onAdd }: AddMissionDialogProps) {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("미션 제목을 입력해주세요.");
+      toast.error(TOAST.MISSION_BOARD.TITLE_REQUIRED);
       return;
     }
     if (!description.trim()) {
-      toast.error("미션 설명을 입력해주세요.");
+      toast.error(TOAST.MISSION_BOARD.DESC_REQUIRED);
       return;
     }
     const pts = parseInt(points, 10);
     if (isNaN(pts) || pts <= 0) {
-      toast.error("포인트는 1 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.MISSION_BOARD.POINTS_MIN);
       return;
     }
     const maxComp = maxCompletions ? parseInt(maxCompletions, 10) : undefined;
     if (maxCompletions && (isNaN(maxComp!) || maxComp! <= 0)) {
-      toast.error("최대 완료 수는 1 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.MISSION_BOARD.MAX_COUNT_MIN);
       return;
     }
 
@@ -150,7 +151,7 @@ function AddMissionDialog({ memberNames, onAdd }: AddMissionDialogProps) {
       createdBy || undefined
     );
 
-    toast.success("미션이 추가되었습니다.");
+    toast.success(TOAST.MISSION_BOARD.ADDED);
     setTitle("");
     setDescription("");
     setDifficulty("medium");
@@ -610,12 +611,12 @@ export function MissionBoardCard({
 
   const handleComplete = (id: string) => {
     if (!currentMemberName) {
-      toast.error("완료 처리를 위해 멤버 이름이 필요합니다.");
+      toast.error(TOAST.MISSION_BOARD.MEMBER_REQUIRED);
       return;
     }
     const result = completeMission(id, currentMemberName);
     if (result.ok) {
-      toast.success("미션을 완료했습니다!");
+      toast.success(TOAST.MISSION_BOARD.COMPLETED);
     } else {
       toast.error(result.reason ?? "미션 완료 처리에 실패했습니다.");
     }
@@ -629,16 +630,16 @@ export function MissionBoardCard({
         mission?.isActive ? "미션이 비활성화되었습니다." : "미션이 활성화되었습니다."
       );
     } else {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.MISSION_BOARD.STATUS_ERROR);
     }
   };
 
   const handleDelete = (id: string) => {
     const ok = deleteMission(id);
     if (ok) {
-      toast.success("미션이 삭제되었습니다.");
+      toast.success(TOAST.MISSION_BOARD.DELETED);
     } else {
-      toast.error("미션 삭제에 실패했습니다.");
+      toast.error(TOAST.MISSION_BOARD.DELETE_ERROR);
     }
   };
 

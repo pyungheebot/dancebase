@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   usePracticeGoalBoard,
   type AddGoalParams,
@@ -150,7 +151,7 @@ function SubTaskSection({
     if (ok) {
       setInput("");
     } else {
-      toast.error("하위 목표 추가에 실패했습니다.");
+      toast.error(TOAST.GOAL_BOARD.SUB_GOAL_ADD_ERROR);
     }
   };
 
@@ -394,7 +395,7 @@ function AddGoalForm({ onAdd }: { onAdd: (params: AddGoalParams) => boolean }) {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("목표 제목을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_GOAL_BOARD.TITLE_REQUIRED);
       return;
     }
     const assignees = assigneesRaw
@@ -409,7 +410,7 @@ function AddGoalForm({ onAdd }: { onAdd: (params: AddGoalParams) => boolean }) {
       assignees,
     });
     if (ok) {
-      toast.success("목표가 추가되었습니다.");
+      toast.success(TOAST.PRACTICE_GOAL_BOARD.ADDED);
       setTitle("");
       setDescription("");
       setCategory("choreography");
@@ -417,7 +418,7 @@ function AddGoalForm({ onAdd }: { onAdd: (params: AddGoalParams) => boolean }) {
       setAssigneesRaw("");
       setOpen(false);
     } else {
-      toast.error("목표 추가에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_GOAL_BOARD.ADD_ERROR);
     }
   };
 
@@ -547,7 +548,7 @@ export function PracticeGoalBoardCard({ groupId }: PracticeGoalBoardCardProps) {
 
   const handleDelete = (id: string) => {
     deleteGoal(id);
-    toast.success("목표가 삭제되었습니다.");
+    toast.success(TOAST.PRACTICE_GOAL_BOARD.DELETED);
   };
 
   const filteredEntries: PracticeGoalEntry[] =

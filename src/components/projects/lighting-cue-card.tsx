@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useLightingCue,
   parseTimestamp,
@@ -349,7 +350,7 @@ function AddCueDialog({ open, onOpenChange, onAdd }: AddCueDialogProps) {
       return;
     }
     if (!form.zone.trim()) {
-      toast.error("구역을 입력해주세요.");
+      toast.error(TOAST.LIGHTING_CUE.ZONE_REQUIRED);
       return;
     }
 
@@ -361,7 +362,7 @@ function AddCueDialog({ open, onOpenChange, onAdd }: AddCueDialogProps) {
       form.zone.trim(),
       form.notes.trim() || undefined
     );
-    toast.success("조명 큐가 추가되었습니다.");
+    toast.success(TOAST.LIGHTING_CUE.CUE_ADDED);
     handleClose();
   }
 
@@ -561,7 +562,7 @@ export function LightingCueCard({ groupId, projectId }: LightingCueCardProps) {
 
   function handleDelete(id: string) {
     deleteCue(id);
-    toast.success("큐가 삭제되었습니다.");
+    toast.success(TOAST.LIGHTING_CUE.CUE_DELETED);
   }
 
   return (

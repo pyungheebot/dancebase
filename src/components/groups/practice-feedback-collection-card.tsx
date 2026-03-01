@@ -34,6 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePracticeFeedbackSession } from "@/hooks/use-practice-feedback-session";
 import type {
   PracticeFeedbackSession,
@@ -377,14 +378,14 @@ function CreateSessionDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!date) {
-      toast.error("연습 날짜를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_FEEDBACK_COLLECTION.DATE_REQUIRED);
       return;
     }
     onCreate({
       practiceDate: dateToYMD(date),
       title: title.trim() || undefined,
     });
-    toast.success("피드백 세션이 생성되었습니다.");
+    toast.success(TOAST.PRACTICE_FEEDBACK.SESSION_CREATED);
     reset();
     onOpenChange(false);
   };
@@ -535,7 +536,7 @@ function SubmitFeedbackDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAnonymous && !authorName.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_FEEDBACK_COLLECTION.NAME_REQUIRED);
       return;
     }
 
@@ -549,10 +550,10 @@ function SubmitFeedbackDialog({
     });
 
     if (!ok) {
-      toast.error("피드백 제출에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_FEEDBACK.SUBMIT_ERROR);
       return;
     }
-    toast.success("피드백이 제출되었습니다.");
+    toast.success(TOAST.PRACTICE_FEEDBACK.SUBMITTED);
     reset();
     onOpenChange(false);
   };
@@ -749,7 +750,7 @@ export function PracticeFeedbackCollectionCard({
 
   const handleDeleteSession = (sessionId: string) => {
     deleteSession(sessionId);
-    toast.success("세션이 삭제되었습니다.");
+    toast.success(TOAST.PRACTICE_FEEDBACK_COLLECTION.SESSION_DELETED);
   };
 
   return (

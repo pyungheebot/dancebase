@@ -47,6 +47,7 @@ import {
   PackageOpen,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // ============================================
 // 시간대 헬퍼
@@ -197,7 +198,7 @@ function ItemDialog({
 
   function handleSubmit() {
     if (!title.trim()) {
-      toast.error("항목명을 입력하세요.");
+      toast.error(TOAST.ITEM_TITLE_REQUIRED);
       return;
     }
     onSubmit(timeSlot, title.trim(), priority, assignedTo.trim() || undefined);
@@ -446,9 +447,9 @@ export function ShowDayChecklistCard({ projectId }: { projectId: string }) {
   ) {
     const ok = addItem(timeSlot, title, priority, assignedTo);
     if (ok) {
-      toast.success("항목이 추가되었습니다.");
+      toast.success(TOAST.ITEM_ADDED);
     } else {
-      toast.error("항목명을 입력하세요.");
+      toast.error(TOAST.ITEM_TITLE_REQUIRED);
     }
   }
 
@@ -460,13 +461,13 @@ export function ShowDayChecklistCard({ projectId }: { projectId: string }) {
   ) {
     if (!editTarget) return;
     updateItem(editTarget.id, { timeSlot, title, priority, assignedTo });
-    toast.success("항목이 수정되었습니다.");
+    toast.success(TOAST.ITEM_UPDATED);
     setEditTarget(null);
   }
 
   function handleDelete(id: string) {
     deleteItem(id);
-    toast.success("항목이 삭제되었습니다.");
+    toast.success(TOAST.ITEM_DELETED);
   }
 
   function handleToggle(id: string) {
@@ -474,7 +475,7 @@ export function ShowDayChecklistCard({ projectId }: { projectId: string }) {
     if (!item) return;
     toggleCompleted(id);
     if (!item.completed) {
-      toast.success("완료 처리되었습니다.");
+      toast.success(TOAST.UPDATE_SUCCESS);
     }
   }
 

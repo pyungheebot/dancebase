@@ -953,7 +953,7 @@ export function PracticeRoomBookingCard({ groupId }: { groupId: string }) {
       costPerHour: parseInt(v.costPerHour, 10),
       contact: v.contact.trim(),
     });
-    toast.success("연습실이 등록되었습니다.");
+    toast.success(TOAST.PRACTICE_ROOM_BOOKING.ROOM_REGISTERED);
   }
 
   function handleUpdateRoom(id: string, v: RoomFormValues) {
@@ -964,13 +964,13 @@ export function PracticeRoomBookingCard({ groupId }: { groupId: string }) {
       costPerHour: parseInt(v.costPerHour, 10),
       contact: v.contact.trim(),
     });
-    if (ok) toast.success("연습실 정보가 수정되었습니다.");
+    if (ok) toast.success(TOAST.PRACTICE_ROOM_BOOKING.ROOM_UPDATED);
     else toast.error(TOAST.UPDATE_ERROR);
   }
 
   function handleDeleteRoom(id: string) {
     const ok = deleteRoom(id);
-    if (ok) toast.success("연습실이 삭제되었습니다.");
+    if (ok) toast.success(TOAST.PRACTICE_ROOM_BOOKING.ROOM_DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 
@@ -991,8 +991,8 @@ export function PracticeRoomBookingCard({ groupId }: { groupId: string }) {
       memo: v.memo.trim(),
       status: "예약됨",
     });
-    if (result) toast.success("예약이 생성되었습니다.");
-    else toast.error("예약 생성에 실패했습니다. 시간 충돌을 확인해주세요.");
+    if (result) toast.success(TOAST.PRACTICE_ROOM_BOOKING.BOOKING_CREATED);
+    else toast.error(TOAST.PRACTICE_ROOM_BOOKING.BOOKING_CREATE_ERROR);
   }
 
   function handleUpdateBooking(id: string, v: BookingFormValues) {
@@ -1011,13 +1011,13 @@ export function PracticeRoomBookingCard({ groupId }: { groupId: string }) {
       bookedBy: v.bookedBy.trim(),
       memo: v.memo.trim(),
     });
-    if (ok) toast.success("예약이 수정되었습니다.");
-    else toast.error("수정에 실패했습니다. 시간 충돌을 확인해주세요.");
+    if (ok) toast.success(TOAST.PRACTICE_ROOM_BOOKING.BOOKING_UPDATED);
+    else toast.error(TOAST.PRACTICE_ROOM_BOOKING.BOOKING_UPDATE_ERROR);
   }
 
   function handleDeleteBooking(id: string) {
     const ok = deleteBooking(id);
-    if (ok) toast.success("예약이 삭제되었습니다.");
+    if (ok) toast.success(TOAST.PRACTICE_ROOM_BOOKING.BOOKING_DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 

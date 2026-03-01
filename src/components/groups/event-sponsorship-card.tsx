@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Handshake,
   ChevronDown,
@@ -109,11 +110,11 @@ function AddSponsorForm({ onAdd, onClose }: AddSponsorFormProps) {
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("스폰서/협력사 이름을 입력해주세요.");
+      toast.error(TOAST.EVENT_SPONSORSHIP.NAME_REQUIRED);
       return;
     }
     if (!eventName.trim()) {
-      toast.error("연관 이벤트명을 입력해주세요.");
+      toast.error(TOAST.EVENT_SPONSORSHIP.EVENT_NAME_REQUIRED);
       return;
     }
     const ok = onAdd({
@@ -128,10 +129,10 @@ function AddSponsorForm({ onAdd, onClose }: AddSponsorFormProps) {
       note: note.trim(),
     });
     if (ok) {
-      toast.success("스폰서가 등록되었습니다.");
+      toast.success(TOAST.EVENT_SPONSORSHIP.REGISTERED);
       onClose();
     } else {
-      toast.error("스폰서 등록에 실패했습니다.");
+      toast.error(TOAST.EVENT_SPONSORSHIP.REGISTER_ERROR);
     }
   };
 
@@ -270,8 +271,8 @@ function StatusSelect({ sponsorId, current, onChangeStatus }: StatusSelectProps)
       value={current}
       onChange={(e) => {
         const ok = onChangeStatus(sponsorId, e.target.value as SponsorStatus);
-        if (ok) toast.success("상태가 변경되었습니다.");
-        else toast.error("상태 변경에 실패했습니다.");
+        if (ok) toast.success(TOAST.EVENT_SPONSORSHIP.STATUS_CHANGED);
+        else toast.error(TOAST.EVENT_SPONSORSHIP.STATUS_ERROR);
         setEditing(false);
       }}
       onBlur={() => setEditing(false)}
@@ -463,9 +464,9 @@ export function EventSponsorshipCard({ groupId }: EventSponsorshipCardProps) {
   const handleDelete = (sponsor: SponsorEntry) => {
     const ok = deleteSponsor(sponsor.id);
     if (ok) {
-      toast.success("스폰서가 삭제되었습니다.");
+      toast.success(TOAST.EVENT_SPONSORSHIP.DELETED);
     } else {
-      toast.error("스폰서 삭제에 실패했습니다.");
+      toast.error(TOAST.EVENT_SPONSORSHIP.DELETE_ERROR);
     }
   };
 
@@ -501,7 +502,7 @@ export function EventSponsorshipCard({ groupId }: EventSponsorshipCardProps) {
             variant="ghost"
             size="sm"
             className="h-7 w-7 p-0 text-gray-400"
-            onClick={() => { refetch(); toast.success("새로고침했습니다."); }}
+            onClick={() => { refetch(); toast.success(TOAST.EVENT_SPONSORSHIP.REFRESHED); }}
             title="새로고침"
           >
             <RefreshCw className="h-3.5 w-3.5" />

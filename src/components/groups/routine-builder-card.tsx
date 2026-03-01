@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useRoutineBuilder,
   BLOCK_TYPE_LABELS,
@@ -141,7 +142,7 @@ function AddBlockForm({ routineId, onAdd, onClose }: AddBlockFormProps) {
 
   const handleSubmit = () => {
     if (durationMinutes < 1 || durationMinutes > 300) {
-      toast.error("시간은 1~300분 사이로 입력해주세요.");
+      toast.error(TOAST.ROUTINE_BUILDER.TIME_RANGE);
       return;
     }
     const ok = onAdd(routineId, {
@@ -151,10 +152,10 @@ function AddBlockForm({ routineId, onAdd, onClose }: AddBlockFormProps) {
       description: description.trim(),
     });
     if (ok) {
-      toast.success("블록이 추가되었습니다.");
+      toast.success(TOAST.ROUTINE_BUILDER.BLOCK_ADDED);
       onClose();
     } else {
-      toast.error("블록 추가에 실패했습니다.");
+      toast.error(TOAST.ROUTINE_BUILDER.BLOCK_ADD_ERROR);
     }
   };
 
@@ -356,7 +357,7 @@ function RoutineEditor({
               onMoveDown={() => onMoveBlock(routine.id, block.id, "down")}
               onDelete={() => {
                 onDeleteBlock(routine.id, block.id);
-                toast.success("블록이 삭제되었습니다.");
+                toast.success(TOAST.ROUTINE_BUILDER.BLOCK_DELETED);
               }}
             />
           ))}
@@ -540,7 +541,7 @@ function CreateRoutineForm({ onCreate, onClose }: CreateRoutineFormProps) {
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("루틴 이름을 입력해주세요.");
+      toast.error(TOAST.ROUTINE_BUILDER.NAME_REQUIRED);
       return;
     }
     const result = onCreate(name.trim());
@@ -548,7 +549,7 @@ function CreateRoutineForm({ onCreate, onClose }: CreateRoutineFormProps) {
       toast.success(`"${result.name}" 루틴이 생성되었습니다.`);
       onClose();
     } else {
-      toast.error("루틴 생성에 실패했습니다.");
+      toast.error(TOAST.ROUTINE_BUILDER.CREATE_ERROR);
     }
   };
 
@@ -616,7 +617,7 @@ export function RoutineBuilderCard({ groupId }: RoutineBuilderCardProps) {
     if (result) {
       toast.success(`"${result.name}"으로 복제되었습니다.`);
     } else {
-      toast.error("복제에 실패했습니다.");
+      toast.error(TOAST.ROUTINE_BUILDER.CLONE_ERROR);
     }
   };
 

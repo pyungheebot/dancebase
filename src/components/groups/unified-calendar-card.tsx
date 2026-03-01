@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useUnifiedCalendar,
   UNIFIED_EVENT_TYPE_LABELS,
@@ -141,15 +142,15 @@ function AddEventDialog({
 
   const handleSubmit = () => {
     if (!form.title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.UNIFIED_CALENDAR.TITLE_REQUIRED);
       return;
     }
     if (!form.date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.UNIFIED_CALENDAR.DATE_REQUIRED);
       return;
     }
     if (!form.isAllDay && form.startTime >= form.endTime) {
-      toast.error("종료 시간은 시작 시간보다 늦어야 합니다.");
+      toast.error(TOAST.UNIFIED_CALENDAR.END_AFTER_START);
       return;
     }
     onAdd({
@@ -167,7 +168,7 @@ function AddEventDialog({
     });
     setForm({ ...DEFAULT_FORM, date: defaultDate ?? todayStr() });
     onClose();
-    toast.success("일정이 추가되었습니다.");
+    toast.success(TOAST.UNIFIED_CALENDAR.ADDED);
   };
 
   const handleClose = () => {
@@ -675,7 +676,7 @@ export function UnifiedCalendarCard({
 
   const handleDeleteEvent = (id: string) => {
     deleteEvent(id);
-    toast.success("일정이 삭제되었습니다.");
+    toast.success(TOAST.UNIFIED_CALENDAR.DELETED);
   };
 
   const handleSelectDate = (date: string) => {

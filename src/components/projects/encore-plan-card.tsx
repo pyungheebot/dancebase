@@ -199,12 +199,12 @@ export function EncorePlanCard({
   // ── 플랜 저장 ──
   async function handlePlanSave() {
     if (!planForm.planName.trim()) {
-      toast.error("플랜 이름을 입력해주세요.");
+      toast.error(TOAST.ENCORE.PLAN_NAME_REQUIRED);
       return;
     }
     const maxEncoresNum = parseInt(planForm.maxEncores, 10);
     if (isNaN(maxEncoresNum) || maxEncoresNum < 1) {
-      toast.error("최대 앵콜 수는 1 이상이어야 합니다.");
+      toast.error(TOAST.ENCORE.MAX_ENCORE_REQUIRED);
       return;
     }
     setPlanSaving(true);
@@ -220,11 +220,11 @@ export function EncorePlanCard({
       };
       if (editPlanTarget) {
         await updatePlan(editPlanTarget.id, payload);
-        toast.success("플랜이 수정되었습니다.");
+        toast.success(TOAST.ENCORE.PLAN_UPDATED);
       } else {
         const newPlan = await addPlan(payload);
         setSelectedPlanId(newPlan.id);
-        toast.success("플랜이 추가되었습니다.");
+        toast.success(TOAST.ENCORE.PLAN_ADDED);
       }
       setPlanDialogOpen(false);
     } catch {
@@ -270,12 +270,12 @@ export function EncorePlanCard({
   async function handleSongSave() {
     if (!currentPlan) return;
     if (!songForm.songTitle.trim()) {
-      toast.error("곡 제목을 입력해주세요.");
+      toast.error(TOAST.ENCORE.SONG_TITLE_REQUIRED);
       return;
     }
     const dur = parseInt(songForm.durationSeconds, 10);
     if (!songForm.durationSeconds || isNaN(dur) || dur < 1) {
-      toast.error("곡 길이는 1초 이상이어야 합니다.");
+      toast.error(TOAST.ENCORE.SONG_DURATION_REQUIRED);
       return;
     }
     setSongSaving(true);
@@ -289,10 +289,10 @@ export function EncorePlanCard({
       };
       if (editSongTarget) {
         await updateSong(currentPlan.id, editSongTarget.id, payload);
-        toast.success("곡이 수정되었습니다.");
+        toast.success(TOAST.ENCORE.SONG_UPDATED);
       } else {
         await addSong(currentPlan.id, payload);
-        toast.success("곡이 추가되었습니다.");
+        toast.success(TOAST.ENCORE.SONG_ADDED);
       }
       setSongDialogOpen(false);
     } catch {
@@ -307,7 +307,7 @@ export function EncorePlanCard({
     if (!currentPlan) return;
     try {
       await deleteSong(currentPlan.id, song.id);
-      toast.success("곡이 삭제되었습니다.");
+      toast.success(TOAST.ENCORE.SONG_DELETED);
     } catch {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -325,7 +325,7 @@ export function EncorePlanCard({
     try {
       await reorderSongs(currentPlan.id, sorted.map((s) => s.id));
     } catch {
-      toast.error("순서 변경에 실패했습니다.");
+      toast.error(TOAST.ORDER_ERROR);
     }
   }
 

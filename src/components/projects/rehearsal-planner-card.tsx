@@ -24,6 +24,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useRehearsalPlanner } from "@/hooks/use-rehearsal-planner";
 import type { RehearsalWeek } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -95,11 +96,11 @@ function CreatePlanForm({ onSubmit }: CreatePlanFormProps) {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("공연 제목을 입력해주세요");
+      toast.error(TOAST.REHEARSAL_PLANNER.SHOW_TITLE_REQUIRED);
       return;
     }
     if (!performanceDate) {
-      toast.error("공연 날짜를 선택해주세요");
+      toast.error(TOAST.REHEARSAL_PLANNER.DATE_REQUIRED);
       return;
     }
     const today = new Date();
@@ -107,11 +108,11 @@ function CreatePlanForm({ onSubmit }: CreatePlanFormProps) {
     const perf = new Date(performanceDate);
     perf.setHours(0, 0, 0, 0);
     if (perf <= today) {
-      toast.error("공연 날짜는 오늘 이후여야 합니다");
+      toast.error(TOAST.REHEARSAL_PLANNER.DATE_FUTURE);
       return;
     }
     onSubmit(performanceDate, title.trim());
-    toast.success("리허설 플래너가 생성되었습니다");
+    toast.success(TOAST.REHEARSAL_PLANNER.CREATED);
   };
 
   return (
@@ -378,7 +379,7 @@ export function RehearsalPlannerCard({
               description="현재 리허설 플랜과 모든 체크 기록이 삭제됩니다. 이 작업은 되돌릴 수 없습니다."
               onConfirm={() => {
                 deletePlan();
-                toast.success("리허설 플래너가 초기화되었습니다");
+                toast.success(TOAST.REHEARSAL_PLANNER.RESET);
               }}
               destructive
             />

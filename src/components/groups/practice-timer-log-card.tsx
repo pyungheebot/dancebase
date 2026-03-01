@@ -361,11 +361,11 @@ function AddLogDialog({
     e.preventDefault();
     const mins = parseInt(duration, 10);
     if (!date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.PRACTICE_TIMER_LOG.DATE_REQUIRED);
       return;
     }
     if (isNaN(mins) || mins <= 0) {
-      toast.error("올바른 시간(분)을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_TIMER_LOG.TIME_INVALID);
       return;
     }
     void execute(async () => {
@@ -551,13 +551,13 @@ export function PracticeTimerLogCard({
     intensity: number
   ) {
     addLog(date, category, durationMinutes, memberName, description, intensity);
-    toast.success("연습 기록이 추가되었습니다.");
+    toast.success(TOAST.PRACTICE_TIMER_LOG.RECORD_ADDED);
   }
 
   function handleDelete(id: string) {
     const ok = deleteLog(id);
     if (ok) {
-      toast.success("기록이 삭제되었습니다.");
+      toast.success(TOAST.PRACTICE_TIMER_LOG.RECORD_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

@@ -37,6 +37,7 @@ import {
   CalendarIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { SkillMatrixLevel } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
 
@@ -318,12 +319,12 @@ export function SkillMatrixCard({ groupId }: SkillMatrixCardProps) {
   function handleAddSkill() {
     const name = skillInput.trim();
     if (!name) {
-      toast.error("기술 이름을 입력하세요");
+      toast.error(TOAST.SKILL_MATRIX.SKILL_NAME_REQUIRED);
       return;
     }
     const ok = addSkill({ name, category: skillCategory || undefined });
     if (!ok) {
-      toast.error("이미 존재하는 기술입니다");
+      toast.error(TOAST.SKILL_MATRIX.SKILL_EXISTS);
       return;
     }
     toast.success(`'${name}' 기술이 추가되었습니다`);
@@ -340,12 +341,12 @@ export function SkillMatrixCard({ groupId }: SkillMatrixCardProps) {
   function handleAddMember() {
     const name = memberInput.trim();
     if (!name) {
-      toast.error("멤버 이름을 입력하세요");
+      toast.error(TOAST.SKILL_MATRIX.MEMBER_REQUIRED);
       return;
     }
     const ok = addMember(name);
     if (!ok) {
-      toast.error("이미 존재하는 멤버입니다");
+      toast.error(TOAST.SKILL_MATRIX.MEMBER_EXISTS);
       return;
     }
     toast.success(`'${name}' 멤버가 추가되었습니다`);
@@ -402,7 +403,7 @@ export function SkillMatrixCard({ groupId }: SkillMatrixCardProps) {
   }) {
     if (!detailDialog) return;
     updateScore(detailDialog.memberName, detailDialog.skillId, params);
-    toast.success("업데이트되었습니다");
+    toast.success(TOAST.SKILL_MATRIX.UPDATED);
   }
 
   // ── 로딩 ────────────────────────────────────────────────

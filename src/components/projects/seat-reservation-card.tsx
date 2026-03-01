@@ -36,6 +36,7 @@ import {
   Unlock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSeatReservation } from "@/hooks/use-seat-reservation";
 import type {
   SeatReservationLayout,
@@ -143,28 +144,28 @@ export function SeatReservationCard({
   // ── 배치 생성 ──
   async function handleLayoutCreate() {
     if (!layoutForm.name.trim()) {
-      toast.error("배치 이름을 입력해주세요.");
+      toast.error(TOAST.SEATING.LAYOUT_NAME_REQUIRED);
       return;
     }
     const rows = parseInt(layoutForm.rows, 10);
     const seatsPerRow = parseInt(layoutForm.seatsPerRow, 10);
     if (isNaN(rows) || rows < 1 || rows > 26) {
-      toast.error("행 수는 1~26 사이여야 합니다.");
+      toast.error(TOAST.SEATING.ROW_RANGE);
       return;
     }
     if (isNaN(seatsPerRow) || seatsPerRow < 1 || seatsPerRow > 50) {
-      toast.error("행당 좌석 수는 1~50 사이여야 합니다.");
+      toast.error(TOAST.SEATING.SEAT_PER_ROW_RANGE);
       return;
     }
 
     setLayoutSaving(true);
     try {
       await createLayout(layoutForm.name.trim(), rows, seatsPerRow);
-      toast.success("좌석 배치가 생성되었습니다.");
+      toast.success(TOAST.SEATING.LAYOUT_CREATED);
       setLayoutDialogOpen(false);
       setLayoutForm(emptyLayoutForm());
     } catch {
-      toast.error("배치 생성에 실패했습니다.");
+      toast.error(TOAST.SEATING.LAYOUT_CREATE_ERROR);
     } finally {
       setLayoutSaving(false);
     }
@@ -179,7 +180,7 @@ export function SeatReservationCard({
       }
       toast.success(`'${layoutName}' 배치가 삭제되었습니다.`);
     } catch {
-      toast.error("배치 삭제에 실패했습니다.");
+      toast.error(TOAST.SEATING.LAYOUT_DELETE_ERROR);
     }
   }
 
@@ -204,11 +205,11 @@ export function SeatReservationCard({
   async function handleReserveSave() {
     if (!selectedLayoutId || !selectedSeat) return;
     if (!reserveForm.reservedBy.trim()) {
-      toast.error("예약자 이름을 입력해주세요.");
+      toast.error(TOAST.SEATING.RESERVER_REQUIRED);
       return;
     }
     if (!reserveForm.reservedFor.trim()) {
-      toast.error("관객 이름을 입력해주세요.");
+      toast.error(TOAST.SEATING.AUDIENCE_REQUIRED);
       return;
     }
 
@@ -225,7 +226,7 @@ export function SeatReservationCard({
       toast.success(`${selectedSeat.seatLabel} 좌석이 예약되었습니다.`);
       setSeatDialogOpen(false);
     } catch {
-      toast.error("예약에 실패했습니다.");
+      toast.error(TOAST.SEATING.RESERVE_ERROR);
     } finally {
       setSeatSaving(false);
     }
@@ -241,7 +242,7 @@ export function SeatReservationCard({
       toast.success(`${selectedSeat.seatLabel} 좌석 예약이 취소되었습니다.`);
       setSeatDialogOpen(false);
     } catch {
-      toast.error("예약 취소에 실패했습니다.");
+      toast.error(TOAST.SEATING.CANCEL_ERROR);
     } finally {
       setSeatSaving(false);
     }
@@ -262,7 +263,7 @@ export function SeatReservationCard({
       }
       setSeatDialogOpen(false);
     } catch {
-      toast.error("처리에 실패했습니다.");
+      toast.error(TOAST.SEATING.PROCESS_ERROR);
     } finally {
       setSeatSaving(false);
     }

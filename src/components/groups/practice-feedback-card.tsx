@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePracticeFeedback } from "@/hooks/use-practice-feedback";
 import type { PracticeFeedbackMood, PracticeFeedbackEntry } from "@/types";
 
@@ -291,15 +292,15 @@ function AddFeedbackDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!memberName) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_FEEDBACK_CARD.MEMBER_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_FEEDBACK_CARD.DATE_REQUIRED);
       return;
     }
     if (!mood) {
-      toast.error("오늘의 무드를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_FEEDBACK_CARD.MOOD_REQUIRED);
       return;
     }
 
@@ -316,10 +317,10 @@ function AddFeedbackDialog({
     });
 
     if (!ok) {
-      toast.error("피드백 등록에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_FEEDBACK.REGISTER_ERROR);
       return;
     }
-    toast.success("피드백이 등록되었습니다.");
+    toast.success(TOAST.PRACTICE_FEEDBACK.REGISTERED);
     reset();
     onOpenChange(false);
   };
@@ -705,7 +706,7 @@ export function PracticeFeedbackCard({
                     entry={entry}
                     onDelete={(id) => {
                       deleteFeedback(id);
-                      toast.success("피드백이 삭제되었습니다.");
+                      toast.success(TOAST.PRACTICE_FEEDBACK.DELETED);
                     }}
                   />
                 ))}

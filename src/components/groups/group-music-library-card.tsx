@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 import {
   Collapsible,
@@ -157,11 +158,11 @@ function TrackFormDialog({
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("곡 제목을 입력해주세요");
+      toast.error(TOAST.GROUP_MUSIC_LIBRARY.TITLE_REQUIRED);
       return;
     }
     if (!form.artist.trim()) {
-      toast.error("아티스트를 입력해주세요");
+      toast.error(TOAST.GROUP_MUSIC_LIBRARY.ARTIST_REQUIRED);
       return;
     }
     const urlError = validateUrl(form.url);

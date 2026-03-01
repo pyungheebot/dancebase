@@ -39,6 +39,7 @@ import {
   Package,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useCostumeRental } from "@/hooks/use-costume-rental";
 import type {
   CostumeRentalItem,
@@ -114,7 +115,7 @@ function AddItemDialog({ onAdd }: AddItemDialogProps) {
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("의상 이름을 입력해주세요");
+      toast.error(TOAST.COSTUME_RENTAL.NAME_REQUIRED);
       return;
     }
     onAdd(name, category, size);
@@ -122,7 +123,7 @@ function AddItemDialog({ onAdd }: AddItemDialogProps) {
     setCategory("상의");
     setSize("");
     setOpen(false);
-    toast.success("의상을 추가했습니다");
+    toast.success(TOAST.COSTUME_RENTAL.ADDED);
   };
 
   return (
@@ -221,11 +222,11 @@ function RentDialog({ item, onRent }: RentDialogProps) {
 
   const handleSubmit = () => {
     if (!renterName.trim()) {
-      toast.error("대여자 이름을 입력해주세요");
+      toast.error(TOAST.COSTUME_RENTAL.RENTER_REQUIRED);
       return;
     }
     if (!dueDate) {
-      toast.error("반납 예정일을 선택해주세요");
+      toast.error(TOAST.COSTUME_RENTAL.RETURN_DATE_REQUIRED);
       return;
     }
     onRent(item.id, renterName, dueDate);

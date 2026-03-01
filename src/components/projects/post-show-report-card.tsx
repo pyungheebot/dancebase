@@ -214,29 +214,29 @@ function ReportFormDialog({
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("보고서 제목을 입력해주세요.");
+      toast.error(TOAST.POST_SHOW_REPORT.TITLE_REQUIRED);
       return;
     }
     if (!form.performanceDate) {
-      toast.error("공연 날짜를 선택해주세요.");
+      toast.error(TOAST.POST_SHOW_REPORT.DATE_REQUIRED);
       return;
     }
     if (!form.overallReview.trim()) {
-      toast.error("총평을 입력해주세요.");
+      toast.error(TOAST.POST_SHOW_REPORT.SUMMARY_REQUIRED);
       return;
     }
     if (!form.author.trim()) {
-      toast.error("작성자를 입력해주세요.");
+      toast.error(TOAST.POST_SHOW_REPORT.AUTHOR_REQUIRED);
       return;
     }
     const audienceCountNum = form.audienceCount ? parseInt(form.audienceCount) : undefined;
     if (audienceCountNum !== undefined && (isNaN(audienceCountNum) || audienceCountNum < 0)) {
-      toast.error("관객 수는 0 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.POST_SHOW_REPORT.AUDIENCE_REQUIRED);
       return;
     }
     const revenueNum = form.revenue ? parseInt(form.revenue) : undefined;
     if (revenueNum !== undefined && (isNaN(revenueNum) || revenueNum < 0)) {
-      toast.error("매출은 0 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.POST_SHOW_REPORT.REVENUE_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -667,7 +667,7 @@ export function PostShowReportCard({
       author: data.author,
       notes: data.notes || undefined,
     });
-    toast.success("사후 분석 보고서가 작성되었습니다.");
+    toast.success(TOAST.POST_SHOW_REPORT.CREATED);
     setAddOpen(false);
   }
 
@@ -690,7 +690,7 @@ export function PostShowReportCard({
       notes: data.notes || undefined,
     });
     if (ok) {
-      toast.success("보고서가 수정되었습니다.");
+      toast.success(TOAST.POST_SHOW_REPORT.UPDATED);
     } else {
       toast.error(TOAST.UPDATE_ERROR);
     }
@@ -702,7 +702,7 @@ export function PostShowReportCard({
     if (!id) return;
     const ok = deleteEntry(id);
     if (ok) {
-      toast.success("보고서가 삭제되었습니다.");
+      toast.success(TOAST.POST_SHOW_REPORT.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

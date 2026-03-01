@@ -206,19 +206,19 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
   // 저장
   const handleSave = async () => {
     if (!form.songTitle.trim()) {
-      toast.error("곡명을 입력해주세요.");
+      toast.error(TOAST.MUSIC_LICENSE_CARD.SONG_REQUIRED);
       return;
     }
     if (!form.artist.trim()) {
-      toast.error("아티스트를 입력해주세요.");
+      toast.error(TOAST.MUSIC_LICENSE_CARD.ARTIST_REQUIRED);
       return;
     }
     if (!form.licensee.trim()) {
-      toast.error("사용자(licensee)를 입력해주세요.");
+      toast.error(TOAST.MUSIC_LICENSE_CARD.LICENSEE_REQUIRED);
       return;
     }
     if (!form.usageScope.trim()) {
-      toast.error("사용 범위를 입력해주세요.");
+      toast.error(TOAST.MUSIC_LICENSE_CARD.SCOPE_REQUIRED);
       return;
     }
 
@@ -239,7 +239,7 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
           notes: form.notes.trim() || undefined,
         });
         if (ok) {
-          toast.success("라이선스 정보가 수정되었습니다.");
+          toast.success(TOAST.MUSIC_LICENSE.UPDATED);
         } else {
           toast.error(TOAST.UPDATE_ERROR);
         }
@@ -256,7 +256,7 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
           documentUrl: form.documentUrl.trim() || undefined,
           notes: form.notes.trim() || undefined,
         });
-        toast.success("라이선스가 추가되었습니다.");
+        toast.success(TOAST.MUSIC_LICENSE.ADDED);
       }
       setDialogOpen(false);
     });
@@ -268,7 +268,7 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
     if (!target) return;
     const ok = deleteLicense(target.id);
     if (ok) {
-      toast.success("라이선스가 삭제되었습니다.");
+      toast.success(TOAST.MUSIC_LICENSE.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

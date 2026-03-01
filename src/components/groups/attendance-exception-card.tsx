@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   AlertTriangle,
   ChevronDown,
@@ -146,20 +147,20 @@ function AddExceptionDialog({ memberNames, onClose, onSubmit }: AddDialogProps) 
 
   const handleSubmit = () => {
     if (!memberName.trim()) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.ATTENDANCE_EXCEPTION.MEMBER_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.ATTENDANCE_EXCEPTION.DATE_REQUIRED);
       return;
     }
     if (!reason.trim()) {
-      toast.error("사유를 입력해주세요.");
+      toast.error(TOAST.ATTENDANCE_EXCEPTION.REASON_REQUIRED);
       return;
     }
     const dur = duration ? parseInt(duration, 10) : undefined;
     if (needsDuration && duration && (isNaN(dur!) || dur! <= 0)) {
-      toast.error("시간(분)은 1 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.ATTENDANCE_EXCEPTION.DURATION_REQUIRED);
       return;
     }
     onSubmit(memberName.trim(), date, type, reason.trim(), dur);
@@ -351,7 +352,7 @@ function ApproveDialog({
             className="h-8 flex-1 text-xs bg-green-600 hover:bg-green-700"
             onClick={() => {
               if (!name.trim()) {
-                toast.error("승인자 이름을 입력해주세요.");
+                toast.error(TOAST.ATTENDANCE_EXCEPTION.APPROVER_REQUIRED);
                 return;
               }
               onApprove(name.trim());
@@ -421,25 +422,25 @@ export function AttendanceExceptionCard({
     duration?: number
   ) => {
     addException(memberName, date, type, reason, duration);
-    toast.success("출결 예외가 등록되었습니다.");
+    toast.success(TOAST.ATTENDANCE_EXCEPTION.REGISTERED);
     setShowAddDialog(false);
   };
 
   const handleApprove = (approverName: string) => {
     if (!approvingId) return;
     approveException(approvingId, approverName);
-    toast.success("출결 예외가 승인되었습니다.");
+    toast.success(TOAST.ATTENDANCE_EXCEPTION.APPROVED);
     setApprovingId(null);
   };
 
   const handleReject = (id: string) => {
     rejectException(id);
-    toast.success("출결 예외가 거절되었습니다.");
+    toast.success(TOAST.ATTENDANCE_EXCEPTION.REJECTED);
   };
 
   const handleDelete = (id: string) => {
     deleteException(id);
-    toast.success("출결 예외가 삭제되었습니다.");
+    toast.success(TOAST.ATTENDANCE_EXCEPTION.DELETED);
   };
 
   return (

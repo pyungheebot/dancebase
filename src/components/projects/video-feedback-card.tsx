@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useVideoFeedback } from "@/hooks/use-video-feedback";
 import type { VideoFeedbackItem, VideoFeedbackTimestamp } from "@/types";
 
@@ -106,15 +107,15 @@ function AddVideoDialog({ open, onOpenChange, onAdd }: AddVideoDialogProps) {
     const trimTitle = title.trim();
     const trimUrl = url.trim();
     if (!trimTitle) {
-      toast.error("영상 제목을 입력해주세요.");
+      toast.error(TOAST.VIDEO_FEEDBACK.TITLE_REQUIRED);
       return;
     }
     if (!trimUrl) {
-      toast.error("영상 URL을 입력해주세요.");
+      toast.error(TOAST.VIDEO_FEEDBACK.URL_REQUIRED);
       return;
     }
     onAdd(trimTitle, trimUrl);
-    toast.success("영상이 추가되었습니다.");
+    toast.success(TOAST.VIDEO_FEEDBACK.ADDED);
     reset();
     onOpenChange(false);
   }
@@ -198,7 +199,7 @@ function AddCommentForm({ onAdd, onCancel }: AddCommentFormProps) {
     const trimComment = form.comment.trim();
 
     if (!trimTime) {
-      toast.error("타임스탬프를 입력해주세요.");
+      toast.error(TOAST.VIDEO_FEEDBACK.TIMESTAMP_REQUIRED);
       return;
     }
     if (!isValidTimestamp(trimTime)) {
@@ -206,11 +207,11 @@ function AddCommentForm({ onAdd, onCancel }: AddCommentFormProps) {
       return;
     }
     if (!trimAuthor) {
-      toast.error("작성자 이름을 입력해주세요.");
+      toast.error(TOAST.VIDEO_FEEDBACK.AUTHOR_REQUIRED);
       return;
     }
     if (!trimComment) {
-      toast.error("코멘트 내용을 입력해주세요.");
+      toast.error(TOAST.VIDEO_FEEDBACK.COMMENT_REQUIRED);
       return;
     }
 
@@ -405,7 +406,7 @@ function VideoPanel({
   ) {
     onAddTimestamp(video.id, time, authorName, comment, category);
     setShowAddForm(false);
-    toast.success("코멘트가 추가되었습니다.");
+    toast.success(TOAST.VIDEO_FEEDBACK.COMMENT_ADDED);
   }
 
   return (

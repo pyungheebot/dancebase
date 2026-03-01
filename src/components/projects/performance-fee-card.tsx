@@ -157,12 +157,12 @@ function EntryDialog({
 
   function handleSubmit() {
     if (!form.memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_FEE.MEMBER_REQUIRED);
       return;
     }
     const fee = parseInt(form.baseFee.replace(/,/g, ""), 10);
     if (isNaN(fee) || fee < 0) {
-      toast.error("올바른 기본 출연료를 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_FEE.BASE_FEE_REQUIRED);
       return;
     }
     onSubmit({ ...form, baseFee: String(fee) });
@@ -282,7 +282,7 @@ function AdjDialog({
   function handleSubmit() {
     const amt = parseInt(form.amount.replace(/,/g, ""), 10);
     if (isNaN(amt) || amt <= 0) {
-      toast.error("올바른 금액을 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_FEE.AMOUNT_REQUIRED);
       return;
     }
     const label = form.label.trim() || ADJ_TYPE_LABELS[form.type];
@@ -654,7 +654,7 @@ export function PerformanceFeeCard({
       notes: data.notes.trim() || undefined,
     });
     setAddDialogOpen(false);
-    toast.success("멤버가 추가되었습니다.");
+    toast.success(TOAST.PERFORMANCE_FEE.MEMBER_ADDED);
   }
 
   // 멤버 수정
@@ -667,7 +667,7 @@ export function PerformanceFeeCard({
       notes: data.notes.trim() || undefined,
     });
     if (ok) {
-      toast.success("정보가 수정되었습니다.");
+      toast.success(TOAST.PERFORMANCE_FEE.INFO_UPDATED);
     } else {
       toast.error(TOAST.UPDATE_ERROR);
     }
@@ -689,16 +689,16 @@ export function PerformanceFeeCard({
     if (entry.status === "settled") {
       const ok = unsettleEntry(entry.id);
       if (ok) {
-        toast.success("정산이 취소되었습니다.");
+        toast.success(TOAST.PERFORMANCE_FEE.SETTLE_CANCELLED);
       } else {
-        toast.error("정산 취소에 실패했습니다.");
+        toast.error(TOAST.PERFORMANCE_FEE.SETTLE_CANCEL_ERROR);
       }
     } else {
       const ok = settleEntry(entry.id);
       if (ok) {
-        toast.success("정산 완료로 처리했습니다.");
+        toast.success(TOAST.PERFORMANCE_FEE.SETTLED);
       } else {
-        toast.error("정산 처리에 실패했습니다.");
+        toast.error(TOAST.PERFORMANCE_FEE.SETTLE_ERROR);
       }
     }
   }
@@ -715,9 +715,9 @@ export function PerformanceFeeCard({
       amount: finalAmount,
     });
     if (ok) {
-      toast.success("항목이 추가되었습니다.");
+      toast.success(TOAST.PERFORMANCE_FEE.ITEM_ADDED);
     } else {
-      toast.error("항목 추가에 실패했습니다.");
+      toast.error(TOAST.PERFORMANCE_FEE.ITEM_ADD_ERROR);
     }
     setAdjTarget(null);
   }
@@ -725,7 +725,7 @@ export function PerformanceFeeCard({
   // 수당/공제 삭제
   function handleDeleteAdj(entryId: string, adjId: string) {
     const ok = deleteAdjustment(entryId, adjId);
-    if (!ok) toast.error("항목 삭제에 실패했습니다.");
+    if (!ok) toast.error(TOAST.PERFORMANCE_FEE.ITEM_DELETE_ERROR);
   }
 
   // 편집 초기 폼 생성

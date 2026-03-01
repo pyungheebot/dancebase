@@ -15,31 +15,33 @@ export function useUserProfile(userId: string) {
     async () => {
       const supabase = createClient();
 
-      const [profileRes, followerRes, followingRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", userId).single(),
-        supabase
-          .from("follows")
-          .select("id", { count: "exact", head: true })
-          .eq("following_id", userId),
-        supabase
-          .from("follows")
-          .select("id", { count: "exact", head: true })
-          .eq("follower_id", userId),
-      ]);
+      // 1단계: 프로필, 팔로워/팔로잉 수, 상호 팔로우 여부를 한 번에 병렬 조회
+      const isSelf = !user || user.id === userId;
+      const [profileRes, followerRes, followingRes, mutualRes] =
+        await Promise.all([
+          supabase.from("profiles").select("*").eq("id", userId).single(),
+          supabase
+            .from("follows")
+            .select("id", { count: "exact", head: true })
+            .eq("following_id", userId),
+          supabase
+            .from("follows")
+            .select("id", { count: "exact", head: true })
+            .eq("follower_id", userId),
+          // 본인이면 null 반환, 아니면 상호 팔로우 여부 조회
+          isSelf
+            ? Promise.resolve({ data: false })
+            : supabase.rpc("is_mutual_follow", {
+                user_a: user!.id,
+                user_b: userId,
+              }),
+        ]);
 
       let profile: PublicProfile | null = null;
 
       if (profileRes.data) {
         const rawProfile = profileRes.data as Profile;
-
-        let isMutualFollow = false;
-        if (user && user.id !== userId) {
-          const { data: mutualData } = await supabase.rpc("is_mutual_follow", {
-            user_a: user.id,
-            user_b: userId,
-          });
-          isMutualFollow = !!mutualData;
-        }
+        const isMutualFollow = !!mutualRes.data;
 
         const filtered = filterProfileByPrivacy(rawProfile, {
           viewerId: user?.id ?? null,
@@ -47,15 +49,25 @@ export function useUserProfile(userId: string) {
           isMutualFollow,
         });
 
-        const { data: teamGroups } = await supabase
-          .from("group_members")
-          .select("groups!inner(id, name, group_type)")
-          .eq("user_id", userId)
-          .eq("groups.group_type", "팀");
+        const isOwner = user?.id === userId;
 
+        // 2단계: 팀 그룹과 전체 그룹 멤버십을 병렬 조회
+        const [teamGroupsRes, memberGroupRowsRes] = await Promise.all([
+          supabase
+            .from("group_members")
+            .select("groups!inner(id, name, group_type)")
+            .eq("user_id", userId)
+            .eq("groups.group_type", "팀"),
+          supabase
+            .from("group_members")
+            .select("groups!inner(id, name, avatar_url, dance_genre, group_type, visibility)")
+            .eq("user_id", userId),
+        ]);
+
+        // 팀 목록 처리
+        const teamGroups = teamGroupsRes.data;
         if (teamGroups && teamGroups.length > 0) {
           const teamPrivacy: Record<string, string> = rawProfile.team_privacy ?? {};
-          const isOwner = user?.id === userId;
 
           type TeamGroupRow = { groups: { id: string; name: string; group_type: string } };
           filtered.teams = (teamGroups as TeamGroupRow[])
@@ -71,15 +83,9 @@ export function useUserProfile(userId: string) {
           filtered.teams = [];
         }
 
-        // 소속 그룹 조회 (그룹 visibility + member_count 포함)
-        const { data: memberGroupRows } = await supabase
-          .from("group_members")
-          .select("groups!inner(id, name, avatar_url, dance_genre, group_type, visibility)")
-          .eq("user_id", userId);
-
+        // 소속 그룹 목록 처리
+        const memberGroupRows = memberGroupRowsRes.data;
         if (memberGroupRows && memberGroupRows.length > 0) {
-          const isOwner = user?.id === userId;
-
           type MemberGroupRow = {
             groups: {
               id: string;
@@ -97,14 +103,14 @@ export function useUserProfile(userId: string) {
             return row.groups.visibility === "public";
           });
 
-          // 각 그룹의 멤버 수 조회
+          // 3단계: 각 그룹의 멤버 수를 한 번의 쿼리로 일괄 조회
           const groupIds = visibleGroups.map((row) => row.groups.id);
           const memberCountMap: Record<string, number> = {};
 
           if (groupIds.length > 0) {
             const { data: countRows } = await supabase
               .from("group_members")
-              .select("group_id")
+              .select("group_id", { count: "exact" })
               .in("group_id", groupIds);
 
             if (countRows) {

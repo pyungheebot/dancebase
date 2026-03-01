@@ -32,6 +32,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // ============================================
 // 상태 배지 색상
@@ -78,19 +79,19 @@ function AddItemForm({ onAdd, onClose }: AddItemFormProps) {
 
   function handleSubmit() {
     if (!name.trim()) {
-      toast.error("의상 이름을 입력하세요.");
+      toast.error(TOAST.COSTUME_MGMT.NAME_REQUIRED);
       return;
     }
     if (totalQuantity < 1) {
-      toast.error("수량은 1개 이상이어야 합니다.");
+      toast.error(TOAST.COSTUME_MGMT.QUANTITY_REQUIRED);
       return;
     }
     const ok = onAdd({ name, category, color, totalQuantity, status, note });
     if (ok) {
-      toast.success("의상이 등록되었습니다.");
+      toast.success(TOAST.COSTUME_MGMT.REGISTERED);
       onClose();
     } else {
-      toast.error("의상 등록에 실패했습니다.");
+      toast.error(TOAST.COSTUME_MGMT.REGISTER_ERROR);
     }
   }
 
@@ -218,7 +219,7 @@ function AssignMemberForm({ item, onAssign, onClose }: AssignMemberFormProps) {
 
   function handleSubmit() {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력하세요.");
+      toast.error(TOAST.COSTUME_MGMT.MEMBER_REQUIRED);
       return;
     }
     const ok = onAssign({
@@ -231,7 +232,7 @@ function AssignMemberForm({ item, onAssign, onClose }: AssignMemberFormProps) {
       toast.success(`${memberName}님에게 "${item.name}"이(가) 배정되었습니다.`);
       onClose();
     } else {
-      toast.error("배정에 실패했습니다. 재고가 부족하거나 이미 배정된 멤버입니다.");
+      toast.error(TOAST.COSTUME_MGMT.ASSIGN_ERROR);
     }
   }
 

@@ -208,19 +208,19 @@ function PostFormDialog({
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("포스트 제목을 입력해주세요.");
+      toast.error(TOAST.SOCIAL_POST.TITLE_REQUIRED);
       return;
     }
     if (!form.content.trim()) {
-      toast.error("본문 내용을 입력해주세요.");
+      toast.error(TOAST.SOCIAL_POST.CONTENT_REQUIRED);
       return;
     }
     if (!form.assignee.trim()) {
-      toast.error("담당자를 입력해주세요.");
+      toast.error(TOAST.SOCIAL_POST.MANAGER_REQUIRED);
       return;
     }
     if (!form.scheduledDate) {
-      toast.error("예정 날짜를 선택해주세요.");
+      toast.error(TOAST.SOCIAL_POST.DATE_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -589,7 +589,7 @@ export function SocialPostPlannerCard({
       assignee: data.assignee,
       notes: data.notes || undefined,
     });
-    toast.success("소셜 포스트 계획이 추가되었습니다.");
+    toast.success(TOAST.SOCIAL_POST.ADDED);
     setAddOpen(false);
   }
 
@@ -608,7 +608,7 @@ export function SocialPostPlannerCard({
       notes: data.notes || undefined,
     });
     if (ok) {
-      toast.success("포스트 계획이 수정되었습니다.");
+      toast.success(TOAST.SOCIAL_POST.UPDATED);
     } else {
       toast.error(TOAST.UPDATE_ERROR);
     }
@@ -620,7 +620,7 @@ export function SocialPostPlannerCard({
     if (!id) return;
     const ok = deleteEntry(id);
     if (ok) {
-      toast.success("포스트 계획이 삭제되었습니다.");
+      toast.success(TOAST.SOCIAL_POST.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

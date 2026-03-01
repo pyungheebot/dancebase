@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMusicCuesheet } from "@/hooks/use-music-cuesheet";
 import type { CueAction, CueEntry, MusicCuesheet } from "@/types";
 
@@ -122,13 +123,13 @@ function CreateCuesheetDialog({
     e.preventDefault();
     const trimTitle = title.trim();
     if (!trimTitle) {
-      toast.error("큐시트 제목을 입력해주세요.");
+      toast.error(TOAST.MUSIC_CUESHEET.TITLE_REQUIRED);
       return;
     }
     onCreate(trimTitle);
     reset();
     onOpenChange(false);
-    toast.success("큐시트가 생성되었습니다.");
+    toast.success(TOAST.MUSIC_CUESHEET.CREATED);
   }
 
   return (
@@ -315,7 +316,7 @@ function AddCueForm({ onAdd, onCancel }: AddCueFormProps) {
     e.preventDefault();
     const trimTitle = form.songTitle.trim();
     if (!trimTitle) {
-      toast.error("곡명을 입력해주세요.");
+      toast.error(TOAST.MUSIC_CUESHEET.SONG_NAME_REQUIRED);
       return;
     }
     if (form.startTime && !isValidTime(form.startTime)) {
@@ -502,7 +503,7 @@ function CuesheetPanel({
   function handleAddCue(entry: Omit<CueEntry, "id" | "order">) {
     onAddCue(cuesheet.id, entry);
     setShowAddForm(false);
-    toast.success("큐 항목이 추가되었습니다.");
+    toast.success(TOAST.MUSIC_CUESHEET.ITEM_ADDED);
   }
 
   function handleRemoveCue(cueId: string, songTitle: string) {

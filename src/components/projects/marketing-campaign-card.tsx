@@ -26,6 +26,7 @@ import {
   Settings,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -315,7 +316,7 @@ function TaskDialog({ open, mode, initial, onClose, onSubmit }: TaskDialogProps)
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("태스크 제목을 입력해주세요.");
+      toast.error(TOAST.CAMPAIGN.TASK_TITLE_REQUIRED);
       return;
     }
     onSubmit({
@@ -494,7 +495,7 @@ function CampaignInfoDialog({
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("캠페인 이름을 입력해주세요.");
+      toast.error(TOAST.CAMPAIGN.NAME_REQUIRED);
       return;
     }
     const parsedBudget =
@@ -599,19 +600,19 @@ export function MarketingCampaignCard({ projectId }: MarketingCampaignCardProps)
 
   const handleAddTask = (params: AddTaskParams) => {
     addTask(params);
-    toast.success("태스크가 추가되었습니다.");
+    toast.success(TOAST.CAMPAIGN.TASK_ADDED);
   };
 
   const handleUpdateTask = (params: AddTaskParams) => {
     if (!editingTask) return;
     updateTask(editingTask.id, params);
-    toast.success("태스크가 수정되었습니다.");
+    toast.success(TOAST.CAMPAIGN.TASK_UPDATED);
     setEditingTask(null);
   };
 
   const handleDeleteTask = (taskId: string) => {
     deleteTask(taskId);
-    toast.success("태스크가 삭제되었습니다.");
+    toast.success(TOAST.CAMPAIGN.TASK_DELETED);
     setDeleteConfirmId(null);
   };
 
@@ -629,7 +630,7 @@ export function MarketingCampaignCard({ projectId }: MarketingCampaignCardProps)
     budget: number | null
   ) => {
     setCampaignInfo({ campaignName: name, targetAudience: audience, budget });
-    toast.success("캠페인 정보가 저장되었습니다.");
+    toast.success(TOAST.CAMPAIGN.INFO_SAVED);
   };
 
   // ——— 칸반 컬럼별 태스크 분류 ———

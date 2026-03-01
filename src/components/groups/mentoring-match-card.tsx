@@ -130,12 +130,12 @@ function AddSessionDialog({ open, onClose, onSave }: AddSessionDialogProps) {
 
   function handleSave() {
     if (!topic.trim()) {
-      toast.error("세션 주제를 입력해주세요.");
+      toast.error(TOAST.MENTORING_MATCH.TOPIC_REQUIRED);
       return;
     }
     const dur = parseInt(duration, 10);
     if (!dur || dur < 1) {
-      toast.error("유효한 시간(분)을 입력해주세요.");
+      toast.error(TOAST.MENTORING_MATCH.TIME_INVALID);
       return;
     }
     onSave({
@@ -282,19 +282,19 @@ function CreatePairDialog({
 
   function handleSave() {
     if (!mentorName) {
-      toast.error("멘토를 선택해주세요.");
+      toast.error(TOAST.MENTORING_MATCH.MENTOR_REQUIRED);
       return;
     }
     if (!menteeName) {
-      toast.error("멘티를 선택해주세요.");
+      toast.error(TOAST.MENTORING_MATCH.MENTEE_REQUIRED);
       return;
     }
     if (mentorName === menteeName) {
-      toast.error("멘토와 멘티는 다른 멤버여야 합니다.");
+      toast.error(TOAST.MENTORING_MATCH.SAME_PERSON_ERROR);
       return;
     }
     if (skills.length === 0) {
-      toast.error("스킬 포커스를 1개 이상 입력해주세요.");
+      toast.error(TOAST.MENTORING_MATCH.SKILL_REQUIRED);
       return;
     }
     onSave({ mentorName, menteeName, skillFocus: skills, goals, startDate });
@@ -709,12 +709,12 @@ export function MentoringMatchCard({
       data.goals,
       data.startDate
     );
-    toast.success("멘토링 매칭이 생성되었습니다.");
+    toast.success(TOAST.MENTORING_MATCH.CREATED);
   }
 
   function handleDeletePair(id: string) {
     const ok = deletePair(id);
-    if (ok) toast.success("매칭이 삭제되었습니다.");
+    if (ok) toast.success(TOAST.MENTORING_MATCH.DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 
@@ -734,13 +734,13 @@ export function MentoringMatchCard({
   }) {
     if (!sessionDialogPairId) return;
     const result = addSession(sessionDialogPairId, data);
-    if (result) toast.success("세션이 기록되었습니다.");
-    else toast.error("세션 추가에 실패했습니다.");
+    if (result) toast.success(TOAST.MENTORING_MATCH.SESSION_RECORDED);
+    else toast.error(TOAST.MENTORING_MATCH.SESSION_ADD_ERROR);
   }
 
   function handleDeleteSession(pairId: string, sessionId: string) {
     const ok = deleteSession(pairId, sessionId);
-    if (ok) toast.success("세션이 삭제되었습니다.");
+    if (ok) toast.success(TOAST.MENTORING_MATCH.SESSION_DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 

@@ -46,6 +46,7 @@ import {
   BarChart2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMakeupHair } from "@/hooks/use-makeup-hair";
 import type {
   MakeupHairMakeupType,
@@ -104,12 +105,12 @@ function PlanDialog({ open, mode, initial, onClose, onSubmit }: PlanDialogProps)
 
   const handleSubmit = () => {
     if (!memberName.trim()) {
-      toast.error("멤버명을 입력해주세요.");
+      toast.error(TOAST.MAKEUP_HAIR.MEMBER_REQUIRED);
       return;
     }
     const sceneNum = parseInt(scene, 10);
     if (isNaN(sceneNum) || sceneNum < 1) {
-      toast.error("유효한 장면 번호를 입력해주세요.");
+      toast.error(TOAST.MAKEUP_HAIR.SCENE_NUMBER_REQUIRED);
       return;
     }
     onSubmit({
@@ -248,16 +249,16 @@ function TimelineDialog({ open, mode, initial, onClose, onSubmit }: TimelineDial
 
   const handleSubmit = () => {
     if (!memberName.trim()) {
-      toast.error("멤버명을 입력해주세요.");
+      toast.error(TOAST.MAKEUP_HAIR.MEMBER_REQUIRED);
       return;
     }
     if (!startTime) {
-      toast.error("시작 시간을 입력해주세요.");
+      toast.error(TOAST.MAKEUP_HAIR.START_TIME_REQUIRED);
       return;
     }
     const dur = parseInt(duration, 10);
     if (isNaN(dur) || dur < 1) {
-      toast.error("유효한 소요 시간을 입력해주세요.");
+      toast.error(TOAST.MAKEUP_HAIR.DURATION_REQUIRED);
       return;
     }
     onSubmit({
@@ -343,7 +344,7 @@ function ArtistDialog({ open, mode, initial, onClose, onSubmit }: ArtistDialogPr
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("아티스트 이름을 입력해주세요.");
+      toast.error(TOAST.MAKEUP_HAIR.ARTIST_REQUIRED);
       return;
     }
     onSubmit({
@@ -525,16 +526,16 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
   const handlePlanSubmit = (planData: Omit<MakeupHairPlan, "id" | "createdAt">) => {
     if (planDialogMode === "add") {
       addPlan(planData);
-      toast.success("플랜이 추가되었습니다.");
+      toast.success(TOAST.MAKEUP_HAIR.PLAN_ADDED);
     } else if (editingPlan) {
       updatePlan(editingPlan.id, planData);
-      toast.success("플랜이 수정되었습니다.");
+      toast.success(TOAST.MAKEUP_HAIR.PLAN_UPDATED);
     }
   };
 
   const handleDeletePlan = (planId: string) => {
     deletePlan(planId);
-    toast.success("플랜이 삭제되었습니다.");
+    toast.success(TOAST.MAKEUP_HAIR.PLAN_DELETED);
   };
 
   // ── 타임라인 핸들러 ────────────────────────────────────────
@@ -553,28 +554,28 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
   const handleTimelineSubmit = (entryData: Omit<MakeupHairTimelineEntry, "id">) => {
     if (timelineDialogMode === "add") {
       addTimelineEntry(entryData);
-      toast.success("타임라인이 추가되었습니다.");
+      toast.success(TOAST.MAKEUP_HAIR.TIMELINE_ADDED);
     } else if (editingTimeline) {
       updateTimelineEntry(editingTimeline.id, entryData);
-      toast.success("타임라인이 수정되었습니다.");
+      toast.success(TOAST.MAKEUP_HAIR.TIMELINE_UPDATED);
     }
   };
 
   const handleDeleteTimeline = (entryId: string) => {
     deleteTimelineEntry(entryId);
-    toast.success("타임라인이 삭제되었습니다.");
+    toast.success(TOAST.MAKEUP_HAIR.TIMELINE_DELETED);
   };
 
   // ── 체크리스트 핸들러 ──────────────────────────────────────
   const handleAddChecklist = () => {
     const trimmed = checklistInput.trim();
     if (!trimmed) {
-      toast.error("아이템명을 입력해주세요.");
+      toast.error(TOAST.MAKEUP_HAIR.CHECKLIST_ITEM_NAME_REQUIRED);
       return;
     }
     addChecklistItem(trimmed);
     setChecklistInput("");
-    toast.success("체크리스트 아이템이 추가되었습니다.");
+    toast.success(TOAST.MAKEUP_HAIR.CHECKLIST_ITEM_ADDED);
   };
 
   // ── 아티스트 핸들러 ────────────────────────────────────────
@@ -593,16 +594,16 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
   const handleArtistSubmit = (artistData: Omit<MakeupHairArtist, "id">) => {
     if (artistDialogMode === "add") {
       addArtist(artistData);
-      toast.success("아티스트가 추가되었습니다.");
+      toast.success(TOAST.MAKEUP_HAIR.ARTIST_ADDED);
     } else if (editingArtist) {
       updateArtist(editingArtist.id, artistData);
-      toast.success("아티스트 정보가 수정되었습니다.");
+      toast.success(TOAST.MAKEUP_HAIR.ARTIST_UPDATED);
     }
   };
 
   const handleDeleteArtist = (artistId: string) => {
     deleteArtist(artistId);
-    toast.success("아티스트가 삭제되었습니다.");
+    toast.success(TOAST.MAKEUP_HAIR.ARTIST_DELETED);
   };
 
   // ── 통계 도넛 데이터 ──────────────────────────────────────

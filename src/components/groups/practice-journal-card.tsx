@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupPracticeJournal } from "@/hooks/use-group-practice-journal";
 import { formatYearMonthDay } from "@/lib/date-utils";
 import type { GroupPracticeJournalEntry } from "@/types";
@@ -386,15 +387,15 @@ function JournalFormDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.date) {
-      toast.error("연습 날짜를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_JOURNAL.DATE_REQUIRED);
       return;
     }
     if (form.durationMinutes <= 0) {
-      toast.error("연습 시간을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_JOURNAL.TIME_REQUIRED);
       return;
     }
     if (!form.authorName.trim()) {
-      toast.error("작성자 이름을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_JOURNAL.AUTHOR_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -666,9 +667,9 @@ export function PracticeJournalCard({
       authorName: form.authorName.trim(),
     });
     if (ok) {
-      toast.success("연습 일지가 작성되었습니다.");
+      toast.success(TOAST.PRACTICE_JOURNAL.WRITTEN);
     } else {
-      toast.error("일지 작성에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_JOURNAL.WRITE_ERROR);
     }
   };
 
@@ -696,16 +697,16 @@ export function PracticeJournalCard({
       authorName: form.authorName.trim(),
     });
     if (ok) {
-      toast.success("연습 일지가 수정되었습니다.");
+      toast.success(TOAST.PRACTICE_JOURNAL.UPDATED);
     } else {
-      toast.error("일지 수정에 실패했습니다.");
+      toast.error(TOAST.PRACTICE_JOURNAL.UPDATE_ERROR);
     }
     setEditTarget(null);
   };
 
   const handleDelete = (id: string) => {
     deleteEntry(id);
-    toast.success("연습 일지가 삭제되었습니다.");
+    toast.success(TOAST.PRACTICE_JOURNAL.DELETED);
   };
 
   const editInitialValues = editTarget

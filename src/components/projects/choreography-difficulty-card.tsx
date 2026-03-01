@@ -32,6 +32,7 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { formatYearMonthDay } from "@/lib/date-utils";
 
@@ -253,16 +254,16 @@ function AddEntryForm({ onAdd, onClose }: AddEntryFormProps) {
 
   async function handleSubmit() {
     if (!songTitle.trim()) {
-      toast.error("곡명을 입력하세요.");
+      toast.error(TOAST.CHOREO_DIFFICULTY.SONG_REQUIRED);
       return;
     }
     await execute(async () => {
       const ok = onAdd({ songTitle, ratings, ratedBy, comment });
       if (ok) {
-        toast.success("난도 평가가 등록되었습니다.");
+        toast.success(TOAST.CHOREO_DIFFICULTY.REGISTERED);
         onClose();
       } else {
-        toast.error("평가는 최대 20개까지 등록할 수 있습니다.");
+        toast.error(TOAST.CHOREO_DIFFICULTY.RATING_MAX);
       }
     });
   }

@@ -35,6 +35,7 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
@@ -224,7 +225,7 @@ function AddReviewDialog({ open, onOpenChange, onSubmit }: AddReviewDialogProps)
 
   const handleSubmit = () => {
     if (!reviewerName.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.REVIEW.NAME_REQUIRED);
       return;
     }
     const highlights = highlightsRaw
@@ -427,7 +428,7 @@ function ReviewItem({ review, onDelete }: ReviewItemProps) {
 
   const handleDelete = () => {
     onDelete(review.id);
-    toast.success("리뷰가 삭제되었습니다.");
+    toast.success(TOAST.REVIEW.DELETED);
   };
 
   return (
@@ -560,7 +561,7 @@ export function ShowReviewCard({ groupId, projectId }: ShowReviewCardProps) {
       params.improvements
     );
     if (ok) {
-      toast.success("리뷰가 등록되었습니다.");
+      toast.success(TOAST.REVIEW.REGISTERED);
     }
     return ok;
   };

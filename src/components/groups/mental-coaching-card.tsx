@@ -213,15 +213,15 @@ function NoteDialog({
 
   function handleSave() {
     if (!memberName.trim()) {
-      toast.error("대상 멤버를 입력해주세요.");
+      toast.error(TOAST.MENTAL_COACHING.MEMBER_REQUIRED);
       return;
     }
     if (!coachName.trim()) {
-      toast.error("코치 이름을 입력해주세요.");
+      toast.error(TOAST.MENTAL_COACHING.COACH_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("코칭 내용을 입력해주세요.");
+      toast.error(TOAST.MENTAL_COACHING.CONTENT_REQUIRED);
       return;
     }
     onSave({
@@ -718,7 +718,7 @@ export function MentalCoachingCard({
 
   function handleAdd(data: Parameters<typeof addNote>[0]) {
     addNote(data);
-    toast.success("코칭 노트가 추가되었습니다.");
+    toast.success(TOAST.COACHING_NOTE.ADDED);
   }
 
   function handleEdit(data: Parameters<typeof addNote>[0]) {
@@ -734,14 +734,14 @@ export function MentalCoachingCard({
       ...data,
       actionItems: actionItemsWithId,
     });
-    if (ok) toast.success("코칭 노트가 수정되었습니다.");
+    if (ok) toast.success(TOAST.COACHING_NOTE.UPDATED);
     else toast.error(TOAST.UPDATE_ERROR);
     setEditTarget(null);
   }
 
   function handleDelete(noteId: string) {
     const ok = deleteNote(noteId);
-    if (ok) toast.success("코칭 노트가 삭제되었습니다.");
+    if (ok) toast.success(TOAST.MENTAL_COACHING.NOTE_DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 
@@ -752,7 +752,7 @@ export function MentalCoachingCard({
   function handleStatusChange(noteId: string, status: MentalCoachingStatus) {
     const ok = updateStatus(noteId, status);
     if (ok) toast.success(`상태가 "${STATUS_LABEL[status]}"으로 변경되었습니다.`);
-    else toast.error("상태 변경에 실패했습니다.");
+    else toast.error(TOAST.MENTAL_COACHING.STATUS_ERROR);
   }
 
   return (

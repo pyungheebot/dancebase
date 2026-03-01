@@ -4,6 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { useIndependentEntityIds } from "@/hooks/use-independent-entities";
 import { BOARD_CATEGORIES } from "@/types";
 import type {
   BoardPostWithDetails,
@@ -25,8 +26,18 @@ export function useBoard(groupId: string, projectId?: string | null) {
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
 
+  // 그룹 뷰일 때만 독립 엔티티 ID 조회 (SWR 캐시 공유로 중복 RPC 방지)
+  const { data: independentEntities } = useIndependentEntityIds(
+    !projectId ? groupId : undefined,
+  );
+
   const { data, isLoading, mutate } = useSWR(
-    swrKeys.board(groupId, projectId, category, search, page),
+    // 그룹 뷰: independentEntities 로드 완료 후 실행 / 프로젝트 뷰: 즉시 실행
+    projectId !== undefined
+      ? swrKeys.board(groupId, projectId, category, search, page)
+      : independentEntities !== undefined
+        ? swrKeys.board(groupId, projectId, category, search, page)
+        : null,
     async () => {
       const supabase = createClient();
 
@@ -50,13 +61,10 @@ export function useBoard(groupId: string, projectId?: string | null) {
       if (projectId) {
         query = query.eq("project_id", projectId);
       } else {
-        const { data: independentEntities } = await supabase.rpc(
-          "get_independent_entity_ids",
-          { p_group_id: groupId, p_feature: "board" },
-        );
-        const excludeIds = (independentEntities || []).map(
-          (e: { entity_id: string }) => e.entity_id,
-        );
+        // 그룹 뷰: SWR 캐시에서 이미 로드된 독립 엔티티 활용
+        const excludeIds = (independentEntities || [])
+          .filter((e) => e.feature === "board")
+          .map((e) => e.entity_id);
         if (excludeIds.length > 0) {
           query = query.not(
             "project_id",

@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePracticePlaylistCardProject } from "@/hooks/use-practice-playlist-card-project";
 import type { PracticeCardTrack } from "@/types";
 
@@ -86,7 +87,7 @@ function AddTrackDialog({ open, onOpenChange, onAdd, trackCount, maxTracks }: Ad
 
     const trimTitle = title.trim();
     if (!trimTitle) {
-      toast.error("곡명을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_PLAYLIST.SONG_REQUIRED);
       return;
     }
     if (trackCount >= maxTracks) {
@@ -98,7 +99,7 @@ function AddTrackDialog({ open, onOpenChange, onAdd, trackCount, maxTracks }: Ad
     if (bpm.trim()) {
       bpmNum = parseInt(bpm.trim(), 10);
       if (isNaN(bpmNum) || bpmNum < 1 || bpmNum > 300) {
-        toast.error("BPM은 1~300 사이의 숫자를 입력해주세요.");
+        toast.error(TOAST.PRACTICE_PLAYLIST.BPM_RANGE);
         return;
       }
     }
@@ -118,7 +119,7 @@ function AddTrackDialog({ open, onOpenChange, onAdd, trackCount, maxTracks }: Ad
 
     reset();
     onOpenChange(false);
-    toast.success("곡이 추가되었습니다.");
+    toast.success(TOAST.PRACTICE_PLAYLIST.SONG_ADDED);
   }
 
   return (

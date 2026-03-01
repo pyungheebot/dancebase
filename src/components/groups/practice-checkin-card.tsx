@@ -36,6 +36,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePracticeCheckin } from "@/hooks/use-practice-checkin";
 import type { PracticeCheckinSession, PracticeCheckinRecord } from "@/types";
 
@@ -289,7 +290,7 @@ function CreateSessionDialog({
 
   const handleSubmit = () => {
     if (!date || !title.trim() || !startTime) {
-      toast.error("날짜, 제목, 시작 시간을 모두 입력해주세요.");
+      toast.error(TOAST.PRACTICE_CHECKIN_CARD.INFO_REQUIRED);
       return;
     }
     onCreate(date, title.trim(), startTime);
@@ -384,17 +385,17 @@ export function PracticeCheckinCard({ groupId, memberNames }: Props) {
     startTime: string
   ) => {
     createSession(date, title, startTime);
-    toast.success("연습 세션이 시작되었습니다.");
+    toast.success(TOAST.PRACTICE_CHECKIN_CARD.SESSION_STARTED);
   };
 
   const handleEndSession = (sessionId: string) => {
     endSession(sessionId);
-    toast.success("세션이 종료되었습니다.");
+    toast.success(TOAST.PRACTICE_CHECKIN_CARD.SESSION_ENDED);
   };
 
   const handleDeleteSession = (sessionId: string) => {
     deleteSession(sessionId);
-    toast.success("세션이 삭제되었습니다.");
+    toast.success(TOAST.PRACTICE_CHECKIN_CARD.SESSION_DELETED);
   };
 
   const handleCheckin = (sessionId: string, memberName: string) => {
@@ -532,7 +533,7 @@ export function PracticeCheckinCard({ groupId, memberNames }: Props) {
                               checkin(activeSession.id, name);
                             }
                           });
-                          toast.success("전원 체크인 완료");
+                          toast.success(TOAST.PRACTICE_CHECKIN_CARD.ALL_CHECKIN);
                         }}
                       >
                         <Users className="h-3 w-3" />
@@ -551,7 +552,7 @@ export function PracticeCheckinCard({ groupId, memberNames }: Props) {
                               markAbsent(activeSession.id, name);
                             }
                           });
-                          toast.error("전원 결석 처리");
+                          toast.error(TOAST.PRACTICE_CHECKIN_CARD.ALL_ABSENT);
                         }}
                       >
                         <AlertTriangle className="h-3 w-3" />

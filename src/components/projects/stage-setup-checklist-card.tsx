@@ -47,6 +47,7 @@ import {
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useStageSetupChecklist } from "@/hooks/use-stage-setup-checklist";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
@@ -172,7 +173,7 @@ function ItemFormDialog({
 
   const handleSubmit = () => {
     if (!content.trim()) {
-      toast.error("항목 내용을 입력해주세요.");
+      toast.error(TOAST.SETUP_CHECKLIST.CONTENT_REQUIRED);
       return;
     }
     setSaving(true);
@@ -476,7 +477,7 @@ export function StageSetupChecklistCard({
     notes?: string;
   }) => {
     addItem(params);
-    toast.success("항목이 추가되었습니다.");
+    toast.success(TOAST.SETUP_CHECKLIST.ITEM_ADDED);
   };
 
   // 항목 수정 핸들러
@@ -489,9 +490,9 @@ export function StageSetupChecklistCard({
     if (!editItem) return;
     const ok = updateItem(editItem.id, params);
     if (ok) {
-      toast.success("항목이 수정되었습니다.");
+      toast.success(TOAST.SETUP_CHECKLIST.ITEM_UPDATED);
     } else {
-      toast.error("항목 수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
     setEditItem(null);
   };
@@ -501,11 +502,11 @@ export function StageSetupChecklistCard({
     const item = items.find((i) => i.id === itemId);
     const ok = toggleItem(itemId);
     if (!ok) {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
       return;
     }
     if (item && !item.completed) {
-      toast.success("항목을 완료 처리했습니다.");
+      toast.success(TOAST.SETUP_CHECKLIST.ITEM_COMPLETED);
     }
   };
 
@@ -515,16 +516,16 @@ export function StageSetupChecklistCard({
     if (!id) return;
     const ok = deleteItem(id);
     if (ok) {
-      toast.success("항목이 삭제되었습니다.");
+      toast.success(TOAST.ITEM_DELETED);
     } else {
-      toast.error("항목 삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 
   // 전체 초기화 핸들러
   const handleReset = () => {
     resetAll();
-    toast.success("모든 항목이 미완료 상태로 초기화되었습니다.");
+    toast.success(TOAST.SETUP_CHECKLIST.ALL_RESET);
     setResetDialogOpen(false);
   };
 

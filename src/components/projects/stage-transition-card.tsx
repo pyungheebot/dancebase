@@ -147,16 +147,16 @@ function TransitionFormDialog({
 
   const handleSubmit = () => {
     if (!fromScene.trim()) {
-      toast.error("이전 장면을 입력해주세요.");
+      toast.error(TOAST.STAGE_TRANSITION.FROM_SCENE_REQUIRED);
       return;
     }
     if (!toScene.trim()) {
-      toast.error("다음 장면을 입력해주세요.");
+      toast.error(TOAST.STAGE_TRANSITION.TO_SCENE_REQUIRED);
       return;
     }
     const dur = parseInt(durationSec, 10);
     if (isNaN(dur) || dur < 0) {
-      toast.error("올바른 전환 시간을 입력해주세요.");
+      toast.error(TOAST.STAGE_TRANSITION.TIME_REQUIRED);
       return;
     }
     onSubmit({
@@ -296,7 +296,7 @@ function InlineTaskForm({ onAdd, onCancel }: InlineTaskFormProps) {
 
   const handleSubmit = () => {
     if (!text.trim()) {
-      toast.error("할 일 내용을 입력해주세요.");
+      toast.error(TOAST.STAGE_TRANSITION.TODO_REQUIRED);
       return;
     }
     onAdd(text.trim());
@@ -649,13 +649,13 @@ export function StageTransitionCard({ projectId }: StageTransitionCardProps) {
     if (editTarget) {
       const ok = updateItem(editTarget.id, params);
       if (ok) {
-        toast.success("전환 구간이 수정되었습니다.");
+        toast.success(TOAST.STAGE_TRANSITION.UPDATED);
       } else {
         toast.error(TOAST.UPDATE_ERROR);
       }
     } else {
       addItem(params);
-      toast.success("전환 구간이 등록되었습니다.");
+      toast.success(TOAST.STAGE_TRANSITION.REGISTERED);
     }
     setFormDialogOpen(false);
     setEditTarget(null);
@@ -664,7 +664,7 @@ export function StageTransitionCard({ projectId }: StageTransitionCardProps) {
   const handleDelete = (itemId: string) => {
     const ok = deleteItem(itemId);
     if (ok) {
-      toast.success("전환 구간이 삭제되었습니다.");
+      toast.success(TOAST.STAGE_TRANSITION.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -682,9 +682,9 @@ export function StageTransitionCard({ projectId }: StageTransitionCardProps) {
   const handleAddTask = (itemId: string, text: string) => {
     const ok = addTask(itemId, text);
     if (ok) {
-      toast.success("할 일이 추가되었습니다.");
+      toast.success(TOAST.STAGE_TRANSITION.TODO_ADDED);
     } else {
-      toast.error("할 일 추가에 실패했습니다.");
+      toast.error(TOAST.STAGE_TRANSITION.TODO_ADD_ERROR);
     }
   };
 
@@ -695,7 +695,7 @@ export function StageTransitionCard({ projectId }: StageTransitionCardProps) {
   const handleDeleteTask = (itemId: string, taskId: string) => {
     const ok = deleteTask(itemId, taskId);
     if (ok) {
-      toast.success("할 일이 삭제되었습니다.");
+      toast.success(TOAST.STAGE_TRANSITION.TODO_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

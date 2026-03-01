@@ -43,6 +43,7 @@ import {
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
@@ -191,12 +192,12 @@ function AddItemDialog({
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      toast.error("물품명을 입력해주세요.");
+      toast.error(TOAST.SHOW_INVENTORY.NAME_REQUIRED);
       return;
     }
     const qty = parseInt(quantity, 10);
     if (isNaN(qty) || qty < 1) {
-      toast.error("수량은 1 이상의 숫자여야 합니다.");
+      toast.error(TOAST.SHOW_INVENTORY.QUANTITY_REQUIRED);
       return;
     }
     onSubmit(name.trim(), category, qty, assignedTo, notes.trim(), priority);
@@ -533,16 +534,16 @@ export function ShowInventoryCard({
       priority
     );
     if (ok) {
-      toast.success("물품이 추가되었습니다.");
+      toast.success(TOAST.SHOW_INVENTORY.ITEM_ADDED);
     } else {
-      toast.error("물품 추가에 실패했습니다. 물품명을 확인해주세요.");
+      toast.error(TOAST.SHOW_INVENTORY.ITEM_ADD_ERROR);
     }
   };
 
   const handleDeleteItem = () => {
     if (!deleteConfirmId) return;
     deleteItem(deleteConfirmId);
-    toast.success("물품이 삭제되었습니다.");
+    toast.success(TOAST.SHOW_INVENTORY.ITEM_DELETED);
     setDeleteConfirmId(null);
   };
 

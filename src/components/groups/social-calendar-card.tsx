@@ -42,6 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSocialCalendar } from "@/hooks/use-social-calendar";
 import type {
   SocialCalendarPost,
@@ -267,11 +268,11 @@ export function SocialCalendarCard({
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("제목을 입력하세요.");
+      toast.error(TOAST.SOCIAL_CALENDAR.TITLE_REQUIRED);
       return;
     }
     if (!form.scheduledDate) {
-      toast.error("게시 날짜를 선택하세요.");
+      toast.error(TOAST.SOCIAL_CALENDAR.DATE_REQUIRED);
       return;
     }
 
@@ -295,17 +296,17 @@ export function SocialCalendarCard({
 
     if (editTarget) {
       updatePost(editTarget.id, payload);
-      toast.success("게시물이 수정되었습니다.");
+      toast.success(TOAST.SOCIAL_CALENDAR.UPDATED);
     } else {
       addPost(payload);
-      toast.success("게시물이 추가되었습니다.");
+      toast.success(TOAST.SOCIAL_CALENDAR.ADDED);
     }
     closeDialog();
   }
 
   function handleDelete(id: string) {
     deletePost(id);
-    toast.success("게시물이 삭제되었습니다.");
+    toast.success(TOAST.SOCIAL_CALENDAR.DELETED);
   }
 
   // 상태 워크플로우 버튼

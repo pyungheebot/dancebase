@@ -130,22 +130,22 @@ function CreatePollDialog({ hook }: CreatePollDialogProps) {
 
   const handleSubmit = () => {
     if (!topic.trim()) {
-      toast.error("안건 제목을 입력해주세요.");
+      toast.error(TOAST.DECISION_POLL.TITLE_REQUIRED);
       return;
     }
     if (!deadline) {
-      toast.error("마감일을 선택해주세요.");
+      toast.error(TOAST.DECISION_POLL.DATE_REQUIRED);
       return;
     }
     const ok = hook.createPoll(topic, description, deadline);
     if (ok) {
-      toast.success("투표 안건이 등록되었습니다.");
+      toast.success(TOAST.DECISION_POLL.REGISTERED);
       setTopic("");
       setDescription("");
       setDeadline(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
       setOpen(false);
     } else {
-      toast.error("투표 등록에 실패했습니다.");
+      toast.error(TOAST.DECISION_POLL.REGISTER_ERROR);
     }
   };
 
@@ -324,11 +324,11 @@ function CastVoteForm({ poll, onCast }: CastVoteFormProps) {
 
   const handleSubmit = () => {
     if (!voterName.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.DECISION_POLL.NAME_REQUIRED);
       return;
     }
     if (!choice) {
-      toast.error("찬성/반대/보류 중 하나를 선택해주세요.");
+      toast.error(TOAST.DECISION_POLL.STANCE_REQUIRED);
       return;
     }
     onCast(poll.id, voterName, choice, reason);
@@ -563,25 +563,25 @@ export function DecisionPollCard({ groupId }: { groupId: string }) {
   ) => {
     const ok = hook.castVote(pollId, voterName, choice, reason);
     if (ok) {
-      toast.success("투표가 완료되었습니다.");
+      toast.success(TOAST.DECISION_POLL.COMPLETED);
     } else {
-      toast.error("투표에 실패했습니다.");
+      toast.error(TOAST.DECISION_POLL.VOTE_ERROR);
     }
   };
 
   const handleClose = (pollId: string) => {
     const ok = hook.closePoll(pollId);
     if (ok) {
-      toast.success("투표가 종료되었습니다.");
+      toast.success(TOAST.DECISION_POLL.VOTE_CLOSED);
     } else {
-      toast.error("투표 종료에 실패했습니다.");
+      toast.error(TOAST.DECISION_POLL.CLOSE_ERROR);
     }
   };
 
   const handleDelete = (pollId: string) => {
     const ok = hook.deletePoll(pollId);
     if (ok) {
-      toast.success("투표가 삭제되었습니다.");
+      toast.success(TOAST.DECISION_POLL.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

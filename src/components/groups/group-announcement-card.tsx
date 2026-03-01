@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Megaphone,
   ChevronDown,
@@ -147,11 +148,11 @@ function AnnouncementFormDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.GROUP_ANNOUNCEMENT.TITLE_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("내용을 입력해주세요.");
+      toast.error(TOAST.GROUP_ANNOUNCEMENT.CONTENT_REQUIRED);
       return;
     }
     onSubmit({
@@ -316,7 +317,7 @@ function AnnouncementRow({
 
   const handleDelete = () => {
     onDelete(item.id);
-    toast.success("공지를 삭제했습니다.");
+    toast.success(TOAST.GROUP_ANNOUNCEMENT.DELETED);
   };
 
   return (
@@ -380,7 +381,7 @@ function AnnouncementRow({
             initial={item}
             onSubmit={(data) => {
               onUpdate(item.id, data);
-              toast.success("공지를 수정했습니다.");
+              toast.success(TOAST.GROUP_ANNOUNCEMENT.UPDATED);
             }}
           />
           {/* 삭제 */}
@@ -535,7 +536,7 @@ export function GroupAnnouncementCard({
               }
               onSubmit={(data) => {
                 createAnnouncement(data);
-                toast.success("공지가 등록되었습니다.");
+                toast.success(TOAST.GROUP_ANNOUNCEMENT.REGISTERED);
               }}
             />
           </div>

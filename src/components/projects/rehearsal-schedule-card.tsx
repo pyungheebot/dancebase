@@ -19,6 +19,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -159,15 +160,15 @@ function RehearsalDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("리허설 제목을 입력해주세요.");
+      toast.error(TOAST.REHEARSAL_SCHEDULE.TITLE_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.REHEARSAL_SCHEDULE.DATE_REQUIRED);
       return;
     }
     if (!startTime) {
-      toast.error("시작 시간을 입력해주세요.");
+      toast.error(TOAST.REHEARSAL_SCHEDULE.START_TIME_REQUIRED);
       return;
     }
     const participants = participantsStr
@@ -695,30 +696,30 @@ export function RehearsalScheduleCard({
 
   const handleAdd = (params: AddRehearsalParams) => {
     addRehearsal(params);
-    toast.success("리허설 일정이 추가되었습니다.");
+    toast.success(TOAST.REHEARSAL_SCHEDULE.ADDED);
   };
 
   const handleUpdate = (params: AddRehearsalParams) => {
     if (!editingRehearsal) return;
     updateRehearsal(editingRehearsal.id, params);
-    toast.success("리허설 일정이 수정되었습니다.");
+    toast.success(TOAST.REHEARSAL_SCHEDULE.UPDATED);
     setEditingRehearsal(null);
   };
 
   const handleDelete = (id: string) => {
     deleteRehearsal(id);
-    toast.success("리허설 일정이 삭제되었습니다.");
+    toast.success(TOAST.REHEARSAL_SCHEDULE.DELETED);
     setDeleteConfirmId(null);
   };
 
   const handleComplete = (id: string) => {
     completeRehearsal(id);
-    toast.success("리허설이 완료 처리되었습니다.");
+    toast.success(TOAST.REHEARSAL_SCHEDULE.COMPLETED);
   };
 
   const handleCancel = (id: string) => {
     cancelRehearsal(id);
-    toast.success("리허설이 취소되었습니다.");
+    toast.success(TOAST.REHEARSAL_SCHEDULE.CANCELLED);
   };
 
   // ——— 로딩 ———

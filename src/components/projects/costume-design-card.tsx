@@ -43,6 +43,7 @@ import {
   Scissors,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useCostumeDesign } from "@/hooks/use-costume-design";
 import type { CostumeDesignEntry, CostumeDesignStatus } from "@/types";
 
@@ -139,11 +140,11 @@ function AddDesignDialog({
     e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      toast.error("디자인 제목을 입력해주세요.");
+      toast.error(TOAST.COSTUME_DESIGN.TITLE_REQUIRED);
       return;
     }
     if (!designedBy.trim()) {
-      toast.error("디자이너를 선택해주세요.");
+      toast.error(TOAST.COSTUME_DESIGN.DESIGNER_REQUIRED);
       return;
     }
     const colorScheme = colorInput
@@ -372,12 +373,12 @@ function DesignDetail({
   function handleAddComment() {
     const trimmed = commentText.trim();
     if (!trimmed) {
-      toast.error("댓글 내용을 입력해주세요.");
+      toast.error(TOAST.COSTUME_DESIGN.COMMENT_REQUIRED);
       return;
     }
     onAddComment(design.id, commentAuthor, trimmed);
     setCommentText("");
-    toast.success("댓글을 추가했습니다.");
+    toast.success(TOAST.COSTUME_DESIGN.COMMENT_ADDED);
   }
 
   return (
@@ -439,9 +440,9 @@ function DesignDetail({
           onClick={() => {
             onToggleVote(design.id, currentUser);
             if (hasVoted) {
-              toast.success("투표를 취소했습니다.");
+              toast.success(TOAST.COSTUME_DESIGN.VOTE_CANCELLED);
             } else {
-              toast.success("투표했습니다.");
+              toast.success(TOAST.COSTUME_DESIGN.VOTED);
             }
           }}
         >
@@ -488,7 +489,7 @@ function DesignDetail({
                 className="h-5 w-5 p-0 text-destructive hover:text-destructive shrink-0"
                 onClick={() => {
                   onDeleteComment(design.id, comment.id);
-                  toast.success("댓글을 삭제했습니다.");
+                  toast.success(TOAST.COSTUME_DESIGN.COMMENT_DELETED);
                 }}
               >
                 <Trash2 className="h-2.5 w-2.5" />
@@ -588,7 +589,7 @@ function DesignGridItem({
             className="h-5 w-5 p-0 text-destructive hover:text-destructive shrink-0"
             onClick={() => {
               onDelete(design.id);
-              toast.success("디자인을 삭제했습니다.");
+              toast.success(TOAST.COSTUME_DESIGN.DESIGN_DELETED);
             }}
           >
             <Trash2 className="h-2.5 w-2.5" />
@@ -622,9 +623,9 @@ function DesignGridItem({
               onClick={() => {
                 onToggleVote(design.id, currentUser);
                 if (hasVoted) {
-                  toast.success("투표를 취소했습니다.");
+                  toast.success(TOAST.COSTUME_DESIGN.VOTE_CANCELLED);
                 } else {
-                  toast.success("투표했습니다.");
+                  toast.success(TOAST.COSTUME_DESIGN.VOTED);
                 }
               }}
             >
@@ -883,7 +884,7 @@ export function CostumeDesignCard({
             materialNotes,
             estimatedCost
           );
-          toast.success("디자인 아이디어를 추가했습니다.");
+          toast.success(TOAST.COSTUME_DESIGN.IDEA_ADDED);
         }}
       />
     </>

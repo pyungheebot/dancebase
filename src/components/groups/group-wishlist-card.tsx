@@ -202,17 +202,17 @@ function AddItemDialog({ hook }: AddItemDialogProps) {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.GROUP_WISHLIST.TITLE_REQUIRED);
       return;
     }
     if (!proposedBy.trim()) {
-      toast.error("제안자 이름을 입력해주세요.");
+      toast.error(TOAST.GROUP_WISHLIST.PROPOSER_REQUIRED);
       return;
     }
     const cost = estimatedCost ? parseInt(estimatedCost.replace(/,/g, ""), 10) : 0;
     const ok = hook.addItem(title, description, category, priority, isNaN(cost) ? 0 : cost, proposedBy);
     if (ok) {
-      toast.success("위시가 추가되었습니다.");
+      toast.success(TOAST.GROUP_WISHLIST.ADDED);
       setTitle("");
       setDescription("");
       setCategory("practice_song");
@@ -221,7 +221,7 @@ function AddItemDialog({ hook }: AddItemDialogProps) {
       setProposedBy("");
       setOpen(false);
     } else {
-      toast.error("위시 추가에 실패했습니다.");
+      toast.error(TOAST.GROUP_WISHLIST.ADD_ERROR);
     }
   };
 
@@ -381,7 +381,7 @@ function EditItemDialog({ item, hook, open, onOpenChange }: EditItemDialogProps)
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.GROUP_WISHLIST.TITLE_REQUIRED);
       return;
     }
     const cost = estimatedCost ? parseInt(estimatedCost.replace(/,/g, ""), 10) : 0;
@@ -393,7 +393,7 @@ function EditItemDialog({ item, hook, open, onOpenChange }: EditItemDialogProps)
       estimatedCost: isNaN(cost) ? 0 : cost,
     });
     if (ok) {
-      toast.success("위시가 수정되었습니다.");
+      toast.success(TOAST.GROUP_WISHLIST.UPDATED);
       onOpenChange(false);
     } else {
       toast.error(TOAST.UPDATE_ERROR);
@@ -573,20 +573,20 @@ function WishItemCard({ item, hook }: WishItemCardProps) {
 
   const handleLike = () => {
     const ok = hook.likeItem(item.id);
-    if (!ok) toast.error("좋아요 처리에 실패했습니다.");
-    else toast.success("좋아요를 눌렀습니다.");
+    if (!ok) toast.error(TOAST.GROUP_WISHLIST.LIKE_ERROR);
+    else toast.success(TOAST.GROUP_WISHLIST.LIKED);
   };
 
   const handleDelete = () => {
     const ok = hook.deleteItem(item.id);
-    if (ok) toast.success("위시가 삭제되었습니다.");
+    if (ok) toast.success(TOAST.GROUP_WISHLIST.DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   };
 
   const handleStatusChange = (value: string) => {
     const ok = hook.changeStatus(item.id, value as GroupWishStatus);
-    if (ok) toast.success("상태가 변경되었습니다.");
-    else toast.error("상태 변경에 실패했습니다.");
+    if (ok) toast.success(TOAST.GROUP_WISHLIST.STATUS_CHANGED);
+    else toast.error(TOAST.GROUP_WISHLIST.STATUS_ERROR);
   };
 
   return (

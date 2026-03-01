@@ -40,6 +40,7 @@ import {
   Circle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupVote } from "@/hooks/use-group-vote";
 import type { GroupVoteEntry, GroupVoteType } from "@/types";
 
@@ -150,16 +151,16 @@ function CreateVoteDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("투표 제목을 입력해주세요");
+      toast.error(TOAST.GROUP_VOTE_CARD.TITLE_REQUIRED);
       return;
     }
     const validOptions = options.map((o) => o.trim()).filter(Boolean);
     if (validOptions.length < 2) {
-      toast.error("선택지를 2개 이상 입력해주세요");
+      toast.error(TOAST.GROUP_VOTE_CARD.OPTIONS_MIN);
       return;
     }
     if (!createdBy.trim()) {
-      toast.error("작성자 이름을 입력해주세요");
+      toast.error(TOAST.GROUP_VOTE_CARD.AUTHOR_REQUIRED);
       return;
     }
 
@@ -173,7 +174,7 @@ function CreateVoteDialog({
       createdBy,
     });
 
-    toast.success("투표가 생성되었습니다");
+    toast.success(TOAST.GROUP_VOTE_CARD.CREATED);
     setOpen(false);
     resetForm();
   };
@@ -423,20 +424,20 @@ function VoteItem({
   const handleVote = () => {
     const name = voterName.trim();
     if (!name) {
-      toast.error("이름을 입력해주세요");
+      toast.error(TOAST.GROUP_VOTE_CARD.NAME_REQUIRED);
       return;
     }
     if (pendingIds.length === 0) {
-      toast.error("선택지를 선택해주세요");
+      toast.error(TOAST.GROUP_VOTE_CARD.OPTION_REQUIRED);
       return;
     }
     const ok = onCastBallot(vote.id, name, pendingIds);
     if (!ok) {
-      toast.error("이미 투표했거나 투표할 수 없습니다");
+      toast.error(TOAST.GROUP_VOTE_CARD.ALREADY_VOTED);
       return;
     }
     setPendingIds([]);
-    toast.success("투표가 완료되었습니다");
+    toast.success(TOAST.GROUP_VOTE_CARD.COMPLETED);
   };
 
   const participationCount = vote.ballots.length;
@@ -489,7 +490,7 @@ function VoteItem({
               title="투표 시작"
               onClick={() => {
                 onActivate(vote.id);
-                toast.success("투표가 시작되었습니다");
+                toast.success(TOAST.GROUP_VOTE_CARD.STARTED);
               }}
             >
               <Play className="h-3 w-3" />
@@ -503,7 +504,7 @@ function VoteItem({
               title="투표 종료"
               onClick={() => {
                 onClose(vote.id);
-                toast.success("투표가 종료되었습니다");
+                toast.success(TOAST.GROUP_VOTE.ENDED);
               }}
             >
               <Square className="h-3 w-3" />
@@ -516,7 +517,7 @@ function VoteItem({
             title="삭제"
             onClick={() => {
               onDelete(vote.id);
-              toast.success("투표가 삭제되었습니다");
+              toast.success(TOAST.GROUP_VOTE_CARD.DELETED);
             }}
           >
             <Trash2 className="h-3 w-3" />
@@ -734,7 +735,7 @@ export function GroupVoteCard({
                   params.createdBy
                 );
                 if (!ok) {
-                  toast.error("투표 생성에 실패했습니다");
+                  toast.error(TOAST.GROUP_VOTE_CARD.CREATE_ERROR);
                 }
               }}
             />

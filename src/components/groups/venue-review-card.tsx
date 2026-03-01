@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   MapPin,
   Star,
@@ -196,23 +197,23 @@ function AddReviewDialog({ onAdd, prefillVenueName = "" }: AddReviewDialogProps)
 
   const handleSubmit = () => {
     if (!venueName.trim()) {
-      toast.error("장소명을 입력해주세요.");
+      toast.error(TOAST.VENUE_REVIEW.NAME_REQUIRED);
       return;
     }
     if (rating === 0) {
-      toast.error("종합 별점을 선택해주세요.");
+      toast.error(TOAST.VENUE_REVIEW.OVERALL_RATING_REQUIRED);
       return;
     }
     if (floorRating === 0 || mirrorRating === 0 || soundRating === 0 || accessRating === 0) {
-      toast.error("모든 세부 별점을 선택해주세요.");
+      toast.error(TOAST.VENUE_REVIEW.DETAIL_RATING_REQUIRED);
       return;
     }
     if (!reviewedBy.trim()) {
-      toast.error("작성자를 입력해주세요.");
+      toast.error(TOAST.VENUE_REVIEW.AUTHOR_REQUIRED);
       return;
     }
     if (!visitDate) {
-      toast.error("방문일을 입력해주세요.");
+      toast.error(TOAST.VENUE_REVIEW.VISIT_DATE_REQUIRED);
       return;
     }
 
@@ -220,11 +221,11 @@ function AddReviewDialog({ onAdd, prefillVenueName = "" }: AddReviewDialogProps)
     const cap = capacity.trim() ? Number(capacity) : undefined;
 
     if (price !== undefined && (isNaN(price) || price < 0)) {
-      toast.error("시간당 가격을 올바르게 입력해주세요.");
+      toast.error(TOAST.VENUE_REVIEW.HOURLY_PRICE_INVALID);
       return;
     }
     if (cap !== undefined && (isNaN(cap) || cap < 0)) {
-      toast.error("수용 인원을 올바르게 입력해주세요.");
+      toast.error(TOAST.VENUE_REVIEW.CAPACITY_INVALID);
       return;
     }
 
@@ -254,7 +255,7 @@ function AddReviewDialog({ onAdd, prefillVenueName = "" }: AddReviewDialogProps)
       visitDate,
     });
 
-    toast.success("리뷰가 등록되었습니다.");
+    toast.success(TOAST.VENUE_REVIEW.REVIEW_REGISTERED);
     setOpen(false);
     resetForm();
   };
@@ -474,7 +475,7 @@ function ReviewCard({
             className="h-5 w-5 p-0 text-gray-300 hover:text-red-500"
             onClick={() => {
               onDelete(review.id);
-              toast.success("리뷰가 삭제되었습니다.");
+              toast.success(TOAST.VENUE_REVIEW.REVIEW_DELETED);
             }}
           >
             <Trash2 className="h-2.5 w-2.5" />

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   ChevronDown,
   ChevronUp,
@@ -173,11 +174,11 @@ function ItemForm({
 
   function handleSubmit() {
     if (!form.fromScene.trim() || !form.toScene.trim()) {
-      toast.error("이전/다음 장면을 모두 입력하세요.");
+      toast.error(TOAST.SET_CHANGE.SCENE_REQUIRED);
       return;
     }
     if (!form.targetSeconds || Number(form.targetSeconds) <= 0) {
-      toast.error("목표 시간은 1초 이상이어야 합니다.");
+      toast.error(TOAST.SET_CHANGE.TARGET_TIME_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -438,10 +439,10 @@ export function SetChangeLogCard({ projectId }: { projectId: string }) {
         memo: form.memo.trim(),
         completed: form.completed,
       });
-      toast.success("전환 항목이 추가되었습니다.");
+      toast.success(TOAST.SET_CHANGE.ITEM_ADDED);
       setShowAddForm(false);
     } catch {
-      toast.error("항목 추가에 실패했습니다.");
+      toast.error(TOAST.ITEM_ADD_ERROR);
     }
   }
 
@@ -459,10 +460,10 @@ export function SetChangeLogCard({ projectId }: { projectId: string }) {
         memo: form.memo.trim(),
         completed: form.completed,
       });
-      toast.success("항목이 수정되었습니다.");
+      toast.success(TOAST.ITEM_UPDATED);
       setEditingId(null);
     } catch {
-      toast.error("항목 수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
   }
 
@@ -470,9 +471,9 @@ export function SetChangeLogCard({ projectId }: { projectId: string }) {
   async function handleDelete(id: string) {
     try {
       await deleteItem(id);
-      toast.success("항목이 삭제되었습니다.");
+      toast.success(TOAST.ITEM_DELETED);
     } catch {
-      toast.error("항목 삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -481,7 +482,7 @@ export function SetChangeLogCard({ projectId }: { projectId: string }) {
     try {
       await updateItem(item.id, { completed: !item.completed });
     } catch {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   }
 

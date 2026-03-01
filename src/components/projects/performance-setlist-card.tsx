@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   usePerformanceSetlist,
   type ShowSetlistItemInput,
@@ -85,7 +86,7 @@ function SetlistItemDialog({
 
   const handleSubmit = () => {
     if (!songTitle.trim()) {
-      toast.error("곡 제목을 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_SETLIST.SONG_TITLE_REQUIRED);
       return;
     }
     const performerList = performers
@@ -454,7 +455,7 @@ export function PerformanceSetlistCard({
     const trimmed = titleDraft.trim();
     setShowTitle(trimmed);
     setEditingTitle(false);
-    if (trimmed) toast.success("공연 제목이 저장되었습니다.");
+    if (trimmed) toast.success(TOAST.PERFORMANCE_SETLIST.SHOW_TITLE_SAVED);
   };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -477,16 +478,16 @@ export function PerformanceSetlistCard({
   const handleDialogSubmit = (data: ShowSetlistItemInput) => {
     if (dialogMode === "add") {
       addItem(data);
-      toast.success("곡이 추가되었습니다.");
+      toast.success(TOAST.PERFORMANCE_SETLIST.SONG_ADDED);
     } else if (editingItem) {
       updateItem(editingItem.id, data);
-      toast.success("곡 정보가 수정되었습니다.");
+      toast.success(TOAST.PERFORMANCE_SETLIST.SONG_UPDATED);
     }
   };
 
   const handleDelete = (id: string) => {
     deleteItem(id);
-    toast.success("곡이 삭제되었습니다.");
+    toast.success(TOAST.PERFORMANCE_SETLIST.SONG_DELETED);
   };
 
   return (

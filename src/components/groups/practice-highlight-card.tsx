@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePracticeHighlight } from "@/hooks/use-practice-highlight";
 import type {
   PracticeHighlightCategory,
@@ -224,19 +225,19 @@ function AddHighlightDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("하이라이트 제목을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_HIGHLIGHT.TITLE_REQUIRED);
       return;
     }
     if (!memberName) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_HIGHLIGHT_CARD.MEMBER_REQUIRED);
       return;
     }
     if (!category) {
-      toast.error("카테고리를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_HIGHLIGHT_CARD.CATEGORY_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.PRACTICE_HIGHLIGHT_CARD.DATE_REQUIRED);
       return;
     }
 
@@ -248,7 +249,7 @@ function AddHighlightDialog({
       description: description.trim() || undefined,
     });
 
-    toast.success("하이라이트가 등록되었습니다.");
+    toast.success(TOAST.PRACTICE_HIGHLIGHT.REGISTERED);
     reset();
     onOpenChange(false);
   };
@@ -598,7 +599,7 @@ export function PracticeHighlightCard({
                     }}
                     onDelete={(id) => {
                       deleteEntry(id);
-                      toast.success("하이라이트가 삭제되었습니다.");
+                      toast.success(TOAST.PRACTICE_HIGHLIGHT.DELETED);
                     }}
                   />
                 ))}

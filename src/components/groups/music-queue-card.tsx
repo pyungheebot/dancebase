@@ -31,6 +31,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMusicQueue } from "@/hooks/use-music-queue";
 import type { MusicQueueTrack } from "@/types";
 
@@ -91,12 +92,12 @@ function AddTrackDialog({ onAdd }: { onAdd: (payload: Omit<MusicQueueTrack, "id"
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("곡 제목을 입력해주세요.");
+      toast.error(TOAST.MUSIC_QUEUE.TITLE_REQUIRED);
       return;
     }
     const durationSeconds = parseDuration(form.durationRaw);
     if (durationSeconds <= 0) {
-      toast.error("올바른 시간을 입력해주세요. (예: 3:30)");
+      toast.error(TOAST.MUSIC_QUEUE.TIME_INVALID);
       return;
     }
     onAdd({
@@ -109,7 +110,7 @@ function AddTrackDialog({ onAdd }: { onAdd: (payload: Omit<MusicQueueTrack, "id"
     });
     setOpen(false);
     setForm(emptyTrackForm());
-    toast.success("트랙이 추가되었습니다.");
+    toast.success(TOAST.MUSIC_QUEUE.TRACK_ADDED);
   }
 
   return (
@@ -225,13 +226,13 @@ function AddSetDialog({ onAdd }: { onAdd: (name: string) => void }) {
 
   function handleSubmit() {
     if (!name.trim()) {
-      toast.error("세트 이름을 입력해주세요.");
+      toast.error(TOAST.MUSIC_QUEUE.SET_NAME_REQUIRED);
       return;
     }
     onAdd(name.trim());
     setOpen(false);
     setName("");
-    toast.success("세트가 추가되었습니다.");
+    toast.success(TOAST.MUSIC_QUEUE.SET_ADDED);
   }
 
   return (
@@ -414,7 +415,7 @@ export function MusicQueueCard({ groupId }: { groupId: string }) {
 
   async function handleSetActive(setId: string) {
     await setActive(setId);
-    toast.success("활성 세트가 변경되었습니다.");
+    toast.success(TOAST.MUSIC_QUEUE.ACTIVE_SET_CHANGED);
   }
 
   async function handleAddTrack(payload: Omit<MusicQueueTrack, "id">) {
@@ -425,7 +426,7 @@ export function MusicQueueCard({ groupId }: { groupId: string }) {
   async function handleDeleteTrack(trackId: string) {
     if (!currentSetId) return;
     await deleteTrack(currentSetId, trackId);
-    toast.success("트랙이 삭제되었습니다.");
+    toast.success(TOAST.MUSIC_QUEUE.TRACK_DELETED);
   }
 
   async function handleMoveTrack(fromIndex: number, toIndex: number) {

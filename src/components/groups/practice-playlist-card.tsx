@@ -36,6 +36,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   usePracticePlaylistCard,
   mmssToSeconds,
@@ -115,7 +116,7 @@ function CreatePlaylistDialog({
     onCreate(trimmed);
     setName("");
     onClose();
-    toast.success("플레이리스트가 생성되었습니다.");
+    toast.success(TOAST.PLAYLIST.CREATED);
   };
 
   const handleClose = () => {
@@ -224,7 +225,7 @@ function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
 
   const handleSubmit = () => {
     if (!form.title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.PRACTICE_PLAYLIST_CARD.TITLE_REQUIRED);
       return;
     }
     if (!validateDuration(form.durationStr)) return;
@@ -243,7 +244,7 @@ function AddTrackDialog({ open, onClose, onAdd }: AddTrackDialogProps) {
     setForm(DEFAULT_FORM);
     setDurationError("");
     onClose();
-    toast.success("곡이 추가되었습니다.");
+    toast.success(TOAST.PLAYLIST.SONG_ADDED);
   };
 
   const handleClose = () => {
@@ -561,13 +562,13 @@ export function PracticePlaylistCard({ groupId }: PracticePlaylistCardProps) {
   const handleDeletePlaylist = (id: string) => {
     deletePlaylist(id);
     if (selectedPlaylistId === id) setSelectedPlaylistId("");
-    toast.success("플레이리스트가 삭제되었습니다.");
+    toast.success(TOAST.PLAYLIST.DELETED);
   };
 
   const handleRemoveTrack = (trackId: string) => {
     if (!selectedPlaylist) return;
     removeTrack(selectedPlaylist.id, trackId);
-    toast.success("곡이 삭제되었습니다.");
+    toast.success(TOAST.PLAYLIST.SONG_DELETED);
   };
 
   const handleMoveTrack = (trackId: string, direction: "up" | "down") => {

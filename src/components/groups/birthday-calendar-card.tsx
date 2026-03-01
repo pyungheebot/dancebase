@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Cake,
   ChevronDown,
@@ -70,11 +71,11 @@ function EntryItem({
 
   function handleAddMessage() {
     if (!msgContent.trim()) {
-      toast.error("메시지 내용을 입력해주세요.");
+      toast.error(TOAST.BIRTHDAY_CALENDAR.MESSAGE_REQUIRED);
       return;
     }
     onAddMessage(msgAuthor.trim() || "익명", msgContent.trim());
-    toast.success("축하 메시지가 추가되었습니다.");
+    toast.success(TOAST.BIRTHDAY_CALENDAR.CONGRATULATION_ADDED);
     setMsgAuthor("");
     setMsgContent("");
   }
@@ -246,16 +247,16 @@ function AddEntryForm({
 
   async function handleSubmit() {
     if (!name.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.BIRTHDAY_CALENDAR.MEMBER_REQUIRED);
       return;
     }
     if (!birthday || !/^\d{2}-\d{2}$/.test(birthday)) {
-      toast.error("생일을 MM-DD 형식으로 입력해주세요. (예: 03-15)");
+      toast.error(TOAST.BIRTHDAY_CALENDAR.BIRTHDAY_FORMAT);
       return;
     }
     const [mm, dd] = birthday.split("-").map(Number);
     if (mm < 1 || mm > 12 || dd < 1 || dd > 31) {
-      toast.error("올바른 생일 날짜를 입력해주세요.");
+      toast.error(TOAST.BIRTHDAY_CALENDAR.BIRTHDAY_INVALID);
       return;
     }
 
@@ -459,7 +460,7 @@ export function BirthdayCalendarCard({ groupId }: BirthdayCalendarCardProps) {
 
   function handleDelete(entryId: string) {
     deleteEntry(entryId);
-    toast.success("생일 정보가 삭제되었습니다.");
+    toast.success(TOAST.BIRTHDAY_CALENDAR.DELETED);
   }
 
   function handleAddMessage(entryId: string, author: string, content: string) {

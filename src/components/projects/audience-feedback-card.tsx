@@ -38,6 +38,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useAudienceFeedback,
   type CreateSurveyParams,
@@ -372,7 +373,7 @@ function CreateSurveyDialog({
   const handleSubmit = () => {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      toast.error("설문 제목을 입력해주세요");
+      toast.error(TOAST.AUDIENCE_FEEDBACK.TITLE_REQUIRED);
       return;
     }
     const validQuestions = questions.filter((q) => q.question.trim() !== "");
@@ -384,7 +385,7 @@ function CreateSurveyDialog({
       })
     );
     onCreate({ title: trimmedTitle, questions: mapped });
-    toast.success("설문이 생성되었습니다");
+    toast.success(TOAST.AUDIENCE_FEEDBACK.CREATED);
     setTitle("");
     setQuestions([]);
     onOpenChange(false);
@@ -471,7 +472,7 @@ function ResponseFormDialog({
       respondentName: respondentName.trim() || null,
       answers,
     });
-    toast.success("응답이 제출되었습니다");
+    toast.success(TOAST.AUDIENCE_FEEDBACK.SUBMITTED);
     setRespondentName("");
     setAnswers({});
     onOpenChange(false);
@@ -728,7 +729,7 @@ function SurveyManageTab({
                   className="h-6 text-[11px] px-2 text-destructive hover:text-destructive"
                   onClick={() => {
                     deleteSurvey(survey.id);
-                    toast.success("설문이 삭제되었습니다");
+                    toast.success(TOAST.AUDIENCE_FEEDBACK.DELETED);
                   }}
                 >
                   <Trash2 className="h-3 w-3 mr-1" />

@@ -56,6 +56,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useTeamBuilding } from "@/hooks/use-team-building";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { TeamBuildingCategory, TeamBuildingEvent } from "@/types";
@@ -192,15 +193,15 @@ function AddEventDialog({
 
   async function handleSubmit() {
     if (!title.trim()) {
-      toast.error("활동명을 입력해주세요.");
+      toast.error(TOAST.TEAM_BUILDING.ACTIVITY_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.TEAM_BUILDING.DATE_REQUIRED);
       return;
     }
     if (!organizer.trim()) {
-      toast.error("주최자를 입력해주세요.");
+      toast.error(TOAST.TEAM_BUILDING.HOST_REQUIRED);
       return;
     }
     await executeAdd(async () => {
@@ -216,7 +217,7 @@ function AddEventDialog({
         budget: budget ? Number(budget) : undefined,
         maxParticipants: maxParticipants ? Number(maxParticipants) : undefined,
       });
-      toast.success("팀빌딩 활동이 추가되었습니다.");
+      toast.success(TOAST.TEAM_BUILDING.ACTIVITY_ADDED);
       reset();
       onClose();
     });
@@ -407,12 +408,12 @@ function FeedbackDialog({
 
   async function handleSubmit() {
     if (rating === 0) {
-      toast.error("별점을 선택해주세요.");
+      toast.error(TOAST.TEAM_BUILDING.RATING_REQUIRED);
       return;
     }
     await executeFeedback(async () => {
       await onSubmit(rating, feedback.trim() || undefined);
-      toast.success("피드백이 저장되었습니다.");
+      toast.success(TOAST.TEAM_BUILDING.FEEDBACK_SAVED);
       onClose();
     });
   }
@@ -518,12 +519,12 @@ function EventCard({
 
   async function handleJoin() {
     if (!currentMemberName) {
-      toast.error("참가하려면 로그인이 필요합니다.");
+      toast.error(TOAST.TEAM_BUILDING.LOGIN_REQUIRED);
       return;
     }
     const ok = await onJoin(event.id, currentMemberName);
     if (ok) {
-      toast.success("참가 신청이 완료되었습니다.");
+      toast.success(TOAST.TEAM_BUILDING.JOIN_DONE);
     } else {
       toast.error(isFull ? "최대 인원에 도달했습니다." : "이미 참가 중입니다.");
     }
@@ -532,7 +533,7 @@ function EventCard({
   async function handleLeave() {
     if (!currentMemberName) return;
     await onLeave(event.id, currentMemberName);
-    toast.success("참가 취소되었습니다.");
+    toast.success(TOAST.TEAM_BUILDING.JOIN_CANCELLED);
   }
 
   async function handleFeedbackSubmit(rating: number, feedback?: string) {
@@ -547,7 +548,7 @@ function EventCard({
 
   async function handleDelete() {
     await onDelete(event.id);
-    toast.success("활동이 삭제되었습니다.");
+    toast.success(TOAST.TEAM_BUILDING.DELETED);
   }
 
   return (

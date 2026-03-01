@@ -320,11 +320,11 @@ function RiskFormDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("위험 요소 제목을 입력해주세요.");
+      toast.error(TOAST.RISK.TITLE_REQUIRED);
       return;
     }
     if (!mitigation.trim()) {
-      toast.error("대응 방안을 입력해주세요.");
+      toast.error(TOAST.RISK.COUNTERMEASURE_REQUIRED);
       return;
     }
     onSubmit({
@@ -702,13 +702,13 @@ export function StageRiskCard({ projectId }: StageRiskCardProps) {
     if (editTarget) {
       const ok = updateItem(editTarget.id, params);
       if (ok) {
-        toast.success("리스크가 수정되었습니다.");
+        toast.success(TOAST.RISK.UPDATED);
       } else {
         toast.error(TOAST.UPDATE_ERROR);
       }
     } else {
       addItem(params);
-      toast.success("리스크가 등록되었습니다.");
+      toast.success(TOAST.RISK.REGISTERED);
     }
     setFormDialogOpen(false);
     setEditTarget(null);
@@ -717,7 +717,7 @@ export function StageRiskCard({ projectId }: StageRiskCardProps) {
   const handleDelete = (itemId: string) => {
     const ok = deleteItem(itemId);
     if (ok) {
-      toast.success("리스크가 삭제되었습니다.");
+      toast.success(TOAST.RISK.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

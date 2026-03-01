@@ -40,6 +40,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useBudgetPlanner } from "@/hooks/use-budget-planner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { BudgetPlannerCategory, BudgetPlannerItem, BudgetPlannerPlan } from "@/types";
@@ -190,7 +191,7 @@ function PlanDialog({
 
   const handleSave = () => {
     if (!title.trim()) {
-      toast.error("계획 이름을 입력해주세요.");
+      toast.error(TOAST.BUDGET_PLANNER.PLAN_NAME_REQUIRED);
       return;
     }
     onSave(title.trim(), year);
@@ -278,17 +279,17 @@ function ItemDialog({ open, mode, onClose, onSave, initial }: ItemDialogProps) {
 
   const handleSave = () => {
     if (!label.trim()) {
-      toast.error("항목 이름을 입력해주세요.");
+      toast.error(TOAST.BUDGET_PLANNER.ITEM_NAME_REQUIRED);
       return;
     }
     const planned = Number(plannedAmount);
     const actual = Number(actualAmount);
     if (isNaN(planned) || planned < 0) {
-      toast.error("유효한 예산 금액을 입력해주세요.");
+      toast.error(TOAST.BUDGET_PLANNER.BUDGET_AMOUNT_REQUIRED);
       return;
     }
     if (isNaN(actual) || actual < 0) {
-      toast.error("유효한 실제 지출 금액을 입력해주세요.");
+      toast.error(TOAST.BUDGET_PLANNER.ACTUAL_AMOUNT_REQUIRED);
       return;
     }
     onSave({
@@ -438,20 +439,20 @@ export function BudgetPlannerCard({ groupId }: { groupId: string }) {
   const handleAddPlan = (title: string, year: number) => {
     const plan = addPlan(title, year);
     setSelectedPlanId(plan.id);
-    toast.success("예산 계획이 추가되었습니다.");
+    toast.success(TOAST.BUDGET_PLANNER.PLAN_ADDED);
   };
 
   const handleUpdatePlan = (title: string, year: number) => {
     if (!planDialogEdit) return;
     updatePlan(planDialogEdit.id, { title, year });
-    toast.success("예산 계획이 수정되었습니다.");
+    toast.success(TOAST.BUDGET_PLANNER.PLAN_UPDATED);
   };
 
   const handleDeletePlan = () => {
     if (!deletePlanConfirmId) return;
     deletePlan(deletePlanConfirmId);
     setSelectedPlanId(null);
-    toast.success("예산 계획이 삭제되었습니다.");
+    toast.success(TOAST.BUDGET_PLANNER.PLAN_DELETED);
     setDeletePlanConfirmId(null);
   };
 
@@ -460,19 +461,19 @@ export function BudgetPlannerCard({ groupId }: { groupId: string }) {
   const handleAddItem = (item: Omit<BudgetPlannerItem, "id">) => {
     if (!selectedPlan) return;
     addItem(selectedPlan.id, item);
-    toast.success("예산 항목이 추가되었습니다.");
+    toast.success(TOAST.BUDGET_PLANNER.BUDGET_ITEM_ADDED);
   };
 
   const handleUpdateItem = (item: Omit<BudgetPlannerItem, "id">) => {
     if (!selectedPlan || !itemDialogEdit) return;
     updateItem(selectedPlan.id, itemDialogEdit.id, item);
-    toast.success("예산 항목이 수정되었습니다.");
+    toast.success(TOAST.BUDGET_PLANNER.BUDGET_ITEM_UPDATED);
   };
 
   const handleDeleteItem = () => {
     if (!selectedPlan || !deleteItemConfirmId) return;
     deleteItem(selectedPlan.id, deleteItemConfirmId);
-    toast.success("항목이 삭제되었습니다.");
+    toast.success(TOAST.BUDGET_PLANNER.BUDGET_ITEM_DELETED);
     setDeleteItemConfirmId(null);
   };
 

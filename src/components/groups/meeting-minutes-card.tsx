@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMeetingMinutesMemo } from "@/hooks/use-meeting-minutes";
 import type {
   MeetingMinutesEntry,
@@ -408,15 +409,15 @@ function AddMinutesDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("회의 제목을 입력해주세요.");
+      toast.error(TOAST.MEETING_MINUTES.TITLE_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("회의 날짜를 입력해주세요.");
+      toast.error(TOAST.MEETING_MINUTES.DATE_REQUIRED);
       return;
     }
     if (!recorder.trim()) {
-      toast.error("기록자를 입력해주세요.");
+      toast.error(TOAST.MEETING_MINUTES.RECORDER_REQUIRED);
       return;
     }
 
@@ -457,10 +458,10 @@ function AddMinutesDialog({
     });
 
     if (!ok) {
-      toast.error("회의록 등록에 실패했습니다.");
+      toast.error(TOAST.MEETING_MINUTES.REGISTER_ERROR);
       return;
     }
-    toast.success("회의록이 등록되었습니다.");
+    toast.success(TOAST.MEETING_MINUTES.REGISTERED);
     reset();
     onOpenChange(false);
   };
@@ -1061,7 +1062,7 @@ export function MeetingMinutesCard({
                     entry={entry}
                     onDelete={(id) => {
                       deleteMinutes(id);
-                      toast.success("회의록이 삭제되었습니다.");
+                      toast.success(TOAST.MEETING_MINUTES.DELETED);
                     }}
                   />
                 ))}

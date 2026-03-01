@@ -45,6 +45,7 @@ import {
   CheckCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
@@ -167,11 +168,11 @@ function CreateSessionDialog({
 
   const handleSubmit = () => {
     if (!eventName.trim()) {
-      toast.error("이벤트명을 입력해주세요.");
+      toast.error(TOAST.BACKSTAGE_CHECK.EVENT_NAME_REQUIRED);
       return;
     }
     if (!eventDate) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.BACKSTAGE_CHECK.DATE_REQUIRED);
       return;
     }
     onSubmit(eventName.trim(), eventDate);
@@ -286,7 +287,7 @@ function AddItemDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("항목 제목을 입력해주세요.");
+      toast.error(TOAST.BACKSTAGE_CHECK.ITEM_TITLE_REQUIRED);
       return;
     }
     onSubmit(category, title.trim(), description.trim(), assignedTo, priority);
@@ -627,15 +628,15 @@ function SessionPanel({
 
   const handleDelete = () => {
     onDeleteSession(session.id);
-    toast.success("세션이 삭제되었습니다.");
+    toast.success(TOAST.SESSION.DELETED);
   };
 
   const handleComplete = () => {
     const ok = onCompleteSession(session.id);
     if (ok) {
-      toast.success("세션이 완료 처리되었습니다.");
+      toast.success(TOAST.BACKSTAGE_CHECK.SESSION_COMPLETED);
     } else {
-      toast.error("모든 항목을 체크해야 완료할 수 있습니다.");
+      toast.error(TOAST.BACKSTAGE_CHECK.ALL_CHECK_REQUIRED);
     }
   };
 
@@ -867,7 +868,7 @@ export function BackstageCheckCard({
       toast.success(`"${eventName}" 세션이 생성되었습니다.`);
       setOpen(true);
     } else {
-      toast.error("세션 생성에 실패했습니다. 필수 항목을 확인해주세요.");
+      toast.error(TOAST.BACKSTAGE_CHECK.SESSION_CREATE_ERROR);
     }
   };
 
@@ -888,9 +889,9 @@ export function BackstageCheckCard({
       priority
     );
     if (ok) {
-      toast.success("체크 항목이 추가되었습니다.");
+      toast.success(TOAST.BACKSTAGE_CHECK.CHECK_ITEM_ADDED);
     } else {
-      toast.error("항목 추가에 실패했습니다.");
+      toast.error(TOAST.BACKSTAGE_CHECK.CHECK_ITEM_ADD_ERROR);
     }
   };
 

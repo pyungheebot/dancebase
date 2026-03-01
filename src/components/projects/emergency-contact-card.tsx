@@ -316,11 +316,11 @@ export function EmergencyContactCard({ projectId }: { projectId: string }) {
 
   async function handleSave() {
     if (!form.name.trim()) {
-      toast.error("이름을 입력해주세요");
+      toast.error(TOAST.EMERGENCY_CONTACT.NAME_REQUIRED);
       return;
     }
     if (!form.phone.trim()) {
-      toast.error("전화번호를 입력해주세요");
+      toast.error(TOAST.EMERGENCY_CONTACT.PHONE_REQUIRED);
       return;
     }
 
@@ -335,9 +335,9 @@ export function EmergencyContactCard({ projectId }: { projectId: string }) {
           priority: form.priority,
         });
         if (ok) {
-          toast.success("연락처가 수정되었습니다");
+          toast.success(TOAST.EMERGENCY_CONTACT.UPDATED);
         } else {
-          toast.error("연락처를 찾을 수 없습니다");
+          toast.error(TOAST.NOT_FOUND);
         }
       } else {
         addContact({
@@ -348,7 +348,7 @@ export function EmergencyContactCard({ projectId }: { projectId: string }) {
           note: form.note.trim(),
           priority: form.priority,
         });
-        toast.success("연락처가 추가되었습니다");
+        toast.success(TOAST.EMERGENCY_CONTACT.ADDED);
       }
       setDialogOpen(false);
     });
@@ -359,7 +359,7 @@ export function EmergencyContactCard({ projectId }: { projectId: string }) {
   function handleDelete(contactId: string) {
     const ok = deleteContact(contactId);
     if (ok) {
-      toast.success("연락처가 삭제되었습니다");
+      toast.success(TOAST.EMERGENCY_CONTACT.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

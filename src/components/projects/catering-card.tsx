@@ -197,15 +197,15 @@ function EntryFormDialog({
 
   const handleSubmit = () => {
     if (!form.mealTime.trim()) {
-      toast.error("식사 시간을 입력하세요.");
+      toast.error(TOAST.CATERING.TIME_REQUIRED);
       return;
     }
     if (!form.menuDescription.trim()) {
-      toast.error("메뉴 설명을 입력하세요.");
+      toast.error(TOAST.CATERING.MENU_REQUIRED);
       return;
     }
     if (form.headcount < 1) {
-      toast.error("인원 수는 1명 이상이어야 합니다.");
+      toast.error(TOAST.CATERING.HEADCOUNT_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -562,7 +562,7 @@ export function CateringCard({ groupId, projectId }: CateringCardProps) {
       deliveryLocation: form.deliveryLocation || undefined,
       notes: form.notes || undefined,
     });
-    toast.success("케이터링 항목이 추가되었습니다.");
+    toast.success(TOAST.CATERING.ITEM_ADDED);
     setAddDialogOpen(false);
   };
 
@@ -584,7 +584,7 @@ export function CateringCard({ groupId, projectId }: CateringCardProps) {
       notes: form.notes || undefined,
     });
     if (ok) {
-      toast.success("케이터링 항목이 수정되었습니다.");
+      toast.success(TOAST.CATERING.ITEM_UPDATED);
     } else {
       toast.error(TOAST.UPDATE_ERROR);
     }
@@ -594,7 +594,7 @@ export function CateringCard({ groupId, projectId }: CateringCardProps) {
   const handleDelete = (id: string) => {
     const ok = deleteEntry(id);
     if (ok) {
-      toast.success("항목이 삭제되었습니다.");
+      toast.success(TOAST.ITEM_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -605,7 +605,7 @@ export function CateringCard({ groupId, projectId }: CateringCardProps) {
     if (ok) {
       toast.success(`상태가 "${STATUS_LABELS[status]}"(으)로 변경되었습니다.`);
     } else {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   };
 

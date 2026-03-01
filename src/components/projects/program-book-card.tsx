@@ -49,6 +49,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // ============================================================
 // 유형 헬퍼
@@ -176,7 +177,7 @@ function InitBookDialog({
 
   const handleSubmit = () => {
     if (!showTitle.trim()) {
-      toast.error("공연명을 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK.SHOW_NAME_REQUIRED);
       return;
     }
     onSubmit(showTitle.trim(), showDate, venue.trim());
@@ -290,7 +291,7 @@ function SectionDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("섹션 제목을 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK.SECTION_TITLE_REQUIRED);
       return;
     }
     onSubmit(type, title.trim(), content);
@@ -606,9 +607,9 @@ export function ProgramBookCard({ groupId, projectId }: ProgramBookCardProps) {
   ) => {
     const ok = initBook(showTitle, showDate, venue);
     if (ok) {
-      toast.success("프로그램북 기본 정보가 저장되었습니다.");
+      toast.success(TOAST.PROGRAM_BOOK.INFO_SAVED);
     } else {
-      toast.error("공연명을 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK.SHOW_NAME_REQUIRED);
     }
   };
 
@@ -618,14 +619,14 @@ export function ProgramBookCard({ groupId, projectId }: ProgramBookCardProps) {
     content: string
   ) => {
     if (!book) {
-      toast.error("먼저 프로그램북 기본 정보를 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK.SETUP_REQUIRED);
       return;
     }
     const ok = addSection(type, title, content);
     if (ok) {
-      toast.success("섹션이 추가되었습니다.");
+      toast.success(TOAST.PROGRAM_BOOK.SECTION_ADDED);
     } else {
-      toast.error("섹션 제목을 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK.SECTION_TITLE_REQUIRED);
     }
   };
 
@@ -636,14 +637,14 @@ export function ProgramBookCard({ groupId, projectId }: ProgramBookCardProps) {
   ) => {
     if (!editTarget) return;
     updateSection(editTarget.id, { type, title, content });
-    toast.success("섹션이 수정되었습니다.");
+    toast.success(TOAST.PROGRAM_BOOK.SECTION_UPDATED);
     setEditTarget(null);
   };
 
   const handleDeleteSection = () => {
     if (!deleteConfirmId) return;
     deleteSection(deleteConfirmId);
-    toast.success("섹션이 삭제되었습니다.");
+    toast.success(TOAST.PROGRAM_BOOK.SECTION_DELETED);
     setDeleteConfirmId(null);
   };
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   CloudSun,
   ChevronDown,
@@ -123,11 +124,11 @@ function AddAlertDialog({ open, onClose, onAdd }: AddAlertDialogProps) {
 
   async function handleSubmit() {
     if (!form.date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.WEATHER_ALERT.DATE_REQUIRED);
       return;
     }
     if (!form.recommendation.trim()) {
-      toast.error("권장사항을 입력해주세요.");
+      toast.error(TOAST.WEATHER_ALERT.RECOMMENDATION_REQUIRED);
       return;
     }
 
@@ -146,11 +147,11 @@ function AddAlertDialog({ open, onClose, onAdd }: AddAlertDialogProps) {
       });
 
       if (ok) {
-        toast.success("날씨 알림이 추가되었습니다.");
+        toast.success(TOAST.WEATHER_ALERT.ADDED);
         setForm(INITIAL_FORM);
         onClose();
       } else {
-        toast.error("날씨 알림 추가에 실패했습니다.");
+        toast.error(TOAST.WEATHER_ALERT.ADD_ERROR);
       }
     });
   }
@@ -346,7 +347,7 @@ function TodayWeatherCard({
 }) {
   function handleDelete() {
     onDelete(entry.id);
-    toast.success("날씨 알림이 삭제되었습니다.");
+    toast.success(TOAST.WEATHER_ALERT.DELETED);
   }
 
   return (
@@ -468,7 +469,7 @@ function HistoryRow({
           className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
           onClick={() => {
             onDelete(entry.id);
-            toast.success("날씨 알림이 삭제되었습니다.");
+            toast.success(TOAST.WEATHER_ALERT.DELETED);
           }}
         >
           <Trash2 className="h-3 w-3" />

@@ -36,6 +36,7 @@ import {
   IdCard,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useStageAccess } from "@/hooks/use-stage-access";
 import type {
   StageAccessPass,
@@ -238,11 +239,11 @@ function PassDialog({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.STAGE_PASS.NAME_REQUIRED);
       return;
     }
     if (!form.passNumber.trim()) {
-      toast.error("패스 번호를 입력해주세요.");
+      toast.error(TOAST.STAGE_PASS.PASS_NUMBER_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -418,17 +419,17 @@ export function StageAccessCard({ projectId }: { projectId: string }) {
   function handleSubmit(form: PassFormState) {
     if (editTarget) {
       updatePass(editTarget.id, form);
-      toast.success("패스가 수정되었습니다.");
+      toast.success(TOAST.STAGE_PASS.UPDATED);
     } else {
       addPass(form);
-      toast.success("패스가 추가되었습니다.");
+      toast.success(TOAST.STAGE_PASS.ADDED);
     }
   }
 
   // 삭제 처리
   function handleDelete(id: string) {
     removePass(id);
-    toast.success("패스가 삭제되었습니다.");
+    toast.success(TOAST.STAGE_PASS.DELETED);
   }
 
   const dialogInitial: PassFormState = editTarget

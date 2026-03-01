@@ -48,6 +48,7 @@ import {
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { useBackstageLog } from "@/hooks/use-backstage-log";
 import type { BackstageLogCategory, BackstageLogSession } from "@/types";
@@ -137,11 +138,11 @@ function CreateSessionDialog({
 
   const handleSubmit = async () => {
     if (!showName.trim()) {
-      toast.error("공연명을 입력해주세요.");
+      toast.error(TOAST.BACKSTAGE_LOG.SHOW_NAME_REQUIRED);
       return;
     }
     if (!showDate) {
-      toast.error("공연 날짜를 선택해주세요.");
+      toast.error(TOAST.BACKSTAGE_LOG.DATE_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -231,17 +232,17 @@ function EntryForm({
 
   const handleSubmit = async () => {
     if (!senderName.trim()) {
-      toast.error("발신자 이름을 입력해주세요.");
+      toast.error(TOAST.BACKSTAGE_LOG.SENDER_REQUIRED);
       return;
     }
     if (!message.trim()) {
-      toast.error("메시지를 입력해주세요.");
+      toast.error(TOAST.BACKSTAGE_LOG.MESSAGE_REQUIRED);
       return;
     }
     await execute(async () => {
       onAdd(sessionId, { senderName, message, category });
       setMessage("");
-      toast.success("로그가 추가되었습니다.");
+      toast.success(TOAST.BACKSTAGE_LOG.LOG_ADDED);
     });
   };
 
@@ -361,19 +362,19 @@ function SessionCard({
 
   const handleEnd = () => {
     onEnd(session.id);
-    toast.success("세션이 종료되었습니다.");
+    toast.success(TOAST.BACKSTAGE_LOG.SESSION_ENDED);
   };
 
   const handleResolve = () => {
     if (!resolvedBy.trim()) {
-      toast.error("처리자 이름을 입력해주세요.");
+      toast.error(TOAST.BACKSTAGE_LOG.HANDLER_REQUIRED);
       return;
     }
     if (resolveEntryId) {
       onResolveEntry(session.id, resolveEntryId, resolvedBy.trim());
       setResolveEntryId(null);
       setResolvedBy("");
-      toast.success("항목이 해결됨으로 처리되었습니다.");
+      toast.success(TOAST.BACKSTAGE_LOG.ITEM_RESOLVED);
     }
   };
 
@@ -543,7 +544,7 @@ function SessionCard({
                           title="삭제"
                           onClick={() => {
                             onDeleteEntry(session.id, entry.id);
-                            toast.success("항목이 삭제되었습니다.");
+                            toast.success(TOAST.BACKSTAGE_LOG.ITEM_DELETED);
                           }}
                         >
                           <Trash2 className="h-3 w-3" />
@@ -558,7 +559,7 @@ function SessionCard({
                         title="삭제"
                         onClick={() => {
                           onDeleteEntry(session.id, entry.id);
-                          toast.success("항목이 삭제되었습니다.");
+                          toast.success(TOAST.BACKSTAGE_LOG.ITEM_DELETED);
                         }}
                       >
                         <Trash2 className="h-3 w-3" />
@@ -590,7 +591,7 @@ function SessionCard({
         onOpenChange={(open) => !open && setDeleteSessionId(null)}
         title="세션 삭제"
         description={`"${session.showName}" 세션과 모든 로그 항목(${entries.length}건)이 영구 삭제됩니다. 계속하시겠습니까?`}
-        onConfirm={() => { onDelete(session.id); setDeleteSessionId(null); toast.success("세션이 삭제되었습니다."); }}
+        onConfirm={() => { onDelete(session.id); setDeleteSessionId(null); toast.success(TOAST.BACKSTAGE_LOG.SESSION_DELETED); }}
         destructive
       />
 

@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useVideoLibrary } from "@/hooks/use-video-library";
 import type { VideoCategory, VideoLibraryItem } from "@/types";
 
@@ -115,15 +116,15 @@ function AddVideoDialog({
     const trimUrl = url.trim();
 
     if (!trimTitle) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.VIDEO_LIBRARY.TITLE_REQUIRED);
       return;
     }
     if (!trimUrl) {
-      toast.error("URL을 입력해주세요.");
+      toast.error(TOAST.VIDEO_LIBRARY.URL_REQUIRED);
       return;
     }
     if (!trimUrl.startsWith("https://")) {
-      toast.error("URL은 https://로 시작해야 합니다.");
+      toast.error(TOAST.VIDEO_LIBRARY.URL_HTTPS);
       return;
     }
     if (itemCount >= maxVideos) {
@@ -141,7 +142,7 @@ function AddVideoDialog({
 
     reset();
     onOpenChange(false);
-    toast.success("영상이 추가되었습니다.");
+    toast.success(TOAST.VIDEO_LIBRARY.ADDED);
   }
 
   return (
@@ -339,7 +340,7 @@ export function VideoLibraryCard({ groupId, projectId }: VideoLibraryCardProps) 
   function handleAdd(videoData: Omit<VideoLibraryItem, "id" | "createdAt">) {
     const success = addVideo(videoData);
     if (!success) {
-      toast.error("URL이 유효하지 않거나 최대 개수를 초과했습니다.");
+      toast.error(TOAST.VIDEO_LIBRARY.INVALID_URL);
     }
   }
 

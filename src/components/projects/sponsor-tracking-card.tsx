@@ -180,12 +180,12 @@ function SponsorDialog({
 
   function handleSubmit() {
     if (!form.sponsorName.trim()) {
-      toast.error("후원사 이름을 입력해주세요.");
+      toast.error(TOAST.SPONSOR_TRACKING.NAME_REQUIRED);
       return;
     }
     const parsedAmount = parseInt(form.amount.replace(/,/g, ""), 10);
     if (isNaN(parsedAmount) || parsedAmount < 0) {
-      toast.error("올바른 후원 금액을 입력해주세요.");
+      toast.error(TOAST.SPONSOR_TRACKING.AMOUNT_REQUIRED);
       return;
     }
     onSubmit({ ...form, amount: String(parsedAmount) });
@@ -563,7 +563,7 @@ export function SponsorTrackingCard({
       notes: data.notes.trim() || undefined,
     });
     setAddDialogOpen(false);
-    toast.success("스폰서가 추가되었습니다.");
+    toast.success(TOAST.SPONSOR_TRACKING.ADDED);
   }
 
   // 스폰서 수정 제출
@@ -593,7 +593,7 @@ export function SponsorTrackingCard({
     });
 
     if (ok) {
-      toast.success("스폰서 정보가 수정되었습니다.");
+      toast.success(TOAST.SPONSOR_TRACKING.UPDATED);
     } else {
       toast.error(TOAST.UPDATE_ERROR);
     }
@@ -758,7 +758,7 @@ export function SponsorTrackingCard({
                             }
                             onTogglePayment={() => {
                               const ok = togglePayment(sponsor.id);
-                              if (!ok) toast.error("입금 상태 변경에 실패했습니다.");
+                              if (!ok) toast.error(TOAST.SPONSOR_TRACKING.PAYMENT_STATUS_ERROR);
                             }}
                             onToggleBenefit={(benefitId) => {
                               const ok = toggleBenefitDelivered(
@@ -766,7 +766,7 @@ export function SponsorTrackingCard({
                                 benefitId
                               );
                               if (!ok)
-                                toast.error("혜택 상태 변경에 실패했습니다.");
+                                toast.error(TOAST.SPONSOR_TRACKING.BENEFIT_STATUS_ERROR);
                             }}
                           />
                         ))}

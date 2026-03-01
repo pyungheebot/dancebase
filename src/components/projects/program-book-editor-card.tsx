@@ -49,6 +49,7 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatYearMonthDay } from "@/lib/date-utils";
 
@@ -140,7 +141,7 @@ function ShowInfoDialog({
 
   const handleSubmit = () => {
     if (!showTitle.trim()) {
-      toast.error("공연명을 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK_EDITOR.SHOW_NAME_REQUIRED);
       return;
     }
     onSubmit({
@@ -302,7 +303,7 @@ function ItemDialog({
 
   const handleSubmit = () => {
     if (!form.title.trim()) {
-      toast.error("프로그램 제목을 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK_EDITOR.PROGRAM_TITLE_REQUIRED);
       return;
     }
     const performers = form.performers
@@ -481,11 +482,11 @@ function CastDialog({
 
   const handleSubmit = () => {
     if (!form.name.trim()) {
-      toast.error("출연진 이름을 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK_EDITOR.CAST_NAME_REQUIRED);
       return;
     }
     if (!form.role.trim()) {
-      toast.error("역할을 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK_EDITOR.ROLE_REQUIRED);
       return;
     }
     onSubmit({
@@ -805,47 +806,47 @@ export function ProgramBookEditorCard({
   }) => {
     const ok = setShowInfo(info);
     if (ok) {
-      toast.success("공연 정보가 저장되었습니다.");
+      toast.success(TOAST.PROGRAM_BOOK_EDITOR.SHOW_INFO_SAVED);
     } else {
-      toast.error("공연명을 입력해주세요.");
+      toast.error(TOAST.PROGRAM_BOOK_EDITOR.SHOW_NAME_REQUIRED);
     }
   };
 
   const handleAddItem = (item: Omit<ProgramBookItem, "id" | "order">) => {
     addItem(item);
-    toast.success("프로그램이 추가되었습니다.");
+    toast.success(TOAST.PROGRAM_BOOK_EDITOR.PROGRAM_ADDED);
   };
 
   const handleUpdateItem = (item: Omit<ProgramBookItem, "id" | "order">) => {
     if (!editItemTarget) return;
     updateItem(editItemTarget.id, item);
-    toast.success("프로그램이 수정되었습니다.");
+    toast.success(TOAST.PROGRAM_BOOK_EDITOR.PROGRAM_UPDATED);
     setEditItemTarget(null);
   };
 
   const handleDeleteItem = () => {
     if (!deleteItemConfirmId) return;
     deleteItem(deleteItemConfirmId);
-    toast.success("프로그램이 삭제되었습니다.");
+    toast.success(TOAST.PROGRAM_BOOK_EDITOR.PROGRAM_DELETED);
     setDeleteItemConfirmId(null);
   };
 
   const handleAddCast = (cast: Omit<ProgramBookCast, "id">) => {
     addCast(cast);
-    toast.success("출연진이 추가되었습니다.");
+    toast.success(TOAST.PROGRAM_BOOK_EDITOR.CAST_ADDED);
   };
 
   const handleUpdateCast = (cast: Omit<ProgramBookCast, "id">) => {
     if (!editCastTarget) return;
     updateCast(editCastTarget.id, cast);
-    toast.success("출연진 정보가 수정되었습니다.");
+    toast.success(TOAST.PROGRAM_BOOK_EDITOR.CAST_UPDATED);
     setEditCastTarget(null);
   };
 
   const handleDeleteCast = () => {
     if (!deleteCastConfirmId) return;
     deleteCast(deleteCastConfirmId);
-    toast.success("출연진이 삭제되었습니다.");
+    toast.success(TOAST.PROGRAM_BOOK_EDITOR.CAST_DELETED);
     setDeleteCastConfirmId(null);
   };
 

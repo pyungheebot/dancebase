@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useVideoReview } from "@/hooks/use-video-review";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { VideoReviewEntry, VideoReviewTimestamp, VideoReviewTimestampType } from "@/types";
@@ -167,11 +168,11 @@ function AddEntryDialog({ open, onClose, onSave }: AddEntryDialogProps) {
 
   async function handleSubmit() {
     if (!title.trim()) {
-      toast.error("영상 제목을 입력해주세요.");
+      toast.error(TOAST.VIDEO_REVIEW.TITLE_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("촬영 날짜를 선택해주세요.");
+      toast.error(TOAST.VIDEO_REVIEW.DATE_REQUIRED);
       return;
     }
     const urlError = validateUrl(videoUrl);
@@ -196,11 +197,11 @@ function AddEntryDialog({ open, onClose, onSave }: AddEntryDialogProps) {
           overallRating: overallRating > 0 ? overallRating : undefined,
           reviewedBy: reviewers,
         });
-        toast.success("영상이 추가되었습니다.");
+        toast.success(TOAST.VIDEO_REVIEW.VIDEO_ADDED);
         reset();
         onClose();
       } catch {
-        toast.error("영상 추가에 실패했습니다.");
+        toast.error(TOAST.VIDEO_REVIEW.VIDEO_ADD_ERROR);
       }
     });
   }
@@ -346,15 +347,15 @@ function AddTimestampForm({ defaultAuthor, onAdd }: AddTimestampFormProps) {
 
   async function handleSubmit() {
     if (!time.trim()) {
-      toast.error("시간을 입력해주세요. (예: 01:23)");
+      toast.error(TOAST.VIDEO_REVIEW.TIME_REQUIRED);
       return;
     }
     if (!isValidTime(time)) {
-      toast.error("시간 형식이 올바르지 않습니다. MM:SS 형식으로 입력해주세요.");
+      toast.error(TOAST.VIDEO_REVIEW.TIME_FORMAT_ERROR);
       return;
     }
     if (!comment.trim()) {
-      toast.error("코멘트를 입력해주세요.");
+      toast.error(TOAST.VIDEO_REVIEW.COMMENT_REQUIRED);
       return;
     }
 
@@ -366,11 +367,11 @@ function AddTimestampForm({ defaultAuthor, onAdd }: AddTimestampFormProps) {
           author: author.trim() || "익명",
           type,
         });
-        toast.success("타임스탬프가 추가되었습니다.");
+        toast.success(TOAST.VIDEO_REVIEW.TIMESTAMP_ADDED);
         setTime("");
         setComment("");
       } catch {
-        toast.error("타임스탬프 추가에 실패했습니다.");
+        toast.error(TOAST.VIDEO_REVIEW.TIMESTAMP_ADD_ERROR);
       }
     });
   }
@@ -453,7 +454,7 @@ function TimestampItem({ timestamp, onDelete }: TimestampItemProps) {
 
   async function handleDelete() {
     await onDelete(timestamp.id);
-    toast.success("타임스탬프가 삭제되었습니다.");
+    toast.success(TOAST.VIDEO_REVIEW.TIMESTAMP_DELETED);
   }
 
   return (
@@ -536,7 +537,7 @@ function EntryItem({
 
   async function handleDelete() {
     await onDelete(entry.id);
-    toast.success("영상 리뷰가 삭제되었습니다.");
+    toast.success(TOAST.VIDEO_REVIEW.VIDEO_DELETED);
   }
 
   // 타임스탬프 시간순 정렬

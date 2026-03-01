@@ -46,6 +46,7 @@ import {
   Music2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 
@@ -217,7 +218,7 @@ function AddItemDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.TITLE_REQUIRED_DOT);
       return;
     }
     const duration = parseDuration(durationStr);
@@ -418,16 +419,16 @@ export function SetListCard({
       transitionNote || undefined
     );
     if (ok) {
-      toast.success("항목이 추가되었습니다.");
+      toast.success(TOAST.ITEM_ADDED);
     } else {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.TITLE_REQUIRED_DOT);
     }
   };
 
   const handleDeleteItem = () => {
     if (!deleteConfirmId) return;
     deleteItem(deleteConfirmId);
-    toast.success("항목이 삭제되었습니다.");
+    toast.success(TOAST.ITEM_DELETED);
     setDeleteConfirmId(null);
   };
 

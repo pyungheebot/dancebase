@@ -102,7 +102,7 @@ function AddPeriodDialog({ hook }: AddPeriodDialogProps) {
     const trimmed = memberInput.trim();
     if (!trimmed) return;
     if (memberList.includes(trimmed)) {
-      toast.error("이미 추가된 이름입니다.");
+      toast.error(TOAST.GROUP_DUES.DUPLICATE_NAME);
       return;
     }
     setMemberList((prev) => [...prev, trimmed]);
@@ -119,15 +119,15 @@ function AddPeriodDialog({ hook }: AddPeriodDialogProps) {
     const amt = parseInt(amount.replace(/,/g, ""), 10);
 
     if (!y || m < 1 || m > 12) {
-      toast.error("올바른 년도/월을 입력해주세요.");
+      toast.error(TOAST.GROUP_DUES.YEAR_MONTH_INVALID);
       return;
     }
     if (!amt || amt <= 0) {
-      toast.error("납부 금액을 입력해주세요.");
+      toast.error(TOAST.GROUP_DUES.AMOUNT_REQUIRED);
       return;
     }
     if (!dueDate) {
-      toast.error("납부 기한을 선택해주세요.");
+      toast.error(TOAST.GROUP_DUES.DUE_DATE_REQUIRED);
       return;
     }
 
@@ -142,7 +142,7 @@ function AddPeriodDialog({ hook }: AddPeriodDialogProps) {
       setMemberList([]);
       setOpen(false);
     } else {
-      toast.error("이미 해당 월의 납부 기간이 존재합니다.");
+      toast.error(TOAST.GROUP_DUES.PERIOD_EXISTS);
     }
   };
 
@@ -352,7 +352,7 @@ function MemberRow({
   const handleStatusChange = (status: DuesTrackPaymentStatus) => {
     const ok = hook.setMemberStatus(periodId, member.id, status);
     if (ok) toast.success(`${member.name} 상태가 변경되었습니다.`);
-    else toast.error("상태 변경에 실패했습니다.");
+    else toast.error(TOAST.GROUP_DUES.STATUS_ERROR);
   };
 
   const handleDelete = () => {
@@ -457,7 +457,7 @@ function PeriodCard({ period, hook }: PeriodCardProps) {
 
   const handleBulkStatus = (status: DuesTrackPaymentStatus) => {
     if (selectedIds.size === 0) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.GROUP_DUES.MEMBER_REQUIRED);
       return;
     }
     const ok = hook.bulkSetMemberStatus(period.id, [...selectedIds], status);
@@ -465,7 +465,7 @@ function PeriodCard({ period, hook }: PeriodCardProps) {
       toast.success(`${selectedIds.size}명의 상태가 변경되었습니다.`);
       setSelectedIds(new Set());
     } else {
-      toast.error("일괄 변경에 실패했습니다.");
+      toast.error(TOAST.GROUP_DUES.BULK_ERROR);
     }
   };
 
@@ -477,7 +477,7 @@ function PeriodCard({ period, hook }: PeriodCardProps) {
       toast.success(`${trimmed} 멤버가 추가되었습니다.`);
       setAddMemberInput("");
     } else {
-      toast.error("멤버 추가에 실패했습니다.");
+      toast.error(TOAST.GROUP_DUES.MEMBER_ADD_ERROR);
     }
   };
 

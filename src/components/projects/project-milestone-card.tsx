@@ -32,6 +32,7 @@ import {
   CheckCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useProjectMilestoneCard } from "@/hooks/use-project-milestone-card";
 import type { ProjectMilestoneCard } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -212,11 +213,11 @@ function AddMilestoneDialog({ onAdd, disabled }: AddMilestoneDialogProps) {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("마일스톤 제목을 입력해주세요");
+      toast.error(TOAST.MILESTONE.TITLE_REQUIRED);
       return;
     }
     if (!dueDate) {
-      toast.error("마감일을 선택해주세요");
+      toast.error(TOAST.MILESTONE.DATE_REQUIRED);
       return;
     }
     onAdd(title.trim(), description.trim(), dueDate);
@@ -329,7 +330,7 @@ function MilestoneItem({
   const handleAddTask = () => {
     const trimmed = taskTitle.trim();
     if (!trimmed) {
-      toast.error("작업 이름을 입력해주세요");
+      toast.error(TOAST.MILESTONE.TASK_NAME_REQUIRED);
       return;
     }
     const ok = onAddTask(milestone.id, trimmed);
@@ -339,7 +340,7 @@ function MilestoneItem({
     }
     setTaskTitle("");
     setAddingTask(false);
-    toast.success("작업을 추가했습니다");
+    toast.success(TOAST.MILESTONE.TASK_ADDED);
   };
 
   return (
@@ -574,7 +575,7 @@ export function ProjectMilestoneCardSection({
       toast.error(`마일스톤은 최대 ${maxMilestones}개까지 추가할 수 있습니다`);
       return;
     }
-    toast.success("마일스톤을 추가했습니다");
+    toast.success(TOAST.MILESTONE.ADDED);
   };
 
   const handleDeleteMilestone = (id: string, title: string) => {

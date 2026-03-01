@@ -203,7 +203,7 @@ export function SoundcheckSheetCard({
   // ── 시트 저장 ──
   async function handleSheetSave() {
     if (!sheetForm.sheetName.trim()) {
-      toast.error("시트 이름을 입력해주세요.");
+      toast.error(TOAST.SOUNDCHECK.SHEET_NAME_REQUIRED);
       return;
     }
     setSheetSaving(true);
@@ -217,11 +217,11 @@ export function SoundcheckSheetCard({
       };
       if (editSheetTarget) {
         await updateSheet(editSheetTarget.id, payload);
-        toast.success("시트가 수정되었습니다.");
+        toast.success(TOAST.SOUNDCHECK.SHEET_UPDATED);
       } else {
         const newSheet = await addSheet(payload);
         setSelectedSheetId(newSheet.id);
-        toast.success("시트가 추가되었습니다.");
+        toast.success(TOAST.SOUNDCHECK.SHEET_ADDED);
       }
       setSheetDialogOpen(false);
     } catch {
@@ -274,22 +274,22 @@ export function SoundcheckSheetCard({
   async function handleChannelSave() {
     if (!currentSheet) return;
     if (!channelForm.source.trim()) {
-      toast.error("소스 이름을 입력해주세요.");
+      toast.error(TOAST.SOUNDCHECK.SOURCE_NAME_REQUIRED);
       return;
     }
     const chNum = parseInt(channelForm.channelNumber, 10);
     if (isNaN(chNum) || chNum < 1) {
-      toast.error("채널 번호는 1 이상의 숫자여야 합니다.");
+      toast.error(TOAST.SOUNDCHECK.CHANNEL_REQUIRED);
       return;
     }
     const vol = parseInt(channelForm.volume, 10);
     if (isNaN(vol) || vol < 0 || vol > 100) {
-      toast.error("볼륨은 0~100 사이 값이어야 합니다.");
+      toast.error(TOAST.SOUNDCHECK.VOLUME_RANGE);
       return;
     }
     const panVal = channelForm.pan ? parseInt(channelForm.pan, 10) : 0;
     if (isNaN(panVal) || panVal < -100 || panVal > 100) {
-      toast.error("팬은 -100~100 사이 값이어야 합니다.");
+      toast.error(TOAST.SOUNDCHECK.PAN_RANGE);
       return;
     }
     setChannelSaving(true);
@@ -306,10 +306,10 @@ export function SoundcheckSheetCard({
       };
       if (editChannelTarget) {
         await updateChannel(currentSheet.id, editChannelTarget.id, payload);
-        toast.success("채널이 수정되었습니다.");
+        toast.success(TOAST.SOUNDCHECK.CHANNEL_UPDATED);
       } else {
         await addChannel(currentSheet.id, payload);
-        toast.success("채널이 추가되었습니다.");
+        toast.success(TOAST.SOUNDCHECK.CHANNEL_ADDED);
       }
       setChannelDialogOpen(false);
     } catch {
@@ -324,7 +324,7 @@ export function SoundcheckSheetCard({
     if (!currentSheet) return;
     try {
       await deleteChannel(currentSheet.id, channel.id);
-      toast.success("채널이 삭제되었습니다.");
+      toast.success(TOAST.SOUNDCHECK.CHANNEL_DELETED);
     } catch {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -336,7 +336,7 @@ export function SoundcheckSheetCard({
     try {
       await toggleChecked(currentSheet.id, channel.id);
     } catch {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.STATUS_ERROR);
     }
   }
 
@@ -360,7 +360,7 @@ export function SoundcheckSheetCard({
         sorted.map((c) => c.id)
       );
     } catch {
-      toast.error("순서 변경에 실패했습니다.");
+      toast.error(TOAST.ORDER_ERROR);
     }
   }
 

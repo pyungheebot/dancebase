@@ -43,6 +43,7 @@ import {
   Camera,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useShowGallery } from "@/hooks/use-show-gallery";
 import type { ShowGalleryAlbum, ShowGalleryPhoto, ShowGalleryCategory } from "@/types";
 
@@ -137,7 +138,7 @@ function CreateAlbumDialog({ open, onClose, onSubmit }: CreateAlbumDialogProps) 
     e.preventDefault();
     const trimmedName = name.trim();
     if (!trimmedName) {
-      toast.error("앨범 이름을 입력해주세요.");
+      toast.error(TOAST.GALLERY.ALBUM_NAME_REQUIRED);
       return;
     }
     onSubmit(trimmedName, description.trim() || undefined);
@@ -244,11 +245,11 @@ function AddPhotoDialog({
     e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      toast.error("사진 제목을 입력해주세요.");
+      toast.error(TOAST.GALLERY.PHOTO_TITLE_REQUIRED);
       return;
     }
     if (!albumId) {
-      toast.error("앨범을 선택해주세요.");
+      toast.error(TOAST.GALLERY.ALBUM_SELECT_REQUIRED);
       return;
     }
     const tags = tagsInput
@@ -660,7 +661,7 @@ function AlbumDetailView({
               }
               onDelete={(photoId) => {
                 onDeletePhoto(album.id, photoId);
-                toast.success("사진을 삭제했습니다.");
+                toast.success(TOAST.GALLERY.PHOTO_DELETED);
               }}
             />
           ))}
@@ -776,7 +777,7 @@ export function ShowGalleryCard({ groupId, projectId }: ShowGalleryCardProps) {
     if (selectedAlbumId === albumId) {
       setSelectedAlbumId(null);
     }
-    toast.success("앨범을 삭제했습니다.");
+    toast.success(TOAST.GALLERY.ALBUM_DELETED);
   }
 
   function handleAddPhotoClick(albumId?: string) {
@@ -908,7 +909,7 @@ export function ShowGalleryCard({ groupId, projectId }: ShowGalleryCardProps) {
         onClose={() => setShowCreateAlbumDialog(false)}
         onSubmit={(name, description) => {
           const album = createAlbum(name, description);
-          toast.success("앨범을 만들었습니다.");
+          toast.success(TOAST.GALLERY.ALBUM_CREATED);
           setSelectedAlbumId(album.id);
         }}
       />
@@ -921,7 +922,7 @@ export function ShowGalleryCard({ groupId, projectId }: ShowGalleryCardProps) {
         defaultAlbumId={selectedAlbumId ?? albums[0]?.id}
         onSubmit={(albumId, title, description, category, photographer, tags) => {
           addPhoto(albumId, title, description, category, photographer, tags);
-          toast.success("사진을 추가했습니다.");
+          toast.success(TOAST.GALLERY.PHOTO_ADDED);
         }}
       />
     </>

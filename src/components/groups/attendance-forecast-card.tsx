@@ -31,6 +31,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAttendanceForecastSessions } from "@/hooks/use-attendance-forecast-sessions";
 import type { AttendanceForecastSession, AttendanceForecastIntent } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -96,11 +97,11 @@ function AddSessionDialog({
 
   function handleSubmit() {
     if (!form.title.trim()) {
-      toast.error("세션 제목을 입력해주세요.");
+      toast.error(TOAST.ATTENDANCE_FORECAST.SESSION_TITLE_REQUIRED);
       return;
     }
     if (!form.date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.ATTENDANCE_FORECAST.DATE_REQUIRED);
       return;
     }
     onAdd({
@@ -112,7 +113,7 @@ function AddSessionDialog({
     });
     setOpen(false);
     setForm(emptyForm());
-    toast.success("연습 세션이 추가되었습니다.");
+    toast.success(TOAST.ATTENDANCE_FORECAST.SESSION_ADDED);
   }
 
   return (
@@ -510,7 +511,7 @@ function SessionItem({
           <button
             onClick={() => {
               onDelete(session.id);
-              toast.success("세션이 삭제되었습니다.");
+              toast.success(TOAST.ATTENDANCE_FORECAST.SESSION_DELETED);
             }}
             className="text-gray-200 hover:text-red-400 transition-colors shrink-0 mt-0.5"
           >

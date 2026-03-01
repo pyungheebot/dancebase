@@ -33,6 +33,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // ============================================
 // 색상 팔레트
@@ -426,7 +427,7 @@ function MemberListPanel({
 
   function handleAdd() {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력하세요.");
+      toast.error(TOAST.FORMATION_EDITOR.MEMBER_REQUIRED);
       return;
     }
     onAddMember(memberName.trim(), memberColor);
@@ -574,7 +575,7 @@ function AddSceneDialog({ open, onClose, onAdd, scenes }: AddSceneDialogProps) {
 
   function handleAdd() {
     if (!label.trim()) {
-      toast.error("구간 이름을 입력하세요.");
+      toast.error(TOAST.FORMATION_EDITOR.SECTION_REQUIRED);
       return;
     }
     onAdd(label.trim());
@@ -711,7 +712,7 @@ export function FormationEditorCard({
       // 새로 추가된 씬으로 이동
       toast.success(`"${label}" 구간이 추가되었습니다.`);
     } else {
-      toast.error("구간은 최대 10개까지 추가할 수 있습니다.");
+      toast.error(TOAST.FORMATION_EDITOR.SECTION_MAX);
     }
   }
 
@@ -739,7 +740,7 @@ export function FormationEditorCard({
     if (!effectiveSceneId) return;
     removePosition(effectiveSceneId, memberId);
     setSelectedMemberId(null);
-    toast.success("멤버가 무대에서 제거되었습니다.");
+    toast.success(TOAST.FORMATION_EDITOR.MEMBER_REMOVED);
   }
 
   function handleMoveToClick(x: number, y: number) {
@@ -761,15 +762,15 @@ export function FormationEditorCard({
     if (!effectiveSceneId) return;
     const currentIndex = scenes.findIndex((s) => s.id === effectiveSceneId);
     if (currentIndex <= 0) {
-      toast.error("이전 구간이 없습니다.");
+      toast.error(TOAST.FORMATION_EDITOR.NO_PREV_SECTION);
       return;
     }
     const prevSceneId = scenes[currentIndex - 1]!.id;
     const ok = copyPositionsFromScene(prevSceneId, effectiveSceneId);
     if (ok) {
-      toast.success("이전 구간의 대형을 복사했습니다.");
+      toast.success(TOAST.FORMATION_EDITOR.COPY_SUCCESS);
     } else {
-      toast.error("복사에 실패했습니다.");
+      toast.error(TOAST.FORMATION_EDITOR.COPY_ERROR);
     }
   }
 

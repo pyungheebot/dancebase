@@ -37,6 +37,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMeetingVote } from "@/hooks/use-meeting-vote";
 import type { MeetingVoteAgendaItem } from "@/types";
 
@@ -75,7 +76,7 @@ function CreateAgendaDialog({ onSubmit }: CreateAgendaDialogProps) {
 
   const addOption = () => {
     if (options.length >= 10) {
-      toast.error("선택지는 최대 10개까지 추가할 수 있습니다.");
+      toast.error(TOAST.MEETING_VOTE.OPTIONS_MAX);
       return;
     }
     setOptions([...options, ""]);
@@ -83,7 +84,7 @@ function CreateAgendaDialog({ onSubmit }: CreateAgendaDialogProps) {
 
   const removeOption = (index: number) => {
     if (options.length <= 2) {
-      toast.error("선택지는 최소 2개 이상 필요합니다.");
+      toast.error(TOAST.MEETING_VOTE.OPTIONS_MIN_2);
       return;
     }
     setOptions(options.filter((_, i) => i !== index));
@@ -95,16 +96,16 @@ function CreateAgendaDialog({ onSubmit }: CreateAgendaDialogProps) {
 
   const handleSubmit = () => {
     if (!meetingTitle.trim()) {
-      toast.error("회의 제목을 입력해주세요.");
+      toast.error(TOAST.MEETING_VOTE.TITLE_REQUIRED);
       return;
     }
     if (!question.trim()) {
-      toast.error("안건 질문을 입력해주세요.");
+      toast.error(TOAST.MEETING_VOTE.AGENDA_REQUIRED);
       return;
     }
     const validOptions = options.filter((o) => o.trim());
     if (validOptions.length < 2) {
-      toast.error("선택지를 최소 2개 이상 입력해주세요.");
+      toast.error(TOAST.MEETING_VOTE.OPTIONS_MIN);
       return;
     }
     onSubmit({
@@ -115,7 +116,7 @@ function CreateAgendaDialog({ onSubmit }: CreateAgendaDialogProps) {
       isAnonymous,
       deadline: deadline ? new Date(deadline).toISOString() : null,
     });
-    toast.success("안건이 등록되었습니다.");
+    toast.success(TOAST.MEETING_VOTE.AGENDA_REGISTERED);
     reset();
     setOpen(false);
   };
@@ -361,32 +362,32 @@ function AgendaItemCard({
 
   const handleVoteSubmit = () => {
     if (!voterName.trim()) {
-      toast.error("투표자 이름을 입력해주세요.");
+      toast.error(TOAST.MEETING_VOTE.VOTER_REQUIRED);
       return;
     }
     if (selectedOptions.length === 0) {
-      toast.error("선택지를 하나 이상 선택해주세요.");
+      toast.error(TOAST.MEETING_VOTE.OPTION_REQUIRED);
       return;
     }
     onCastVote(agenda.id, selectedOptions, voterName);
-    toast.success("투표가 등록되었습니다.");
+    toast.success(TOAST.MEETING_VOTE.VOTE_REGISTERED);
     setShowVote(false);
     setSelectedOptions([]);
   };
 
   const handleRemoveVote = () => {
     onRemoveVote(agenda.id, voterName);
-    toast.success("투표가 취소되었습니다.");
+    toast.success(TOAST.MEETING_VOTE.VOTE_CANCELLED);
   };
 
   const handleClose = () => {
     onCloseAgenda(agenda.id);
-    toast.success("안건이 마감되었습니다.");
+    toast.success(TOAST.MEETING_VOTE.AGENDA_CLOSED);
   };
 
   const handleDelete = () => {
     onDeleteAgenda(agenda.id);
-    toast.success("안건이 삭제되었습니다.");
+    toast.success(TOAST.MEETING_VOTE.AGENDA_DELETED);
   };
 
   return (

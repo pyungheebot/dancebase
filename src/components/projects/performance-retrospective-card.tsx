@@ -31,6 +31,7 @@ import {
   Square,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
@@ -553,7 +554,7 @@ export function PerformanceRetrospectiveCard({
   const handleAddItem = (retroId: string, category: RetroCategory, content: string) => {
     const ok = addRetroItem(retroId, category, content, authorName);
     if (ok) {
-      toast.success("항목이 추가되었습니다.");
+      toast.success(TOAST.PERFORMANCE_RETROSPECTIVE.ITEM_ADDED);
     }
   };
 

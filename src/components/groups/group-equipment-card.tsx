@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupEquipment } from "@/hooks/use-group-equipment";
 import type {
   GroupEquipmentItem,
@@ -140,12 +141,12 @@ function ItemFormDialog({
 
   function handleSubmit() {
     if (!form.name.trim()) {
-      toast.error("장비 이름을 입력해주세요.");
+      toast.error(TOAST.GROUP_EQUIPMENT_CARD.NAME_REQUIRED);
       return;
     }
     const qty = parseInt(form.quantity, 10);
     if (isNaN(qty) || qty < 1) {
-      toast.error("수량은 1 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.GROUP_EQUIPMENT_CARD.QUANTITY_MIN);
       return;
     }
     onSubmit({ ...form, quantity: String(qty) });
@@ -301,12 +302,12 @@ function BorrowDialog({
   function handleSubmit() {
     if (!item) return;
     if (!borrowerName.trim()) {
-      toast.error("대여자 이름을 입력해주세요.");
+      toast.error(TOAST.GROUP_EQUIPMENT_CARD.RENTER_REQUIRED);
       return;
     }
     const qty = parseInt(quantity, 10);
     if (isNaN(qty) || qty < 1) {
-      toast.error("수량은 1 이상의 숫자를 입력해주세요.");
+      toast.error(TOAST.GROUP_EQUIPMENT_CARD.QUANTITY_MIN);
       return;
     }
     if (qty > item.quantity) {
@@ -479,7 +480,7 @@ export function GroupEquipmentCard({ groupId }: { groupId: string }) {
       location: form.location.trim() || null,
       notes: form.notes.trim(),
     });
-    toast.success("장비가 추가되었습니다.");
+    toast.success(TOAST.GROUP_EQUIPMENT_CARD.ADDED);
   }
 
   // 장비 수정 핸들러
@@ -493,14 +494,14 @@ export function GroupEquipmentCard({ groupId }: { groupId: string }) {
       location: form.location.trim() || null,
       notes: form.notes.trim(),
     });
-    toast.success("장비 정보가 수정되었습니다.");
+    toast.success(TOAST.GROUP_EQUIPMENT_CARD.UPDATED);
     setEditTarget(null);
   }
 
   // 장비 삭제 핸들러
   function handleDeleteItem(itemId: string) {
     deleteItem(itemId);
-    toast.success("장비가 삭제되었습니다.");
+    toast.success(TOAST.GROUP_EQUIPMENT_CARD.DELETED);
   }
 
   // 대여 핸들러
@@ -511,19 +512,19 @@ export function GroupEquipmentCard({ groupId }: { groupId: string }) {
     notes: string;
   }) {
     borrowItem(params);
-    toast.success("대여가 등록되었습니다.");
+    toast.success(TOAST.GROUP_EQUIPMENT_CARD.RENTAL_REGISTERED);
   }
 
   // 반납 핸들러
   function handleReturn(loanId: string) {
     returnItem(loanId);
-    toast.success("반납이 완료되었습니다.");
+    toast.success(TOAST.GROUP_EQUIPMENT_CARD.RETURN_DONE);
   }
 
   // 대여 기록 삭제 핸들러
   function handleDeleteLoan(loanId: string) {
     deleteLoan(loanId);
-    toast.success("대여 기록이 삭제되었습니다.");
+    toast.success(TOAST.GROUP_EQUIPMENT_CARD.RENTAL_DELETED);
   }
 
   return (

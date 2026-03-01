@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ChevronDown, ChevronUp, Plus, Trash2, BookOpen, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,21 +107,21 @@ function AddSkillDialog({
 
   async function handleSubmit() {
     if (!skillName.trim()) {
-      toast.error("스킬명을 입력해주세요.");
+      toast.error(TOAST.GROUP_SKILL_SHARE.SKILL_REQUIRED);
       return;
     }
     if (!providerName.trim()) {
-      toast.error("제공자명을 입력해주세요.");
+      toast.error(TOAST.GROUP_SKILL_SHARE.PROVIDER_REQUIRED);
       return;
     }
     await execute(async () => {
       try {
         await onAdd({ skillName: skillName.trim(), category, difficulty, providerName: providerName.trim(), description: description.trim() });
-        toast.success("스킬이 등록되었습니다.");
+        toast.success(TOAST.GROUP_SKILL_SHARE.SKILL_REGISTERED);
         reset();
         setOpen(false);
       } catch {
-        toast.error("스킬 등록에 실패했습니다.");
+        toast.error(TOAST.GROUP_SKILL_SHARE.SKILL_REGISTER_ERROR);
       }
     });
   }
@@ -221,17 +222,17 @@ function AddRequestDialog({
 
   async function handleSubmit() {
     if (!requesterName.trim()) {
-      toast.error("요청자명을 입력해주세요.");
+      toast.error(TOAST.GROUP_SKILL_SHARE.REQUESTER_REQUIRED);
       return;
     }
     await executeRequest(async () => {
       try {
         await onAdd(skill.id, requesterName.trim());
-        toast.success("학습 요청이 접수되었습니다.");
+        toast.success(TOAST.GROUP_SKILL_SHARE.REQUEST_SUBMITTED);
         setRequesterName("");
         setOpen(false);
       } catch {
-        toast.error("학습 요청에 실패했습니다.");
+        toast.error(TOAST.GROUP_SKILL_SHARE.REQUEST_ERROR);
       }
     });
   }
@@ -310,17 +311,17 @@ export function GroupSkillShareCard({ groupId }: { groupId: string }) {
 
   async function handleRemoveSkill(skillId: string) {
     await removeSkill(skillId);
-    toast.success("스킬이 삭제되었습니다.");
+    toast.success(TOAST.GROUP_SKILL_SHARE.SKILL_DELETED);
   }
 
   async function handleRemoveRequest(requestId: string) {
     await removeRequest(requestId);
-    toast.success("요청이 삭제되었습니다.");
+    toast.success(TOAST.GROUP_SKILL_SHARE.REQUEST_DELETED);
   }
 
   async function handleStatusChange(requestId: string, status: SkillShareRequestStatus) {
     await updateRequestStatus(requestId, status);
-    toast.success("상태가 변경되었습니다.");
+    toast.success(TOAST.GROUP_SKILL_SHARE.STATUS_CHANGED);
   }
 
   if (loading) {

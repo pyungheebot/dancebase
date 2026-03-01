@@ -107,15 +107,15 @@ function SubmitFeedbackDialog({
 
   const handleSubmit = () => {
     if (!content.trim()) {
-      toast.error("피드백 내용을 입력하세요.");
+      toast.error(TOAST.GROUP_FEEDBACK_BOX.CONTENT_REQUIRED);
       return;
     }
     if (content.trim().length < 5) {
-      toast.error("피드백 내용을 5자 이상 입력하세요.");
+      toast.error(TOAST.GROUP_FEEDBACK_BOX.MIN_CHARS);
       return;
     }
     onAdd(content, category);
-    toast.success("피드백이 익명으로 제출되었습니다.");
+    toast.success(TOAST.GROUP_FEEDBACK_BOX.SUBMITTED);
     reset();
     setOpen(false);
   };
@@ -209,15 +209,15 @@ function ReplyDialog({
 
   const handleSubmit = () => {
     if (!replyText.trim()) {
-      toast.error("답변 내용을 입력하세요.");
+      toast.error(TOAST.GROUP_FEEDBACK_BOX.REPLY_REQUIRED);
       return;
     }
     const ok = onReply(feedback.id, replyText);
     if (ok) {
-      toast.success("답변이 등록되었습니다.");
+      toast.success(TOAST.GROUP_FEEDBACK_BOX.REPLY_REGISTERED);
       setOpen(false);
     } else {
-      toast.error("답변 등록에 실패했습니다.");
+      toast.error(TOAST.GROUP_FEEDBACK_BOX.REPLY_ERROR);
     }
   };
 
@@ -309,7 +309,7 @@ function FeedbackItem({
   const handleDelete = () => {
     const ok = onDelete(feedback.id);
     if (ok) {
-      toast.success("피드백이 삭제되었습니다.");
+      toast.success(TOAST.GROUP_FEEDBACK_BOX.DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

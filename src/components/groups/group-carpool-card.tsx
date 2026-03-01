@@ -77,7 +77,7 @@ function CarPoolItemCard({
   function handleAddPassenger() {
     const trimmed = passengerName.trim();
     if (!trimmed) {
-      toast.error("탑승자 이름을 입력하세요.");
+      toast.error(TOAST.GROUP_CARPOOL.PASSENGER_REQUIRED);
       return;
     }
     onAddPassenger(trimmed);
@@ -255,24 +255,24 @@ function AddCarPoolDialog({
 
   function handleSubmit() {
     if (!driverName.trim()) {
-      toast.error("운전자명을 입력하세요.");
+      toast.error(TOAST.GROUP_CARPOOL_CARD.DRIVER_REQUIRED);
       return;
     }
     if (!departurePlace.trim()) {
-      toast.error("출발지를 입력하세요.");
+      toast.error(TOAST.GROUP_CARPOOL_CARD.DEPARTURE_REQUIRED);
       return;
     }
     if (!arrivalPlace.trim()) {
-      toast.error("도착지를 입력하세요.");
+      toast.error(TOAST.GROUP_CARPOOL.DEST_REQUIRED);
       return;
     }
     if (!departureTime) {
-      toast.error("출발 시간을 선택하세요.");
+      toast.error(TOAST.GROUP_CARPOOL_CARD.TIME_REQUIRED);
       return;
     }
     const seats = parseInt(maxPassengers, 10);
     if (isNaN(seats) || seats < 1) {
-      toast.error("탑승 가능 인원을 1명 이상 입력하세요.");
+      toast.error(TOAST.GROUP_CARPOOL.SEATS_REQUIRED);
       return;
     }
 
@@ -416,31 +416,31 @@ export function GroupCarPoolCard({ groupId }: { groupId: string }) {
     carInfo?: string;
   }) {
     addCarPool(data);
-    toast.success("카풀이 등록되었습니다.");
+    toast.success(TOAST.GROUP_CARPOOL_CARD.REGISTERED);
   }
 
   function handleDelete(carpoolId: string) {
     const ok = deleteCarPool(carpoolId);
-    if (ok) toast.success("카풀이 삭제되었습니다.");
+    if (ok) toast.success(TOAST.GROUP_CARPOOL_CARD.DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 
   function handleStatusChange(carpoolId: string, status: CarPoolStatus) {
     const ok = updateStatus(carpoolId, status);
     if (ok) toast.success(`상태가 "${status}"로 변경되었습니다.`);
-    else toast.error("상태 변경에 실패했습니다.");
+    else toast.error(TOAST.GROUP_CARPOOL_CARD.STATUS_ERROR);
   }
 
   function handleAddPassenger(carpoolId: string, name: string) {
     const ok = addPassenger(carpoolId, name);
     if (ok) toast.success(`${name}님이 탑승 신청되었습니다.`);
-    else toast.error("탑승 신청에 실패했습니다. (좌석 부족 또는 마감)");
+    else toast.error(TOAST.GROUP_CARPOOL.BOARD_ERROR);
   }
 
   function handleRemovePassenger(carpoolId: string, passengerId: string) {
     const ok = removePassenger(carpoolId, passengerId);
-    if (ok) toast.success("탑승자가 삭제되었습니다.");
-    else toast.error("탑승자 삭제에 실패했습니다.");
+    if (ok) toast.success(TOAST.GROUP_CARPOOL.PASSENGER_DELETED);
+    else toast.error(TOAST.GROUP_CARPOOL.PASSENGER_DELETE_ERROR);
   }
 
   return (

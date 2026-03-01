@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 
 // ============================================
@@ -119,7 +120,7 @@ function CompletionBar({ value, onUpdate }: CompletionBarProps) {
           onClick={() => {
             onUpdate(draft);
             setEditing(false);
-            toast.success("완성도가 업데이트되었습니다.");
+            toast.success(TOAST.CHOREO_SECTION.COMPLETION_UPDATED);
           }}
         >
           <span className="text-[10px] font-bold text-blue-600">저장</span>
@@ -327,15 +328,15 @@ function AddSectionDialog({
 
   async function handleSubmit() {
     if (!name.trim()) {
-      toast.error("구간 이름을 입력하세요.");
+      toast.error(TOAST.CHOREO_SECTION.NAME_REQUIRED);
       return;
     }
     if (!startTime.trim()) {
-      toast.error("시작 시간을 입력하세요.");
+      toast.error(TOAST.CHOREO_SECTION.START_TIME_REQUIRED);
       return;
     }
     if (!endTime.trim()) {
-      toast.error("종료 시간을 입력하세요.");
+      toast.error(TOAST.CHOREO_SECTION.END_TIME_REQUIRED);
       return;
     }
 
@@ -360,7 +361,7 @@ function AddSectionDialog({
         reset();
         onClose();
       } else {
-        toast.error("구간 추가에 실패했습니다.");
+        toast.error(TOAST.CHOREO_SECTION.ADD_ERROR);
       }
     });
   }

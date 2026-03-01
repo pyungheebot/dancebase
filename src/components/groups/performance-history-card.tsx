@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePerformanceHistory } from "@/hooks/use-performance-history";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type {
@@ -188,15 +189,15 @@ function RecordDialog({ open, onClose, onSave, initial }: RecordDialogProps) {
 
   async function handleSubmit() {
     if (!title.trim()) {
-      toast.error("공연명을 입력해주세요.");
+      toast.error(TOAST.GROUP_PERFORMANCE.SHOW_NAME_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.PERFORMANCE_HISTORY.DATE_REQUIRED);
       return;
     }
     if (!venue.trim()) {
-      toast.error("장소를 입력해주세요.");
+      toast.error(TOAST.PERFORMANCE_HISTORY.VENUE_REQUIRED);
       return;
     }
 
@@ -428,7 +429,7 @@ function RecordItem({ record, onEdit, onDelete }: RecordItemProps) {
 
   async function handleDelete() {
     await onDelete(record.id);
-    toast.success("공연 기록이 삭제되었습니다.");
+    toast.success(TOAST.GROUP_PERFORMANCE.HISTORY_DELETED);
   }
 
   const hasExtra =

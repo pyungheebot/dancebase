@@ -185,15 +185,15 @@ function EntryDialog({
 
   function handleSave() {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.GROWTH_JOURNAL.MEMBER_REQUIRED);
       return;
     }
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.GROWTH_JOURNAL.TITLE_REQUIRED);
       return;
     }
     if (!content.trim()) {
-      toast.error("내용을 입력해주세요.");
+      toast.error(TOAST.GROWTH_JOURNAL.CONTENT_REQUIRED);
       return;
     }
     onSave({
@@ -586,20 +586,20 @@ export function GrowthJournalCard({
 
   function handleAdd(data: Parameters<typeof addEntry>[0]) {
     addEntry(data);
-    toast.success("성장 일지가 추가되었습니다.");
+    toast.success(TOAST.GROWTH_JOURNAL.ADDED);
   }
 
   function handleEdit(data: Parameters<typeof addEntry>[0]) {
     if (!editTarget) return;
     const ok = updateEntry(editTarget.id, data);
-    if (ok) toast.success("성장 일지가 수정되었습니다.");
+    if (ok) toast.success(TOAST.GROWTH_JOURNAL.UPDATED);
     else toast.error(TOAST.UPDATE_ERROR);
     setEditTarget(null);
   }
 
   function handleDelete(entryId: string) {
     const ok = deleteEntry(entryId);
-    if (ok) toast.success("성장 일지가 삭제되었습니다.");
+    if (ok) toast.success(TOAST.GROWTH_JOURNAL.DELETED);
     else toast.error(TOAST.DELETE_ERROR);
   }
 

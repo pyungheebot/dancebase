@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSeatingChart, rowLabel } from "@/hooks/use-seating-chart";
 import type { SeatingChart, SeatInfo, SeatStatus } from "@/types";
 
@@ -94,23 +95,23 @@ function CreateChartDialog({
     e.preventDefault();
     const trimName = eventName.trim();
     if (!trimName) {
-      toast.error("이벤트명을 입력해주세요.");
+      toast.error(TOAST.SEATING.EVENT_NAME_REQUIRED);
       return;
     }
     const r = parseInt(rows, 10);
     const s = parseInt(seatsPerRow, 10);
     if (isNaN(r) || r < 1 || r > 26) {
-      toast.error("행 수는 1~26 사이의 숫자를 입력해주세요.");
+      toast.error(TOAST.SEATING.ROW_COL_RANGE);
       return;
     }
     if (isNaN(s) || s < 1 || s > 50) {
-      toast.error("열 수는 1~50 사이의 숫자를 입력해주세요.");
+      toast.error(TOAST.SEATING.COL_RANGE);
       return;
     }
     onCreate(trimName, r, s);
     reset();
     onOpenChange(false);
-    toast.success("좌석 배치도가 생성되었습니다.");
+    toast.success(TOAST.SEATING.CHART_CREATED);
   }
 
   const previewTotal =
@@ -224,7 +225,7 @@ function ReserveDialog({
     e.preventDefault();
     const trimName = name.trim();
     if (!trimName) {
-      toast.error("예약자 이름을 입력해주세요.");
+      toast.error(TOAST.SEATING.BOOKER_REQUIRED);
       return;
     }
     onConfirm(trimName);
