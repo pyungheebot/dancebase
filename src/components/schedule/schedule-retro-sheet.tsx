@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, startTransition } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +33,7 @@ export function ScheduleRetroSheet({
   const [improve, setImprove] = useState("");
   const [nextGoal, setNextGoal] = useState("");
   const { pending: submitting, execute } = useAsyncAction();
+  const { user } = useAuth();
 
   const { retro, save, remove } = useScheduleRetro(scheduleId);
 
@@ -66,11 +67,6 @@ export function ScheduleRetroSheet({
     }
 
     await execute(async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       if (!user) {
         toast.error("로그인이 필요합니다");
         return;

@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Plus, Trash2, LayoutTemplate, Clock, MapPin } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,7 @@ function ScheduleTemplateAddDialog({
 }: ScheduleTemplateAddDialogProps) {
   const [open, setOpen] = useState(false);
   const { pending: loading, execute } = useAsyncAction();
+  const { user } = useAuth();
   const [fields, setFields] = useState<TemplateFieldValues>(DEFAULT_TEMPLATE_FIELDS);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -83,10 +85,6 @@ function ScheduleTemplateAddDialog({
 
     await execute(async () => {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       if (!user) {
         toast.error("로그인이 필요합니다.");
         return;

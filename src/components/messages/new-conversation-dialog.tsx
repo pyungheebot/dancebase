@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import {
   Dialog,
@@ -30,6 +31,7 @@ export function NewConversationDialog({
   onOpenChange,
 }: NewConversationDialogProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -41,9 +43,6 @@ export function NewConversationDialog({
     }
     setSearching(true);
     const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
 
     const { data } = await supabase
       .from("profiles")
@@ -54,7 +53,7 @@ export function NewConversationDialog({
 
     setResults((data as SearchResult[]) ?? []);
     setSearching(false);
-  }, []);
+  }, [user?.id]);
 
   // 디바운스 검색
   useEffect(() => {

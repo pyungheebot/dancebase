@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Dialog,
   DialogContent,
@@ -79,6 +80,7 @@ export function WinBackMessageDialog({
     useState<TemplateKey>("activity_guide");
   const [customContent, setCustomContent] = useState("");
   const [sending, setSending] = useState(false);
+  const { user } = useAuth();
 
   const selectedTemplate = MESSAGE_TEMPLATES.find(
     (t) => t.key === selectedTemplateKey
@@ -107,10 +109,6 @@ export function WinBackMessageDialog({
     setSending(true);
     try {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       if (!user) {
         toast.error("로그인이 필요합니다");
         return;

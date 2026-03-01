@@ -24,6 +24,7 @@ import {
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useAuth } from "@/hooks/use-auth";
 import { duplicateProject, type DuplicateOptions } from "@/lib/project-duplicate";
 import { invalidateProject } from "@/lib/swr/invalidate";
 import type { Project } from "@/types";
@@ -85,6 +86,8 @@ export function ProjectDuplicateDialog({
     setSourceMemberCount(count ?? 0);
   };
 
+  const { user } = useAuth();
+
   const handleSubmit = async () => {
     if (!sourceProjectId) {
       toast.error("복제할 원본 프로젝트를 선택해주세요.");
@@ -97,10 +100,6 @@ export function ProjectDuplicateDialog({
 
     await execute(async () => {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       if (!user) {
         toast.error("로그인이 필요합니다.");
         return;

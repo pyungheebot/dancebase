@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useAuth } from "@/hooks/use-auth";
 import { useFinanceBudget } from "@/hooks/use-finance-budget";
 import { invalidateFinanceBudget } from "@/lib/swr/invalidate";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ function getProgressColor(ratio: number): string {
 
 export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
   const supabase = createClient();
+  const { user } = useAuth();
   const currentMonth = format(new Date(), "yyyy-MM");
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -111,9 +113,6 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
     }
 
     await execute(async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         toast.error("로그인이 필요합니다");
         return;

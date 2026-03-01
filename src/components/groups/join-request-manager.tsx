@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -40,6 +41,7 @@ export function JoinRequestManager({ groupId, groupName }: Props) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const [bulkProcessing, setBulkProcessing] = useState(false);
+  const { user } = useAuth();
 
   const { requests, loading, refetch } = useJoinRequests(groupId, activeTab);
 
@@ -92,9 +94,6 @@ export function JoinRequestManager({ groupId, groupName }: Props) {
     action: "approve" | "reject"
   ) => {
     const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
 
     if (action === "approve") {
       const { error: memberError } = await supabase.from("group_members").insert({

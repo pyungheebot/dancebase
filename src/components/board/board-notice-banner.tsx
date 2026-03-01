@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatKo } from "@/lib/date-utils";
 import { useState } from "react";
 import useSWR from "swr";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { Megaphone, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
@@ -21,17 +22,11 @@ interface BoardNoticeBannerProps {
   nicknameMap?: Record<string, string>;
 }
 
-function useBoardNotices(groupId: string, projectId?: string | null) {
+function useBoardNotices(groupId: string, projectId?: string | null, userId?: string | null) {
   const { data, isLoading } = useSWR(
     swrKeys.boardNotices(groupId, projectId),
     async () => {
       const supabase = createClient();
-
-      // 현재 사용자 ID 조회 (예약 게시글 필터링에 사용)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const userId = user?.id ?? null;
 
       let query = supabase
         .from("board_posts")
@@ -99,7 +94,8 @@ export function BoardNoticeBanner({
   basePath,
   nicknameMap,
 }: BoardNoticeBannerProps) {
-  const { notices, loading } = useBoardNotices(groupId, projectId);
+  const { user } = useAuth();
+  const { notices, loading } = useBoardNotices(groupId, projectId, user?.id);
   const [collapsed, setCollapsed] = useState(false);
 
   const isIntegrated = !projectId;

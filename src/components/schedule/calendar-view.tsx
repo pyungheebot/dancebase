@@ -34,6 +34,7 @@ import { SmartReminderDialog } from "./smart-reminder-dialog";
 import { ScheduleDdayTimeline } from "./schedule-dday-timeline";
 import { ScheduleCostSummary } from "./schedule-cost-summary";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
@@ -74,13 +75,10 @@ type CalendarViewProps = {
 function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
   const { rsvp, loading, refetch } = useScheduleRsvp(schedule.id);
   const { pending: submitting, execute } = useAsyncAction();
+  const { user } = useAuth();
 
   const handleRsvp = async (response: ScheduleRsvpResponse) => {
     const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
     if (!user) {
       toast.error("로그인이 필요합니다");
       return;

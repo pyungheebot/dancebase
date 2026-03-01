@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import type { BoardPoll, BoardPollOptionWithVotes } from "@/types";
@@ -38,6 +39,7 @@ export function BoardPollView({
 }: BoardPollProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const { pending: submitting, execute } = useAsyncAction();
+  const { user } = useAuth();
   const supabase = createClient();
 
   const totalVotes = options.reduce((sum, o) => sum + o.vote_count, 0);
@@ -66,9 +68,6 @@ export function BoardPollView({
     if (selected.length === 0) return;
 
     await execute(async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) return;
 
       for (const optionId of selected) {
@@ -84,9 +83,6 @@ export function BoardPollView({
   };
 
   const handleUnvote = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
     if (!user) return;
 
     const votedOptionIds = options.filter((o) => o.voted_by_me).map((o) => o.id);

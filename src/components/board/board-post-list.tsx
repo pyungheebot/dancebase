@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { invalidateBoard, invalidateBoardPost } from "@/lib/swr/invalidate";
@@ -80,15 +81,8 @@ export function BoardPostList({
   const [formOpen, setFormOpen] = useState(false);
 
   // 현재 사용자 ID (예약 뱃지 표시 여부 판단용)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  useEffect(() => {
-    const supabase = createClient();
-    async function fetchUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id ?? null);
-    }
-    void fetchUser();
-  }, []);
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
 
   // 핀 토글 중인 postId
   const [pinningId, setPinningId] = useState<string | null>(null);
@@ -102,7 +96,7 @@ export function BoardPostList({
     const isPinned = post.pinned_at !== null;
     const updateData = isPinned
       ? { pinned_at: null, pinned_by: null }
-      : { pinned_at: new Date().toISOString(), pinned_by: (await supabase.auth.getUser()).data.user?.id ?? null };
+      : { pinned_at: new Date().toISOString(), pinned_by: user?.id ?? null };
     const { error } = await supabase
       .from("board_posts")
       .update(updateData)

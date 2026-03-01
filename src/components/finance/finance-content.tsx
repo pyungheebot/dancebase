@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { FinanceTransactionForm } from "@/components/groups/finance-transaction-form";
 import { FinanceCategoryManager } from "@/components/groups/finance-category-manager";
@@ -105,17 +106,10 @@ export function FinanceContent({
   groupMembers,
 }: FinanceContentProps) {
   const supabase = createClient();
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? "";
   const [editingTxn, setEditingTxn] = useState<FinanceTransaction | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string>("");
-
-  // 현재 유저 ID 조회 (마운트 시 1회만 실행 의도 — supabase는 매 렌더마다 새 인스턴스이므로 deps 제외)
-  useEffect(() => {
-    void supabase.auth.getUser().then((res: Awaited<ReturnType<typeof supabase.auth.getUser>>) => {
-      if (res.data.user) setCurrentUserId(res.data.user.id);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- 마운트 시 1회만 실행 의도, supabase는 매 렌더마다 새 인스턴스이므로 deps 제외
-  }, []);
 
   // 납부 기한 설정 훅 (entity_settings 재사용)
   const entityType = ctx.projectId ? "project" : "group";

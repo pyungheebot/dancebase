@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { formatShortDateTime } from "@/lib/date-utils";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { AttendanceTable } from "@/components/attendance/attendance-table";
 import { AttendanceStats } from "@/components/attendance/attendance-stats";
@@ -110,7 +111,8 @@ export function AttendanceContent({
   const [attendance, setAttendance] = useState<AttendanceWithProfile[]>([]);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
   const [bulkUpdating, setBulkUpdating] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState("");
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? "";
   const [editOpen, setEditOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [bulkConfirm, setBulkConfirm] = useState<{
@@ -146,15 +148,6 @@ export function AttendanceContent({
     },
   }));
 
-  useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) setCurrentUserId(user.id);
-    };
-    getUser();
-  }, [supabase]);
 
   useEffect(() => {
     if (!selectedScheduleId && schedules.length > 0 && !initialScheduleId) {

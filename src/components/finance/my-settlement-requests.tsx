@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import {
   useSettlementRequests,
   type SettlementRequestWithDetails,
@@ -215,15 +215,9 @@ function MyRequestCard({
 }
 
 export function MySettlementRequests({ groupId }: Props) {
-  const [currentUserId, setCurrentUserId] = useState<string>("");
+  const { user, loading: authLoading } = useAuth();
+  const currentUserId = user?.id ?? "";
   const { settlementRequests, loading, markAsPaid } = useSettlementRequests(groupId);
-
-  useEffect(() => {
-    const supabase = createClient();
-    void supabase.auth.getUser().then((res: Awaited<ReturnType<typeof supabase.auth.getUser>>) => {
-      if (res.data.user) setCurrentUserId(res.data.user.id);
-    });
-  }, []);
 
   async function handleMarkPaid(memberId: string) {
     const { error } = await markAsPaid(memberId);
@@ -234,7 +228,7 @@ export function MySettlementRequests({ groupId }: Props) {
     }
   }
 
-  if (loading || !currentUserId) {
+  if (loading || authLoading) {
     return (
       <div className="flex justify-center py-8">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

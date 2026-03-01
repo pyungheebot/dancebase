@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatKo } from "@/lib/date-utils";
 import { ShieldAlert, EyeOff, Trash2, X } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import {
@@ -40,6 +41,7 @@ export function ContentModerationPanel({ groupId }: ContentModerationPanelProps)
   const [open, setOpen] = useState(false);
   const { reports, pendingCount, loading, refetch } = useContentReports(groupId);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const supabase = createClient();
 
@@ -48,10 +50,6 @@ export function ContentModerationPanel({ groupId }: ContentModerationPanelProps)
     reportId: string,
     status: "reviewed" | "dismissed"
   ) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
     const { error } = await supabase
       .from("content_reports")
       .update({

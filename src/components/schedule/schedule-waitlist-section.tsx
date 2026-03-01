@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,18 +20,12 @@ export function ScheduleWaitlistSection({
   schedule,
   goingCount,
 }: ScheduleWaitlistSectionProps) {
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
   const { pending: submitting, execute } = useAsyncAction();
 
   const { waitlist, loading, joinWaitlist, leaveWaitlist } =
     useScheduleWaitlist(schedule.max_attendees != null ? schedule.id : null);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }: { data: { user: { id: string } | null } }) => {
-      setCurrentUserId(data.user?.id ?? null);
-    });
-  }, []);
 
   // max_attendees 미설정 시 섹션 숨김
   if (schedule.max_attendees == null) return null;

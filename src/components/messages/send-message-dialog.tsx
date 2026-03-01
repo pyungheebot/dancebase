@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import {
   Dialog,
@@ -30,15 +31,13 @@ export function SendMessageDialog({
   const [content, setContent] = useState(defaultContent);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const { user } = useAuth();
   const supabase = createClient();
 
   const handleSend = async () => {
     if (!content.trim() || sending) return;
     setSending(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
     if (!user) {
       setSending(false);
       return;

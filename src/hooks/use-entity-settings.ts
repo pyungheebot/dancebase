@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { toast } from "sonner";
 import type { EntitySettingRow } from "@/types";
 
 type UseEntitySettingsParams = {
@@ -41,6 +42,14 @@ export function useEntitySettings<T extends Record<string, unknown>>(
   const value: T = (data?.value as T) ?? defaultValue;
 
   const save = async (newValue: T): Promise<{ error: Error | null }> => {
+    // Optimistic: 즉시 UI 업데이트
+    await mutate(
+      (prev) => prev
+        ? { ...prev, value: newValue as unknown as Record<string, unknown>, updated_at: new Date().toISOString() }
+        : ({ id: "", entity_type: entityType, entity_id: entityId, key, value: newValue as unknown as Record<string, unknown>, updated_at: new Date().toISOString() } satisfies EntitySettingRow),
+      false
+    );
+
     const supabase = createClient();
     const { error } = await supabase.from("entity_settings").upsert(
       {
@@ -54,10 +63,12 @@ export function useEntitySettings<T extends Record<string, unknown>>(
     );
 
     if (error) {
+      // 롤백
+      mutate();
+      toast.error("설정 저장에 실패했습니다.");
       return { error: new Error(error.message) };
     }
 
-    await mutate();
     return { error: null };
   };
 

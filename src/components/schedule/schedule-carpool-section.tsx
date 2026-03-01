@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { Car, Users, MapPin, Clock, Check, X, Loader2, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
 import { useScheduleCarpool, type CarpoolOfferWithDetails } from "@/hooks/use-schedule-carpool";
 import { useAsyncAction } from "@/hooks/use-async-action";
 
@@ -272,22 +272,11 @@ export function ScheduleCarpoolSection({ scheduleId }: Props) {
   const [departureTime, setDepartureTime] = useState("");
   const [notes, setNotes] = useState("");
   const { pending: submitting, execute: executeCreate } = useAsyncAction();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
 
   const { offers, loading, createOffer, deleteOffer, requestRide, respondToRequest, cancelRequest } =
     useScheduleCarpool(scheduleId);
-
-  // 현재 사용자 ID 로드
-  useState(() => {
-    const load = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id ?? null);
-    };
-    load();
-  });
 
   const myOffer = offers.find((o) => o.driver_id === currentUserId);
 

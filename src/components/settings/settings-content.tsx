@@ -317,7 +317,6 @@ export function SettingsContent({
 
   const handleApproveRequest = async (request: JoinRequestWithProfile) => {
     setProcessingRequest(request.id);
-    const { data: { user } } = await supabase.auth.getUser();
     const { error: memberError } = await supabase.from("group_members").insert({
       group_id: request.group_id,
       user_id: request.user_id,
@@ -349,7 +348,6 @@ export function SettingsContent({
 
   const handleRejectRequest = async (request: JoinRequestWithProfile) => {
     setProcessingRequest(request.id);
-    const { data: { user } } = await supabase.auth.getUser();
     await supabase
       .from("join_requests")
       .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: user?.id })
@@ -420,7 +418,6 @@ export function SettingsContent({
 
   const handleLeaveGroup = async () => {
     setLeavingGroup(true);
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error("로그인이 필요합니다.");
       setLeavingGroup(false);

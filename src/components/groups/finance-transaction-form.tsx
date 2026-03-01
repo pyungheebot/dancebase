@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +78,7 @@ export function FinanceTransactionForm({
   const [amountError, setAmountError] = useState<string | null>(null);
   const [titleError, setTitleError] = useState<string | null>(null);
   const supabase = createClient();
+  const { user } = useAuth();
 
   // 선택된 카테고리의 fee_rate 계산
   const selectedCategory = useMemo(
@@ -158,10 +160,6 @@ export function FinanceTransactionForm({
         toast.error("거래 수정에 실패했습니다");
       }
     } else {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       const { error } = await supabase.from("finance_transactions").insert({
         group_id: groupId,
         project_id: projectId || null,

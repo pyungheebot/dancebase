@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Target, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { useAttendanceGoal } from "@/hooks/use-attendance-goals";
 import { invalidateAttendanceGoal } from "@/lib/swr/invalidate";
@@ -94,6 +95,7 @@ function CircularProgress({
 
 export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps) {
   const { data, loading, refetch } = useAttendanceGoal(groupId);
+  const { user } = useAuth();
 
   const [editMode, setEditMode] = useState(false);
   const [targetRateInput, setTargetRateInput] = useState("");
@@ -117,9 +119,6 @@ export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps
     }
 
     await execute(async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         toast.error("로그인이 필요합니다");
         return;

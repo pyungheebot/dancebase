@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateNotifications } from "@/lib/swr/invalidate";
+import { toast } from "sonner";
 import type { Notification } from "@/types";
 
 export function useNotifications(limit = 10) {
@@ -81,14 +82,22 @@ export function useNotifications(limit = 10) {
   }, []);
 
   const markAsRead = async (notificationId: string) => {
+    // Optimistic: 즉시 UI 업데이트
+    await mutate(
+      (prev) => prev?.map((n) => n.id === notificationId ? { ...n, is_read: true } : n),
+      false
+    );
+    // 서버 반영
     const supabase = createClient();
     const { error } = await supabase
       .from("notifications")
       .update({ is_read: true })
       .eq("id", notificationId);
 
-    if (!error) {
-      invalidateNotifications();
+    if (error) {
+      // 롤백
+      mutate();
+      toast.error("읽음 처리에 실패했습니다.");
     }
   };
 
@@ -99,14 +108,22 @@ export function useNotifications(limit = 10) {
     } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Optimistic: 즉시 UI 업데이트
+    await mutate(
+      (prev) => prev?.map((n) => ({ ...n, is_read: true })),
+      false
+    );
+    // 서버 반영
     const { error } = await supabase
       .from("notifications")
       .update({ is_read: true })
       .eq("user_id", user.id)
       .eq("is_read", false);
 
-    if (!error) {
-      invalidateNotifications();
+    if (error) {
+      // 롤백
+      mutate();
+      toast.error("읽음 처리에 실패했습니다.");
     }
   };
 

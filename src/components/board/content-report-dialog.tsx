@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
@@ -43,14 +44,11 @@ export function ContentReportDialog({
   const [reason, setReason] = useState<ReportReason>("spam");
   const [description, setDescription] = useState("");
   const { pending: submitting, execute } = useAsyncAction();
+  const { user } = useAuth();
 
   const handleSubmit = async () => {
     await execute(async () => {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       if (!user) {
         toast.error("로그인이 필요합니다");
         return;

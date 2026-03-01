@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { formatShortDateTime } from "@/lib/date-utils";
+import { useAuth } from "@/hooks/use-auth";
 import { CalendarCheck, Clock, MapPin, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -50,6 +51,7 @@ export function BulkRsvpDialog({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [response, setResponse] = useState<ScheduleRsvpResponse>("going");
   const { pending: submitting, execute } = useAsyncAction();
+  const { user } = useAuth();
 
   // 오늘 이후의 일정만 필터링, 날짜순 정렬
   const upcomingSchedules = useMemo(
@@ -89,15 +91,12 @@ export function BulkRsvpDialog({
       return;
     }
 
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
     if (!user) {
       toast.error("로그인이 필요합니다");
       return;
     }
+
+    const supabase = createClient();
 
     await execute(async () => {
       const now = new Date().toISOString();

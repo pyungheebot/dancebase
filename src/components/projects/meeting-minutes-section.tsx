@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { useMeetingMinutes } from "@/hooks/use-meeting-minutes";
 import { invalidateMeetingMinutes } from "@/lib/swr/invalidate";
@@ -94,6 +95,7 @@ interface WriteDialogProps {
 function WriteDialog({ ctx, onSuccess }: WriteDialogProps) {
   const [open, setOpen] = useState(false);
   const { pending: saving, execute } = useAsyncAction();
+  const { user } = useAuth();
 
   // 폼 상태
   const [title, setTitle] = useState("");
@@ -174,9 +176,6 @@ function WriteDialog({ ctx, onSuccess }: WriteDialogProps) {
 
     await execute(async () => {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         toast.error("로그인이 필요합니다");
         return;

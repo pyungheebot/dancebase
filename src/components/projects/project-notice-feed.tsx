@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 import { useProjectNotices } from "@/hooks/use-project-notices";
 import type { EntityContext } from "@/types/entity-context";
 import type { ProjectNoticeImportance } from "@/types";
@@ -15,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Megaphone, AlertCircle, Plus, Trash2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useAuth } from "@/hooks/use-auth";
 
 interface ProjectNoticeFeedProps {
   ctx: EntityContext;
@@ -292,15 +292,8 @@ export function ProjectNoticeFeed({ ctx }: ProjectNoticeFeedProps) {
   const { notices, loading, createNotice, deleteNotice } = useProjectNotices(
     ctx.projectId ?? ""
   );
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  // 현재 로그인 유저 ID 가져오기
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }: { data: { user: { id: string } | null } }) => {
-      setCurrentUserId(data.user?.id ?? null);
-    });
-  }, []);
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
 
   // 작성/삭제 권한: leader 또는 canEdit 권한 보유자
   const myMember = ctx.members.find((m) => m.userId === currentUserId);

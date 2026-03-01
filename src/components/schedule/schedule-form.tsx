@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,6 +129,7 @@ export function ScheduleForm({
   const [timeError, setTimeError] = useState<string | null>(null);
   const [dateRangeError, setDateRangeError] = useState<string | null>(null);
   const supabase = createClient();
+  const { user } = useAuth();
 
   // Create mode: recurrence
   const [recurringValue, setRecurringValue] = useState<RecurringScheduleValue>({
@@ -317,10 +319,6 @@ export function ScheduleForm({
           }
         }
       } else {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
         if (!user) return;
 
         const common = {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useAuth } from "@/hooks/use-auth";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
@@ -29,6 +30,7 @@ export function MemberNotePopover({
   targetName,
 }: MemberNotePopoverProps) {
   const supabase = createClient();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const { pending: saving, execute: executeSave } = useAsyncAction();
@@ -61,9 +63,6 @@ export function MemberNotePopover({
     const trimmed = draft.trim();
     if (!trimmed) return;
     await executeSave(async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         toast.error("인증 정보를 확인할 수 없습니다");
         return;

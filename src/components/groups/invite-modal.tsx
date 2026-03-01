@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -192,6 +193,7 @@ export function JoinGroupModal({ trigger }: JoinGroupModalProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
   const supabase = createClient();
 
   const handleJoin = async (e: React.FormEvent) => {
@@ -226,10 +228,6 @@ export function JoinGroupModal({ trigger }: JoinGroupModalProps) {
           return;
         }
       }
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
 
       if (!user) {
         setError("로그인이 필요합니다");

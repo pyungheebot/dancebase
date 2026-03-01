@@ -197,6 +197,7 @@ function CalendarDayButton({
       ref={ref}
       variant="ghost"
       size="icon"
+      aria-label={`${day.date.getFullYear()}년 ${day.date.getMonth() + 1}월 ${day.date.getDate()}일`}
       data-day={day.date.toLocaleDateString()}
       data-selected-single={
         modifiers.selected &&

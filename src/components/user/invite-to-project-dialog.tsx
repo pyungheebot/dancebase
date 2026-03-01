@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { useProjects } from "@/hooks/use-projects";
 import { useGroupDetail } from "@/hooks/use-groups";
@@ -31,6 +32,7 @@ export function InviteToProjectDialog({
 }: InviteToProjectDialogProps) {
   const { projects, loading: projectsLoading } = useProjects(groupId);
   const { myRole: myGroupRole } = useGroupDetail(groupId);
+  const { user } = useAuth();
   const [memberProjectIds, setMemberProjectIds] = useState<Set<string>>(new Set());
   const [loadingMemberships, setLoadingMemberships] = useState(true);
   const [inviting, setInviting] = useState<string | null>(null);
@@ -66,9 +68,6 @@ export function InviteToProjectDialog({
   useEffect(() => {
     if (!open) return;
     const fetchMyRoles = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) return;
       const projectIds = projects.map((p) => p.id);
       if (projectIds.length === 0) return;

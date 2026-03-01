@@ -13,6 +13,7 @@ import {
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useAuth } from "@/hooks/use-auth";
 import {
   ProjectFormFields,
   DEFAULT_PROJECT_FORM_VALUES,
@@ -28,6 +29,7 @@ export function ProjectForm({ groupId, onCreated }: ProjectFormProps) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<ProjectFormValues>(DEFAULT_PROJECT_FORM_VALUES);
   const { pending: submitting, execute } = useAsyncAction();
+  const { user } = useAuth();
   const supabase = createClient();
 
   const handleChange = <K extends keyof ProjectFormValues>(key: K, value: ProjectFormValues[K]) => {
@@ -37,9 +39,6 @@ export function ProjectForm({ groupId, onCreated }: ProjectFormProps) {
   const handleSubmit = async () => {
     if (!form.name.trim()) return;
     await execute(async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { error } = await supabase.rpc("create_project", {

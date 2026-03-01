@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { formatKo } from "@/lib/date-utils";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import type { BoardCommentWithProfile } from "@/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -233,18 +234,12 @@ export function BoardCommentSection({
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
 
   const supabase = createClient();
+  const { user } = useAuth();
 
   // 현재 유저 확인
   useEffect(() => {
-    if (currentUserId !== null) return;
-    const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) setCurrentUserId(user.id);
-    };
-    fetchUser();
-  }, [supabase, currentUserId]);
+    if (user) setCurrentUserId(user.id);
+  }, [user]);
 
   // 댓글 제출 (parent_id 포함)
   const handleSubmit = async (parentId: string | null = null) => {
@@ -254,9 +249,6 @@ export function BoardCommentSection({
     const execFn = parentId ? executeReply : executeSubmit;
 
     await execFn(async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { error } = await supabase.from("board_comments").insert({

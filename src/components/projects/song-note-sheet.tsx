@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSongNotes } from "@/hooks/use-song-notes";
 import { useAsyncAction } from "@/hooks/use-async-action";
-import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Sheet,
   SheetContent,
@@ -15,24 +15,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StickyNote, Plus, Trash2, Loader2 } from "lucide-react";
 import { formatRelative } from "@/lib/date-utils";
-import useSWR from "swr";
-
 interface SongNoteSheetProps {
   songId: string;
   songTitle: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-function useCurrentUserId() {
-  const { data } = useSWR("current-user-id", async () => {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    return user?.id ?? null;
-  });
-  return data ?? null;
 }
 
 export function SongNoteSheet({
@@ -42,7 +29,8 @@ export function SongNoteSheet({
   onOpenChange,
 }: SongNoteSheetProps) {
   const { notes, loading, addNote, deleteNote } = useSongNotes(songId);
-  const currentUserId = useCurrentUserId();
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
   const [content, setContent] = useState("");
   const { pending: submitting, execute } = useAsyncAction();
   const [deletingId, setDeletingId] = useState<string | null>(null);

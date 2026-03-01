@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, startTransition } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { useBoardCategories } from "@/hooks/use-board";
@@ -71,6 +72,7 @@ export function BoardPostForm({
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("미분류");
   const { pending: submitting, execute } = useAsyncAction();
+  const { user } = useAuth();
 
   // 드래프트 훅 - 새 글 작성 모드에서만 활성화
   const draftKey = `draft-board-post-${groupId}${projectId ? `-${projectId}` : ""}`;
@@ -230,9 +232,6 @@ export function BoardPostForm({
   const uploadFiles = async (postId: string): Promise<void> => {
     if (pendingFiles.length === 0) return;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
     if (!user) return;
 
     for (const pf of pendingFiles) {
@@ -275,17 +274,13 @@ export function BoardPostForm({
 
     await execute(async () => {
       if (mode === "edit" && initialData) {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-
         // 수정 전 내용을 리비전으로 저장
-        if (currentUser) {
+        if (user) {
           await savePostRevision({
             postId: initialData.id,
             title: initialData.title,
             content: initialData.content,
-            revisedBy: currentUser.id,
+            revisedBy: user.id,
           });
           invalidatePostRevisions(initialData.id);
         }
@@ -317,9 +312,6 @@ export function BoardPostForm({
       }
 
       // create mode
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data: post, error } = await supabase
