@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/use-auth";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { createClient } from "@/lib/supabase/client";
@@ -9,65 +8,23 @@ import { FinanceTransactionForm } from "@/components/groups/finance-transaction-
 import { FinanceCategoryManager } from "@/components/groups/finance-category-manager";
 import { FinancePermissionManager } from "@/components/groups/finance-permission-manager";
 import { FinanceStats } from "@/components/groups/finance-stats";
-import { Skeleton } from "@/components/ui/skeleton";
+import { lazyLoad } from "@/lib/dynamic-import";
 
 // 무거운 탭 컴포넌트 (16~32KB) - dynamic import로 초기 번들 분리
-const FinancePaymentStatus = dynamic(
-  () => import("@/components/finance/finance-payment-status").then(m => ({ default: m.FinancePaymentStatus })),
-  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
-);
-const FinanceBudgetTab = dynamic(
-  () => import("@/components/finance/finance-budget-tab").then(m => ({ default: m.FinanceBudgetTab })),
-  { loading: () => <Skeleton className="h-48 w-full rounded-lg" /> }
-);
-const UnpaidSummary = dynamic(
-  () => import("@/components/finance/unpaid-summary").then(m => ({ default: m.UnpaidSummary })),
-  { loading: () => <Skeleton className="h-24 w-full rounded-lg" /> }
-);
-const PaymentReminderSection = dynamic(
-  () => import("@/components/finance/payment-reminder-section").then(m => ({ default: m.PaymentReminderSection })),
-  { loading: () => <Skeleton className="h-24 w-full rounded-lg" /> }
-);
-const FinanceReminderSettings = dynamic(
-  () => import("@/components/finance/finance-reminder-settings").then(m => ({ default: m.FinanceReminderSettings })),
-  { loading: () => <Skeleton className="h-24 w-full rounded-lg" /> }
-);
-const FinanceSplitSection = dynamic(
-  () => import("@/components/finance/finance-split-section").then(m => ({ default: m.FinanceSplitSection })),
-  { loading: () => <Skeleton className="h-48 w-full rounded-lg" /> }
-);
-const ProjectCostAnalytics = dynamic(
-  () => import("@/components/finance/project-cost-analytics").then(m => ({ default: m.ProjectCostAnalytics })),
-  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
-);
-const ExpenseTemplateManager = dynamic(
-  () => import("@/components/finance/expense-template-manager").then(m => ({ default: m.ExpenseTemplateManager })),
-  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
-);
-const CreateSettlementDialog = dynamic(
-  () => import("@/components/finance/create-settlement-dialog").then(m => ({ default: m.CreateSettlementDialog })),
-  { ssr: false }
-);
-const SettlementRequestDashboard = dynamic(
-  () => import("@/components/finance/settlement-request-dashboard").then(m => ({ default: m.SettlementRequestDashboard })),
-  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
-);
-const MySettlementRequests = dynamic(
-  () => import("@/components/finance/my-settlement-requests").then(m => ({ default: m.MySettlementRequests })),
-  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
-);
-const ReceiptShareDialog = dynamic(
-  () => import("@/components/finance/receipt-share-dialog").then(m => ({ default: m.ReceiptShareDialog })),
-  { ssr: false }
-);
-const FinanceGoalCard = dynamic(
-  () => import("@/components/finance/finance-goal-card").then(m => ({ default: m.FinanceGoalCard })),
-  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
-);
-const BudgetScenarioCard = dynamic(
-  () => import("@/components/finance/budget-scenario-card").then(m => ({ default: m.BudgetScenarioCard })),
-  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
-);
+const FinancePaymentStatus    = lazyLoad(() => import("@/components/finance/finance-payment-status").then(m => ({ default: m.FinancePaymentStatus })), { skeletonHeight: "h-32" });
+const FinanceBudgetTab        = lazyLoad(() => import("@/components/finance/finance-budget-tab").then(m => ({ default: m.FinanceBudgetTab })), { skeletonHeight: "h-48" });
+const UnpaidSummary           = lazyLoad(() => import("@/components/finance/unpaid-summary").then(m => ({ default: m.UnpaidSummary })), { skeletonHeight: "h-24" });
+const PaymentReminderSection  = lazyLoad(() => import("@/components/finance/payment-reminder-section").then(m => ({ default: m.PaymentReminderSection })), { skeletonHeight: "h-24" });
+const FinanceReminderSettings = lazyLoad(() => import("@/components/finance/finance-reminder-settings").then(m => ({ default: m.FinanceReminderSettings })), { skeletonHeight: "h-24" });
+const FinanceSplitSection     = lazyLoad(() => import("@/components/finance/finance-split-section").then(m => ({ default: m.FinanceSplitSection })), { skeletonHeight: "h-48" });
+const ProjectCostAnalytics    = lazyLoad(() => import("@/components/finance/project-cost-analytics").then(m => ({ default: m.ProjectCostAnalytics })), { skeletonHeight: "h-32" });
+const ExpenseTemplateManager  = lazyLoad(() => import("@/components/finance/expense-template-manager").then(m => ({ default: m.ExpenseTemplateManager })), { skeletonHeight: "h-32" });
+const CreateSettlementDialog  = lazyLoad(() => import("@/components/finance/create-settlement-dialog").then(m => ({ default: m.CreateSettlementDialog })), { noLoading: true });
+const SettlementRequestDashboard = lazyLoad(() => import("@/components/finance/settlement-request-dashboard").then(m => ({ default: m.SettlementRequestDashboard })), { skeletonHeight: "h-32" });
+const MySettlementRequests    = lazyLoad(() => import("@/components/finance/my-settlement-requests").then(m => ({ default: m.MySettlementRequests })), { skeletonHeight: "h-32" });
+const ReceiptShareDialog      = lazyLoad(() => import("@/components/finance/receipt-share-dialog").then(m => ({ default: m.ReceiptShareDialog })), { noLoading: true });
+const FinanceGoalCard         = lazyLoad(() => import("@/components/finance/finance-goal-card").then(m => ({ default: m.FinanceGoalCard })), { skeletonHeight: "h-32" });
+const BudgetScenarioCard      = lazyLoad(() => import("@/components/finance/budget-scenario-card").then(m => ({ default: m.BudgetScenarioCard })), { skeletonHeight: "h-32" });
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -410,23 +367,70 @@ export function FinanceContent({
       <div className="mt-3">
         <Tabs defaultValue="transactions">
           <TabsList className="w-full h-7 mb-3 flex-wrap">
-            <TabsTrigger value="transactions" className="flex-1 text-xs">
+            {/* 마우스 호버 시 인접 탭 컴포넌트 프리로드 */}
+            <TabsTrigger
+              value="transactions"
+              className="flex-1 text-xs"
+              onMouseEnter={() => {
+                import("@/components/finance/finance-payment-status");
+                import("@/components/finance/unpaid-summary");
+              }}
+            >
               거래 내역
             </TabsTrigger>
-            <TabsTrigger value="payment-status" className="flex-1 text-xs">
+            <TabsTrigger
+              value="payment-status"
+              className="flex-1 text-xs"
+              onMouseEnter={() => {
+                import("@/components/finance/finance-payment-status");
+                import("@/components/finance/payment-reminder-section");
+                import("@/components/finance/finance-reminder-settings");
+                import("@/components/finance/finance-budget-tab");
+              }}
+            >
               납부 현황
             </TabsTrigger>
-            <TabsTrigger value="budget" className="flex-1 text-xs">
+            <TabsTrigger
+              value="budget"
+              className="flex-1 text-xs"
+              onMouseEnter={() => {
+                import("@/components/finance/finance-budget-tab");
+                import("@/components/finance/finance-split-section");
+              }}
+            >
               예산
             </TabsTrigger>
-            <TabsTrigger value="split" className="flex-1 text-xs">
+            <TabsTrigger
+              value="split"
+              className="flex-1 text-xs"
+              onMouseEnter={() => {
+                import("@/components/finance/finance-split-section");
+                import("@/components/finance/settlement-request-dashboard");
+                import("@/components/finance/my-settlement-requests");
+              }}
+            >
               분할 정산
             </TabsTrigger>
-            <TabsTrigger value="settlement" className="flex-1 text-xs">
+            <TabsTrigger
+              value="settlement"
+              className="flex-1 text-xs"
+              onMouseEnter={() => {
+                import("@/components/finance/settlement-request-dashboard");
+                import("@/components/finance/my-settlement-requests");
+                import("@/components/finance/create-settlement-dialog");
+                if (ctx.projectId) import("@/components/finance/project-cost-analytics");
+              }}
+            >
               정산 요청
             </TabsTrigger>
             {ctx.projectId && (
-              <TabsTrigger value="cost-analytics" className="flex-1 text-xs">
+              <TabsTrigger
+                value="cost-analytics"
+                className="flex-1 text-xs"
+                onMouseEnter={() => {
+                  import("@/components/finance/project-cost-analytics");
+                }}
+              >
                 비용 분석
               </TabsTrigger>
             )}

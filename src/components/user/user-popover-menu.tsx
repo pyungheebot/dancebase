@@ -168,6 +168,7 @@ export function UserPopoverMenu({
         type="button"
         className={className}
         onClick={() => router.push(`/users/${userId}`)}
+        aria-label={`내 프로필 보기 (${displayName})`}
       >
         {children ?? displayName}
       </button>
@@ -188,11 +189,17 @@ export function UserPopoverMenu({
     <>
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <PopoverTrigger asChild>
-          <button type="button" className={className}>
+          <button
+            type="button"
+            className={className}
+            aria-label={`${displayName} 사용자 메뉴`}
+            aria-haspopup="dialog"
+            aria-expanded={popoverOpen}
+          >
             {children ?? displayName}
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 p-0" align="start">
+        <PopoverContent className="w-64 p-0" align="start" aria-label={`${displayName} 메뉴`}>
           {/* 미니 프로필 — 팝오버가 열릴 때만 마운트 */}
           {popoverOpen && (
             <MiniProfile userId={userId} displayName={displayName} />
@@ -209,37 +216,41 @@ export function UserPopoverMenu({
           )}
 
           {/* 액션 버튼 */}
-          <div className="p-1">
+          <div className="p-1" role="menu" aria-label={`${displayName} 액션`}>
             <button
+              role="menuitem"
               className="flex items-center gap-2 w-full rounded px-2 py-1.5 text-sm hover:bg-muted transition-colors"
               onClick={() => {
                 setPopoverOpen(false);
                 router.push(`/users/${userId}`);
               }}
             >
-              <User className="h-4 w-4 text-muted-foreground" />
+              <User className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               프로필 보기
             </button>
             <button
+              role="menuitem"
               className="flex items-center gap-2 w-full rounded px-2 py-1.5 text-sm hover:bg-muted transition-colors"
               onClick={() => openDialog("message")}
             >
-              <Mail className="h-4 w-4 text-muted-foreground" />
+              <Mail className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               메시지 보내기
             </button>
             <button
+              role="menuitem"
               className="flex items-center gap-2 w-full rounded px-2 py-1.5 text-sm hover:bg-muted transition-colors"
               onClick={() => openDialog("group")}
             >
-              <UserPlus className="h-4 w-4 text-muted-foreground" />
+              <UserPlus className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               그룹에 초대
             </button>
             {groupId && (
               <button
+                role="menuitem"
                 className="flex items-center gap-2 w-full rounded px-2 py-1.5 text-sm hover:bg-muted transition-colors"
                 onClick={() => openDialog("project")}
               >
-                <FolderPlus className="h-4 w-4 text-muted-foreground" />
+                <FolderPlus className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 프로젝트에 초대
               </button>
             )}

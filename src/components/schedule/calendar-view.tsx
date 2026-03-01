@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useReducer } from "react";
 import { isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, addMonths, subMonths, format } from "date-fns";
 import { formatYearMonth, formatShortDateTime, formatKo, formatTime } from "@/lib/date-utils";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,99 @@ const MAX_VISIBLE_EVENTS = 2;
 
 // 반복 일정 수정/삭제 범위 타입
 type RecurrenceScope = "this" | "this_and_future" | "all";
+
+// --- useReducer 상태/액션 타입 ---
+type CalendarState = {
+  currentMonth: Date;
+  editSchedule: Schedule | null;
+  editScope: RecurrenceScope | null;
+  detailSchedule: Schedule | null;
+  overflowDay: Date | null;
+  recurrenceEditDialogOpen: boolean;
+  recurrenceDeleteDialogOpen: boolean;
+  deleteLoading: boolean;
+  pendingEditSchedule: Schedule | null;
+  pendingDeleteSchedule: Schedule | null;
+};
+
+type CalendarAction =
+  | { type: "SET_MONTH"; month: Date }
+  | { type: "PREV_MONTH" }
+  | { type: "NEXT_MONTH" }
+  | { type: "TODAY" }
+  | { type: "OPEN_DETAIL"; schedule: Schedule }
+  | { type: "CLOSE_DETAIL" }
+  | { type: "OPEN_EDIT"; schedule: Schedule; scope: RecurrenceScope }
+  | { type: "CLOSE_EDIT" }
+  | { type: "OPEN_OVERFLOW"; day: Date }
+  | { type: "CLOSE_OVERFLOW" }
+  | { type: "OPEN_RECURRENCE_EDIT"; schedule: Schedule }
+  | { type: "CLOSE_RECURRENCE_EDIT" }
+  | { type: "OPEN_RECURRENCE_DELETE"; schedule: Schedule }
+  | { type: "CLOSE_RECURRENCE_DELETE" }
+  | { type: "SET_DELETE_LOADING"; loading: boolean }
+  | { type: "SET_EDIT_SCOPE"; scope: RecurrenceScope }
+  | { type: "DELETE_DONE" };
+
+const initialCalendarState: CalendarState = {
+  currentMonth: new Date(),
+  editSchedule: null,
+  editScope: null,
+  detailSchedule: null,
+  overflowDay: null,
+  recurrenceEditDialogOpen: false,
+  recurrenceDeleteDialogOpen: false,
+  deleteLoading: false,
+  pendingEditSchedule: null,
+  pendingDeleteSchedule: null,
+};
+
+function calendarReducer(state: CalendarState, action: CalendarAction): CalendarState {
+  switch (action.type) {
+    case "SET_MONTH":
+      return { ...state, currentMonth: action.month };
+    case "PREV_MONTH":
+      return { ...state, currentMonth: subMonths(state.currentMonth, 1) };
+    case "NEXT_MONTH":
+      return { ...state, currentMonth: addMonths(state.currentMonth, 1) };
+    case "TODAY":
+      return { ...state, currentMonth: new Date() };
+    case "OPEN_DETAIL":
+      return { ...state, detailSchedule: action.schedule };
+    case "CLOSE_DETAIL":
+      return { ...state, detailSchedule: null };
+    case "OPEN_EDIT":
+      return { ...state, editSchedule: action.schedule, editScope: action.scope };
+    case "CLOSE_EDIT":
+      return { ...state, editSchedule: null, editScope: null };
+    case "OPEN_OVERFLOW":
+      return { ...state, overflowDay: action.day };
+    case "CLOSE_OVERFLOW":
+      return { ...state, overflowDay: null };
+    case "OPEN_RECURRENCE_EDIT":
+      return { ...state, pendingEditSchedule: action.schedule, recurrenceEditDialogOpen: true };
+    case "CLOSE_RECURRENCE_EDIT":
+      return { ...state, recurrenceEditDialogOpen: false, pendingEditSchedule: null };
+    case "OPEN_RECURRENCE_DELETE":
+      return { ...state, pendingDeleteSchedule: action.schedule, recurrenceDeleteDialogOpen: true };
+    case "CLOSE_RECURRENCE_DELETE":
+      return { ...state, recurrenceDeleteDialogOpen: false, pendingDeleteSchedule: null };
+    case "SET_DELETE_LOADING":
+      return { ...state, deleteLoading: action.loading };
+    case "SET_EDIT_SCOPE":
+      return { ...state, editScope: action.scope };
+    case "DELETE_DONE":
+      return {
+        ...state,
+        detailSchedule: null,
+        pendingDeleteSchedule: null,
+        recurrenceDeleteDialogOpen: false,
+        deleteLoading: false,
+      };
+    default:
+      return state;
+  }
+}
 
 type CalendarViewProps = {
   schedules: Schedule[];
@@ -333,7 +426,19 @@ function RecurrenceEditDialog({
 }
 
 export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleUpdated, attendancePath, groupId, canEditRoles }: CalendarViewProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [state, dispatch] = useReducer(calendarReducer, initialCalendarState);
+  const {
+    currentMonth,
+    editSchedule,
+    editScope,
+    detailSchedule,
+    overflowDay,
+    recurrenceEditDialogOpen,
+    recurrenceDeleteDialogOpen,
+    deleteLoading,
+    pendingDeleteSchedule,
+    pendingEditSchedule,
+  } = state;
 
   // 충돌하는 일정 ID 집합 계산 (양방향 충돌 감지)
   const conflictingIds = useMemo(() => {
@@ -350,19 +455,6 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
     });
     return ids;
   }, [schedules]);
-  const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
-  // 시리즈 수정 시 적용 범위 (null이면 단일 수정 모드)
-  const [editScope, setEditScope] = useState<RecurrenceScope | null>(null);
-  const [detailSchedule, setDetailSchedule] = useState<Schedule | null>(null);
-  const [overflowDay, setOverflowDay] = useState<Date | null>(null);
-
-  // 반복 일정 수정/삭제 다이얼로그 상태
-  const [recurrenceEditDialogOpen, setRecurrenceEditDialogOpen] = useState(false);
-  const [recurrenceDeleteDialogOpen, setRecurrenceDeleteDialogOpen] = useState(false);
-  const [pendingEditSchedule, setPendingEditSchedule] = useState<Schedule | null>(null);
-  const [pendingDeleteSchedule, setPendingDeleteSchedule] = useState<Schedule | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart);
@@ -378,30 +470,29 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
   const handleEditClick = (schedule: Schedule) => {
     if (schedule.recurrence_id) {
       // 반복 일정이면 범위 선택 다이얼로그 표시
-      setPendingEditSchedule(schedule);
-      setRecurrenceEditDialogOpen(true);
+      dispatch({ type: "OPEN_RECURRENCE_EDIT", schedule });
     } else {
       // 단일 일정이면 바로 수정 폼 열기
-      setEditScope("this");
-      setEditSchedule(schedule);
+      dispatch({ type: "OPEN_EDIT", schedule, scope: "this" });
     }
   };
 
   // 반복 수정 범위 선택 후
   const handleRecurrenceEditSelect = (scope: RecurrenceScope) => {
-    setRecurrenceEditDialogOpen(false);
-    if (!pendingEditSchedule) return;
-    setEditScope(scope);
-    setEditSchedule(pendingEditSchedule);
-    setPendingEditSchedule(null);
+    if (!pendingEditSchedule) {
+      dispatch({ type: "CLOSE_RECURRENCE_EDIT" });
+      return;
+    }
+    const schedule = pendingEditSchedule;
+    dispatch({ type: "CLOSE_RECURRENCE_EDIT" });
+    dispatch({ type: "OPEN_EDIT", schedule, scope });
   };
 
   // 삭제 버튼 클릭
   const handleDeleteClick = (schedule: Schedule) => {
     if (schedule.recurrence_id) {
       // 반복 일정이면 범위 선택 다이얼로그 표시
-      setPendingDeleteSchedule(schedule);
-      setRecurrenceDeleteDialogOpen(true);
+      dispatch({ type: "OPEN_RECURRENCE_DELETE", schedule });
     } else {
       // 단일 일정이면 바로 삭제
       handleDeleteConfirm(schedule, "this");
@@ -410,8 +501,8 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
 
   // 삭제 실행
   const handleDeleteConfirm = async (schedule: Schedule, scope: RecurrenceScope) => {
-    setDeleteLoading(true);
-    setRecurrenceDeleteDialogOpen(false);
+    dispatch({ type: "SET_DELETE_LOADING", loading: true });
+    dispatch({ type: "CLOSE_RECURRENCE_DELETE" });
     const supabase = createClient();
 
     try {
@@ -486,20 +577,18 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
         toast.success(`시리즈 전체 ${targetIds.length}개의 일정을 삭제했습니다`);
       }
 
-      setDetailSchedule(null);
-      setPendingDeleteSchedule(null);
+      dispatch({ type: "DELETE_DONE" });
       onScheduleUpdated?.();
     } catch {
       toast.error(TOAST.SCHEDULE.DELETE_ERROR);
     } finally {
-      setDeleteLoading(false);
+      dispatch({ type: "SET_DELETE_LOADING", loading: false });
     }
   };
 
   // ScheduleForm에서 시리즈 수정 완료 콜백
   const handleEditCreated = () => {
-    setEditSchedule(null);
-    setEditScope(null);
+    dispatch({ type: "CLOSE_EDIT" });
     onScheduleUpdated?.();
   };
 
@@ -529,7 +618,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
             variant="outline"
             size="icon"
             className="h-6 w-6"
-            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+            onClick={() => dispatch({ type: "PREV_MONTH" })}
             aria-label="이전 달"
           >
             <ChevronLeft className="h-3 w-3" aria-hidden="true" />
@@ -538,7 +627,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
             variant="outline"
             size="sm"
             className="h-6 text-[11px] px-2"
-            onClick={() => setCurrentMonth(new Date())}
+            onClick={() => dispatch({ type: "TODAY" })}
             aria-label="오늘로 이동"
           >
             오늘
@@ -547,7 +636,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
             variant="outline"
             size="icon"
             className="h-6 w-6"
-            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+            onClick={() => dispatch({ type: "NEXT_MONTH" })}
             aria-label="다음 달"
           >
             <ChevronRight className="h-3 w-3" aria-hidden="true" />
@@ -583,12 +672,12 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   <ScheduleBadge
                     key={schedule.id}
                     schedule={schedule}
-                    onClick={() => setDetailSchedule(schedule)}
+                    onClick={() => dispatch({ type: "OPEN_DETAIL", schedule })}
                   />
                 ))}
                 {hiddenCount > 0 && (
                   <button
-                    onClick={() => setOverflowDay(day)}
+                    onClick={() => dispatch({ type: "OPEN_OVERFLOW", day })}
                     className="w-full text-left"
                   >
                     <span className="text-[8px] md:text-[9px] text-muted-foreground hover:text-foreground px-0.5 md:px-1">
@@ -673,7 +762,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
           editScope={editScope ?? "this"}
           hideDeleteButton={!!editSchedule.recurrence_id}
           open={!!editSchedule}
-          onOpenChange={(open) => { if (!open) { setEditSchedule(null); setEditScope(null); } }}
+          onOpenChange={(open) => { if (!open) dispatch({ type: "CLOSE_EDIT" }); }}
           onCreated={handleEditCreated}
           existingSchedules={schedules}
         />
@@ -683,8 +772,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
       <RecurrenceEditDialog
         open={recurrenceEditDialogOpen}
         onOpenChange={(open) => {
-          setRecurrenceEditDialogOpen(open);
-          if (!open) setPendingEditSchedule(null);
+          if (!open) dispatch({ type: "CLOSE_RECURRENCE_EDIT" });
         }}
         onSelect={handleRecurrenceEditSelect}
       />
@@ -693,8 +781,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
       <RecurrenceDeleteDialog
         open={recurrenceDeleteDialogOpen}
         onOpenChange={(open) => {
-          setRecurrenceDeleteDialogOpen(open);
-          if (!open) setPendingDeleteSchedule(null);
+          if (!open) dispatch({ type: "CLOSE_RECURRENCE_DELETE" });
         }}
         onSelect={(scope) => {
           if (pendingDeleteSchedule) {
@@ -705,7 +792,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
       />
 
       {/* 일정 상세 모달 */}
-      <Dialog open={!!detailSchedule} onOpenChange={(open) => { if (!open) setDetailSchedule(null); }}>
+      <Dialog open={!!detailSchedule} onOpenChange={(open) => { if (!open) dispatch({ type: "CLOSE_DETAIL" }); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-1.5">
@@ -816,7 +903,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                       disabled={deleteLoading}
                       onClick={() => {
                         const target = detailSchedule;
-                        setDetailSchedule(null);
+                        dispatch({ type: "CLOSE_DETAIL" });
                         handleEditClick(target);
                       }}
                       aria-label={`${detailSchedule?.title} 일정 수정`}
@@ -831,7 +918,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                       disabled={deleteLoading}
                       onClick={() => {
                         const target = detailSchedule;
-                        setDetailSchedule(null);
+                        dispatch({ type: "CLOSE_DETAIL" });
                         handleDeleteClick(target);
                       }}
                       aria-label={`${detailSchedule?.title} 일정 삭제`}
@@ -913,7 +1000,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
       </Dialog>
 
       {/* 날짜별 일정 더보기 모달 */}
-      <Dialog open={!!overflowDay} onOpenChange={(open) => { if (!open) setOverflowDay(null); }}>
+      <Dialog open={!!overflowDay} onOpenChange={(open) => { if (!open) dispatch({ type: "CLOSE_OVERFLOW" }); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-sm">
@@ -927,8 +1014,8 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   key={schedule.id}
                   className="w-full text-left rounded border px-2.5 py-1.5 hover:bg-muted/50 transition-colors"
                   onClick={() => {
-                    setOverflowDay(null);
-                    setDetailSchedule(schedule);
+                    dispatch({ type: "CLOSE_OVERFLOW" });
+                    dispatch({ type: "OPEN_DETAIL", schedule });
                   }}
                 >
                   <div className="flex items-center gap-1.5">

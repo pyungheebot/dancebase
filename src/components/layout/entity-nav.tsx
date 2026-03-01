@@ -116,38 +116,46 @@ export function EntityNav({ ctx }: EntityNavProps) {
   return (
     <>
       {(breadcrumbs.length > 0 || currentPageLabel) && (
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1.5 overflow-x-auto scrollbar-none">
-          {breadcrumbs.map((crumb, i) => (
-            <span key={crumb.href} className="flex items-center gap-1 shrink-0">
-              {i === 0 && <ArrowLeft className="h-2.5 w-2.5" />}
-              {i > 0 && <ChevronRight className="h-2.5 w-2.5" />}
-              <Link href={crumb.href} className="hover:text-foreground whitespace-nowrap">
-                {crumb.label}
-              </Link>
-            </span>
-          ))}
-          {currentPageLabel && (
-            <span className="flex items-center gap-1 shrink-0">
-              <ChevronRight className="h-2.5 w-2.5" />
-              <span className="text-foreground font-bold whitespace-nowrap">
-                {currentPageLabel}
-              </span>
-            </span>
-          )}
-        </div>
+        <nav aria-label="경로 탐색" className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1.5 overflow-x-auto scrollbar-none">
+          <ol className="flex items-center gap-1 list-none p-0 m-0">
+            {breadcrumbs.map((crumb, i) => (
+              <li key={crumb.href} className="flex items-center gap-1 shrink-0">
+                {i === 0 && <ArrowLeft className="h-2.5 w-2.5" aria-hidden="true" />}
+                {i > 0 && <ChevronRight className="h-2.5 w-2.5" aria-hidden="true" />}
+                <Link href={crumb.href} className="hover:text-foreground whitespace-nowrap">
+                  {crumb.label}
+                </Link>
+              </li>
+            ))}
+            {currentPageLabel && (
+              <li className="flex items-center gap-1 shrink-0" aria-current="page">
+                <ChevronRight className="h-2.5 w-2.5" aria-hidden="true" />
+                <span className="text-foreground font-bold whitespace-nowrap">
+                  {currentPageLabel}
+                </span>
+              </li>
+            )}
+          </ol>
+        </nav>
       )}
       <div className="relative">
-        <nav className={navClass} aria-label="그룹 네비게이션">
+        <nav className={navClass} aria-label="그룹 네비게이션" role="tablist">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.path);
             const showBadge = tab.key === "join-requests" && isGroupLeader && pendingCount > 0;
+            const tabId = `entity-tab-${tab.key}`;
+            const panelId = `entity-panel-${tab.key}`;
             return (
               <Link
                 key={tab.path}
+                id={tabId}
                 href={basePath + tab.path}
                 className={linkClass(active)}
+                role="tab"
+                aria-selected={active}
                 aria-current={active ? "page" : undefined}
+                aria-controls={panelId}
                 aria-label={tab.label + (showBadge ? ` (미처리 ${pendingCount > 99 ? "99+" : pendingCount}건)` : "")}
               >
                 <Icon className={iconClass} aria-hidden="true" />

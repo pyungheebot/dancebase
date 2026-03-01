@@ -181,8 +181,10 @@ function SidebarGroupItem({
   const isExpanded = expandedGroups[node.id] ?? (isActive(`/groups/${node.id}`) || activeAncestorIds.has(node.id));
   const paddingLeft = depth * 12;
 
+  const groupIsActive = isActive(`/groups/${node.id}`) && !pathname.includes("/projects/");
+
   return (
-    <div>
+    <div role="treeitem" aria-expanded={hasChildren ? isExpanded : undefined} aria-label={node.name}>
       <div className="flex items-center group" style={{ paddingLeft }}>
         {hasChildren ? (
           <button
@@ -193,36 +195,39 @@ function SidebarGroupItem({
                 [node.id]: !isExpanded,
               }))
             }
+            aria-label={isExpanded ? `${node.name} 접기` : `${node.name} 펼치기`}
+            aria-expanded={isExpanded}
+            aria-controls={`group-children-${node.id}`}
             className="p-0.5 ml-1 text-muted-foreground/50 hover:text-foreground transition-colors"
           >
             {isExpanded ? (
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="h-3 w-3" aria-hidden="true" />
             ) : (
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-3 w-3" aria-hidden="true" />
             )}
           </button>
         ) : (
-          <span className="w-4 ml-1" />
+          <span className="w-4 ml-1" aria-hidden="true" />
         )}
         <PrefetchLink
           href={`/groups/${node.id}`}
           preloadFn={() => preloadGroupDetail(node.id)}
           onClick={onNavigate}
+          aria-current={groupIsActive ? "page" : undefined}
           className={cn(
             "flex items-center gap-1.5 rounded-sm px-1.5 py-1 text-sm transition-colors flex-1 min-w-0",
-            isActive(`/groups/${node.id}`) &&
-              !pathname.includes("/projects/")
+            groupIsActive
               ? "bg-sidebar-accent font-medium"
               : "hover:bg-sidebar-accent/60 text-sidebar-foreground/70"
           )}
         >
-          <Hash className="h-3.5 w-3.5 opacity-40 shrink-0" />
+          <Hash className="h-3.5 w-3.5 opacity-40 shrink-0" aria-hidden="true" />
           <span className="truncate">{node.name}</span>
         </PrefetchLink>
       </div>
 
       {hasChildren && isExpanded && (
-        <div className="space-y-px">
+        <div className="space-y-px" id={`group-children-${node.id}`} role="group">
           {node.children.map((child) => (
             <SidebarGroupItem
               key={child.id}
@@ -237,27 +242,32 @@ function SidebarGroupItem({
               onNavigate={onNavigate}
             />
           ))}
-          {projects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/groups/${node.id}/projects/${project.id}`}
-              onClick={onNavigate}
-              style={{ paddingLeft: (depth + 1) * 12 }}
-              className={cn(
-                "flex items-center gap-1.5 rounded-sm px-1.5 py-0.5 text-[13px] transition-colors ml-6",
-                isActive(`/groups/${node.id}/projects/${project.id}`)
-                  ? "bg-sidebar-accent font-medium"
-                  : "hover:bg-sidebar-accent/60 text-sidebar-foreground/60"
-              )}
-            >
-              {project.is_shared ? (
-                <Share2 className="h-3 w-3 opacity-40 shrink-0" />
-              ) : (
-                <FolderOpen className="h-3 w-3 opacity-40 shrink-0" />
-              )}
-              <span className="truncate">{project.name}</span>
-            </Link>
-          ))}
+          {projects.map((project) => {
+            const projectIsActive = isActive(`/groups/${node.id}/projects/${project.id}`);
+            return (
+              <Link
+                key={project.id}
+                href={`/groups/${node.id}/projects/${project.id}`}
+                onClick={onNavigate}
+                role="treeitem"
+                aria-current={projectIsActive ? "page" : undefined}
+                style={{ paddingLeft: (depth + 1) * 12 }}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-sm px-1.5 py-0.5 text-[13px] transition-colors ml-6",
+                  projectIsActive
+                    ? "bg-sidebar-accent font-medium"
+                    : "hover:bg-sidebar-accent/60 text-sidebar-foreground/60"
+                )}
+              >
+                {project.is_shared ? (
+                  <Share2 className="h-3 w-3 opacity-40 shrink-0" aria-hidden="true" />
+                ) : (
+                  <FolderOpen className="h-3 w-3 opacity-40 shrink-0" aria-hidden="true" />
+                )}
+                <span className="truncate">{project.name}</span>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
@@ -320,42 +330,49 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
       <div className="px-3 pt-3 pb-1">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 w-full rounded-sm px-1.5 py-1 hover:bg-sidebar-accent transition-colors text-left">
+            <button
+              className="flex items-center gap-2 w-full rounded-sm px-1.5 py-1 hover:bg-sidebar-accent transition-colors text-left"
+              aria-label={`${profile?.name || "사용자"} 계정 메뉴`}
+              aria-haspopup="dialog"
+            >
               <Avatar className="h-5 w-5 shrink-0">
-                <AvatarImage src={profile?.avatar_url ?? undefined} />
+                <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
                 <AvatarFallback className="text-[10px] bg-gradient-to-br from-orange-400 to-pink-500 text-white font-bold rounded-sm">
                   {profile?.name?.charAt(0)?.toUpperCase() || "G"}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium truncate flex-1">
+              <span className="text-sm font-medium truncate flex-1" aria-hidden="true">
                 {profile?.name || "Groop"}
               </span>
-              <ChevronDown className="h-3 w-3 opacity-40" />
+              <ChevronDown className="h-3 w-3 opacity-40" aria-hidden="true" />
             </button>
           </PopoverTrigger>
-          <PopoverContent side="bottom" align="start" className="w-52 p-1">
+          <PopoverContent side="bottom" align="start" className="w-52 p-1" role="menu" aria-label="계정 메뉴">
             <Link
               href={user ? `/users/${user.id}` : "#"}
               onClick={onNavigate}
+              role="menuitem"
               className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent transition-colors"
             >
-              <UserCircle className="h-4 w-4 opacity-60" />
+              <UserCircle className="h-4 w-4 opacity-60" aria-hidden="true" />
               내 프로필
             </Link>
             <Link
               href="/profile"
               onClick={onNavigate}
+              role="menuitem"
               className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent transition-colors"
             >
-              <Settings className="h-4 w-4 opacity-60" />
+              <Settings className="h-4 w-4 opacity-60" aria-hidden="true" />
               프로필 설정
             </Link>
-            <div className="h-px bg-border my-1" />
+            <div className="h-px bg-border my-1" role="separator" />
             <button
               onClick={handleSignOut}
+              role="menuitem"
               className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent transition-colors w-full text-left text-muted-foreground"
             >
-              <LogOut className="h-4 w-4 opacity-60" />
+              <LogOut className="h-4 w-4 opacity-60" aria-hidden="true" />
               로그아웃
             </button>
           </PopoverContent>
@@ -363,7 +380,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
       </div>
 
       {/* 메인 네비게이션 */}
-      <nav className="flex-1 overflow-y-auto px-2 py-1 space-y-4">
+      <nav className="flex-1 overflow-y-auto px-2 py-1 space-y-4" aria-label="메인 메뉴" id="sidebar">
         <div className="space-y-0.5">
           {mainNav.map((item) =>
             item.label === "메시지" ? (
@@ -381,6 +398,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
                 href={item.href}
                 preloadFn={item.preloadFn}
                 onClick={onNavigate}
+                aria-current={isActive(item.href) ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-2 rounded-sm px-2 py-1 text-sm transition-colors",
                   isActive(item.href)
@@ -401,17 +419,19 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
             onClick={() => setGroupsOpen(!groupsOpen)}
             className="flex items-center gap-1 w-full px-2 py-0.5 text-xs font-medium text-muted-foreground/80 hover:text-foreground transition-colors"
             aria-expanded={groupsOpen}
+            aria-controls="sidebar-groups-list"
+            aria-label={groupsOpen ? "내 그룹 접기" : "내 그룹 펼치기"}
           >
             {groupsOpen ? (
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="h-3 w-3" aria-hidden="true" />
             ) : (
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-3 w-3" aria-hidden="true" />
             )}
-            내 그룹
+            <span>내 그룹</span>
           </button>
 
           {groupsOpen && (
-            <div className="mt-0.5 space-y-px">
+            <div className="mt-0.5 space-y-px" id="sidebar-groups-list" role="tree" aria-label="내 그룹 목록">
               {groupTree.map((node) => (
                 <SidebarGroupItem
                   key={node.id}
@@ -433,7 +453,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
                   onClick={onNavigate}
                   className="flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs text-muted-foreground/60 hover:bg-sidebar-accent/60 hover:text-foreground transition-colors"
                 >
-                  <Plus className="h-3 w-3" />
+                  <Plus className="h-3 w-3" aria-hidden="true" />
                   새 그룹
                 </Link>
                 <Link
@@ -441,7 +461,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
                   onClick={onNavigate}
                   className="flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs text-muted-foreground/60 hover:bg-sidebar-accent/60 hover:text-foreground transition-colors"
                 >
-                  <UserPlus className="h-3 w-3" />
+                  <UserPlus className="h-3 w-3" aria-hidden="true" />
                   참여
                 </Link>
               </div>
@@ -454,22 +474,28 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
       <div className="px-2 pb-2 pt-1">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 rounded-sm px-2 py-1 text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent/60 transition-colors w-full">
-              <Settings className="h-4 w-4 opacity-50" />
+            <button
+              className="flex items-center gap-2 rounded-sm px-2 py-1 text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent/60 transition-colors w-full"
+              aria-label="화면 설정 열기"
+              aria-haspopup="dialog"
+            >
+              <Settings className="h-4 w-4 opacity-50" aria-hidden="true" />
               화면 설정
             </button>
           </PopoverTrigger>
-          <PopoverContent side="top" align="start" className="w-52">
+          <PopoverContent side="top" align="start" className="w-52" aria-label="화면 설정">
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <p className="text-xs font-medium text-muted-foreground">테마</p>
-                <div className="grid grid-cols-3 gap-0.5">
+                <p className="text-xs font-medium text-muted-foreground" id="theme-group-label">테마</p>
+                <div className="grid grid-cols-3 gap-0.5" role="group" aria-labelledby="theme-group-label">
                   {THEME_OPTIONS.map((opt) => {
                     const Icon = opt.icon;
                     return (
                       <button
                         key={opt.value}
                         onClick={() => setTheme(opt.value)}
+                        aria-pressed={theme === opt.value}
+                        aria-label={`${opt.label} 테마`}
                         className={cn(
                           "flex items-center justify-center gap-1 rounded-sm px-1.5 py-1 text-xs transition-colors",
                           theme === opt.value
@@ -477,7 +503,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
                             : "hover:bg-accent text-muted-foreground"
                         )}
                       >
-                        <Icon className="h-3.5 w-3.5" />
+                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                         {opt.label}
                       </button>
                     );
@@ -487,16 +513,16 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <Type className="h-3.5 w-3.5" />
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1" id="font-scale-label">
+                    <Type className="h-3.5 w-3.5" aria-hidden="true" />
                     글꼴
                   </p>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground" aria-live="polite">
                     {Math.round(fontScale * 100)}%
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-muted-foreground">가</span>
+                  <span className="text-[10px] text-muted-foreground" aria-hidden="true">가</span>
                   <Slider
                     value={[fontScale]}
                     min={0.75}
@@ -504,8 +530,13 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
                     step={0.05}
                     onValueChange={([v]) => setFontScale(v)}
                     className="flex-1"
+                    aria-label="글꼴 크기"
+                    aria-valuemin={75}
+                    aria-valuemax={125}
+                    aria-valuenow={Math.round(fontScale * 100)}
+                    aria-valuetext={`${Math.round(fontScale * 100)}%`}
                   />
-                  <span className="text-sm text-muted-foreground">가</span>
+                  <span className="text-sm text-muted-foreground" aria-hidden="true">가</span>
                 </div>
               </div>
             </div>

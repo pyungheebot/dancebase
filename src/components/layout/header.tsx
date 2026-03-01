@@ -49,7 +49,7 @@ function NotificationDropdown() {
           className="relative h-6 w-6"
           aria-label={count > 0 ? `알림, 읽지 않은 알림 ${count > 99 ? "99개 이상" : `${count}개`}` : "알림"}
         >
-          <Bell className="h-3.5 w-3.5" />
+          <Bell className="h-3.5 w-3.5" aria-hidden="true" />
           {count > 0 && (
             <Badge className="absolute -top-0.5 -right-0.5 h-3.5 min-w-[14px] px-0.5 text-[9px] leading-none" aria-hidden="true">
               <span className="sr-only">읽지 않은 알림 </span>
@@ -115,7 +115,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void } = {}) {
   };
 
   return (
-    <header className="border-b bg-background">
+    <header className="border-b bg-background" role="banner">
       <div className="flex h-10 items-center justify-between px-3">
         <div className="flex items-center gap-1.5">
           {onMenuClick && (
@@ -124,9 +124,10 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void } = {}) {
               size="icon"
               className="h-6 w-6 md:hidden"
               onClick={onMenuClick}
-              aria-label="메뉴"
+              aria-label="사이드바 메뉴 열기"
+              aria-controls="sidebar"
             >
-              <Menu className="h-3.5 w-3.5" />
+              <Menu className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           )}
           <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-1.5">
@@ -140,7 +141,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void } = {}) {
             <>
               <Button variant="ghost" size="icon" className="relative h-6 w-6" asChild aria-label="메시지">
                 <Link href="/messages">
-                  <Mail className="h-3.5 w-3.5" />
+                  <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                   <UnreadBadge />
                 </Link>
               </Button>
