@@ -39,6 +39,7 @@ import {
   MessageSquare,
   ArrowRight,
 } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { toast } from "sonner";
 import {
   usePerformanceSetlist,
@@ -305,6 +306,7 @@ function SongRow({
           className="h-5 w-5 p-0"
           disabled={isFirst}
           onClick={onMoveUp}
+          aria-label="위로 이동"
         >
           <ArrowUp className="h-2.5 w-2.5" />
         </Button>
@@ -314,6 +316,7 @@ function SongRow({
           className="h-5 w-5 p-0"
           disabled={isLast}
           onClick={onMoveDown}
+          aria-label="아래로 이동"
         >
           <ArrowDown className="h-2.5 w-2.5" />
         </Button>
@@ -386,6 +389,7 @@ function SongRow({
           size="sm"
           className="h-6 w-6 p-0"
           onClick={onEdit}
+          aria-label="곡 수정"
         >
           <Pencil className="h-3 w-3" />
         </Button>
@@ -394,6 +398,7 @@ function SongRow({
           size="sm"
           className="h-6 w-6 p-0 text-destructive hover:text-destructive"
           onClick={onDelete}
+          aria-label="곡 삭제"
         >
           <Trash2 className="h-3 w-3" />
         </Button>
@@ -583,6 +588,7 @@ export function PerformanceSetlistCard({
                           size="sm"
                           className="h-5 w-5 p-0"
                           onClick={handleTitleEditStart}
+                          aria-label="공연 제목 수정"
                         >
                           <Pencil className="h-2.5 w-2.5 text-muted-foreground" />
                         </Button>
@@ -663,25 +669,12 @@ export function PerformanceSetlistCard({
                       ))}
                     </div>
                   ) : (
-                    <div className="py-8 text-center space-y-2">
-                      <Music className="h-8 w-8 text-muted-foreground mx-auto" />
-                      <p className="text-xs text-muted-foreground">
-                        세트리스트가 비어 있습니다.
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        공연 순서에 따라 곡을 추가하고 전환 타이밍을
-                        관리하세요.
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs mt-1"
-                        onClick={handleAddOpen}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        첫 곡 추가
-                      </Button>
-                    </div>
+                    <EmptyState
+                      icon={Music}
+                      title="세트리스트가 비어 있습니다"
+                      description="공연 순서에 따라 곡을 추가하고 전환 타이밍을 관리하세요."
+                      action={{ label: "첫 곡 추가", onClick: handleAddOpen }}
+                    />
                   )}
                 </>
               )}

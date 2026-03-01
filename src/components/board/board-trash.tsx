@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { EmptyState } from "@/components/shared/empty-state";
 
 interface BoardTrashProps {
   groupId: string;
@@ -110,10 +111,11 @@ export function BoardTrash({ groupId, nicknameMap = {} }: BoardTrashProps) {
                 ))}
               </div>
             ) : posts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-2">
-                <Trash2 className="h-8 w-8 opacity-30" />
-                <p className="text-xs">휴지통이 비어있습니다</p>
-              </div>
+              <EmptyState
+                icon={Trash2}
+                title="휴지통이 비어있습니다"
+                className="m-4 py-12"
+              />
             ) : (
               <div className="divide-y">
                 {posts.map((post) => {

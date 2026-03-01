@@ -27,17 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useLocalScheduleTemplates } from "@/hooks/use-local-schedule-templates";
 import type {
   ScheduleTemplateItem,
@@ -296,6 +286,7 @@ type TemplateCardProps = {
 };
 
 function TemplateCard({ template, onApply, onDelete }: TemplateCardProps) {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const durationLabel =
     template.durationMinutes >= 60
       ? `${Math.floor(template.durationMinutes / 60)}시간${
@@ -328,34 +319,22 @@ function TemplateCard({ template, onApply, onDelete }: TemplateCardProps) {
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium truncate flex-1">{template.title}</p>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>템플릿 삭제</AlertDialogTitle>
-              <AlertDialogDescription>
-                &quot;{template.title}&quot; 템플릿을 삭제하시겠습니까? 이
-                작업은 되돌릴 수 없습니다.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>취소</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(template.id)}
-              >
-                삭제
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-destructive"
+          onClick={() => setDeleteConfirmOpen(true)}
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+        <ConfirmDialog
+          open={deleteConfirmOpen}
+          onOpenChange={setDeleteConfirmOpen}
+          title="템플릿 삭제"
+          description={`"${template.title}" 템플릿을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+          onConfirm={() => onDelete(template.id)}
+          destructive
+        />
       </div>
 
       {/* 메타 정보 */}

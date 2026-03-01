@@ -11,17 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ChevronDown,
   ChevronRight,
@@ -55,6 +45,7 @@ export function ScheduleChecklistWidget({
   } = useScheduleChecklist(scheduleId);
 
   const [open, setOpen] = useState(true);
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [newText, setNewText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -234,33 +225,24 @@ export function ScheduleChecklistWidget({
                 기본 항목 복원
               </Button>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 text-[11px] px-2 gap-0.5 text-muted-foreground hover:text-destructive flex-1"
-                    disabled={items.length === 0}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    전체 초기화
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>체크리스트 초기화</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      모든 항목이 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>취소</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleClearAll}>
-                      초기화
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 text-[11px] px-2 gap-0.5 text-muted-foreground hover:text-destructive flex-1"
+                disabled={items.length === 0}
+                onClick={() => setClearConfirmOpen(true)}
+              >
+                <Trash2 className="h-3 w-3" />
+                전체 초기화
+              </Button>
+              <ConfirmDialog
+                open={clearConfirmOpen}
+                onOpenChange={setClearConfirmOpen}
+                title="체크리스트 초기화"
+                description="모든 항목이 삭제됩니다. 이 작업은 되돌릴 수 없습니다."
+                onConfirm={handleClearAll}
+                destructive
+              />
             </div>
           </CardContent>
         </CollapsibleContent>

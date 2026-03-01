@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/shared/empty-state";
 
 // ============================================================
 // 유형 헬퍼
@@ -541,13 +542,19 @@ export function SetListCard({
 
             {/* 빈 상태 */}
             {totalItems === 0 && (
-              <div className="text-center py-10 text-muted-foreground">
-                <ListOrdered className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-xs">세트리스트가 비어있습니다.</p>
-                <p className="text-[11px] mt-0.5">
-                  상단의 &ldquo;항목 추가&rdquo; 버튼으로 공연 순서를 등록하세요.
-                </p>
-              </div>
+              <EmptyState
+                icon={ListOrdered}
+                title="세트리스트가 비어있습니다"
+                description='상단의 "항목 추가" 버튼으로 공연 순서를 등록하세요.'
+                action={{
+                  label: "항목 추가",
+                  onClick: () => {
+                    setAddDialogOpen(true);
+                    setOpen(true);
+                  },
+                }}
+                className="m-3"
+              />
             )}
 
             {/* 세트리스트 테이블 */}
@@ -661,6 +668,7 @@ export function SetListCard({
                               onClick={() => moveItem(item.id, "up")}
                               disabled={idx === 0}
                               title="위로 이동"
+                              aria-label="위로 이동"
                             >
                               <ChevronUp className="h-3 w-3" />
                             </Button>
@@ -671,6 +679,7 @@ export function SetListCard({
                               onClick={() => moveItem(item.id, "down")}
                               disabled={idx === items.length - 1}
                               title="아래로 이동"
+                              aria-label="아래로 이동"
                             >
                               <ChevronDownIcon className="h-3 w-3" />
                             </Button>
@@ -680,6 +689,7 @@ export function SetListCard({
                               className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
                               onClick={() => setDeleteConfirmId(item.id)}
                               title="삭제"
+                              aria-label="항목 삭제"
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>

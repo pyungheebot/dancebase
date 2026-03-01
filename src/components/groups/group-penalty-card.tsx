@@ -28,17 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ChevronDown,
   ChevronUp,
@@ -619,6 +609,7 @@ function MemberRanking({
 export function GroupPenaltyCard({ groupId }: { groupId: string }) {
   const [open, setOpen] = useState(true);
   const [tab, setTab] = useState<"records" | "rules" | "stats">("records");
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   const {
     data,
@@ -710,43 +701,26 @@ export function GroupPenaltyCard({ groupId }: { groupId: string }) {
                     );
                   }}
                 />
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50"
-                    >
-                      <RotateCcw className="h-3 w-3 mr-1" />
-                      즉시 초기화
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-sm">
-                        벌점 기록 초기화
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-xs">
-                        모든 벌점 기록이 삭제됩니다. 이 작업은 되돌릴 수
-                        없습니다. 계속하시겠습니까?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="h-7 text-xs">
-                        취소
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        className="h-7 text-xs bg-red-600 hover:bg-red-700"
-                        onClick={() => {
-                          resetNow();
-                          toast.success("벌점 기록이 초기화되었습니다.");
-                        }}
-                      >
-                        초기화
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50"
+                  onClick={() => setResetConfirmOpen(true)}
+                >
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  즉시 초기화
+                </Button>
+                <ConfirmDialog
+                  open={resetConfirmOpen}
+                  onOpenChange={setResetConfirmOpen}
+                  title="벌점 기록 초기화"
+                  description="모든 벌점 기록이 삭제됩니다. 이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?"
+                  onConfirm={() => {
+                    resetNow();
+                    toast.success("벌점 기록이 초기화되었습니다.");
+                  }}
+                  destructive
+                />
               </div>
             </div>
 

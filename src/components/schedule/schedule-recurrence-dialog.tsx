@@ -29,17 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   useScheduleRecurrence,
   formatRecurrenceSummary,
@@ -506,6 +496,7 @@ type RuleCardProps = {
 };
 
 function RuleCard({ rule, onUpdate, onDelete }: RuleCardProps) {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const upcoming = generateUpcomingDates(rule, 2);
 
   const durationLabel =
@@ -539,32 +530,22 @@ function RuleCard({ rule, onUpdate, onDelete }: RuleCardProps) {
         <p className="text-sm font-medium truncate flex-1">{rule.title}</p>
         <div className="flex items-center gap-1 shrink-0">
           <EditRuleDialog rule={rule} onUpdate={handleUpdate} />
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>반복 규칙 삭제</AlertDialogTitle>
-                <AlertDialogDescription>
-                  &quot;{rule.title}&quot; 반복 규칙을 삭제하시겠습니까? 이
-                  작업은 되돌릴 수 없습니다.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>취소</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(rule.id)}>
-                  삭제
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+            onClick={() => setDeleteConfirmOpen(true)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+          <ConfirmDialog
+            open={deleteConfirmOpen}
+            onOpenChange={setDeleteConfirmOpen}
+            title="반복 규칙 삭제"
+            description={`"${rule.title}" 반복 규칙을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+            onConfirm={() => onDelete(rule.id)}
+            destructive
+          />
         </div>
       </div>
 

@@ -20,17 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ClipboardList,
   ChevronDown,
@@ -272,6 +262,7 @@ function RoleCard({
   onChangeStatus,
 }: RoleCardProps) {
   const [showInput, setShowInput] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const statusCfg = STATUS_CONFIG[role.status];
 
   function handleAssign(name: string) {
@@ -336,43 +327,30 @@ function RoleCard({
                   완료
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <DropdownMenuItem
-                      className="text-xs text-destructive focus:text-destructive"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      <Trash2 className="h-3 w-3 mr-1.5" />
-                      삭제
-                    </DropdownMenuItem>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="max-w-sm">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-sm">역할 삭제</AlertDialogTitle>
-                      <AlertDialogDescription className="text-xs">
-                        &apos;{role.roleName}&apos; 역할과 담당자 정보가 모두 삭제됩니다.
-                        이 작업은 되돌릴 수 없습니다.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="h-7 text-xs bg-destructive hover:bg-destructive/90"
-                        onClick={() => {
-                          onDelete(role.id);
-                          toast.success("역할이 삭제되었습니다");
-                        }}
-                      >
-                        삭제
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <DropdownMenuItem
+                  className="text-xs text-destructive focus:text-destructive"
+                  onSelect={() => setDeleteConfirmOpen(true)}
+                >
+                  <Trash2 className="h-3 w-3 mr-1.5" />
+                  삭제
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="역할 삭제"
+        description={`'${role.roleName}' 역할과 담당자 정보가 모두 삭제됩니다. 이 작업은 되돌릴 수 없습니다.`}
+        onConfirm={() => {
+          onDelete(role.id);
+          toast.success("역할이 삭제되었습니다");
+        }}
+        destructive
+      />
 
       {/* 담당자 배지 목록 */}
       <div className="flex flex-wrap gap-1 min-h-[20px]">

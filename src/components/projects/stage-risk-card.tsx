@@ -51,6 +51,7 @@ import {
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { useStageRisk } from "@/hooks/use-stage-risk";
+import { EmptyState } from "@/components/shared/empty-state";
 import type {
   StageRiskItem,
   StageRiskLevel,
@@ -597,6 +598,8 @@ function RiskItemRow({
             className="h-6 w-6 p-0"
             onClick={() => setExpanded((v) => !v)}
             title="대응 방안 보기"
+            aria-label={expanded ? "대응 방안 숨기기" : "대응 방안 보기"}
+            aria-expanded={expanded}
           >
             {expanded ? (
               <ChevronUp className="h-3 w-3" />
@@ -610,6 +613,7 @@ function RiskItemRow({
             className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
             onClick={onEdit}
             title="수정"
+            aria-label="리스크 수정"
           >
             <Pencil className="h-3 w-3" />
           </Button>
@@ -619,6 +623,7 @@ function RiskItemRow({
             className="h-6 w-6 p-0 text-destructive hover:text-destructive"
             onClick={onDelete}
             title="삭제"
+            aria-label="리스크 삭제"
           >
             <Trash2 className="h-3 w-3" />
           </Button>
@@ -872,15 +877,12 @@ export function StageRiskCard({ projectId }: StageRiskCardProps) {
 
                   {/* 리스크 목록 */}
                   {sortedItems.length === 0 ? (
-                    <div className="py-8 text-center space-y-2">
-                      <ShieldCheck className="h-7 w-7 text-muted-foreground mx-auto" />
-                      <p className="text-xs text-muted-foreground">
-                        등록된 리스크 항목이 없습니다.
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        공연 안전을 위해 리스크 항목을 등록하세요.
-                      </p>
-                    </div>
+                    <EmptyState
+                      icon={ShieldCheck}
+                      title="등록된 리스크 항목이 없습니다"
+                      description="공연 안전을 위해 리스크 항목을 등록하세요."
+                      action={{ label: "리스크 등록", onClick: handleOpenAdd }}
+                    />
                   ) : (
                     <div className="space-y-2">
                       {sortedItems.map((item) => (

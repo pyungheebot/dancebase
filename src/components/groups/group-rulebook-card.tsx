@@ -26,17 +26,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useGroupRulebook } from "@/hooks/use-group-rulebook";
 import { type GroupRuleSection } from "@/types";
 
@@ -78,6 +68,7 @@ function SectionItem({
   onDelete: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   return (
     <div
@@ -154,36 +145,23 @@ function SectionItem({
           >
             <Pencil className="h-3 w-3" />
           </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
-                title="삭제"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>섹션 삭제</AlertDialogTitle>
-                <AlertDialogDescription>
-                  &ldquo;{section.title}&rdquo; 섹션을 삭제하시겠습니까?
-                  이 작업은 되돌릴 수 없습니다.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>취소</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => onDelete(section.id)}
-                  className="bg-red-500 hover:bg-red-600"
-                >
-                  삭제
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
+            title="삭제"
+            onClick={() => setDeleteConfirmOpen(true)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+          <ConfirmDialog
+            open={deleteConfirmOpen}
+            onOpenChange={setDeleteConfirmOpen}
+            title="섹션 삭제"
+            description={`"${section.title}" 섹션을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+            onConfirm={() => onDelete(section.id)}
+            destructive
+          />
         </div>
       </div>
 

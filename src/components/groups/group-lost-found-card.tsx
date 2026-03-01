@@ -14,17 +14,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Select,
   SelectContent,
@@ -322,6 +312,7 @@ function LostFoundItemCard({
   ) => boolean;
   onDelete: (id: string) => boolean;
 }) {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const meta = STATUS_META[item.status];
 
   const handleStatusChange = (s: string) => {
@@ -377,39 +368,22 @@ function LostFoundItemCard({
               }
             }}
           />
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-gray-300 hover:text-red-500"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-sm">
-                  분실물 삭제
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-xs">
-                  &quot;{item.itemName}&quot; 분실물 항목을 삭제합니다. 이 작업은
-                  되돌릴 수 없습니다.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="h-7 text-xs">
-                  취소
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  className="h-7 text-xs bg-red-600 hover:bg-red-700"
-                  onClick={handleDelete}
-                >
-                  삭제
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-gray-300 hover:text-red-500"
+            onClick={() => setDeleteConfirmOpen(true)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+          <ConfirmDialog
+            open={deleteConfirmOpen}
+            onOpenChange={setDeleteConfirmOpen}
+            title="분실물 삭제"
+            description={`"${item.itemName}" 분실물 항목을 삭제합니다. 이 작업은 되돌릴 수 없습니다.`}
+            onConfirm={handleDelete}
+            destructive
+          />
         </div>
       </div>
 

@@ -10,17 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   CalendarDays,
   ChevronDown,
@@ -310,6 +300,7 @@ export function RehearsalPlannerCard({
   canEdit = false,
 }: RehearsalPlannerCardProps) {
   const [sectionOpen, setSectionOpen] = useState(true);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
 
   const {
     plan,
@@ -370,43 +361,28 @@ export function RehearsalPlannerCard({
 
         {/* 삭제 버튼 */}
         {plan && canEdit && sectionOpen && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs gap-1 text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-3 w-3" />
-                초기화
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="max-w-sm">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-sm">
-                  리허설 플래너 초기화
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-xs">
-                  현재 리허설 플랜과 모든 체크 기록이 삭제됩니다. 이 작업은
-                  되돌릴 수 없습니다.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="h-7 text-xs">
-                  취소
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  className="h-7 text-xs bg-destructive hover:bg-destructive/90"
-                  onClick={() => {
-                    deletePlan();
-                    toast.success("리허설 플래너가 초기화되었습니다");
-                  }}
-                >
-                  초기화
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1 text-muted-foreground hover:text-destructive"
+              onClick={() => setResetConfirmOpen(true)}
+            >
+              <Trash2 className="h-3 w-3" />
+              초기화
+            </Button>
+            <ConfirmDialog
+              open={resetConfirmOpen}
+              onOpenChange={setResetConfirmOpen}
+              title="리허설 플래너 초기화"
+              description="현재 리허설 플랜과 모든 체크 기록이 삭제됩니다. 이 작업은 되돌릴 수 없습니다."
+              onConfirm={() => {
+                deletePlan();
+                toast.success("리허설 플래너가 초기화되었습니다");
+              }}
+              destructive
+            />
+          </>
         )}
       </div>
 

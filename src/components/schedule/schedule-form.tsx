@@ -14,17 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ScheduleFormFields, type ScheduleFieldValues } from "./schedule-form-fields";
@@ -122,6 +112,7 @@ export function ScheduleForm({
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
   const [loading, setLoading] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [fields, setFields] = useState<ScheduleFieldValues>(DEFAULT_FIELDS);
   const [date, setDate] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -501,26 +492,20 @@ export function ScheduleForm({
         {isEdit ? (
           <div className="flex gap-2">
             {!hideDeleteButton && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="destructive" size="sm" className="h-8 text-sm" disabled={loading}>
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    삭제
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>일정 삭제</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      이 일정과 관련된 출석 기록이 모두 삭제됩니다. 정말 삭제하시겠습니까?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>취소</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>삭제</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <>
+                <Button type="button" variant="destructive" size="sm" className="h-8 text-sm" disabled={loading} onClick={() => setDeleteConfirmOpen(true)}>
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  삭제
+                </Button>
+                <ConfirmDialog
+                  open={deleteConfirmOpen}
+                  onOpenChange={setDeleteConfirmOpen}
+                  title="일정 삭제"
+                  description="이 일정과 관련된 출석 기록이 모두 삭제됩니다. 정말 삭제하시겠습니까?"
+                  onConfirm={handleDelete}
+                  destructive
+                />
+              </>
             )}
             <Button type="submit" className="flex-1 h-8 text-sm" disabled={loading || !isScheduleFormValid}>
               {loading ? "저장 중..." : "저장"}

@@ -51,17 +51,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useVideoPortfolio } from "@/hooks/use-video-portfolio";
 import type {
   VideoPortfolioEntry,
@@ -304,6 +294,8 @@ interface EntryItemProps {
 }
 
 function EntryItem({ entry, onEdit, onDelete }: EntryItemProps) {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
   return (
     <div className="border rounded-md p-3 space-y-2 bg-white hover:bg-gray-50 transition-colors">
       {/* 상단: 제목 + 배지 */}
@@ -381,35 +373,23 @@ function EntryItem({ entry, onEdit, onDelete }: EntryItemProps) {
           >
             <Pencil className="h-3 w-3" />
           </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
-                title="삭제"
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-sm">영상 삭제</AlertDialogTitle>
-                <AlertDialogDescription className="text-xs">
-                  &quot;{entry.title}&quot; 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="h-8 text-xs">취소</AlertDialogCancel>
-                <AlertDialogAction
-                  className="h-8 text-xs bg-red-500 hover:bg-red-600"
-                  onClick={() => onDelete(entry.id)}
-                >
-                  삭제
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+            title="삭제"
+            onClick={() => setDeleteConfirmOpen(true)}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+          <ConfirmDialog
+            open={deleteConfirmOpen}
+            onOpenChange={setDeleteConfirmOpen}
+            title="영상 삭제"
+            description={`"${entry.title}" 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+            onConfirm={() => onDelete(entry.id)}
+            destructive
+          />
         </div>
       </div>
 

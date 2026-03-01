@@ -36,6 +36,7 @@ import {
   ArrowDown,
   BarChart3,
 } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
 
@@ -205,6 +206,7 @@ function SectionRow({
             className="h-6 w-6 p-0"
             disabled={isFirst}
             onClick={onMoveUp}
+            aria-label="위로 이동"
           >
             <ArrowUp className="h-3 w-3 text-muted-foreground" />
           </Button>
@@ -214,6 +216,7 @@ function SectionRow({
             className="h-6 w-6 p-0"
             disabled={isLast}
             onClick={onMoveDown}
+            aria-label="아래로 이동"
           >
             <ArrowDown className="h-3 w-3 text-muted-foreground" />
           </Button>
@@ -222,6 +225,7 @@ function SectionRow({
             size="sm"
             className="h-6 w-6 p-0"
             onClick={onDelete}
+            aria-label="구간 삭제"
           >
             <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
           </Button>
@@ -757,13 +761,15 @@ export function ChoreoSectionCard({
                   ))}
                 </div>
               ) : sections.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                  <Scissors className="h-8 w-8 mb-2 opacity-20" />
-                  <p className="text-xs">등록된 안무 구간이 없습니다.</p>
-                  <p className="text-[10px] mt-0.5">
-                    위 &apos;구간 추가&apos; 버튼으로 안무를 구간별로 나눠 관리해보세요.
-                  </p>
-                </div>
+                <EmptyState
+                  icon={Scissors}
+                  title="등록된 안무 구간이 없습니다"
+                  description="'구간 추가' 버튼으로 안무를 구간별로 나눠 관리해보세요."
+                  action={{
+                    label: "구간 추가",
+                    onClick: () => setDialogOpen(true),
+                  }}
+                />
               ) : (
                 <div className="space-y-2">
                   {sections.map((section, i) => (
