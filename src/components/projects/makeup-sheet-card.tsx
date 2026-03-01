@@ -10,27 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   ChevronDown,
   ChevronUp,
@@ -48,461 +32,11 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { useMakeupSheet } from "@/hooks/use-makeup-sheet";
 import type { MakeupSheetArea, MakeupSheetLook, MakeupSheetProduct } from "@/types";
-
-// ============================================================
-// 상수 & 레이블
-// ============================================================
-
-const AREA_LABELS: Record<MakeupSheetArea, string> = {
-  base: "베이스",
-  eyes: "눈",
-  lips: "입술",
-  cheeks: "볼",
-  brows: "눈썹",
-  special_effects: "특수효과",
-};
-
-const AREA_COLORS: Record<MakeupSheetArea, string> = {
-  base: "bg-amber-50 border-amber-200",
-  eyes: "bg-purple-50 border-purple-200",
-  lips: "bg-rose-50 border-rose-200",
-  cheeks: "bg-pink-50 border-pink-200",
-  brows: "bg-stone-50 border-stone-200",
-  special_effects: "bg-cyan-50 border-cyan-200",
-};
-
-const AREA_BADGE_COLORS: Record<MakeupSheetArea, string> = {
-  base: "bg-amber-100 text-amber-700 border-amber-200",
-  eyes: "bg-purple-100 text-purple-700 border-purple-200",
-  lips: "bg-rose-100 text-rose-700 border-rose-200",
-  cheeks: "bg-pink-100 text-pink-700 border-pink-200",
-  brows: "bg-stone-100 text-stone-700 border-stone-200",
-  special_effects: "bg-cyan-100 text-cyan-700 border-cyan-200",
-};
-
-const ALL_AREAS: MakeupSheetArea[] = [
-  "base",
-  "eyes",
-  "lips",
-  "cheeks",
-  "brows",
-  "special_effects",
-];
-
-// ============================================================
-// 제품 추가/편집 다이얼로그
-// ============================================================
-
-interface ProductDialogProps {
-  open: boolean;
-  mode: "add" | "edit";
-  initial?: Partial<Omit<MakeupSheetProduct, "id">>;
-  onClose: () => void;
-  onSubmit: (data: Omit<MakeupSheetProduct, "id">) => void;
-}
-
-function ProductDialog({
-  open,
-  mode,
-  initial,
-  onClose,
-  onSubmit,
-}: ProductDialogProps) {
-  const [area, setArea] = useState<MakeupSheetArea>(
-    initial?.area ?? "base"
-  );
-  const [productName, setProductName] = useState(initial?.productName ?? "");
-  const [brand, setBrand] = useState(initial?.brand ?? "");
-  const [colorCode, setColorCode] = useState(initial?.colorCode ?? "");
-  const [technique, setTechnique] = useState(initial?.technique ?? "");
-  const [order, setOrder] = useState(String(initial?.order ?? 0));
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) onClose();
-  };
-
-  const handleSubmit = () => {
-    if (!productName.trim()) {
-      toast.error(TOAST.MAKEUP_SHEET.PRODUCT_NAME_REQUIRED);
-      return;
-    }
-    onSubmit({
-      area,
-      productName: productName.trim(),
-      brand: brand.trim() || undefined,
-      colorCode: colorCode.trim() || undefined,
-      technique: technique.trim() || undefined,
-      order: parseInt(order, 10) || 0,
-    });
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">
-            {mode === "add" ? "제품 추가" : "제품 편집"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-3 py-2">
-          {/* 부위 */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">부위</Label>
-            <Select
-              value={area}
-              onValueChange={(v) => setArea(v as MakeupSheetArea)}
-            >
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ALL_AREAS.map((a) => (
-                  <SelectItem key={a} value={a} className="text-xs">
-                    {AREA_LABELS[a]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 제품명 */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">제품명</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 세럼 파운데이션 N23"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-            />
-          </div>
-
-          {/* 브랜드 */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">브랜드 (선택)</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 맥, 나스, 에뛰드"
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}
-            />
-          </div>
-
-          {/* 색상코드 + 순서 */}
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">색상 코드 (선택)</Label>
-              <div className="flex items-center gap-1.5">
-                {colorCode && /^#[0-9A-Fa-f]{3,6}$/.test(colorCode) && (
-                  <span
-                    className="inline-block w-5 h-5 rounded border border-border flex-shrink-0"
-                    style={{ backgroundColor: colorCode }}
-                  />
-                )}
-                <Input
-                  className="h-8 text-xs"
-                  placeholder="#FF6B6B"
-                  value={colorCode}
-                  onChange={(e) => setColorCode(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">순서</Label>
-              <Input
-                className="h-8 text-xs"
-                type="number"
-                min={0}
-                placeholder="0"
-                value={order}
-                onChange={(e) => setOrder(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* 기법 */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">기법 (선택)</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 가볍게 두드려 밀착, 스모키 블렌딩"
-              value={technique}
-              onChange={(e) => setTechnique(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={onClose}
-          >
-            취소
-          </Button>
-          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-            {mode === "add" ? "추가" : "저장"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ============================================================
-// 룩 추가/편집 다이얼로그
-// ============================================================
-
-interface LookDialogProps {
-  open: boolean;
-  mode: "add" | "edit";
-  initial?: Partial<
-    Pick<MakeupSheetLook, "lookName" | "performanceName" | "notes" | "estimatedMinutes">
-  >;
-  onClose: () => void;
-  onSubmit: (
-    data: Pick<MakeupSheetLook, "lookName" | "performanceName"> &
-      Partial<Pick<MakeupSheetLook, "notes" | "estimatedMinutes">>
-  ) => void;
-}
-
-function LookDialog({ open, mode, initial, onClose, onSubmit }: LookDialogProps) {
-  const [lookName, setLookName] = useState(initial?.lookName ?? "");
-  const [performanceName, setPerformanceName] = useState(
-    initial?.performanceName ?? ""
-  );
-  const [notes, setNotes] = useState(initial?.notes ?? "");
-  const [estimatedMinutes, setEstimatedMinutes] = useState(
-    String(initial?.estimatedMinutes ?? "")
-  );
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) onClose();
-  };
-
-  const handleSubmit = () => {
-    if (!lookName.trim()) {
-      toast.error(TOAST.MAKEUP_SHEET.LOOK_NAME_REQUIRED);
-      return;
-    }
-    if (!performanceName.trim()) {
-      toast.error(TOAST.MAKEUP_SHEET.SHOW_NAME_REQUIRED);
-      return;
-    }
-    onSubmit({
-      lookName: lookName.trim(),
-      performanceName: performanceName.trim(),
-      notes: notes.trim() || undefined,
-      estimatedMinutes: estimatedMinutes ? parseInt(estimatedMinutes, 10) : undefined,
-    });
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">
-            {mode === "add" ? "룩 추가" : "룩 편집"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-3 py-2">
-          {/* 룩 이름 */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">룩 이름</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 무대 메인 룩, 커튼콜 룩"
-              value={lookName}
-              onChange={(e) => setLookName(e.target.value)}
-            />
-          </div>
-
-          {/* 공연 이름 */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">공연 이름</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 2024 봄 정기공연"
-              value={performanceName}
-              onChange={(e) => setPerformanceName(e.target.value)}
-            />
-          </div>
-
-          {/* 예상 소요시간 */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">
-              예상 소요시간 (분, 선택)
-            </Label>
-            <Input
-              className="h-8 text-xs"
-              type="number"
-              min={1}
-              placeholder="예: 30"
-              value={estimatedMinutes}
-              onChange={(e) => setEstimatedMinutes(e.target.value)}
-            />
-          </div>
-
-          {/* 메모 */}
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">메모 (선택)</Label>
-            <Textarea
-              className="text-xs min-h-[56px] resize-none"
-              placeholder="특이사항 또는 주의사항 입력"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={onClose}
-          >
-            취소
-          </Button>
-          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-            {mode === "add" ? "추가" : "저장"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ============================================================
-// 부위별 제품 섹션
-// ============================================================
-
-interface AreaSectionProps {
-  area: MakeupSheetArea;
-  products: MakeupSheetProduct[];
-  onAddProduct: () => void;
-  onEditProduct: (product: MakeupSheetProduct) => void;
-  onDeleteProduct: (productId: string) => void;
-}
-
-function AreaSection({
-  area,
-  products,
-  onAddProduct,
-  onEditProduct,
-  onDeleteProduct,
-}: AreaSectionProps) {
-  const sorted = [...products].sort((a, b) => a.order - b.order);
-
-  return (
-    <div className={`rounded-md border p-2.5 ${AREA_COLORS[area]}`}>
-      <div className="flex items-center justify-between mb-2">
-        <Badge
-          variant="outline"
-          className={`text-[10px] px-1.5 py-0 ${AREA_BADGE_COLORS[area]}`}
-        >
-          {AREA_LABELS[area]}
-        </Badge>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 text-[10px] px-1.5 text-muted-foreground hover:text-foreground"
-          onClick={onAddProduct}
-        >
-          <Plus className="h-3 w-3 mr-0.5" />
-          제품 추가
-        </Button>
-      </div>
-
-      {sorted.length === 0 ? (
-        <p className="text-[10px] text-muted-foreground py-1">
-          등록된 제품이 없습니다.
-        </p>
-      ) : (
-        <div className="space-y-1.5">
-          {sorted.map((product) => (
-            <div
-              key={product.id}
-              className="flex items-start gap-2 bg-card/70 rounded px-2 py-1.5 group"
-            >
-              {/* 색상 칩 */}
-              <div className="flex-shrink-0 mt-0.5">
-                {product.colorCode &&
-                /^#[0-9A-Fa-f]{3,6}$/.test(product.colorCode) ? (
-                  <span
-                    className="inline-block w-3.5 h-3.5 rounded-full border border-border"
-                    style={{ backgroundColor: product.colorCode }}
-                    title={product.colorCode}
-                  />
-                ) : (
-                  <span className="inline-block w-3.5 h-3.5 rounded-full bg-muted border border-border" />
-                )}
-              </div>
-
-              {/* 제품 정보 */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1">
-                  <span className="text-xs font-medium truncate">
-                    {product.productName}
-                  </span>
-                  {product.brand && (
-                    <span className="text-[10px] text-muted-foreground flex-shrink-0">
-                      {product.brand}
-                    </span>
-                  )}
-                </div>
-                {product.technique && (
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    기법: {product.technique}
-                  </p>
-                )}
-              </div>
-
-              {/* 순서 표시 */}
-              <span className="text-[10px] text-muted-foreground flex-shrink-0 mt-0.5">
-                #{product.order + 1}
-              </span>
-
-              {/* 액션 버튼 */}
-              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-5 w-5 p-0"
-                  onClick={() => onEditProduct(product)}
-                >
-                  <Pencil className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-5 w-5 p-0 text-destructive hover:text-destructive"
-                  onClick={() => onDeleteProduct(product.id)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
-// 메인 컴포넌트
-// ============================================================
-
-interface MakeupSheetCardProps {
-  groupId: string;
-  projectId: string;
-  memberNames?: string[];
-}
+import { ALL_AREAS } from "./makeup-sheet/types";
+import { ProductDialog } from "./makeup-sheet/product-dialog";
+import { LookDialog } from "./makeup-sheet/look-dialog";
+import { AreaSection } from "./makeup-sheet/area-section";
+import type { MakeupSheetCardProps } from "./makeup-sheet/types";
 
 export function MakeupSheetCard({
   groupId,
@@ -661,15 +195,29 @@ export function MakeupSheetCard({
     );
   }, [effectiveLook]);
 
+  const lookTabsId = "makeup-sheet-look-tabs";
+
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <Card className="w-full">
           <CardHeader className="pb-2 pt-3 px-4">
             <CollapsibleTrigger asChild>
-              <div className="flex items-center justify-between cursor-pointer">
+              <div
+                className="flex items-center justify-between cursor-pointer"
+                role="button"
+                aria-expanded={isOpen}
+                aria-controls="makeup-sheet-collapsible"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setIsOpen((prev) => !prev);
+                  }
+                }}
+              >
                 <div className="flex items-center gap-2">
-                  <Paintbrush className="h-4 w-4 text-rose-500" />
+                  <Paintbrush className="h-4 w-4 text-rose-500" aria-hidden="true" />
                   <CardTitle className="text-sm font-semibold">
                     공연 메이크업 시트
                   </CardTitle>
@@ -689,34 +237,50 @@ export function MakeupSheetCard({
                     </span>
                   )}
                   {isOpen ? (
-                    <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                    <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                   ) : (
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                   )}
                 </div>
               </div>
             </CollapsibleTrigger>
           </CardHeader>
 
-          <CollapsibleContent>
+          <CollapsibleContent id="makeup-sheet-collapsible">
             <CardContent className="px-4 pb-4 pt-0 space-y-3">
               {loading ? (
-                <p className="text-xs text-muted-foreground py-2">불러오는 중...</p>
+                <p className="text-xs text-muted-foreground py-2" role="status" aria-live="polite">
+                  불러오는 중...
+                </p>
               ) : (
                 <>
                   {/* 룩 탭 */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div
+                    id={lookTabsId}
+                    className="flex items-center gap-1.5 flex-wrap"
+                    role="tablist"
+                    aria-label="메이크업 룩 선택"
+                  >
                     {looks.map((look) => (
                       <button
                         key={look.id}
+                        role="tab"
+                        aria-selected={effectiveLook?.id === look.id}
+                        aria-controls={`look-panel-${look.id}`}
                         onClick={() => setSelectedLookId(look.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelectedLookId(look.id);
+                          }
+                        }}
                         className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
                           effectiveLook?.id === look.id
                             ? "bg-rose-100 border-rose-300 text-rose-700 font-medium"
                             : "bg-muted/50 border-border text-muted-foreground hover:bg-muted"
                         }`}
                       >
-                        <Layers className="h-3 w-3" />
+                        <Layers className="h-3 w-3" aria-hidden="true" />
                         {look.lookName}
                       </button>
                     ))}
@@ -725,15 +289,21 @@ export function MakeupSheetCard({
                       size="sm"
                       className="h-7 text-xs px-2 rounded-full"
                       onClick={handleAddLookOpen}
+                      aria-label="새 룩 추가"
                     >
-                      <Plus className="h-3 w-3 mr-0.5" />
+                      <Plus className="h-3 w-3 mr-0.5" aria-hidden="true" />
                       룩 추가
                     </Button>
                   </div>
 
                   {/* 선택된 룩 상세 */}
                   {effectiveLook ? (
-                    <div className="space-y-3">
+                    <div
+                      id={`look-panel-${effectiveLook.id}`}
+                      role="tabpanel"
+                      aria-labelledby={lookTabsId}
+                      className="space-y-3"
+                    >
                       {/* 룩 헤더 */}
                       <div className="flex items-start justify-between gap-2 p-2.5 rounded-md bg-muted/40 border">
                         <div className="space-y-0.5 min-w-0">
@@ -749,8 +319,11 @@ export function MakeupSheetCard({
                             </Badge>
                             {effectiveLook.estimatedMinutes && (
                               <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                                <Clock className="h-3 w-3" />
-                                {effectiveLook.estimatedMinutes}분
+                                <Clock className="h-3 w-3" aria-hidden="true" />
+                                <span>
+                                  <span className="sr-only">예상 소요시간</span>
+                                  {effectiveLook.estimatedMinutes}분
+                                </span>
                               </span>
                             )}
                           </div>
@@ -760,49 +333,61 @@ export function MakeupSheetCard({
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center gap-0.5 flex-shrink-0">
+                        <div
+                          className="flex items-center gap-0.5 flex-shrink-0"
+                          role="group"
+                          aria-label={`${effectiveLook.lookName} 룩 관리`}
+                        >
                           <Button
                             variant="ghost"
                             size="sm"
                             className="h-6 w-6 p-0"
                             onClick={() => handleEditLookOpen(effectiveLook)}
+                            aria-label={`${effectiveLook.lookName} 룩 편집`}
                           >
-                            <Pencil className="h-3 w-3" />
+                            <Pencil className="h-3 w-3" aria-hidden="true" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                             onClick={() => handleDeleteLook(effectiveLook.id)}
+                            aria-label={`${effectiveLook.lookName} 룩 삭제`}
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-3 w-3" aria-hidden="true" />
                           </Button>
                         </div>
                       </div>
 
                       {/* 배정된 멤버 */}
-                      <div className="space-y-1.5">
+                      <section aria-label="배정 멤버" className="space-y-1.5">
                         <div className="flex items-center gap-1.5">
-                          <User className="h-3 w-3 text-muted-foreground" />
+                          <User className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
                           <span className="text-xs font-medium">배정 멤버</span>
                         </div>
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                        <div
+                          className="flex items-center gap-1.5 flex-wrap"
+                          role="list"
+                          aria-label="배정된 멤버 목록"
+                        >
                           {effectiveLook.assignedMembers.map((member) => (
                             <span
                               key={member}
+                              role="listitem"
                               className="inline-flex items-center gap-1 text-[10px] bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5"
                             >
                               {member}
                               <button
                                 onClick={() => handleUnassignMember(member)}
                                 className="hover:text-destructive transition-colors"
+                                aria-label={`${member} 배정 해제`}
                               >
-                                <X className="h-2.5 w-2.5" />
+                                <X className="h-2.5 w-2.5" aria-hidden="true" />
                               </button>
                             </span>
                           ))}
                           {effectiveLook.assignedMembers.length === 0 && (
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-[10px] text-muted-foreground" role="status">
                               배정된 멤버 없음
                             </span>
                           )}
@@ -812,22 +397,38 @@ export function MakeupSheetCard({
                         <div className="flex items-center gap-1.5 flex-wrap mt-1">
                           {/* 기존 멤버 빠른 추가 */}
                           {unassignedMembers.length > 0 && (
-                            <div className="flex items-center gap-1 flex-wrap">
+                            <div
+                              className="flex items-center gap-1 flex-wrap"
+                              role="group"
+                              aria-label="빠른 멤버 배정"
+                            >
                               {unassignedMembers.map((m) => (
                                 <button
                                   key={m}
                                   onClick={() => handleAssignMember(m)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      e.preventDefault();
+                                      handleAssignMember(m);
+                                    }
+                                  }}
                                   className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground border border-dashed border-border rounded-full px-2 py-0.5 hover:bg-muted transition-colors"
+                                  aria-label={`${m} 멤버 배정`}
                                 >
-                                  <UserPlus className="h-2.5 w-2.5" />
+                                  <UserPlus className="h-2.5 w-2.5" aria-hidden="true" />
                                   {m}
                                 </button>
                               ))}
                             </div>
                           )}
                           {/* 직접 입력 */}
-                          <div className="flex items-center gap-1">
+                          <div
+                            className="flex items-center gap-1"
+                            role="group"
+                            aria-label="멤버 직접 입력"
+                          >
                             <Input
+                              id="makeup-member-input"
                               className="h-6 text-[10px] px-2 w-24"
                               placeholder="이름 직접입력"
                               value={memberInput}
@@ -837,36 +438,39 @@ export function MakeupSheetCard({
                                   handleAssignMember(memberInput);
                                 }
                               }}
+                              aria-label="멤버 이름 직접 입력"
                             />
                             <Button
                               variant="outline"
                               size="sm"
                               className="h-6 text-[10px] px-1.5"
                               onClick={() => handleAssignMember(memberInput)}
+                              aria-label="입력한 멤버 배정"
                             >
                               추가
                             </Button>
                           </div>
                         </div>
-                      </div>
+                      </section>
 
                       {/* 부위별 섹션 */}
-                      <div className="space-y-2">
+                      <div className="space-y-2" role="list" aria-label="부위별 제품 목록">
                         {ALL_AREAS.map((area) => (
-                          <AreaSection
-                            key={area}
-                            area={area}
-                            products={productsByArea[area] ?? []}
-                            onAddProduct={() => handleAddProductOpen(area)}
-                            onEditProduct={handleEditProductOpen}
-                            onDeleteProduct={handleDeleteProduct}
-                          />
+                          <div key={area} role="listitem">
+                            <AreaSection
+                              area={area}
+                              products={productsByArea[area] ?? []}
+                              onAddProduct={() => handleAddProductOpen(area)}
+                              onEditProduct={handleEditProductOpen}
+                              onDeleteProduct={handleDeleteProduct}
+                            />
+                          </div>
                         ))}
                       </div>
                     </div>
                   ) : (
-                    <div className="py-4 text-center space-y-1">
-                      <Paintbrush className="h-6 w-6 text-muted-foreground mx-auto" />
+                    <div className="py-4 text-center space-y-1" role="status">
+                      <Paintbrush className="h-6 w-6 text-muted-foreground mx-auto" aria-hidden="true" />
                       <p className="text-xs text-muted-foreground">
                         룩을 추가하여 메이크업 시트를 관리하세요.
                       </p>
