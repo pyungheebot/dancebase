@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { loadFromStorage } from "@/lib/local-storage";
 
 export type Theme = "light" | "dark" | "high-contrast";
 
@@ -43,10 +44,21 @@ function applyFontScale(scale: number) {
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(DEFAULT_SETTINGS.theme);
   const [fontScale, setFontScaleState] = useState<number>(DEFAULT_SETTINGS.fontScale);
-  const [mounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // 초기 로드: localStorage에서 읽기
-
+  useEffect(() => {
+    const saved = loadFromStorage<Partial<Settings>>("groop-settings", {});
+    if (saved.theme) {
+      setThemeState(saved.theme);
+      applyTheme(saved.theme);
+    }
+    if (saved.fontScale) {
+      setFontScaleState(saved.fontScale);
+      applyFontScale(saved.fontScale);
+    }
+    setMounted(true);
+  }, []);
 
   const persist = useCallback((updates: Partial<Settings>) => {
     try {
