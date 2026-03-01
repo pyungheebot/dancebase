@@ -7,11 +7,29 @@ import { EntityPageLayout } from "@/components/layout/entity-page-layout";
 import { EntityHeader } from "@/components/layout/entity-header";
 import { EntityNav } from "@/components/layout/entity-nav";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
-import { MeetingMinutesSection } from "@/components/projects/meeting-minutes-section";
-import { ProjectTaskBoard } from "@/components/projects/project-task-board";
-import { ProjectNoticeFeed } from "@/components/projects/project-notice-feed";
-import { ProjectProgressOverview } from "@/components/projects/project-progress-overview";
-import { RoleAssignmentBoard } from "@/components/projects/role-assignment-board";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// 무거운 프로젝트 컴포넌트 (12~28KB) - dynamic import로 초기 번들 분리
+const MeetingMinutesSection = dynamic(
+  () => import("@/components/projects/meeting-minutes-section").then(m => ({ default: m.MeetingMinutesSection })),
+  { loading: () => <Skeleton className="h-48 w-full rounded-lg" /> }
+);
+const ProjectTaskBoard = dynamic(
+  () => import("@/components/projects/project-task-board").then(m => ({ default: m.ProjectTaskBoard })),
+  { loading: () => <Skeleton className="h-48 w-full rounded-lg" /> }
+);
+const ProjectNoticeFeed = dynamic(
+  () => import("@/components/projects/project-notice-feed").then(m => ({ default: m.ProjectNoticeFeed })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
+const ProjectProgressOverview = dynamic(
+  () => import("@/components/projects/project-progress-overview").then(m => ({ default: m.ProjectProgressOverview })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
+const RoleAssignmentBoard = dynamic(
+  () => import("@/components/projects/role-assignment-board").then(m => ({ default: m.RoleAssignmentBoard })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
 
 const LightingCueCard = dynamic(() => import("@/components/projects/lighting-cue-card").then(m => ({ default: m.LightingCueCard })));
 const CostumeChangeCard = dynamic(() => import("@/components/projects/costume-change-card").then(m => ({ default: m.CostumeChangeCard })));

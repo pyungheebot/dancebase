@@ -11,15 +11,30 @@ import { DashboardContent } from "@/components/dashboard/dashboard-content";
 import { InviteModal } from "@/components/groups/invite-modal";
 import { GroupStatsCards } from "@/components/groups/group-stats-cards";
 import { GroupRulesBanner } from "@/components/groups/group-rules-banner";
-import { RoleOnboardingChecklist } from "@/components/groups/role-onboarding-checklist";
-import { MemberOnboardingChecklist } from "@/components/members/member-onboarding-checklist";
-import { MonthlyReportDialog } from "@/components/groups/monthly-report-dialog";
-import { GroupActivityFeed } from "@/components/groups/group-activity-feed";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LeaderInfo } from "@/components/ui/leader-info";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
+
+// 무거운 컴포넌트 (8~16KB) - dynamic import로 초기 번들 분리
+const RoleOnboardingChecklist = dynamic(
+  () => import("@/components/groups/role-onboarding-checklist").then(m => ({ default: m.RoleOnboardingChecklist })),
+  { loading: () => <Skeleton className="h-24 w-full rounded-lg" /> }
+);
+const MemberOnboardingChecklist = dynamic(
+  () => import("@/components/members/member-onboarding-checklist").then(m => ({ default: m.MemberOnboardingChecklist })),
+  { loading: () => <Skeleton className="h-24 w-full rounded-lg" /> }
+);
+const MonthlyReportDialog = dynamic(
+  () => import("@/components/groups/monthly-report-dialog").then(m => ({ default: m.MonthlyReportDialog })),
+  { ssr: false }
+);
+const GroupActivityFeed = dynamic(
+  () => import("@/components/groups/group-activity-feed").then(m => ({ default: m.GroupActivityFeed })),
+  { loading: () => <Skeleton className="h-7 w-16 rounded" /> }
+);
 
 const GroupHealthCard = dynamic(() => import("@/components/groups/group-health-card").then(m => ({ default: m.GroupHealthCard })));
 const GroupLinksSection = dynamic(() => import("@/components/groups/group-links-section").then(m => ({ default: m.GroupLinksSection })));

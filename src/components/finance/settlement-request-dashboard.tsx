@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import {
   useSettlementRequests,
   type SettlementRequestWithDetails,
@@ -59,6 +59,61 @@ function DdayBadge({ dueDate }: { dueDate: string | null }) {
     </Badge>
   );
 }
+
+type SettlementMemberItem = {
+  id: string;
+  user_id: string;
+  status: SettlementMemberStatus;
+  profiles?: { name: string } | null;
+};
+
+type SettlementMemberCardProps = {
+  member: SettlementMemberItem;
+  name: string;
+  requestStatus: "active" | "closed";
+  confirmingId: string | null;
+  onConfirm: (memberId: string) => void;
+};
+
+const SettlementMemberCard = memo(function SettlementMemberCard({
+  member,
+  name,
+  requestStatus,
+  confirmingId,
+  onConfirm,
+}: SettlementMemberCardProps) {
+  const isConfirming = confirmingId === member.id;
+  return (
+    <div className="flex items-center justify-between py-1 px-1.5 rounded hover:bg-muted/30">
+      <div className="flex items-center gap-1.5">
+        {member.status === "confirmed" ? (
+          <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0" />
+        ) : member.status === "paid_pending" ? (
+          <Clock className="h-3 w-3 text-yellow-600 shrink-0" />
+        ) : (
+          <Circle className="h-3 w-3 text-muted-foreground shrink-0" />
+        )}
+        <span className="text-xs">{name}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <StatusBadge status={member.status} />
+        {member.status === "paid_pending" && requestStatus === "active" && (
+          <Button
+            size="sm"
+            className="h-5 text-[10px] px-1.5"
+            onClick={() => onConfirm(member.id)}
+            disabled={isConfirming}
+          >
+            {isConfirming ? (
+              <Loader2 className="h-2.5 w-2.5 animate-spin" />
+            ) : null}
+            납부 확인
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+});
 
 function RequestCard({
   request,
@@ -179,44 +234,16 @@ function RequestCard({
               대상 멤버가 없습니다
             </p>
           ) : (
-            members.map((member) => {
-              const name =
-                nicknameMap[member.user_id] || member.profiles?.name || member.user_id;
-              const isConfirming = confirmingId === member.id;
-              return (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between py-1 px-1.5 rounded hover:bg-muted/30"
-                >
-                  <div className="flex items-center gap-1.5">
-                    {member.status === "confirmed" ? (
-                      <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0" />
-                    ) : member.status === "paid_pending" ? (
-                      <Clock className="h-3 w-3 text-yellow-600 shrink-0" />
-                    ) : (
-                      <Circle className="h-3 w-3 text-muted-foreground shrink-0" />
-                    )}
-                    <span className="text-xs">{name}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <StatusBadge status={member.status} />
-                    {member.status === "paid_pending" && request.status === "active" && (
-                      <Button
-                        size="sm"
-                        className="h-5 text-[10px] px-1.5"
-                        onClick={() => handleConfirm(member.id)}
-                        disabled={isConfirming}
-                      >
-                        {isConfirming ? (
-                          <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                        ) : null}
-                        납부 확인
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })
+            members.map((member) => (
+              <SettlementMemberCard
+                key={member.id}
+                member={member}
+                name={nicknameMap[member.user_id] || member.profiles?.name || member.user_id}
+                requestStatus={request.status}
+                confirmingId={confirmingId}
+                onConfirm={handleConfirm}
+              />
+            ))
           )}
         </CardContent>
       )}

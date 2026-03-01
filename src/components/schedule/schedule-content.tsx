@@ -6,7 +6,14 @@ import { Loader2, CalendarDays, CalendarCheck, Copy, CalendarSearch, ClipboardCh
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarView } from "@/components/schedule/calendar-view";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// CalendarView는 36KB의 무거운 컴포넌트 - dynamic import로 초기 번들 분리
+const CalendarView = dynamic(
+  () => import("@/components/schedule/calendar-view").then(m => ({ default: m.CalendarView })),
+  { loading: () => <Skeleton className="h-96 w-full rounded-lg" /> }
+);
 import { ScheduleYearlyCalendar } from "@/components/schedule/schedule-yearly-calendar";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { ScheduleTemplateList } from "@/components/schedule/schedule-template-list";

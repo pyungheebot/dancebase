@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,266 @@ import { PeerFeedbackSendDialog } from "@/components/members/peer-feedback-dialo
 import { useMemberIntroCards } from "@/hooks/use-member-intro-cards";
 import type { GroupMemberWithProfile, MemberCategory } from "@/types";
 import { getCategoryColorClasses } from "@/types";
+
+type MemberListItemProps = {
+  member: GroupMemberWithProfile;
+  myRole: "leader" | "sub_leader" | "member" | null;
+  currentUserId: string;
+  groupId: string;
+  categories: MemberCategory[];
+  selectable: boolean;
+  isSelected: boolean;
+  isEditing: boolean;
+  nicknameValue: string;
+  updating: string | null;
+  hasCard: (userId: string) => boolean;
+  onToggleSelect?: (memberId: string) => void;
+  onRoleChange: (memberId: string, newRole: string) => void;
+  onCategoryChange: (memberId: string, categoryId: string) => void;
+  onStartEdit: (member: GroupMemberWithProfile) => void;
+  onSaveNickname: (memberId: string) => void;
+  onCancelEdit: () => void;
+  onNicknameChange: (value: string) => void;
+  onRemoveRequest: (memberId: string) => void;
+  onIntroCardOpen: (member: GroupMemberWithProfile) => void;
+};
+
+const MemberListItem = memo(function MemberListItem({
+  member,
+  myRole,
+  currentUserId,
+  groupId,
+  categories,
+  selectable,
+  isSelected,
+  isEditing,
+  nicknameValue,
+  updating,
+  hasCard,
+  onToggleSelect,
+  onRoleChange,
+  onCategoryChange,
+  onStartEdit,
+  onSaveNickname,
+  onCancelEdit,
+  onNicknameChange,
+  onRemoveRequest,
+  onIntroCardOpen,
+}: MemberListItemProps) {
+  const isMe = member.user_id === currentUserId;
+  const displayName = member.nickname || member.profiles.name;
+  const category = member.category_id
+    ? categories.find((c) => c.id === member.category_id) || null
+    : null;
+  const colorClasses = category ? getCategoryColorClasses(category.color || "gray") : null;
+
+  return (
+    <div
+      className={`flex items-center justify-between px-2.5 py-1.5 rounded border ${isSelected ? "bg-accent/40" : ""}`}
+    >
+      <div className="flex items-center gap-2">
+        {selectable && (
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => onToggleSelect?.(member.id)}
+            disabled={isMe}
+            className="shrink-0"
+          />
+        )}
+        <Avatar className="h-6 w-6">
+          <AvatarFallback>
+            {displayName?.charAt(0)?.toUpperCase() || "U"}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          {isEditing ? (
+            <div className="flex items-center gap-1.5">
+              <Input
+                value={nicknameValue}
+                onChange={(e) => onNicknameChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") onSaveNickname(member.id);
+                  if (e.key === "Escape") onCancelEdit();
+                }}
+                onBlur={() => onSaveNickname(member.id)}
+                placeholder={member.profiles.name}
+                className="h-7 w-32 text-sm"
+                maxLength={50}
+                autoFocus
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => onSaveNickname(member.id)}
+                aria-label="확인"
+              >
+                <Check className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={onCancelEdit}
+                aria-label="취소"
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              {category && colorClasses && (
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] px-1.5 py-0 ${colorClasses.bg} ${colorClasses.text} ${colorClasses.border}`}
+                >
+                  {category.name}
+                </Badge>
+              )}
+              <UserPopoverMenu
+                userId={member.user_id}
+                displayName={displayName}
+                groupId={groupId}
+                className="font-medium hover:underline text-left"
+              >
+                {displayName}
+              </UserPopoverMenu>
+              <MemberBadgeIcons
+                groupId={groupId}
+                userId={member.user_id}
+                joinedAt={member.joined_at}
+                role={member.role}
+              />
+              <button
+                onClick={() => onIntroCardOpen(member)}
+                className={
+                  hasCard(member.user_id)
+                    ? "text-primary hover:text-primary/80"
+                    : "text-muted-foreground hover:text-foreground"
+                }
+                title="자기소개 카드"
+              >
+                <IdCard className="h-3 w-3" />
+              </button>
+              {(myRole === "leader" || myRole === "sub_leader") && (
+                <MemberNotePopover
+                  groupId={groupId}
+                  targetUserId={member.user_id}
+                  targetName={displayName}
+                />
+              )}
+              {!isMe && (
+                <PeerFeedbackSendDialog
+                  groupId={groupId}
+                  currentUserId={currentUserId}
+                  receiverId={member.user_id}
+                  receiverName={displayName}
+                />
+              )}
+              {isMe && (
+                <button
+                  onClick={() => onStartEdit(member)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          )}
+          {member.nickname && !isEditing && (
+            <p className="text-xs text-muted-foreground">{member.profiles.name}</p>
+          )}
+          {member.profiles.dance_genre?.length > 0 && (
+            <p className="text-[11px] text-muted-foreground">
+              {member.profiles.dance_genre.join(", ")}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        {myRole === "leader" ? (
+          <>
+            <PracticePlanSheet
+              groupId={groupId}
+              userId={member.user_id}
+              memberName={displayName}
+              memberAvatarUrl={member.profiles.avatar_url}
+              currentUserId={currentUserId}
+              isLeader={true}
+            />
+            {categories.length > 0 && (
+              <Select
+                value={member.category_id || "none"}
+                onValueChange={(value) => onCategoryChange(member.id, value)}
+              >
+                <SelectTrigger className="w-20 h-7 text-xs">
+                  <SelectValue placeholder="카테고리" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">없음</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Select
+              value={member.role}
+              onValueChange={(value) => onRoleChange(member.id, value)}
+              disabled={updating === member.id}
+            >
+              <SelectTrigger className="w-24 h-7 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="leader">그룹장</SelectItem>
+                <SelectItem value="sub_leader">부그룹장</SelectItem>
+                <SelectItem value="member">멤버</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemoveRequest(member.id)}
+              aria-label="멤버 제거"
+            >
+              <UserMinus className="h-3.5 w-3.5 text-destructive" />
+            </Button>
+          </>
+        ) : myRole === "sub_leader" && member.role === "member" ? (
+          <>
+            <Badge variant="secondary">멤버</Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemoveRequest(member.id)}
+              aria-label="멤버 제거"
+            >
+              <UserMinus className="h-3.5 w-3.5 text-destructive" />
+            </Button>
+          </>
+        ) : (
+          <Badge
+            variant={
+              member.role === "leader"
+                ? "default"
+                : member.role === "sub_leader"
+                ? "outline"
+                : "secondary"
+            }
+            className={member.role === "sub_leader" ? "border-blue-300 text-blue-700 bg-blue-50 text-[10px] px-1.5 py-0" : ""}
+          >
+            {member.role === "leader" ? "그룹장" : member.role === "sub_leader" ? "부그룹장" : "멤버"}
+          </Badge>
+        )}
+      </div>
+    </div>
+  );
+});
 
 type MemberListProps = {
   members: GroupMemberWithProfile[];
@@ -67,7 +327,7 @@ export function MemberList({
     member: "멤버",
   };
 
-  const handleRoleChange = async (memberId: string, newRole: string) => {
+  const handleRoleChange = useCallback(async (memberId: string, newRole: string) => {
     setUpdating(memberId);
     const { error } = await supabase
       .from("group_members")
@@ -77,20 +337,21 @@ export function MemberList({
     toast.success(`역할이 ${ROLE_LABELS[newRole] ?? newRole}(으)로 변경되었습니다`);
     onUpdate();
     setUpdating(null);
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onUpdate]);
 
-  const handleRemoveMember = async (memberId: string) => {
+  const handleRemoveMember = useCallback(async (memberId: string) => {
     const { error } = await supabase.from("group_members").delete().eq("id", memberId);
     if (error) { toast.error("멤버 제거에 실패했습니다"); return; }
     onUpdate();
-  };
+  }, [onUpdate]);
 
-  const startEditNickname = (member: GroupMemberWithProfile) => {
+  const startEditNickname = useCallback((member: GroupMemberWithProfile) => {
     setEditingNickname(member.id);
     setNicknameValue(member.nickname || "");
-  };
+  }, []);
 
-  const saveNickname = async (memberId: string) => {
+  const saveNickname = useCallback(async (memberId: string) => {
     const trimmed = nicknameValue.trim();
     const { error } = await supabase
       .from("group_members")
@@ -100,246 +361,29 @@ export function MemberList({
     setEditingNickname(null);
     setNicknameValue("");
     onUpdate();
-  };
+  }, [nicknameValue, onUpdate]);
 
-  const cancelEditNickname = () => {
+  const cancelEditNickname = useCallback(() => {
     setEditingNickname(null);
     setNicknameValue("");
-  };
+  }, []);
 
-  const handleCategoryChange = async (memberId: string, categoryId: string) => {
+  const handleCategoryChange = useCallback(async (memberId: string, categoryId: string) => {
     const { error } = await supabase
       .from("group_members")
       .update({ category_id: categoryId === "none" ? null : categoryId })
       .eq("id", memberId);
     if (error) { toast.error("카테고리 변경에 실패했습니다"); return; }
     onUpdate();
-  };
+  }, [onUpdate]);
 
-  const getCategoryForMember = (member: GroupMemberWithProfile) => {
-    if (!member.category_id) return null;
-    return categories.find((c) => c.id === member.category_id) || null;
-  };
+  const handleRemoveRequest = useCallback((memberId: string) => {
+    setRemoveMemberId(memberId);
+  }, []);
 
-  const getDisplayName = (member: GroupMemberWithProfile) =>
-    member.nickname || member.profiles.name;
-
-  const renderMember = (member: GroupMemberWithProfile) => {
-    const isMe = member.user_id === currentUserId;
-    const isEditingThis = editingNickname === member.id;
-    const displayName = getDisplayName(member);
-    const category = getCategoryForMember(member);
-    const colorClasses = category ? getCategoryColorClasses(category.color || "gray") : null;
-    const isSelected = selectedIds.has(member.id);
-
-    return (
-      <div
-        key={member.id}
-        className={`flex items-center justify-between px-2.5 py-1.5 rounded border ${isSelected ? "bg-accent/40" : ""}`}
-      >
-        <div className="flex items-center gap-2">
-          {selectable && (
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={() => onToggleSelect?.(member.id)}
-              disabled={isMe}
-              className="shrink-0"
-            />
-          )}
-          <Avatar className="h-6 w-6">
-            <AvatarFallback>
-              {displayName?.charAt(0)?.toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            {isEditingThis ? (
-              <div className="flex items-center gap-1.5">
-                <Input
-                  value={nicknameValue}
-                  onChange={(e) => setNicknameValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") saveNickname(member.id);
-                    if (e.key === "Escape") cancelEditNickname();
-                  }}
-                  onBlur={() => saveNickname(member.id)}
-                  placeholder={member.profiles.name}
-                  className="h-7 w-32 text-sm"
-                  maxLength={50}
-                  autoFocus
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => saveNickname(member.id)}
-                  aria-label="확인"
-                >
-                  <Check className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={cancelEditNickname}
-                  aria-label="취소"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                {category && colorClasses && (
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] px-1.5 py-0 ${colorClasses.bg} ${colorClasses.text} ${colorClasses.border}`}
-                  >
-                    {category.name}
-                  </Badge>
-                )}
-                <UserPopoverMenu
-                  userId={member.user_id}
-                  displayName={displayName}
-                  groupId={groupId}
-                  className="font-medium hover:underline text-left"
-                >
-                  {displayName}
-                </UserPopoverMenu>
-                <MemberBadgeIcons
-                  groupId={groupId}
-                  userId={member.user_id}
-                  joinedAt={member.joined_at}
-                  role={member.role}
-                />
-                <button
-                  onClick={() => setIntroCardTarget(member)}
-                  className={
-                    hasCard(member.user_id)
-                      ? "text-primary hover:text-primary/80"
-                      : "text-muted-foreground hover:text-foreground"
-                  }
-                  title="자기소개 카드"
-                >
-                  <IdCard className="h-3 w-3" />
-                </button>
-                {(myRole === "leader" || myRole === "sub_leader") && (
-                  <MemberNotePopover
-                    groupId={groupId}
-                    targetUserId={member.user_id}
-                    targetName={displayName}
-                  />
-                )}
-                {!isMe && (
-                  <PeerFeedbackSendDialog
-                    groupId={groupId}
-                    currentUserId={currentUserId}
-                    receiverId={member.user_id}
-                    receiverName={displayName}
-                  />
-                )}
-                {isMe && (
-                  <button
-                    onClick={() => startEditNickname(member)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <Pencil className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-            )}
-            {member.nickname && !isEditingThis && (
-              <p className="text-xs text-muted-foreground">{member.profiles.name}</p>
-            )}
-            {member.profiles.dance_genre?.length > 0 && (
-              <p className="text-[11px] text-muted-foreground">
-                {member.profiles.dance_genre.join(", ")}
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {myRole === "leader" ? (
-            <>
-              <PracticePlanSheet
-                groupId={groupId}
-                userId={member.user_id}
-                memberName={displayName}
-                memberAvatarUrl={member.profiles.avatar_url}
-                currentUserId={currentUserId}
-                isLeader={true}
-              />
-              {categories.length > 0 && (
-                <Select
-                  value={member.category_id || "none"}
-                  onValueChange={(value) => handleCategoryChange(member.id, value)}
-                >
-                  <SelectTrigger className="w-20 h-7 text-xs">
-                    <SelectValue placeholder="카테고리" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">없음</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Select
-                value={member.role}
-                onValueChange={(value) => handleRoleChange(member.id, value)}
-                disabled={updating === member.id}
-              >
-                <SelectTrigger className="w-24 h-7 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="leader">그룹장</SelectItem>
-                  <SelectItem value="sub_leader">부그룹장</SelectItem>
-                  <SelectItem value="member">멤버</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setRemoveMemberId(member.id)}
-                aria-label="멤버 제거"
-              >
-                <UserMinus className="h-3.5 w-3.5 text-destructive" />
-              </Button>
-            </>
-          ) : myRole === "sub_leader" && member.role === "member" ? (
-            <>
-              <Badge variant="secondary">멤버</Badge>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setRemoveMemberId(member.id)}
-                aria-label="멤버 제거"
-              >
-                <UserMinus className="h-3.5 w-3.5 text-destructive" />
-              </Button>
-            </>
-          ) : (
-            <Badge
-              variant={
-                member.role === "leader"
-                  ? "default"
-                  : member.role === "sub_leader"
-                  ? "outline"
-                  : "secondary"
-              }
-              className={member.role === "sub_leader" ? "border-blue-300 text-blue-700 bg-blue-50 text-[10px] px-1.5 py-0" : ""}
-            >
-              {member.role === "leader" ? "그룹장" : member.role === "sub_leader" ? "부그룹장" : "멤버"}
-            </Badge>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const handleIntroCardOpen = useCallback((member: GroupMemberWithProfile) => {
+    setIntroCardTarget(member);
+  }, []);
 
   const confirmDialog = (
     <ConfirmDialog
@@ -364,9 +408,35 @@ export function MemberList({
     />
   ) : null;
 
+  const renderItem = (member: GroupMemberWithProfile) => (
+    <MemberListItem
+      key={member.id}
+      member={member}
+      myRole={myRole}
+      currentUserId={currentUserId}
+      groupId={groupId}
+      categories={categories}
+      selectable={selectable}
+      isSelected={selectedIds.has(member.id)}
+      isEditing={editingNickname === member.id}
+      nicknameValue={nicknameValue}
+      updating={updating}
+      hasCard={hasCard}
+      onToggleSelect={onToggleSelect}
+      onRoleChange={handleRoleChange}
+      onCategoryChange={handleCategoryChange}
+      onStartEdit={startEditNickname}
+      onSaveNickname={saveNickname}
+      onCancelEdit={cancelEditNickname}
+      onNicknameChange={setNicknameValue}
+      onRemoveRequest={handleRemoveRequest}
+      onIntroCardOpen={handleIntroCardOpen}
+    />
+  );
+
   // 카테고리가 없거나 그룹핑 비활성화 시 flat list
   if (categories.length === 0 || !grouped) {
-    return <>{confirmDialog}{introCardDialog}<div className="space-y-1.5">{members.map(renderMember)}</div></>;
+    return <>{confirmDialog}{introCardDialog}<div className="space-y-1.5">{members.map(renderItem)}</div></>;
   }
 
   // 카테고리별 그룹핑
@@ -410,7 +480,7 @@ export function MemberList({
               <span className="text-xs text-muted-foreground">{group.members.length}명</span>
             </div>
             <div className="space-y-1.5">
-              {group.members.map(renderMember)}
+              {group.members.map(renderItem)}
             </div>
           </div>
         );

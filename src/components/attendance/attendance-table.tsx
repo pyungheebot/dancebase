@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,331 @@ const statusColors: Record<AttendanceStatus, "default" | "destructive" | "second
   early_leave: "secondary",
 };
 
+type AttendanceRowProps = {
+  member: GroupMemberWithProfile;
+  record: AttendanceRecord | undefined;
+  schedule: Schedule;
+  myRole: "leader" | "member" | null;
+  currentUserId: string;
+  groupId?: string;
+  categoryMap?: Record<string, string>;
+  categoryColorMap?: Record<string, string>;
+  updating: string | null;
+  onStatusChange: (userId: string, status: AttendanceStatus) => void;
+  onCheckout: (userId: string) => void;
+  onLocationCheck: () => void;
+  onExcuseDialogOpen: () => void;
+  onUpdate: () => void;
+};
+
+const AttendanceRow = memo(function AttendanceRow({
+  member,
+  record,
+  schedule,
+  myRole,
+  currentUserId,
+  groupId,
+  categoryMap,
+  categoryColorMap,
+  updating,
+  onStatusChange,
+  onCheckout,
+  onLocationCheck,
+  onExcuseDialogOpen,
+  onUpdate,
+}: AttendanceRowProps) {
+  const isMe = member.user_id === currentUserId;
+  const isLeader = myRole === "leader";
+  const isLocationMethod = schedule.attendance_method === "location";
+  const isAdminMethod = schedule.attendance_method === "admin";
+
+  const CategoryBadge = categoryMap?.[member.user_id] ? (() => {
+    const cc = getCategoryColorClasses(categoryColorMap?.[member.user_id] || "gray");
+    return (
+      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${cc.bg} ${cc.text} ${cc.border}`}>
+        {categoryMap![member.user_id]}
+      </Badge>
+    );
+  })() : null;
+
+  const memberName = member.nickname || member.profiles.name;
+
+  // 리더는 항상 Select로 수정 가능
+  if (isLeader) {
+    const hasCheckInfo = record && (record.checked_at || record.checked_out_at);
+    return (
+      <div className="flex items-center justify-between px-2.5 py-1.5 rounded border">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-6 w-6">
+            <AvatarFallback>
+              {memberName?.charAt(0)?.toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
+          {CategoryBadge}
+          <UserPopoverMenu userId={member.user_id} displayName={memberName} groupId={groupId} className="text-xs font-medium hover:underline text-left">
+            {memberName}
+          </UserPopoverMenu>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {record?.excuse_status && record.id && (
+            <AttendanceExcuseBadge
+              attendanceId={record.id}
+              scheduleId={schedule.id}
+              excuseStatus={record.excuse_status}
+              excuseReason={record.excuse_reason ?? null}
+              isLeader
+              onUpdated={onUpdate}
+            />
+          )}
+          {hasCheckInfo && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="text-muted-foreground hover:text-foreground">
+                  <Info className="h-3.5 w-3.5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 text-xs space-y-1 p-3">
+                {record!.checked_at && (
+                  <p>체크인: {new Date(record!.checked_at).toLocaleString("ko-KR")}</p>
+                )}
+                {record!.check_in_latitude != null && record!.check_in_longitude != null && (
+                  <p className="text-muted-foreground">위치: {record!.check_in_latitude!.toFixed(5)}, {record!.check_in_longitude!.toFixed(5)}</p>
+                )}
+                {record!.checked_out_at && (
+                  <>
+                    <p>체크아웃: {new Date(record!.checked_out_at).toLocaleString("ko-KR")}</p>
+                    {record!.check_out_latitude != null && record!.check_out_longitude != null && (
+                      <p className="text-muted-foreground">위치: {record!.check_out_latitude!.toFixed(5)}, {record!.check_out_longitude!.toFixed(5)}</p>
+                    )}
+                  </>
+                )}
+              </PopoverContent>
+            </Popover>
+          )}
+          {schedule.require_checkout && record && (record.status === "present" || record.status === "late" || record.status === "early_leave") && !record.checked_out_at && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-1.5 text-[10px]"
+              onClick={() => onCheckout(member.user_id)}
+              disabled={updating === member.user_id}
+            >
+              <LogOut className="h-3 w-3 mr-0.5" />
+              종료확인
+            </Button>
+          )}
+          {record?.checked_out_at && (
+            <Badge variant="outline" className="text-[10px] px-1 py-0">종료확인완료</Badge>
+          )}
+          <Select
+            value={record?.status || "absent"}
+            onValueChange={(value) => onStatusChange(member.user_id, value as AttendanceStatus)}
+            disabled={updating === member.user_id}
+          >
+            <SelectTrigger className="w-20 h-7 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="present">출석</SelectItem>
+              <SelectItem value="late">지각</SelectItem>
+              <SelectItem value="early_leave">조퇴</SelectItem>
+              <SelectItem value="absent">결석</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    );
+  }
+
+  // 멤버 본인
+  if (isMe) {
+    if (isLocationMethod) {
+      const alreadyChecked = record?.status === "present" || record?.status === "late" || record?.status === "early_leave";
+      const needsCheckout = schedule.require_checkout && alreadyChecked && !record?.checked_out_at;
+      return (
+        <div className="flex items-center justify-between px-2.5 py-1.5 rounded border">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarFallback>
+                {memberName?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            {CategoryBadge}
+            <UserPopoverMenu userId={member.user_id} displayName={memberName} groupId={groupId} className="text-xs font-medium hover:underline text-left">
+              {memberName}
+            </UserPopoverMenu>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {record?.excuse_status && record.id && (
+              <AttendanceExcuseBadge
+                attendanceId={record.id}
+                scheduleId={schedule.id}
+                excuseStatus={record.excuse_status}
+                excuseReason={record.excuse_reason ?? null}
+                isLeader={false}
+              />
+            )}
+            {alreadyChecked ? (
+              <>
+                <Badge variant={statusColors[record!.status]}>
+                  {statusLabels[record!.status]}
+                </Badge>
+                {needsCheckout && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-6 text-[10px]"
+                    onClick={() => onCheckout(currentUserId)}
+                    disabled={updating === currentUserId}
+                  >
+                    {updating === currentUserId ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-0.5" />
+                    ) : (
+                      <LogOut className="h-3 w-3 mr-0.5" />
+                    )}
+                    종료확인
+                  </Button>
+                )}
+                {record?.checked_out_at && (
+                  <Badge variant="outline" className="text-[10px] px-1 py-0">종료확인완료</Badge>
+                )}
+              </>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onLocationCheck}
+                  disabled={updating === currentUserId}
+                >
+                  {updating === currentUserId ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <MapPin className="h-3 w-3 mr-1" />
+                  )}
+                  출석 체크
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs px-1.5"
+                  onClick={onExcuseDialogOpen}
+                  title="결석 사유 제출"
+                >
+                  <FileText className="h-3 w-3" />
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (isAdminMethod) {
+      const adminChecked = record?.status === "present" || record?.status === "late" || record?.status === "early_leave";
+      const adminNeedsCheckout = schedule.require_checkout && adminChecked && !record?.checked_out_at;
+      return (
+        <div className="flex items-center justify-between px-2.5 py-1.5 rounded border">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarFallback>
+                {memberName?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            {CategoryBadge}
+            <UserPopoverMenu userId={member.user_id} displayName={memberName} groupId={groupId} className="text-xs font-medium hover:underline text-left">
+              {memberName}
+            </UserPopoverMenu>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {record?.excuse_status && record.id && (
+              <AttendanceExcuseBadge
+                attendanceId={record.id}
+                scheduleId={schedule.id}
+                excuseStatus={record.excuse_status}
+                excuseReason={record.excuse_reason ?? null}
+                isLeader={false}
+              />
+            )}
+            {adminNeedsCheckout && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px]"
+                onClick={() => onCheckout(currentUserId)}
+                disabled={updating === currentUserId}
+              >
+                {updating === currentUserId ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-0.5" />
+                ) : (
+                  <LogOut className="h-3 w-3 mr-0.5" />
+                )}
+                종료확인
+              </Button>
+            )}
+            {record?.checked_out_at && (
+              <Badge variant="outline" className="text-[10px] px-1 py-0">종료확인완료</Badge>
+            )}
+            <Select
+              value={record?.status || "absent"}
+              onValueChange={(value) => onStatusChange(member.user_id, value as AttendanceStatus)}
+              disabled={updating === member.user_id}
+            >
+              <SelectTrigger className="w-20 h-7 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="present">출석</SelectItem>
+                <SelectItem value="late">지각</SelectItem>
+                <SelectItem value="absent">결석</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs px-1.5"
+              onClick={onExcuseDialogOpen}
+              title="결석 사유 제출"
+            >
+              <FileText className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // 일반 멤버가 다른 사람 보기 (읽기 전용)
+  return (
+    <div className="flex items-center justify-between px-2.5 py-1.5 rounded border">
+      <div className="flex items-center gap-2">
+        <Avatar className="h-6 w-6">
+          <AvatarFallback>
+            {memberName?.charAt(0)?.toUpperCase() || "U"}
+          </AvatarFallback>
+        </Avatar>
+        <UserPopoverMenu userId={member.user_id} displayName={memberName} groupId={groupId} className="text-xs font-medium hover:underline text-left">
+          {memberName}
+        </UserPopoverMenu>
+      </div>
+      <div className="flex items-center gap-1.5">
+        {record?.excuse_status && record.id && (
+          <AttendanceExcuseBadge
+            attendanceId={record.id}
+            scheduleId={schedule.id}
+            excuseStatus={record.excuse_status}
+            excuseReason={record.excuse_reason ?? null}
+            isLeader={false}
+          />
+        )}
+        <Badge variant={statusColors[record?.status || "absent"]}>
+          {statusLabels[record?.status || "absent"]}
+        </Badge>
+      </div>
+    </div>
+  );
+});
+
 export function AttendanceTable({
   schedule,
   members,
@@ -89,10 +414,10 @@ export function AttendanceTable({
   const [excuseDialogOpen, setExcuseDialogOpen] = useState(false);
   const supabase = createClient();
 
-  const getAttendance = (userId: string) =>
-    attendance.find((a) => a.user_id === userId);
+  const getAttendance = useCallback((userId: string) =>
+    attendance.find((a) => a.user_id === userId), [attendance]);
 
-  const handleStatusChange = async (userId: string, status: AttendanceStatus) => {
+  const handleStatusChange = useCallback(async (userId: string, status: AttendanceStatus) => {
     setUpdating(userId);
 
     const existing = getAttendance(userId);
@@ -115,9 +440,9 @@ export function AttendanceTable({
 
     onUpdate();
     setUpdating(null);
-  };
+  }, [attendance, schedule, onUpdate]);
 
-  const handleLocationCheck = async () => {
+  const handleLocationCheck = useCallback(async () => {
     setGpsError(null);
     setUpdating(currentUserId);
 
@@ -209,9 +534,9 @@ export function AttendanceTable({
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  };
+  }, [attendance, schedule, currentUserId, onUpdate]);
 
-  const handleCheckout = async (userId: string) => {
+  const handleCheckout = useCallback(async (userId: string) => {
     setUpdating(userId);
 
     if (!isWithinCheckoutWindow(schedule.starts_at, schedule.ends_at)) {
@@ -262,10 +587,11 @@ export function AttendanceTable({
       onUpdate();
       setUpdating(null);
     }
-  };
+  }, [schedule, onUpdate]);
 
-  const isLocationMethod = schedule.attendance_method === "location";
-  const isAdminMethod = schedule.attendance_method === "admin";
+  const handleExcuseDialogOpen = useCallback(() => {
+    setExcuseDialogOpen(true);
+  }, []);
 
   return (
     <div className="space-y-1.5">
@@ -275,314 +601,25 @@ export function AttendanceTable({
         </div>
       )}
 
-      {members.map((member) => {
-        const record = getAttendance(member.user_id);
-        const isMe = member.user_id === currentUserId;
-        const isLeader = myRole === "leader";
-
-        // 리더는 항상 Select로 수정 가능
-        if (isLeader) {
-          const hasCheckInfo = record && (record.checked_at || record.checked_out_at);
-          return (
-            <div
-              key={member.user_id}
-              className="flex items-center justify-between px-2.5 py-1.5 rounded border"
-            >
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarFallback>
-                    {(member.nickname || member.profiles.name)?.charAt(0)?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                {categoryMap?.[member.user_id] && (() => {
-                  const cc = getCategoryColorClasses(categoryColorMap?.[member.user_id] || "gray");
-                  return (
-                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${cc.bg} ${cc.text} ${cc.border}`}>{categoryMap[member.user_id]}</Badge>
-                  );
-                })()}
-                <UserPopoverMenu userId={member.user_id} displayName={member.nickname || member.profiles.name} groupId={groupId} className="text-xs font-medium hover:underline text-left">{member.nickname || member.profiles.name}</UserPopoverMenu>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {/* 면제 뱃지 (리더: 클릭 시 승인/거절 가능) */}
-                {record?.excuse_status && record.id && (
-                  <AttendanceExcuseBadge
-                    attendanceId={record.id}
-                    scheduleId={schedule.id}
-                    excuseStatus={record.excuse_status}
-                    excuseReason={record.excuse_reason ?? null}
-                    isLeader
-                    onUpdated={onUpdate}
-                  />
-                )}
-                {hasCheckInfo && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="text-muted-foreground hover:text-foreground">
-                        <Info className="h-3.5 w-3.5" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-56 text-xs space-y-1 p-3">
-                      {record.checked_at && (
-                        <p>체크인: {new Date(record.checked_at).toLocaleString("ko-KR")}</p>
-                      )}
-                      {record.check_in_latitude != null && record.check_in_longitude != null && (
-                        <p className="text-muted-foreground">위치: {record.check_in_latitude.toFixed(5)}, {record.check_in_longitude.toFixed(5)}</p>
-                      )}
-                      {record.checked_out_at && (
-                        <>
-                          <p>체크아웃: {new Date(record.checked_out_at).toLocaleString("ko-KR")}</p>
-                          {record.check_out_latitude != null && record.check_out_longitude != null && (
-                            <p className="text-muted-foreground">위치: {record.check_out_latitude.toFixed(5)}, {record.check_out_longitude.toFixed(5)}</p>
-                          )}
-                        </>
-                      )}
-                    </PopoverContent>
-                  </Popover>
-                )}
-                {schedule.require_checkout && record && (record.status === "present" || record.status === "late" || record.status === "early_leave") && !record.checked_out_at && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 px-1.5 text-[10px]"
-                    onClick={() => handleCheckout(member.user_id)}
-                    disabled={updating === member.user_id}
-                  >
-                    <LogOut className="h-3 w-3 mr-0.5" />
-                    종료확인
-                  </Button>
-                )}
-                {record?.checked_out_at && (
-                  <Badge variant="outline" className="text-[10px] px-1 py-0">종료확인완료</Badge>
-                )}
-                <Select
-                  value={record?.status || "absent"}
-                  onValueChange={(value) =>
-                    handleStatusChange(member.user_id, value as AttendanceStatus)
-                  }
-                  disabled={updating === member.user_id}
-                >
-                  <SelectTrigger className="w-20 h-7 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="present">출석</SelectItem>
-                    <SelectItem value="late">지각</SelectItem>
-                    <SelectItem value="early_leave">조퇴</SelectItem>
-                    <SelectItem value="absent">결석</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          );
-        }
-
-        // 멤버 본인
-        if (isMe) {
-          if (isLocationMethod) {
-            const alreadyChecked = record?.status === "present" || record?.status === "late" || record?.status === "early_leave";
-            const needsCheckout = schedule.require_checkout && alreadyChecked && !record?.checked_out_at;
-            return (
-              <div
-                key={member.user_id}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded border"
-              >
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback>
-                      {(member.nickname || member.profiles.name)?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  {categoryMap?.[member.user_id] && (() => {
-                  const cc = getCategoryColorClasses(categoryColorMap?.[member.user_id] || "gray");
-                  return (
-                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${cc.bg} ${cc.text} ${cc.border}`}>{categoryMap[member.user_id]}</Badge>
-                  );
-                })()}
-                <UserPopoverMenu userId={member.user_id} displayName={member.nickname || member.profiles.name} groupId={groupId} className="text-xs font-medium hover:underline text-left">{member.nickname || member.profiles.name}</UserPopoverMenu>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {/* 면제 상태 뱃지 (멤버 본인 읽기 전용) */}
-                  {record?.excuse_status && record.id && (
-                    <AttendanceExcuseBadge
-                      attendanceId={record.id}
-                      scheduleId={schedule.id}
-                      excuseStatus={record.excuse_status}
-                      excuseReason={record.excuse_reason ?? null}
-                      isLeader={false}
-                    />
-                  )}
-                  {alreadyChecked ? (
-                    <>
-                      <Badge variant={statusColors[record!.status]}>
-                        {statusLabels[record!.status]}
-                      </Badge>
-                      {needsCheckout && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-6 text-[10px]"
-                          onClick={() => handleCheckout(currentUserId)}
-                          disabled={updating === currentUserId}
-                        >
-                          {updating === currentUserId ? (
-                            <Loader2 className="h-3 w-3 animate-spin mr-0.5" />
-                          ) : (
-                            <LogOut className="h-3 w-3 mr-0.5" />
-                          )}
-                          종료확인
-                        </Button>
-                      )}
-                      {record?.checked_out_at && (
-                        <Badge variant="outline" className="text-[10px] px-1 py-0">종료확인완료</Badge>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleLocationCheck}
-                        disabled={updating === currentUserId}
-                      >
-                        {updating === currentUserId ? (
-                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                        ) : (
-                          <MapPin className="h-3 w-3 mr-1" />
-                        )}
-                        출석 체크
-                      </Button>
-                      {/* 결석 사유 제출 버튼 */}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs px-1.5"
-                        onClick={() => setExcuseDialogOpen(true)}
-                        title="결석 사유 제출"
-                      >
-                        <FileText className="h-3 w-3" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            );
-          }
-
-          if (isAdminMethod) {
-            const adminChecked = record?.status === "present" || record?.status === "late" || record?.status === "early_leave";
-            const adminNeedsCheckout = schedule.require_checkout && adminChecked && !record?.checked_out_at;
-            return (
-              <div
-                key={member.user_id}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded border"
-              >
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback>
-                      {(member.nickname || member.profiles.name)?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  {categoryMap?.[member.user_id] && (() => {
-                  const cc = getCategoryColorClasses(categoryColorMap?.[member.user_id] || "gray");
-                  return (
-                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${cc.bg} ${cc.text} ${cc.border}`}>{categoryMap[member.user_id]}</Badge>
-                  );
-                })()}
-                <UserPopoverMenu userId={member.user_id} displayName={member.nickname || member.profiles.name} groupId={groupId} className="text-xs font-medium hover:underline text-left">{member.nickname || member.profiles.name}</UserPopoverMenu>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {/* 면제 상태 뱃지 (멤버 본인 읽기 전용) */}
-                  {record?.excuse_status && record.id && (
-                    <AttendanceExcuseBadge
-                      attendanceId={record.id}
-                      scheduleId={schedule.id}
-                      excuseStatus={record.excuse_status}
-                      excuseReason={record.excuse_reason ?? null}
-                      isLeader={false}
-                    />
-                  )}
-                  {adminNeedsCheckout && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-6 text-[10px]"
-                      onClick={() => handleCheckout(currentUserId)}
-                      disabled={updating === currentUserId}
-                    >
-                      {updating === currentUserId ? (
-                        <Loader2 className="h-3 w-3 animate-spin mr-0.5" />
-                      ) : (
-                        <LogOut className="h-3 w-3 mr-0.5" />
-                      )}
-                      종료확인
-                    </Button>
-                  )}
-                  {record?.checked_out_at && (
-                    <Badge variant="outline" className="text-[10px] px-1 py-0">종료확인완료</Badge>
-                  )}
-                  <Select
-                    value={record?.status || "absent"}
-                    onValueChange={(value) =>
-                      handleStatusChange(member.user_id, value as AttendanceStatus)
-                    }
-                    disabled={updating === member.user_id}
-                  >
-                    <SelectTrigger className="w-20 h-7 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="present">출석</SelectItem>
-                      <SelectItem value="late">지각</SelectItem>
-                      <SelectItem value="absent">결석</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {/* 결석 사유 제출 버튼 */}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs px-1.5"
-                    onClick={() => setExcuseDialogOpen(true)}
-                    title="결석 사유 제출"
-                  >
-                    <FileText className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            );
-          }
-        }
-
-        // 일반 멤버가 다른 사람 보기 (읽기 전용)
-        return (
-          <div
-            key={member.user_id}
-            className="flex items-center justify-between px-2.5 py-1.5 rounded border"
-          >
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                <AvatarFallback>
-                  {(member.nickname || member.profiles.name)?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <UserPopoverMenu userId={member.user_id} displayName={member.nickname || member.profiles.name} groupId={groupId} className="text-xs font-medium hover:underline text-left">{member.nickname || member.profiles.name}</UserPopoverMenu>
-            </div>
-            <div className="flex items-center gap-1.5">
-              {record?.excuse_status && record.id && (
-                <AttendanceExcuseBadge
-                  attendanceId={record.id}
-                  scheduleId={schedule.id}
-                  excuseStatus={record.excuse_status}
-                  excuseReason={record.excuse_reason ?? null}
-                  isLeader={false}
-                />
-              )}
-              <Badge variant={statusColors[record?.status || "absent"]}>
-                {statusLabels[record?.status || "absent"]}
-              </Badge>
-            </div>
-          </div>
-        );
-      })}
+      {members.map((member) => (
+        <AttendanceRow
+          key={member.user_id}
+          member={member}
+          record={getAttendance(member.user_id)}
+          schedule={schedule}
+          myRole={myRole}
+          currentUserId={currentUserId}
+          groupId={groupId}
+          categoryMap={categoryMap}
+          categoryColorMap={categoryColorMap}
+          updating={updating}
+          onStatusChange={handleStatusChange}
+          onCheckout={handleCheckout}
+          onLocationCheck={handleLocationCheck}
+          onExcuseDialogOpen={handleExcuseDialogOpen}
+          onUpdate={onUpdate}
+        />
+      ))}
 
       {/* 면제 신청 Dialog (멤버 본인) */}
       <AttendanceExcuseDialog

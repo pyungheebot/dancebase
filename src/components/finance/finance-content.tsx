@@ -1,26 +1,72 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { FinanceTransactionForm } from "@/components/groups/finance-transaction-form";
 import { FinanceCategoryManager } from "@/components/groups/finance-category-manager";
 import { FinancePermissionManager } from "@/components/groups/finance-permission-manager";
 import { FinanceStats } from "@/components/groups/finance-stats";
-import { FinancePaymentStatus } from "@/components/finance/finance-payment-status";
-import { FinanceBudgetTab } from "@/components/finance/finance-budget-tab";
-import { UnpaidSummary } from "@/components/finance/unpaid-summary";
-import { PaymentReminderSection } from "@/components/finance/payment-reminder-section";
-import { FinanceReminderSettings } from "@/components/finance/finance-reminder-settings";
-import { FinanceSplitSection } from "@/components/finance/finance-split-section";
-import { ProjectCostAnalytics } from "@/components/finance/project-cost-analytics";
-import { ExpenseTemplateManager } from "@/components/finance/expense-template-manager";
-import { CreateSettlementDialog } from "@/components/finance/create-settlement-dialog";
-import { SettlementRequestDashboard } from "@/components/finance/settlement-request-dashboard";
-import { MySettlementRequests } from "@/components/finance/my-settlement-requests";
-import { ReceiptShareDialog } from "@/components/finance/receipt-share-dialog";
-import { FinanceGoalCard } from "@/components/finance/finance-goal-card";
-import { BudgetScenarioCard } from "@/components/finance/budget-scenario-card";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// 무거운 탭 컴포넌트 (16~32KB) - dynamic import로 초기 번들 분리
+const FinancePaymentStatus = dynamic(
+  () => import("@/components/finance/finance-payment-status").then(m => ({ default: m.FinancePaymentStatus })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
+const FinanceBudgetTab = dynamic(
+  () => import("@/components/finance/finance-budget-tab").then(m => ({ default: m.FinanceBudgetTab })),
+  { loading: () => <Skeleton className="h-48 w-full rounded-lg" /> }
+);
+const UnpaidSummary = dynamic(
+  () => import("@/components/finance/unpaid-summary").then(m => ({ default: m.UnpaidSummary })),
+  { loading: () => <Skeleton className="h-24 w-full rounded-lg" /> }
+);
+const PaymentReminderSection = dynamic(
+  () => import("@/components/finance/payment-reminder-section").then(m => ({ default: m.PaymentReminderSection })),
+  { loading: () => <Skeleton className="h-24 w-full rounded-lg" /> }
+);
+const FinanceReminderSettings = dynamic(
+  () => import("@/components/finance/finance-reminder-settings").then(m => ({ default: m.FinanceReminderSettings })),
+  { loading: () => <Skeleton className="h-24 w-full rounded-lg" /> }
+);
+const FinanceSplitSection = dynamic(
+  () => import("@/components/finance/finance-split-section").then(m => ({ default: m.FinanceSplitSection })),
+  { loading: () => <Skeleton className="h-48 w-full rounded-lg" /> }
+);
+const ProjectCostAnalytics = dynamic(
+  () => import("@/components/finance/project-cost-analytics").then(m => ({ default: m.ProjectCostAnalytics })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
+const ExpenseTemplateManager = dynamic(
+  () => import("@/components/finance/expense-template-manager").then(m => ({ default: m.ExpenseTemplateManager })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
+const CreateSettlementDialog = dynamic(
+  () => import("@/components/finance/create-settlement-dialog").then(m => ({ default: m.CreateSettlementDialog })),
+  { ssr: false }
+);
+const SettlementRequestDashboard = dynamic(
+  () => import("@/components/finance/settlement-request-dashboard").then(m => ({ default: m.SettlementRequestDashboard })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
+const MySettlementRequests = dynamic(
+  () => import("@/components/finance/my-settlement-requests").then(m => ({ default: m.MySettlementRequests })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
+const ReceiptShareDialog = dynamic(
+  () => import("@/components/finance/receipt-share-dialog").then(m => ({ default: m.ReceiptShareDialog })),
+  { ssr: false }
+);
+const FinanceGoalCard = dynamic(
+  () => import("@/components/finance/finance-goal-card").then(m => ({ default: m.FinanceGoalCard })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
+const BudgetScenarioCard = dynamic(
+  () => import("@/components/finance/budget-scenario-card").then(m => ({ default: m.BudgetScenarioCard })),
+  { loading: () => <Skeleton className="h-32 w-full rounded-lg" /> }
+);
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
@@ -35,6 +81,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FinanceExportButton } from "@/components/finance/finance-export-button";
+import { exportToCsv } from "@/lib/export/csv-exporter";
 import { Pencil, Trash2, Download, Search, X, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -256,21 +303,7 @@ export function FinanceContent({
       ];
     });
 
-    const csvContent =
-      "\uFEFF" +
-      [headers, ...rows]
-        .map((row) =>
-          row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
-        )
-        .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
+    exportToCsv(filename, headers, rows);
   };
 
   const handleDeleteConfirm = async () => {

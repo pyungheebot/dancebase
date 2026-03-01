@@ -40,6 +40,7 @@ import { ScheduleFeedbackDialog } from "@/components/schedule/schedule-feedback-
 import { ScheduleFeedbackSummary } from "@/components/schedule/schedule-feedback-summary";
 import { ScheduleSetlistSection } from "@/components/schedule/schedule-setlist-section";
 import { PracticeTimer } from "@/components/schedule/practice-timer";
+import { exportToCsv } from "@/lib/export/csv-exporter";
 import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows, Star } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -342,21 +343,7 @@ export function AttendanceContent({
       String(stat.rate),
     ]);
 
-    const csvContent =
-      "\uFEFF" +
-      [headers, ...rows]
-        .map((row) =>
-          row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
-        )
-        .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
+    exportToCsv(filename, headers, rows);
   };
 
   const selectedSchedule = schedules.find((s) => s.id === selectedScheduleId);

@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { exportToCsv } from "@/lib/export/csv-exporter";
 import type { FinanceTransactionWithDetails } from "@/types";
 import type { EntityMember } from "@/types/entity-context";
 
@@ -107,21 +108,7 @@ export function FinancePaymentStatus({ transactions, members, nicknameMap }: Pro
       member.hasPaid ? "납부" : "미납",
     ]);
 
-    const csvContent =
-      "\uFEFF" +
-      [headers, ...rows]
-        .map((row) =>
-          row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
-        )
-        .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
+    exportToCsv(filename, headers, rows);
   };
 
   return (

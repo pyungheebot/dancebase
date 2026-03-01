@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, useMemo, useCallback } from "react";
+import { useRef, useEffect, useState, useMemo, useCallback, memo } from "react";
 import Link from "next/link";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -18,6 +18,95 @@ function formatDateSeparator(date: Date): string {
   if (isYesterday(date)) return "어제";
   return formatYearMonthDay(date);
 }
+
+const DateSeparator = memo(function DateSeparator({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 py-3">
+      <div className="flex-1 h-px bg-border" />
+      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
+      <div className="flex-1 h-px bg-border" />
+    </div>
+  );
+});
+
+type MessageBubbleProps = {
+  msg: Message;
+  isMine: boolean;
+  isFirstInGroup: boolean;
+  partnerName: string | null;
+  partnerAvatarUrl: string | null;
+};
+
+const MessageBubble = memo(function MessageBubble({
+  msg,
+  isMine,
+  isFirstInGroup,
+  partnerName,
+  partnerAvatarUrl,
+}: MessageBubbleProps) {
+  const msgDate = new Date(msg.created_at);
+  const isOptimistic = msg.id.startsWith("optimistic-");
+
+  return (
+    <div
+      className={`flex ${isMine ? "justify-end" : "justify-start"} ${
+        isFirstInGroup ? "mt-3" : "mt-0.5"
+      }`}
+    >
+      {/* 상대방 아바타 */}
+      {!isMine && (
+        <div className="w-8 shrink-0 mr-2">
+          {isFirstInGroup && (
+            <Avatar className="h-8 w-8">
+              {partnerAvatarUrl && (
+                <AvatarImage src={partnerAvatarUrl} />
+              )}
+              <AvatarFallback className="text-xs">
+                {partnerName?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+          )}
+        </div>
+      )}
+
+      <div className={`max-w-[70%] ${isMine ? "items-end" : "items-start"}`}>
+        {/* 상대 이름 (첫 메시지만) */}
+        {!isMine && isFirstInGroup && (
+          <p className="text-xs font-medium text-muted-foreground mb-1 ml-1">
+            {partnerName}
+          </p>
+        )}
+
+        {/* 메시지 버블 */}
+        <div
+          className={`px-3 py-2 ${
+            isMine
+              ? "bg-blue-500 text-white rounded-2xl rounded-br-md"
+              : "bg-muted rounded-2xl rounded-bl-md"
+          } ${isOptimistic ? "opacity-70" : ""}`}
+        >
+          <p className="text-sm whitespace-pre-wrap break-words">
+            {msg.content}
+          </p>
+        </div>
+
+        {/* 시간 + 읽음 표시 */}
+        <div
+          className={`flex items-center gap-1 mt-0.5 ${
+            isMine ? "justify-end mr-1" : "ml-1"
+          }`}
+        >
+          <span className="text-[10px] text-muted-foreground">
+            {format(msgDate, "HH:mm")}
+          </span>
+          {isMine && msg.read_at && (
+            <CheckCheck className="h-3 w-3 text-blue-500" />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
 
 interface ChatViewProps {
   partnerId: string;
@@ -135,16 +224,10 @@ export function ChatView({ partnerId }: ChatViewProps) {
       // 날짜 구분선
       if (!prevDate || !isSameDay(msgDate, prevDate)) {
         elements.push(
-          <div
+          <DateSeparator
             key={`date-${msg.created_at}`}
-            className="flex items-center gap-3 py-3"
-          >
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground shrink-0">
-              {formatDateSeparator(msgDate)}
-            </span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
+            label={formatDateSeparator(msgDate)}
+          />
         );
       }
 
@@ -153,69 +236,16 @@ export function ChatView({ partnerId }: ChatViewProps) {
         idx === 0 ||
         messages[idx - 1].sender_id !== msg.sender_id ||
         (prevDate && !isSameDay(msgDate, prevDate));
-      const isOptimistic = msg.id.startsWith("optimistic-");
 
       elements.push(
-        <div
+        <MessageBubble
           key={msg.id}
-          className={`flex ${isMine ? "justify-end" : "justify-start"} ${
-            isFirstInGroup ? "mt-3" : "mt-0.5"
-          }`}
-        >
-          {/* 상대방 아바타 */}
-          {!isMine && (
-            <div className="w-8 shrink-0 mr-2">
-              {isFirstInGroup && (
-                <Avatar className="h-8 w-8">
-                  {partnerAvatarUrl && (
-                    <AvatarImage src={partnerAvatarUrl} />
-                  )}
-                  <AvatarFallback className="text-xs">
-                    {partnerName?.charAt(0)?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-            </div>
-          )}
-
-          <div
-            className={`max-w-[70%] ${isMine ? "items-end" : "items-start"}`}
-          >
-            {/* 상대 이름 (첫 메시지만) */}
-            {!isMine && isFirstInGroup && (
-              <p className="text-xs font-medium text-muted-foreground mb-1 ml-1">
-                {partnerName}
-              </p>
-            )}
-
-            {/* 메시지 버블 */}
-            <div
-              className={`px-3 py-2 ${
-                isMine
-                  ? "bg-blue-500 text-white rounded-2xl rounded-br-md"
-                  : "bg-muted rounded-2xl rounded-bl-md"
-              } ${isOptimistic ? "opacity-70" : ""}`}
-            >
-              <p className="text-sm whitespace-pre-wrap break-words">
-                {msg.content}
-              </p>
-            </div>
-
-            {/* 시간 + 읽음 표시 */}
-            <div
-              className={`flex items-center gap-1 mt-0.5 ${
-                isMine ? "justify-end mr-1" : "ml-1"
-              }`}
-            >
-              <span className="text-[10px] text-muted-foreground">
-                {format(msgDate, "HH:mm")}
-              </span>
-              {isMine && msg.read_at && (
-                <CheckCheck className="h-3 w-3 text-blue-500" />
-              )}
-            </div>
-          </div>
-        </div>
+          msg={msg}
+          isMine={isMine}
+          isFirstInGroup={!!isFirstInGroup}
+          partnerName={partnerName ?? null}
+          partnerAvatarUrl={partnerAvatarUrl ?? null}
+        />
       );
     });
 
