@@ -4,6 +4,8 @@ import { useReducer, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useFormRecovery } from "@/hooks/use-form-recovery";
+import { FormRecoveryBanner } from "@/components/shared/form-recovery-banner";
 import { Button } from "@/components/ui/button";
 import {
   createSchedule,
@@ -79,6 +81,13 @@ function toISOWithLocalOffset(dateStr: string, timeStr: string): string {
 }
 
 type RecurrenceScope = "this" | "this_and_future" | "all";
+
+/** sessionStorage에 저장되는 복구 가능한 필드 (UI/에러 상태 제외) */
+type ScheduleFormRecoveryState = {
+  fields: ScheduleFieldValues;
+  date: string;
+  recurringValue: RecurringScheduleValue;
+};
 
 type ScheduleFormProps = {
   groupId: string;
@@ -199,6 +208,32 @@ export function ScheduleForm({
   const deleteAction = useAsyncAction();
   const [state, dispatch] = useReducer(formReducer, INITIAL_STATE);
   const { user } = useAuth();
+
+  // 폼 복구 훅 (create 모드에서만 활성화)
+  const recoveryKey = `schedule-form-${groupId}${projectId ? `-${projectId}` : ""}`;
+  const recoveryState: ScheduleFormRecoveryState = {
+    fields: state.fields,
+    date: state.date,
+    recurringValue: state.recurringValue,
+  };
+  const {
+    saveOnError: saveScheduleOnError,
+    clearSaved: clearScheduleSaved,
+    hasSavedData: hasScheduleSavedData,
+    restore: restoreSchedule,
+    dismiss: dismissSchedule,
+  } = useFormRecovery<ScheduleFormRecoveryState>(recoveryKey, recoveryState, {
+    onRestore: (saved) => {
+      dispatch({
+        type: "SET_INITIAL",
+        state: {
+          fields: saved.fields,
+          date: saved.date,
+          recurringValue: saved.recurringValue,
+        },
+      });
+    },
+  });
 
   // Create mode: prefill from template
   useEffect(() => {
@@ -464,11 +499,13 @@ export function ScheduleForm({
           }
         }
 
+        if (!isEdit) clearScheduleSaved();
         setOpen(false);
         if (!isEdit) resetForm();
         onCreated();
       })
       .catch(() => {
+        if (!isEdit) saveScheduleOnError();
         dispatch({
           type: "SET_ERROR",
           error: isEdit
@@ -569,6 +606,12 @@ export function ScheduleForm({
         </DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-3">
+        {!isEdit && hasScheduleSavedData && (
+          <FormRecoveryBanner
+            onRestore={restoreSchedule}
+            onDismiss={dismissSchedule}
+          />
+        )}
         <ScheduleFormFields
           values={state.fields}
           onChange={(partial) => {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, Suspense, useEffect } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
@@ -184,11 +185,27 @@ function GroupMembersContent({
     role: "all",
     sort: "name",
   });
-  const searchQuery = queryParams.q;
   const roleFilter = queryParams.role;
   const sortOrder = queryParams.sort;
 
-  const setSearchQuery = (v: string) => setQueryParams({ q: v });
+  // 검색어: 로컬 state로 즉시 반영, 500ms 디바운싱 후 URL 업데이트
+  const [searchInput, setSearchInput] = useState(queryParams.q);
+  const debouncedSearch = useDebounce(searchInput, 500);
+  // debouncedSearch가 변경될 때만 URL 업데이트
+  useEffect(() => {
+    if (debouncedSearch !== queryParams.q) {
+      setQueryParams({ q: debouncedSearch });
+    }
+  // queryParams.q 변경에 의한 무한루프를 방지하기 위해 의도적으로 제외
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
+  // URL의 q가 외부에서 변경되면 로컬 입력도 동기화 (뒤로가기 등)
+  useEffect(() => {
+    setSearchInput(queryParams.q);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryParams.q]);
+  const searchQuery = queryParams.q;
+
   const setRoleFilter = (v: string) => setQueryParams({ role: v });
   const setSortOrder = (v: string) => setQueryParams({ sort: v });
 
@@ -483,8 +500,8 @@ function GroupMembersContent({
         <div className="relative flex-1">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="멤버 검색"
             className="h-7 pl-6 text-xs"
           />
@@ -795,11 +812,24 @@ function ProjectMembersContent({
     role: "all",
     sort: "name",
   });
-  const searchQuery = queryParams.q;
   const roleFilter = queryParams.role;
   const sortOrder = queryParams.sort;
 
-  const setSearchQuery = (v: string) => setQueryParams({ q: v });
+  // 검색어: 로컬 state로 즉시 반영, 500ms 디바운싱 후 URL 업데이트
+  const [searchInput, setSearchInput] = useState(queryParams.q);
+  const debouncedSearchProj = useDebounce(searchInput, 500);
+  useEffect(() => {
+    if (debouncedSearchProj !== queryParams.q) {
+      setQueryParams({ q: debouncedSearchProj });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchProj]);
+  useEffect(() => {
+    setSearchInput(queryParams.q);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryParams.q]);
+  const searchQuery = queryParams.q;
+
   const setRoleFilter = (v: string) => setQueryParams({ role: v });
   const setSortOrder = (v: string) => setQueryParams({ sort: v });
 
@@ -992,8 +1022,8 @@ function ProjectMembersContent({
         <div className="relative flex-1">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="멤버 검색"
             className="h-7 pl-6 text-xs"
           />

@@ -3,6 +3,7 @@
 import { useReducer, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { useFormRecovery } from "@/hooks/use-form-recovery";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
 import { SubmitButton } from "@/components/shared/submit-button";
+import { FormRecoveryBanner } from "@/components/shared/form-recovery-banner";
 import { toast } from "sonner";
 import type { FinanceCategory, FinanceTransaction } from "@/types";
 import {
@@ -52,7 +54,8 @@ type Props = {
 
 // ── State / Action 타입 ────────────────────────────────────────────────────
 
-type FormState = {
+/** sessionStorage에 저장되는 복구 가능한 필드 (에러 상태 제외) */
+type FormRecoveryState = {
   type: "income" | "expense";
   categoryId: string;
   paidBy: string;
@@ -60,6 +63,9 @@ type FormState = {
   title: string;
   description: string;
   date: string;
+};
+
+type FormState = FormRecoveryState & {
   amountError: string | null;
   titleError: string | null;
 };
@@ -129,6 +135,35 @@ export function FinanceTransactionForm({
   // 헬퍼
   const setField = <K extends keyof FormState>(field: K, value: FormState[K]) =>
     dispatch({ type: "SET_FIELD", field, value });
+
+  // 폼 복구 훅 (create 모드에서만 활성화)
+  const recoveryKey = `finance-transaction-form-${groupId}${projectId ? `-${projectId}` : ""}`;
+  const recoveryState: FormRecoveryState = {
+    type: state.type,
+    categoryId: state.categoryId,
+    paidBy: state.paidBy,
+    amount: state.amount,
+    title: state.title,
+    description: state.description,
+    date: state.date,
+  };
+  const { saveOnError, clearSaved, hasSavedData, restore, dismiss } =
+    useFormRecovery<FormRecoveryState>(recoveryKey, recoveryState, {
+      onRestore: (saved) => {
+        dispatch({
+          type: "SET_INITIAL",
+          state: {
+            type: saved.type,
+            categoryId: saved.categoryId,
+            paidBy: saved.paidBy,
+            amount: saved.amount,
+            title: saved.title,
+            description: saved.description,
+            date: saved.date,
+          },
+        });
+      },
+    });
 
   // 선택된 카테고리의 fee_rate 계산
   const selectedCategory = useMemo(
@@ -227,9 +262,11 @@ export function FinanceTransactionForm({
         });
 
         if (error) {
+          saveOnError();
           toast.error("거래 추가에 실패했습니다");
           return;
         }
+        clearSaved();
         dispatch({ type: "RESET" });
         setOpen(false);
         onSuccess();
@@ -252,6 +289,9 @@ export function FinanceTransactionForm({
         <DialogTitle>{isEdit ? "거래 수정" : "거래 추가"}</DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-3">
+        {!isEdit && hasSavedData && (
+          <FormRecoveryBanner onRestore={restore} onDismiss={dismiss} />
+        )}
         <Tabs
           value={state.type}
           onValueChange={(v) => setField("type", v as "income" | "expense")}
