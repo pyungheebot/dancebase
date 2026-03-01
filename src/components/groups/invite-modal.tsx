@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,16 +16,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import Image from "next/image";
 import { Copy, Check, Download, Link2, QrCode, Hash } from "lucide-react";
 import { toast } from "sonner";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 
 type InviteModalProps = {
   inviteCode: string;
 };
 
 export function InviteModal({ inviteCode }: InviteModalProps) {
-  const [copiedCode, setCopiedCode] = useState(false);
-  const [copiedUrl, setCopiedUrl] = useState(false);
+  const { copied: copiedCode, copy: copyCode } = useCopyToClipboard({
+    successMessage: "초대 코드가 복사되었습니다",
+  });
+  const { copied: copiedUrl, copy: copyUrl } = useCopyToClipboard({
+    successMessage: "초대 링크가 복사되었습니다",
+  });
 
   const getInviteUrl = () => {
     if (typeof window === "undefined") return "";
@@ -32,17 +39,11 @@ export function InviteModal({ inviteCode }: InviteModalProps) {
   };
 
   const handleCopyCode = async () => {
-    await navigator.clipboard.writeText(inviteCode);
-    setCopiedCode(true);
-    toast.success("초대 코드가 복사되었습니다");
-    setTimeout(() => setCopiedCode(false), 2000);
+    await copyCode(inviteCode);
   };
 
   const handleCopyUrl = async () => {
-    await navigator.clipboard.writeText(getInviteUrl());
-    setCopiedUrl(true);
-    toast.success("초대 링크가 복사되었습니다");
-    setTimeout(() => setCopiedUrl(false), 2000);
+    await copyUrl(getInviteUrl());
   };
 
   const handleDownloadQr = async () => {
@@ -109,7 +110,7 @@ export function InviteModal({ inviteCode }: InviteModalProps) {
                   readOnly
                   className="font-mono text-sm"
                 />
-                <Button variant="outline" size="icon" onClick={handleCopyCode}>
+                <Button variant="outline" size="icon" onClick={handleCopyCode} aria-label="초대 코드 복사">
                   {copiedCode ? (
                     <Check className="h-4 w-4 text-green-500" />
                   ) : (
@@ -133,7 +134,7 @@ export function InviteModal({ inviteCode }: InviteModalProps) {
                   readOnly
                   className="text-xs"
                 />
-                <Button variant="outline" size="icon" onClick={handleCopyUrl}>
+                <Button variant="outline" size="icon" onClick={handleCopyUrl} aria-label="초대 링크 복사">
                   {copiedUrl ? (
                     <Check className="h-4 w-4 text-green-500" />
                   ) : (
@@ -151,16 +152,13 @@ export function InviteModal({ inviteCode }: InviteModalProps) {
           <TabsContent value="qr" className="mt-4 space-y-3">
             <div className="flex flex-col items-center gap-3">
               <div className="border rounded-lg p-3 bg-white">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={qrImageUrl}
                   alt="초대 QR코드"
                   width={200}
                   height={200}
                   className="block"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
+                  unoptimized
                 />
               </div>
               <Button
@@ -189,7 +187,7 @@ type JoinGroupModalProps = {
 
 export function JoinGroupModal({ trigger }: JoinGroupModalProps) {
   const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -200,8 +198,8 @@ export function JoinGroupModal({ trigger }: JoinGroupModalProps) {
     e.preventDefault();
     setError(null);
     setMessage(null);
-    setLoading(true);
 
+    await execute(async () => {
     try {
       const { data: group } = await supabase
         .from("groups")
@@ -277,9 +275,8 @@ export function JoinGroupModal({ trigger }: JoinGroupModalProps) {
       router.refresh();
     } catch {
       setError("그룹 참여에 실패했습니다");
-    } finally {
-      setLoading(false);
     }
+    });
   };
 
   return (

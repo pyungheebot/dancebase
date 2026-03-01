@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   FileText,
   Plus,
@@ -49,6 +50,7 @@ import {
   type AddAnnouncementTemplateInput,
   type UpdateAnnouncementTemplateInput,
 } from "@/hooks/use-announcement-template";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import type {
   AnnouncementTemplateCategory,
   AnnouncementTemplateEntry,
@@ -153,7 +155,10 @@ function PreviewDialog({
     });
     return init;
   });
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard({
+    successMessage: null,
+    errorMessage: null,
+  });
 
   const previewTitle = useMemo(
     () => interpolateTemplate(entry.titleTemplate, varValues),
@@ -170,13 +175,7 @@ function PreviewDialog({
 
   async function handleCopy() {
     const text = `${previewTitle}\n\n${previewBody}`;
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // clipboard 실패 시 무시
-    }
+    await copy(text);
   }
 
   function handleUse() {
@@ -272,7 +271,7 @@ function TemplateForm({
   submitLabel: string;
 }) {
   const [form, setForm] = useState<AddAnnouncementTemplateInput>(initial);
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
 
   // 제목+본문 템플릿에서 자동으로 변수 키 추출
   const autoKeys = useMemo(() => {
@@ -317,10 +316,10 @@ function TemplateForm({
   }
 
   async function handleSubmit() {
-    setLoading(true);
-    const ok = await onSubmit({ ...form, variables: syncedVariables });
-    setLoading(false);
-    if (ok) onCancel();
+    await execute(async () => {
+      const ok = await onSubmit({ ...form, variables: syncedVariables });
+      if (ok) onCancel();
+    });
   }
 
   return (

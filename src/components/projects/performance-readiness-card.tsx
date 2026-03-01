@@ -38,6 +38,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
 // 카테고리 메타데이터
@@ -475,15 +476,14 @@ function ChecklistPanel({
 }: ChecklistPanelProps) {
   const [open, setOpen] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const totalProgress = calcTotalProgress(checklist.items);
   const totalItems = checklist.items.length;
   const doneItems = checklist.items.filter((i) => i.completed).length;
 
   const handleDelete = () => {
-    if (confirm(`"${checklist.eventName}" 체크리스트를 삭제하시겠습니까?`)) {
-      onDelete(checklist.id);
-      toast.success("체크리스트가 삭제되었습니다.");
-    }
+    onDelete(checklist.id);
+    toast.success("체크리스트가 삭제되었습니다.");
   };
 
   return (
@@ -514,7 +514,7 @@ function ChecklistPanel({
               variant="ghost"
               size="sm"
               className="h-7 text-xs px-2 text-muted-foreground hover:text-destructive"
-              onClick={handleDelete}
+              onClick={() => setDeleteConfirmOpen(true)}
             >
               <Trash2 className="h-3 w-3" />
             </Button>
@@ -573,6 +573,14 @@ function ChecklistPanel({
           </div>
         </CollapsibleContent>
       </Collapsible>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="체크리스트 삭제"
+        description={`"${checklist.eventName}" 체크리스트를 삭제하시겠습니까?`}
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }

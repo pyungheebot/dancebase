@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import {
   BookText,
@@ -342,7 +343,7 @@ function AddTermDialog({
   const [relatedTerms, setRelatedTerms] = useState<string[]>([]);
   const [example, setExample] = useState("");
   const [addedBy, setAddedBy] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const reset = () => {
     setTerm("");
@@ -353,7 +354,7 @@ function AddTermDialog({
     setAddedBy("");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!term.trim()) {
       toast.error("용어명을 입력해주세요.");
       return;
@@ -362,16 +363,16 @@ function AddTermDialog({
       toast.error("정의를 입력해주세요.");
       return;
     }
-    setSubmitting(true);
-    const ok = onAdd({ term, definition, category, relatedTerms, example, addedBy });
-    setSubmitting(false);
-    if (ok) {
-      toast.success("용어가 등록되었습니다.");
-      reset();
-      onClose();
-    } else {
-      toast.error("용어 등록에 실패했습니다.");
-    }
+    await execute(async () => {
+      const ok = onAdd({ term, definition, category, relatedTerms, example, addedBy });
+      if (ok) {
+        toast.success("용어가 등록되었습니다.");
+        reset();
+        onClose();
+      } else {
+        toast.error("용어 등록에 실패했습니다.");
+      }
+    });
   };
 
   const handleClose = () => {

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, startTransition } from "react";
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatShortDate } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +43,7 @@ function ScheduleRow({ schedule }: { schedule: ScheduleWithDetails }) {
     >
       {/* 날짜 + 시간 */}
       <div className="text-xs text-muted-foreground w-32 shrink-0">
-        <div>{format(new Date(schedule.starts_at), "M/d (EEE)", { locale: ko })}</div>
+        <div>{formatShortDate(new Date(schedule.starts_at))}</div>
         <div>
           {format(new Date(schedule.starts_at), "HH:mm")}
           {" - "}
@@ -164,7 +164,7 @@ export default function AllSchedulesPage() {
   }, [supabase]);
 
   useEffect(() => {
-    fetchSchedules();
+    startTransition(() => { fetchSchedules(); });
   }, [fetchSchedules]);
 
   const now = new Date();

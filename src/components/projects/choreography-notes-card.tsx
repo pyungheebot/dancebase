@@ -31,6 +31,7 @@ import {
   AlignLeft,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 // ============================================
 // 시간 파싱/비교 유틸
@@ -83,7 +84,7 @@ interface AddSectionFormProps {
 function AddSectionForm({ noteId, onAdd, sectionCount }: AddSectionFormProps) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<SectionFormValues>(EMPTY_SECTION_FORM);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function handleChange(
     field: keyof SectionFormValues,
@@ -92,7 +93,7 @@ function AddSectionForm({ noteId, onAdd, sectionCount }: AddSectionFormProps) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!form.title.trim()) {
       toast.error("구간 제목을 입력하세요.");
       return;
@@ -101,22 +102,22 @@ function AddSectionForm({ noteId, onAdd, sectionCount }: AddSectionFormProps) {
       toast.error("시작/종료 시간을 입력하세요.");
       return;
     }
-    setSubmitting(true);
-    const ok = onAdd(noteId, {
-      startTime: form.startTime.trim(),
-      endTime: form.endTime.trim(),
-      title: form.title.trim(),
-      description: form.description.trim(),
-      formation: form.formation.trim(),
+    await execute(async () => {
+      const ok = onAdd(noteId, {
+        startTime: form.startTime.trim(),
+        endTime: form.endTime.trim(),
+        title: form.title.trim(),
+        description: form.description.trim(),
+        formation: form.formation.trim(),
+      });
+      if (ok) {
+        toast.success("구간이 추가되었습니다.");
+        setForm(EMPTY_SECTION_FORM);
+        setOpen(false);
+      } else {
+        toast.error("구간은 노트당 최대 20개까지 추가할 수 있습니다.");
+      }
     });
-    setSubmitting(false);
-    if (ok) {
-      toast.success("구간이 추가되었습니다.");
-      setForm(EMPTY_SECTION_FORM);
-      setOpen(false);
-    } else {
-      toast.error("구간은 노트당 최대 20개까지 추가할 수 있습니다.");
-    }
   }
 
   if (sectionCount >= 20) return null;

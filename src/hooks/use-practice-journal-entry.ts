@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { JournalCondition, PracticeJournalEntry } from "@/types";
 
 // ============================================
@@ -96,20 +96,7 @@ function saveEntries(
 
 export function usePracticeJournalEntry(groupId: string, userId: string) {
   const [entries, setEntries] = useState<PracticeJournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !userId) {
-      setLoading(false);
-      return;
-    }
-    const stored = loadEntries(groupId, userId);
-    // 날짜 내림차순 정렬 (최신 우선)
-    stored.sort((a, b) => b.date.localeCompare(a.date));
-    setEntries(stored);
-    setLoading(false);
-  }, [groupId, userId]);
 
   // 내부 저장 + 상태 갱신
   const persist = useCallback(
@@ -234,7 +221,7 @@ export function usePracticeJournalEntry(groupId: string, userId: string) {
 
   return {
     entries,
-    loading,
+    loading: false,
     addEntry,
     updateEntry,
     deleteEntry,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { CostumeItem, CostumeAssignment, CostumeStore, CostumeStatus } from "@/types";
 
 // ============================================
@@ -70,12 +70,7 @@ export function useCostumeManagement(groupId: string, projectId: string) {
     }
     const data = loadStore(groupId, projectId);
     setStore(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 저장 헬퍼
   const persist = useCallback(

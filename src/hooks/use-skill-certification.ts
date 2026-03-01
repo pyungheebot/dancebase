@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { SkillCertDefinition, SkillCertAward, SkillCertLevel } from "@/types";
 
 // ============================================================
@@ -103,21 +103,15 @@ export type SkillCertStats = {
 // ============================================================
 
 export function useSkillCertification(groupId: string) {
-  const [certs, setCerts] = useState<SkillCertDefinition[]>([]);
+  const [certs, setCerts] = useState<SkillCertDefinition[]>(() => loadData(groupId).certs);
   const [awards, setAwards] = useState<SkillCertAward[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setCerts(data.certs);
     setAwards(data.awards);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
@@ -272,7 +266,7 @@ export function useSkillCertification(groupId: string) {
   return {
     certs,
     awards,
-    loading,
+    loading: false,
     createCert,
     deleteCert,
     awardCert,

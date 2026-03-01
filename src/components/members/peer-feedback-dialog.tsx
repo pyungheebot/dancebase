@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Dialog,
   DialogContent,
@@ -45,29 +46,24 @@ export function PeerFeedbackSendDialog({
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<PeerFeedbackType>("strength");
   const [content, setContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const { sendFeedback, hasSentTo } = usePeerFeedback(groupId);
 
   const alreadySent = hasSentTo(currentUserId, receiverId);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!content.trim()) {
       toast.error("내용을 입력해주세요");
       return;
     }
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       sendFeedback(currentUserId, receiverId, receiverName, type, content.trim());
       toast.success("피드백이 익명으로 전송되었습니다");
       setOpen(false);
       setContent("");
       setType("strength");
-    } catch {
-      toast.error("피드백 전송에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (

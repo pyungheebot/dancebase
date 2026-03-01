@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   ProjectFormFields,
   DEFAULT_PROJECT_FORM_VALUES,
@@ -26,7 +27,7 @@ interface ProjectFormProps {
 export function ProjectForm({ groupId, onCreated }: ProjectFormProps) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<ProjectFormValues>(DEFAULT_PROJECT_FORM_VALUES);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const supabase = createClient();
 
   const handleChange = <K extends keyof ProjectFormValues>(key: K, value: ProjectFormValues[K]) => {
@@ -35,37 +36,32 @@ export function ProjectForm({ groupId, onCreated }: ProjectFormProps) {
 
   const handleSubmit = async () => {
     if (!form.name.trim()) return;
-    setSubmitting(true);
+    await execute(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setSubmitting(false);
-      return;
-    }
+      const { error } = await supabase.rpc("create_project", {
+        p_group_id: groupId,
+        p_name: form.name.trim(),
+        p_description: form.description.trim() || null,
+        p_type: form.type,
+        p_enabled_features: form.features,
+        p_visibility: form.visibility,
+        p_start_date: form.start_date || null,
+        p_end_date: form.end_date || null,
+      });
 
-    const { error } = await supabase.rpc("create_project", {
-      p_group_id: groupId,
-      p_name: form.name.trim(),
-      p_description: form.description.trim() || null,
-      p_type: form.type,
-      p_enabled_features: form.features,
-      p_visibility: form.visibility,
-      p_start_date: form.start_date || null,
-      p_end_date: form.end_date || null,
+      if (error) {
+        toast.error(`프로젝트 생성 실패: ${error.message}`);
+        return;
+      }
+
+      setForm(DEFAULT_PROJECT_FORM_VALUES);
+      setOpen(false);
+      onCreated();
     });
-
-    if (error) {
-      toast.error(`프로젝트 생성 실패: ${error.message}`);
-      setSubmitting(false);
-      return;
-    }
-
-    setForm(DEFAULT_PROJECT_FORM_VALUES);
-    setSubmitting(false);
-    setOpen(false);
-    onCreated();
   };
 
   return (

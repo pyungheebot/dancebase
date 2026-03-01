@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { ProjectNotice, ProjectNoticeImportance } from "@/types";
 
 const MAX_NOTICES = 20;
@@ -36,10 +36,7 @@ export function useProjectNotices(projectId: string) {
   const [mounted, setMounted] = useState(false);
 
   // 마운트 후 localStorage에서 불러오기
-  useEffect(() => {
-    setMounted(true);
-    setNotices(loadNotices(projectId));
-  }, [projectId]);
+
 
   // urgent 공지를 상단 고정, 그 다음 createdAt 내림차순 정렬
   const sortedNotices = [...notices].sort((a, b) => {

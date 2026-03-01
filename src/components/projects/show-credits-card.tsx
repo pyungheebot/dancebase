@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, startTransition } from "react";
 import {
   Card,
   CardContent,
@@ -25,16 +25,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -226,8 +217,12 @@ function PersonDialog({
 
   useEffect(() => {
     if (open) {
-      setName(initial?.name ?? "");
-      setRole(initial?.role ?? "");
+      const n = initial?.name ?? "";
+      const r = initial?.role ?? "";
+      startTransition(() => {
+        setName(n);
+        setRole(r);
+      });
     }
   }, [open, initial]);
 
@@ -361,7 +356,7 @@ function CreditsPreview({
   // 모달 닫힐 때 정리
   useEffect(() => {
     if (!open) {
-      setPlaying(false);
+      startTransition(() => { setPlaying(false); });
       if (animRef.current !== null) {
         cancelAnimationFrame(animRef.current);
         animRef.current = null;
@@ -682,31 +677,14 @@ function SectionCard({
       />
 
       {/* 인원 삭제 확인 */}
-      <AlertDialog
+      <ConfirmDialog
         open={deletePersonId !== null}
         onOpenChange={(v) => !v && setDeletePersonId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">인원 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              이 인원을 삭제하시겠습니까?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-7 text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (deletePersonId) onDeletePerson(deletePersonId);
-                setDeletePersonId(null);
-              }}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="인원 삭제"
+        description="이 인원을 삭제하시겠습니까?"
+        onConfirm={() => { if (deletePersonId) onDeletePerson(deletePersonId); setDeletePersonId(null); }}
+        destructive
+      />
     </>
   );
 }
@@ -947,31 +925,14 @@ export function ShowCreditsCard({
       />
 
       {/* 섹션 삭제 확인 */}
-      <AlertDialog
+      <ConfirmDialog
         open={deleteSectionId !== null}
         onOpenChange={(v) => !v && setDeleteSectionId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">섹션 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              이 섹션과 포함된 모든 인원을 삭제하시겠습니까? 이 작업은
-              되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-7 text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                if (deleteSectionId) handleDeleteSection(deleteSectionId);
-              }}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="섹션 삭제"
+        description="이 섹션과 포함된 모든 인원을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        onConfirm={() => { if (deleteSectionId) handleDeleteSection(deleteSectionId); }}
+        destructive
+      />
 
       {/* 크레딧 프리뷰 */}
       <CreditsPreview

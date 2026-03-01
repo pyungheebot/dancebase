@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCog, Plus, X, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { useScheduleRoles } from "@/hooks/use-schedule-roles";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { GroupMemberWithProfile } from "@/types";
 
 type ScheduleRolesSectionProps = {
@@ -39,7 +40,7 @@ export function ScheduleRolesSection({
   const [addOpen, setAddOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [roleName, setRoleName] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   const [historySuggestions, setHistorySuggestions] = useState<string[]>([]);
@@ -93,27 +94,26 @@ export function ScheduleRolesSection({
       return;
     }
 
-    setSubmitting(true);
-    try {
-      await addRole(selectedUserId, roleName.trim());
-      toast.success("역할을 배정했습니다");
-      setSelectedUserId("");
-      setRoleName("");
-      setAddOpen(false);
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : "역할 배정에 실패했습니다";
-      // 중복 에러 처리
-      if (msg.includes("duplicate") || msg.includes("unique")) {
-        toast.error("이미 동일한 역할이 배정되어 있습니다");
-      } else {
-        toast.error("역할 배정에 실패했습니다");
+    await execute(async () => {
+      try {
+        await addRole(selectedUserId, roleName.trim());
+        toast.success("역할을 배정했습니다");
+        setSelectedUserId("");
+        setRoleName("");
+        setAddOpen(false);
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "역할 배정에 실패했습니다";
+        // 중복 에러 처리
+        if (msg.includes("duplicate") || msg.includes("unique")) {
+          toast.error("이미 동일한 역할이 배정되어 있습니다");
+        } else {
+          toast.error("역할 배정에 실패했습니다");
+        }
       }
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   const handleRemove = async (roleId: string) => {

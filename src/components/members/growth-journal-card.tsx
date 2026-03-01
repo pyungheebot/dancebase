@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Notebook,
   ChevronDown,
@@ -783,7 +784,7 @@ export function GrowthJournalCard({
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<GrowthJournalEntry | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [filterMember, setFilterMember] = useState<string>("all");
 
   const {
@@ -828,8 +829,7 @@ export function GrowthJournalCard({
 
   // 일지 저장 (신규)
   async function handleAdd(values: FormValues) {
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       addEntry({
         memberName: values.memberName,
         date: values.date,
@@ -844,18 +844,13 @@ export function GrowthJournalCard({
       });
       toast.success("성장 일지가 저장되었습니다.");
       setDialogOpen(false);
-    } catch {
-      toast.error("저장 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   // 일지 수정
   async function handleUpdate(values: FormValues) {
     if (!editTarget) return;
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       updateEntry(editTarget.id, {
         memberName: values.memberName,
         date: values.date,
@@ -871,11 +866,7 @@ export function GrowthJournalCard({
       toast.success("일지가 수정되었습니다.");
       setDialogOpen(false);
       setEditTarget(null);
-    } catch {
-      toast.error("수정 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   // 일지 삭제

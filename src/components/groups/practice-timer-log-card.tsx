@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Timer,
   ChevronDown,
@@ -347,7 +348,7 @@ function AddLogDialog({
   const [memberName, setMemberName] = useState<string>("");
   const [description, setDescription] = useState("");
   const [intensity, setIntensity] = useState(3);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function handleClose() {
     setDate(todayYmd());
@@ -370,8 +371,7 @@ function AddLogDialog({
       toast.error("올바른 시간(분)을 입력해주세요.");
       return;
     }
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       onSubmit(
         date,
         category,
@@ -381,9 +381,7 @@ function AddLogDialog({
         intensity
       );
       handleClose();
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   return (

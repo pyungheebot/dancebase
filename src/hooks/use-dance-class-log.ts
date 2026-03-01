@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DanceClassLogData,
@@ -153,13 +153,7 @@ export function useDanceClassLog(memberId: string) {
   const [data, setData] = useState<DanceClassLogData>(() =>
     makeEmpty(memberId)
   );
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    setData(loadData(memberId));
-    setLoading(false);
-  }, [memberId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateData = useCallback(
@@ -350,7 +344,7 @@ export function useDanceClassLog(memberId: string) {
   return {
     data,
     entries: data.entries,
-    loading,
+    loading: false,
     addEntry,
     updateEntry,
     deleteEntry,

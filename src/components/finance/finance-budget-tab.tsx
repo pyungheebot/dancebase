@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { useFinanceBudget } from "@/hooks/use-finance-budget";
 import { invalidateFinanceBudget } from "@/lib/swr/invalidate";
 import { Button } from "@/components/ui/button";
@@ -65,7 +66,7 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formIncome, setFormIncome] = useState<string>("");
   const [formExpense, setFormExpense] = useState<string>("");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   const entityType = ctx.projectId ? "project" : "group";
   const entityId = ctx.projectId ?? ctx.groupId;
@@ -109,8 +110,7 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
       return;
     }
 
-    setSaving(true);
-    try {
+    await execute(async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -141,16 +141,13 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
       invalidateFinanceBudget(entityType, entityId, selectedMonth);
       refetch();
       setDialogOpen(false);
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   // 예산 삭제
   const handleDelete = async () => {
     if (!budget) return;
-    setSaving(true);
-    try {
+    await execute(async () => {
       const { error } = await supabase
         .from("finance_budgets")
         .delete()
@@ -165,9 +162,7 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
       invalidateFinanceBudget(entityType, entityId, selectedMonth);
       refetch();
       setDialogOpen(false);
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   const incomeRatio =

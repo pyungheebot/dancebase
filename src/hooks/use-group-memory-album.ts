@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type { GroupMemoryItem, MemoryCategory } from "@/types";
 
@@ -34,9 +34,7 @@ export function useGroupMemoryAlbum(groupId: string) {
   const [categoryFilter, setCategoryFilter] = useState<MemoryCategory | "all">("all");
   const [yearFilter, setYearFilter] = useState<string>("all");
 
-  useEffect(() => {
-    setItems(loadItems(groupId));
-  }, [groupId]);
+
 
   const addItem = useCallback(
     (input: { title: string; description: string; date: string; category: MemoryCategory; emoji: string }) => {

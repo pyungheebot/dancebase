@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
@@ -98,7 +98,7 @@ export function useAttendanceComparison(
       const d = subMonths(now, i);
       months.push({
         yearMonth: format(d, "yyyy-MM"),
-        label: format(d, "M월", { locale: ko }),
+        label: formatKo(d, "M월"),
       });
     }
 

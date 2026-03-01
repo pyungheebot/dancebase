@@ -267,6 +267,7 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
                               entry.memberName
                             );
                           }}
+                          aria-label="멤버 제거"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>

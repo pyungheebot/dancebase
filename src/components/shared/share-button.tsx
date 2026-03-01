@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import { Share2, Copy, Check, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+import { useShare } from "@/hooks/use-share";
 
 interface ShareButtonProps {
   /** 공유 제목 */
@@ -37,17 +38,11 @@ export function ShareButton({
   size = "sm",
   className = "h-7 text-xs",
 }: ShareButtonProps) {
-  const [copied, setCopied] = useState(false);
-  const [canShare, setCanShare] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  useEffect(() => {
-    setCanShare(
-      typeof navigator !== "undefined" &&
-      typeof navigator.share === "function"
-    );
-    return () => clearTimeout(timerRef.current);
-  }, []);
+  const { canNativeShare, share, copyLink: shareCopyLink } = useShare();
+  const { copied: copiedWithText, copy: copyWithText } = useCopyToClipboard({
+    successMessage: "내용이 복사되었습니다",
+    errorMessage: "복사에 실패했습니다",
+  });
 
   const getShareUrl = () => {
     if (url) return url;
@@ -61,15 +56,9 @@ export function ShareButton({
       toast.error("공유할 URL이 없습니다");
       return;
     }
-    try {
-      await navigator.share({
-        title,
-        text: text || title,
-        url: shareUrl,
-      });
-    } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") return;
-      await handleCopyLink();
+    const success = await share({ title, text: text || title, url: shareUrl });
+    if (!success) {
+      await shareCopyLink(shareUrl);
     }
   };
 
@@ -79,15 +68,7 @@ export function ShareButton({
       toast.error("공유할 URL이 없습니다");
       return;
     }
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      toast.success("링크가 복사되었습니다");
-      clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("링크 복사에 실패했습니다");
-    }
+    await shareCopyLink(shareUrl);
   };
 
   const handleCopyWithText = async () => {
@@ -99,21 +80,13 @@ export function ShareButton({
     const shareText = text
       ? `${title}\n${text}\n${shareUrl}`
       : `${title}\n${shareUrl}`;
-    try {
-      await navigator.clipboard.writeText(shareText);
-      setCopied(true);
-      toast.success("내용이 복사되었습니다");
-      clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("복사에 실패했습니다");
-    }
+    await copyWithText(shareText);
   };
 
   const iconCls = `h-3 w-3${label ? " mr-1" : ""}`;
 
   // 모바일: Web Share API 직접 호출 (카카오톡, 라인 등 모든 앱 지원)
-  if (canShare) {
+  if (canNativeShare) {
     return (
       <Button
         variant={variant}
@@ -133,7 +106,7 @@ export function ShareButton({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant={variant} size={size} className={className} aria-label={label || "공유"}>
-          {copied ? (
+          {copiedWithText ? (
             <Check className={iconCls} />
           ) : (
             <Share2 className={iconCls} />

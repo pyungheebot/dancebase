@@ -16,8 +16,7 @@ import { useUnreadCount } from "@/hooks/use-messages";
 import { useNotifications, useUnreadNotificationCount } from "@/hooks/use-notifications";
 import { Badge } from "@/components/ui/badge";
 import { Music, LogOut, User, Mail, Menu, Bell } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatRelative } from "@/lib/date-utils";
 
 function UnreadBadge() {
   const { count } = useUnreadCount();
@@ -85,7 +84,7 @@ function NotificationDropdown() {
               </div>
               <p className="text-[10px] text-muted-foreground line-clamp-2 pl-3">{n.message}</p>
               <span className="text-[10px] text-muted-foreground pl-3">
-                {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ko })}
+                {formatRelative(new Date(n.created_at))}
               </span>
             </DropdownMenuItem>
           ))
@@ -128,7 +127,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void } = {}) {
         <nav className="flex items-center gap-1">
           {user ? (
             <>
-              <Button variant="ghost" size="icon" className="relative h-6 w-6" asChild aria-label="쪽지">
+              <Button variant="ghost" size="icon" className="relative h-6 w-6" asChild aria-label="메시지">
                 <Link href="/messages">
                   <Mail className="h-3.5 w-3.5" />
                   <UnreadBadge />

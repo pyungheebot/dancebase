@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { ScheduleTemplateItem, ScheduleTemplateFormData } from "@/types";
 
 const MAX_TEMPLATES = 20;
@@ -29,10 +29,7 @@ export function useLocalScheduleTemplates(groupId: string) {
   const [templates, setTemplates] = useState<ScheduleTemplateItem[]>([]);
 
   // 마운트 시 localStorage에서 읽기
-  useEffect(() => {
-    if (!groupId) return;
-    setTemplates(loadTemplates(groupId));
-  }, [groupId]);
+
 
   /**
    * 새 템플릿 저장

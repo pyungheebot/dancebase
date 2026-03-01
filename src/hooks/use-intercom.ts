@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
@@ -61,32 +61,15 @@ export type IntercomPersonInput = {
 // ============================================
 
 export function useIntercom(projectId: string) {
-  const [data, setData] = useState<ShowIntercomData | null>(null);
-  const [initialized, setInitialized] = useState(false);
-
-  const { data: swrData, mutate } = useSWR(
+  const { data, mutate } = useSWR(
     swrKeys.showIntercom(projectId),
     () => loadFromStorage(projectId),
     { revalidateOnFocus: false }
   );
 
-  useEffect(() => {
-    if (!initialized) {
-      setData(loadFromStorage(projectId));
-      setInitialized(true);
-    }
-  }, [projectId, initialized]);
-
-  useEffect(() => {
-    if (swrData) {
-      setData(swrData);
-    }
-  }, [swrData]);
-
   const persist = useCallback(
     (next: ShowIntercomData) => {
       saveToStorage(next);
-      setData(next);
       mutate(next, false);
     },
     [mutate]
@@ -258,7 +241,7 @@ export function useIntercom(projectId: string) {
     channels: current.channels,
     totalPersons,
     totalChannels,
-    loading: !initialized,
+    loading: false,
     addChannel,
     updateChannel,
     deleteChannel,

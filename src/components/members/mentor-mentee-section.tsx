@@ -264,6 +264,7 @@ function MatchRow({
               size="icon"
               className="h-5 w-5 text-muted-foreground hover:text-green-600"
               title="매칭 완료"
+              aria-label="매칭 완료"
               onClick={onComplete}
             >
               <Check className="h-3 w-3" />
@@ -274,6 +275,7 @@ function MatchRow({
             size="icon"
             className="h-5 w-5 text-muted-foreground hover:text-destructive"
             title="삭제"
+            aria-label="삭제"
             onClick={onDelete}
           >
             <Trash2 className="h-3 w-3" />

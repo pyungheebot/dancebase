@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   SocialCalendarPost,
   SocialPlatformType,
@@ -53,19 +53,13 @@ export type SocialCalendarStats = {
 // ============================================================
 
 export function useSocialCalendar(groupId: string) {
-  const [posts, setPosts] = useState<SocialCalendarPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<SocialCalendarPost[]>(() => loadData(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setPosts(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: SocialCalendarPost[]) => {
@@ -174,7 +168,7 @@ export function useSocialCalendar(groupId: string) {
 
   return {
     posts,
-    loading,
+    loading: false,
     addPost,
     updatePost,
     deletePost,

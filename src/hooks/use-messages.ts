@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { useAuth } from "@/hooks/use-auth";
 import type { Conversation, Message } from "@/types";
 
 export function useConversations() {
+  const { user } = useAuth();
   const { data, isLoading, mutate } = useSWR(
     swrKeys.conversations(),
     async () => {
@@ -14,6 +17,40 @@ export function useConversations() {
       return (data as Conversation[]) ?? [];
     },
   );
+
+  // Realtime: 메시지 INSERT/UPDATE 시 목록 자동 갱신
+  useEffect(() => {
+    if (!user) return;
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel("conversation-list-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        () => mutate()
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `sender_id=eq.${user.id}`,
+        },
+        () => mutate()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, mutate]);
 
   return {
     conversations: data ?? [],
@@ -30,10 +67,10 @@ export function useConversation(partnerId: string) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return { messages: [] as Message[], partnerName: "" };
+      if (!user) return { messages: [] as Message[], partnerName: "", partnerAvatarUrl: null as string | null };
 
       const [profileRes, messagesRes] = await Promise.all([
-        supabase.from("profiles").select("name").eq("id", partnerId).single(),
+        supabase.from("profiles").select("name, avatar_url").eq("id", partnerId).single(),
         supabase
           .from("messages")
           .select("*")
@@ -43,31 +80,52 @@ export function useConversation(partnerId: string) {
           .order("created_at", { ascending: true }),
       ]);
 
-      // 읽음 처리 (fire-and-forget)
+      // 읽음 처리
       supabase
         .from("messages")
         .update({ read_at: new Date().toISOString() })
         .eq("sender_id", partnerId)
         .eq("receiver_id", user.id)
         .is("read_at", null)
-        .then();
+        .then(({ error }: { error: unknown }) => {
+          if (error) console.error("Failed to mark messages as read:", error);
+        });
 
       return {
         messages: (messagesRes.data as Message[]) ?? [],
         partnerName: profileRes.data?.name ?? "",
+        partnerAvatarUrl: (profileRes.data?.avatar_url as string | null) ?? null,
       };
     },
   );
 
+  // 낙관적 메시지 추가
+  const addOptimisticMessage = (msg: Message) => {
+    mutate(
+      (prev) => {
+        if (!prev) return prev;
+        return { ...prev, messages: [...prev.messages, msg] };
+      },
+      { revalidate: false }
+    );
+  };
+
+  // 낙관적 메시지를 서버 데이터로 교체
+  const replaceOptimistic = () => mutate();
+
   return {
     messages: data?.messages ?? [],
     partnerName: data?.partnerName ?? "",
+    partnerAvatarUrl: data?.partnerAvatarUrl ?? null,
     loading: isLoading,
     refetch: () => mutate(),
+    addOptimisticMessage,
+    replaceOptimistic,
   };
 }
 
 export function useUnreadCount() {
+  const { user } = useAuth();
   const { data, mutate } = useSWR(
     swrKeys.unreadCount(),
     async () => {
@@ -75,10 +133,47 @@ export function useUnreadCount() {
       const { data } = await supabase.rpc("get_unread_message_count");
       return typeof data === "number" ? data : 0;
     },
-    {
-      refreshInterval: 30000,
-    },
   );
+
+  // Realtime: 새 메시지 도착/읽음 처리 시 즉시 갱신
+  const mutateRef = useRef(mutate);
+  // ref 업데이트를 useEffect로 이동하여 렌더 중 ref 쓰기 방지
+  useEffect(() => {
+    mutateRef.current = mutate;
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel("unread-count-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        () => mutateRef.current()
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        () => mutateRef.current()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   return {
     count: data ?? 0,

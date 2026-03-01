@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DanceAuditionEntry,
@@ -116,13 +116,7 @@ export function useDanceAudition(memberId: string) {
   const [entry, setEntry] = useState<DanceAuditionEntry>(() =>
     makeEmpty(memberId)
   );
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    setEntry(loadData(memberId));
-    setLoading(false);
-  }, [memberId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateEntry = useCallback(
@@ -239,7 +233,7 @@ export function useDanceAudition(memberId: string) {
   return {
     entry,
     records: entry.records,
-    loading,
+    loading: false,
     addRecord,
     updateRecord,
     deleteRecord,

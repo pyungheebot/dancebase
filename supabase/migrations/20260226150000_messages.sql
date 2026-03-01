@@ -1,4 +1,4 @@
--- 쪽지(1:1 메시지) 시스템
+-- 메시지(1:1 메시지) 시스템
 CREATE TABLE messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   sender_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -56,7 +56,7 @@ RETURNS TABLE (
   ORDER BY g.last_message_at DESC;
 $$;
 
--- 안읽은 쪽지 수 RPC
+-- 안읽은 메시지 수 RPC
 CREATE OR REPLACE FUNCTION get_unread_message_count()
 RETURNS BIGINT LANGUAGE sql STABLE SECURITY DEFINER AS $$
   SELECT COUNT(*)::BIGINT FROM messages

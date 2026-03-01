@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { MissionBoardEntry, MissionDifficulty } from "@/types";
 
 // ============================================================
@@ -57,19 +57,13 @@ export type MissionBoardStats = {
 // ============================================================
 
 export function useMissionBoard(groupId: string) {
-  const [missions, setMissions] = useState<MissionBoardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [missions, setMissions] = useState<MissionBoardEntry[]>(() => loadData(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setMissions(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: MissionBoardEntry[]) => {
@@ -237,7 +231,7 @@ export function useMissionBoard(groupId: string) {
 
   return {
     missions,
-    loading,
+    loading: false,
     addMission,
     updateMission,
     deleteMission,

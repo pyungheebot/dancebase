@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatRelative } from "@/lib/date-utils";
 import {
   Activity,
   FileText,
@@ -214,10 +213,7 @@ export function GroupActivityFeed({ groupId }: GroupActivityFeedProps) {
                           {item.description}
                         </p>
                         <p className="text-[10px] text-muted-foreground mt-0.5">
-                          {formatDistanceToNow(new Date(item.createdAt), {
-                            addSuffix: true,
-                            locale: ko,
-                          })}
+                          {formatRelative(new Date(item.createdAt))}
                         </p>
                       </div>
                     </div>

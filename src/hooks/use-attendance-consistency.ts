@@ -95,7 +95,7 @@ export function useAttendanceConsistency(
       }
 
       // 출석 기록 조회
-      let attendanceMap = new Map<string, string>();
+      const attendanceMap = new Map<string, string>();
       if (scheduleIds.length > 0) {
         const { data: attRows, error: attErr } = await supabase
           .from("attendance")

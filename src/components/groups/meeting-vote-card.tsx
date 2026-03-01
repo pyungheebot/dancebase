@@ -731,7 +731,7 @@ export function MeetingVoteCard({ groupId }: MeetingVoteCardProps) {
             </p>
             {filter === "all" && (
               <p className="text-[10px] text-muted-foreground">
-                상단의 '안건 추가' 버튼으로 첫 번째 안건을 등록해보세요.
+                상단의 &apos;안건 추가&apos; 버튼으로 첫 번째 안건을 등록해보세요.
               </p>
             )}
           </div>

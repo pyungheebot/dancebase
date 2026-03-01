@@ -1,6 +1,8 @@
 "use client";
 
 import { use, useState } from "react";
+import dynamic from "next/dynamic";
+import { CardErrorBoundary } from "@/components/shared/card-error-boundary";
 import { useGroupEntity } from "@/hooks/use-entity-data";
 import { useAuth } from "@/hooks/use-auth";
 import { EntityPageLayout } from "@/components/layout/entity-page-layout";
@@ -8,60 +10,61 @@ import { EntityNav } from "@/components/layout/entity-nav";
 import { DashboardContent } from "@/components/dashboard/dashboard-content";
 import { InviteModal } from "@/components/groups/invite-modal";
 import { GroupStatsCards } from "@/components/groups/group-stats-cards";
-import { GroupHealthCard } from "@/components/groups/group-health-card";
-import { GroupLinksSection } from "@/components/groups/group-links-section";
 import { GroupRulesBanner } from "@/components/groups/group-rules-banner";
-import { PracticePlaylistSection } from "@/components/groups/practice-playlist-section";
-import { PerformanceRecordSection } from "@/components/groups/performance-record-section";
 import { RoleOnboardingChecklist } from "@/components/groups/role-onboarding-checklist";
 import { MemberOnboardingChecklist } from "@/components/members/member-onboarding-checklist";
 import { MonthlyReportDialog } from "@/components/groups/monthly-report-dialog";
 import { GroupActivityFeed } from "@/components/groups/group-activity-feed";
-import { PracticeStatsCard } from "@/components/groups/practice-stats-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LeaderInfo } from "@/components/ui/leader-info";
-import { GroupPollsCard } from "@/components/groups/group-polls-card";
-import { MeetingMinutesCard } from "@/components/groups/meeting-minutes-card";
-import { TimeCapsuleCard } from "@/components/groups/time-capsule-card";
-import { AppreciationCardCard } from "@/components/groups/appreciation-card-card";
-import { MemberAttendanceStatsCard } from "@/components/groups/member-attendance-stats-card";
-import { MonthlyHighlightCard } from "@/components/groups/monthly-highlight-card";
-import { MentalCoachingCard } from "@/components/groups/mental-coaching-card";
-import { EventCalendarCard } from "@/components/groups/event-calendar-card";
-import { GrowthJournalCard } from "@/components/groups/growth-journal-card";
-import { PracticeRoomBookingCard } from "@/components/groups/practice-room-booking-card";
-import { TeamBuildingCard } from "@/components/groups/team-building-card";
-import { QrCheckInCard } from "@/components/groups/qr-check-in-card";
-import { GroupBudgetCard } from "@/components/groups/group-budget-card";
-import { GroupAnnouncementCard } from "@/components/groups/group-announcement-card";
-import { AttendanceBookCard } from "@/components/groups/attendance-book-card";
-import { GroupEquipmentCard } from "@/components/groups/group-equipment-card";
-import { MeetingVoteCard } from "@/components/groups/meeting-vote-card";
-import { MemberBirthdayCard } from "@/components/groups/member-birthday-card";
-import { SharedFilesCard } from "@/components/groups/shared-files-card";
-import { MediaGalleryCard } from "@/components/groups/media-gallery-card";
-import { GroupAnniversaryCard } from "@/components/groups/group-anniversary-card";
-import { GroupRulebookCard } from "@/components/groups/group-rulebook-card";
-import { MembershipFeeCard } from "@/components/groups/membership-fee-card";
-import { GroupMusicLibraryCard } from "@/components/groups/group-music-library-card";
-import { GroupPracticeFeedbackCard } from "@/components/groups/group-practice-feedback-card";
-import { GroupMentorCard } from "@/components/groups/group-mentor-card";
-import { GroupChallengeCard } from "@/components/groups/group-challenge-card";
-import { GroupWishlistCard } from "@/components/groups/group-wishlist-card";
-import { GroupStreakCard } from "@/components/groups/group-streak-card";
-import { GroupFaqCard } from "@/components/groups/group-faq-card";
-import { GroupDuesTrackerCard } from "@/components/groups/group-dues-tracker-card";
-import { GroupNoticeboardCard } from "@/components/groups/group-noticeboard-card";
-import { GroupVotingCard } from "@/components/groups/group-voting-card";
-import { GroupCarPoolCard } from "@/components/groups/group-carpool-card";
-import { GroupFeedbackBoxCard } from "@/components/groups/group-feedback-box-card";
-import { GroupSkillShareCard } from "@/components/groups/group-skill-share-card";
-import { GroupPenaltyCard } from "@/components/groups/group-penalty-card";
-import { GroupTimelineCard } from "@/components/groups/group-timeline-card";
-import { GroupLostFoundCard } from "@/components/groups/group-lost-found-card";
 import { BarChart3, Globe } from "lucide-react";
 import Link from "next/link";
+
+const GroupHealthCard = dynamic(() => import("@/components/groups/group-health-card").then(m => ({ default: m.GroupHealthCard })));
+const GroupLinksSection = dynamic(() => import("@/components/groups/group-links-section").then(m => ({ default: m.GroupLinksSection })));
+const PracticePlaylistSection = dynamic(() => import("@/components/groups/practice-playlist-section").then(m => ({ default: m.PracticePlaylistSection })));
+const PerformanceRecordSection = dynamic(() => import("@/components/groups/performance-record-section").then(m => ({ default: m.PerformanceRecordSection })));
+const GroupPollsCard = dynamic(() => import("@/components/groups/group-polls-card").then(m => ({ default: m.GroupPollsCard })));
+const MeetingMinutesCard = dynamic(() => import("@/components/groups/meeting-minutes-card").then(m => ({ default: m.MeetingMinutesCard })));
+const TimeCapsuleCard = dynamic(() => import("@/components/groups/time-capsule-card").then(m => ({ default: m.TimeCapsuleCard })));
+const AppreciationCardCard = dynamic(() => import("@/components/groups/appreciation-card-card").then(m => ({ default: m.AppreciationCardCard })));
+const MemberAttendanceStatsCard = dynamic(() => import("@/components/groups/member-attendance-stats-card").then(m => ({ default: m.MemberAttendanceStatsCard })));
+const MonthlyHighlightCard = dynamic(() => import("@/components/groups/monthly-highlight-card").then(m => ({ default: m.MonthlyHighlightCard })));
+const MentalCoachingCard = dynamic(() => import("@/components/groups/mental-coaching-card").then(m => ({ default: m.MentalCoachingCard })));
+const EventCalendarCard = dynamic(() => import("@/components/groups/event-calendar-card").then(m => ({ default: m.EventCalendarCard })));
+const GrowthJournalCard = dynamic(() => import("@/components/groups/growth-journal-card").then(m => ({ default: m.GrowthJournalCard })));
+const PracticeRoomBookingCard = dynamic(() => import("@/components/groups/practice-room-booking-card").then(m => ({ default: m.PracticeRoomBookingCard })));
+const TeamBuildingCard = dynamic(() => import("@/components/groups/team-building-card").then(m => ({ default: m.TeamBuildingCard })));
+const QrCheckInCard = dynamic(() => import("@/components/groups/qr-check-in-card").then(m => ({ default: m.QrCheckInCard })));
+const GroupBudgetCard = dynamic(() => import("@/components/groups/group-budget-card").then(m => ({ default: m.GroupBudgetCard })));
+const GroupAnnouncementCard = dynamic(() => import("@/components/groups/group-announcement-card").then(m => ({ default: m.GroupAnnouncementCard })));
+const AttendanceBookCard = dynamic(() => import("@/components/groups/attendance-book-card").then(m => ({ default: m.AttendanceBookCard })));
+const GroupEquipmentCard = dynamic(() => import("@/components/groups/group-equipment-card").then(m => ({ default: m.GroupEquipmentCard })));
+const MeetingVoteCard = dynamic(() => import("@/components/groups/meeting-vote-card").then(m => ({ default: m.MeetingVoteCard })));
+const MemberBirthdayCard = dynamic(() => import("@/components/groups/member-birthday-card").then(m => ({ default: m.MemberBirthdayCard })));
+const SharedFilesCard = dynamic(() => import("@/components/groups/shared-files-card").then(m => ({ default: m.SharedFilesCard })));
+const MediaGalleryCard = dynamic(() => import("@/components/groups/media-gallery-card").then(m => ({ default: m.MediaGalleryCard })));
+const GroupAnniversaryCard = dynamic(() => import("@/components/groups/group-anniversary-card").then(m => ({ default: m.GroupAnniversaryCard })));
+const GroupRulebookCard = dynamic(() => import("@/components/groups/group-rulebook-card").then(m => ({ default: m.GroupRulebookCard })));
+const MembershipFeeCard = dynamic(() => import("@/components/groups/membership-fee-card").then(m => ({ default: m.MembershipFeeCard })));
+const GroupMusicLibraryCard = dynamic(() => import("@/components/groups/group-music-library-card").then(m => ({ default: m.GroupMusicLibraryCard })));
+const GroupPracticeFeedbackCard = dynamic(() => import("@/components/groups/group-practice-feedback-card").then(m => ({ default: m.GroupPracticeFeedbackCard })));
+const GroupMentorCard = dynamic(() => import("@/components/groups/group-mentor-card").then(m => ({ default: m.GroupMentorCard })));
+const GroupChallengeCard = dynamic(() => import("@/components/groups/group-challenge-card").then(m => ({ default: m.GroupChallengeCard })));
+const GroupWishlistCard = dynamic(() => import("@/components/groups/group-wishlist-card").then(m => ({ default: m.GroupWishlistCard })));
+const GroupStreakCard = dynamic(() => import("@/components/groups/group-streak-card").then(m => ({ default: m.GroupStreakCard })));
+const GroupFaqCard = dynamic(() => import("@/components/groups/group-faq-card").then(m => ({ default: m.GroupFaqCard })));
+const GroupDuesTrackerCard = dynamic(() => import("@/components/groups/group-dues-tracker-card").then(m => ({ default: m.GroupDuesTrackerCard })));
+const GroupNoticeboardCard = dynamic(() => import("@/components/groups/group-noticeboard-card").then(m => ({ default: m.GroupNoticeboardCard })));
+const GroupVotingCard = dynamic(() => import("@/components/groups/group-voting-card").then(m => ({ default: m.GroupVotingCard })));
+const GroupCarPoolCard = dynamic(() => import("@/components/groups/group-carpool-card").then(m => ({ default: m.GroupCarPoolCard })));
+const GroupFeedbackBoxCard = dynamic(() => import("@/components/groups/group-feedback-box-card").then(m => ({ default: m.GroupFeedbackBoxCard })));
+const GroupSkillShareCard = dynamic(() => import("@/components/groups/group-skill-share-card").then(m => ({ default: m.GroupSkillShareCard })));
+const GroupPenaltyCard = dynamic(() => import("@/components/groups/group-penalty-card").then(m => ({ default: m.GroupPenaltyCard })));
+const GroupTimelineCard = dynamic(() => import("@/components/groups/group-timeline-card").then(m => ({ default: m.GroupTimelineCard })));
+const GroupLostFoundCard = dynamic(() => import("@/components/groups/group-lost-found-card").then(m => ({ default: m.GroupLostFoundCard })));
+const PracticeStatsCard = dynamic(() => import("@/components/groups/practice-stats-card").then(m => ({ default: m.PracticeStatsCard })));
 
 export default function GroupDetailPage({
   params,
@@ -157,21 +160,31 @@ export default function GroupDetailPage({
             );
           })()}
 
-          <GroupStatsCards groupId={ctx.groupId} memberCount={ctx.members.length} />
+          <CardErrorBoundary cardName="GroupStatsCards">
+            <GroupStatsCards groupId={ctx.groupId} memberCount={ctx.members.length} />
+          </CardErrorBoundary>
 
-          <GroupHealthCard groupId={ctx.groupId} />
+          <CardErrorBoundary cardName="GroupHealthCard">
+            <GroupHealthCard groupId={ctx.groupId} />
+          </CardErrorBoundary>
 
-          <PracticeStatsCard groupId={ctx.groupId} />
+          <CardErrorBoundary cardName="PracticeStatsCard">
+            <PracticeStatsCard groupId={ctx.groupId} />
+          </CardErrorBoundary>
 
-          <GroupPollsCard
-            groupId={ctx.groupId}
-            canManage={ctx.permissions.canEdit || ctx.permissions.canManageMembers}
-          />
+          <CardErrorBoundary cardName="GroupPollsCard">
+            <GroupPollsCard
+              groupId={ctx.groupId}
+              canManage={ctx.permissions.canEdit || ctx.permissions.canManageMembers}
+            />
+          </CardErrorBoundary>
 
-          <MeetingMinutesCard
-            groupId={ctx.groupId}
-            memberNames={ctx.members.map((m) => m.nickname || m.profile.name)}
-          />
+          <CardErrorBoundary cardName="MeetingMinutesCard">
+            <MeetingMinutesCard
+              groupId={ctx.groupId}
+              memberNames={ctx.members.map((m) => m.nickname || m.profile.name)}
+            />
+          </CardErrorBoundary>
 
           <GroupLinksSection
             groupId={ctx.groupId}

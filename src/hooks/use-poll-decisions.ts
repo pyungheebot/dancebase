@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { PollDecision } from "@/types";
 
 const MAX_DECISIONS = 100;
@@ -36,10 +36,7 @@ export function usePollDecisions(groupId: string) {
   const [mounted, setMounted] = useState(false);
 
   // 마운트 후 localStorage에서 불러오기
-  useEffect(() => {
-    setMounted(true);
-    setDecisions(loadDecisions(groupId));
-  }, [groupId]);
+
 
   // 시계열 내림차순 정렬 (최신순)
   const sortedDecisions = [...decisions].sort(

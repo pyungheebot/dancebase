@@ -4,8 +4,8 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { MemberAttendanceStatsResult } from "@/types";
-import { parseISO, isValid, startOfWeek, format, subWeeks } from "date-fns";
-import { ko } from "date-fns/locale";
+import { parseISO, isValid, startOfWeek, subWeeks } from "date-fns";
+import { formatKo } from "@/lib/date-utils";
 
 export function useMemberAttendanceStats(groupId: string, userId: string) {
   const { data, isLoading, mutate } = useSWR(
@@ -95,7 +95,7 @@ export function useMemberAttendanceStats(groupId: string, userId: string) {
         ).length;
 
         weeklyRates.push({
-          week: format(weekStart, "M/d", { locale: ko }),
+          week: formatKo(weekStart, "M/d"),
           rate: weekTotal > 0 ? Math.round((weekPresent / weekTotal) * 100) : 0,
         });
       }

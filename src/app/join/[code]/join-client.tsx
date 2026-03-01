@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Users, CheckCircle, Clock } from "lucide-react";
 import { createNotification } from "@/lib/notifications";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 type GroupInfo = {
   id: string;
@@ -23,16 +24,15 @@ type JoinClientProps = {
 };
 
 export function JoinClient({ group, inviteCode }: JoinClientProps) {
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
   const [done, setDone] = useState(false);
   const [doneType, setDoneType] = useState<"joined" | "pending" | null>(null);
   const router = useRouter();
 
   const handleJoin = async () => {
-    setLoading(true);
     const supabase = createClient();
 
-    try {
+    await execute(async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -105,11 +105,7 @@ export function JoinClient({ group, inviteCode }: JoinClientProps) {
       setDoneType("joined");
       setDone(true);
       toast.success(`${group.name}에 참여했습니다`);
-    } catch {
-      toast.error("오류가 발생했습니다. 다시 시도해 주세요");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   if (done && doneType === "joined") {

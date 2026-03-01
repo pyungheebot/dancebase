@@ -1,7 +1,7 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
-import { ko } from "date-fns/locale";
+import { parseISO } from "date-fns";
+import { formatKo } from "@/lib/date-utils";
 import { Grid3X3, Flame, Target, BarChart3 } from "lucide-react";
 import {
   Tooltip,
@@ -47,7 +47,7 @@ function HeatmapCell({ cell }: { cell: AttendanceHeatmapCell }) {
   let dateLabel = cell.date;
   try {
     const d = parseISO(cell.date);
-    dateLabel = format(d, "M월 d일 (EEE)", { locale: ko });
+    dateLabel = formatKo(d, "M월 d일 (EEE)");
   } catch {
     // 파싱 실패 시 원본 날짜 문자열 사용
   }

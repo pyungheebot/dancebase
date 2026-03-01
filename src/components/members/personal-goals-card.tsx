@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -111,7 +112,7 @@ function AddGoalDialog({ canAddMore, maxGoals, onAdd }: AddGoalDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [targetDate, setTargetDate] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const handleSubmit = () => {
     if (!title.trim()) {
@@ -122,16 +123,13 @@ function AddGoalDialog({ canAddMore, maxGoals, onAdd }: AddGoalDialogProps) {
       toast.error("목표 날짜를 선택해주세요");
       return;
     }
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       onAdd({ title, description, targetDate });
       setTitle("");
       setDescription("");
       setTargetDate("");
       setOpen(false);
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (

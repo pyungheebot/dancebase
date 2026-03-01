@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   MessageSquare,
   Plus,
@@ -106,23 +107,23 @@ function PostDetailDialog({
   onDelete: (postId: string) => Promise<void>;
 }) {
   const [commentForm, setCommentForm] = useState<CommentForm>(DEFAULT_COMMENT_FORM);
-  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const { pending: commentSubmitting, execute: executeComment } = useAsyncAction();
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const { pending: deleting, execute: executeDelete } = useAsyncAction();
 
   if (!post) return null;
 
   const handleAddComment = async () => {
     if (!commentForm.content.trim()) return;
-    setCommentSubmitting(true);
-    const ok = await onAddComment(post.id, {
-      authorName: commentForm.authorName.trim(),
-      content: commentForm.content.trim(),
+    await executeComment(async () => {
+      const ok = await onAddComment(post.id, {
+        authorName: commentForm.authorName.trim(),
+        content: commentForm.content.trim(),
+      });
+      if (ok) {
+        setCommentForm(DEFAULT_COMMENT_FORM);
+      }
     });
-    setCommentSubmitting(false);
-    if (ok) {
-      setCommentForm(DEFAULT_COMMENT_FORM);
-    }
   };
 
   const handleDeleteComment = async (commentId: string) => {
@@ -132,10 +133,10 @@ function PostDetailDialog({
   };
 
   const handleDelete = async () => {
-    setDeleting(true);
-    await onDelete(post.id);
-    setDeleting(false);
-    onClose();
+    await executeDelete(async () => {
+      await onDelete(post.id);
+      onClose();
+    });
   };
 
   return (

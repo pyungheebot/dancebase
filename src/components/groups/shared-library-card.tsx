@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useSharedLibrary } from "@/hooks/use-shared-library";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { SharedLibFileType, SharedLibItem } from "@/types";
 
 // ─── 파일 유형 설정 ───────────────────────────────────────────
@@ -311,6 +312,8 @@ function LibraryItemRow({
   onDelete: (id: string) => void;
   onDownload: (id: string) => void;
 }) {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
   return (
     <div className="flex items-start gap-2 rounded-md px-2 py-2 hover:bg-gray-50 group transition-colors">
       {/* 파일 유형 아이콘 */}
@@ -390,18 +393,25 @@ function LibraryItemRow({
           )}
         </button>
         <button
-          onClick={() => {
-            if (confirm(`"${item.title}" 자료를 삭제하시겠습니까?`)) {
-              onDelete(item.id);
-              toast.success("자료가 삭제되었습니다.");
-            }
-          }}
+          onClick={() => setDeleteConfirmOpen(true)}
           className="p-1 rounded hover:bg-gray-200 transition-colors"
           title="삭제"
         >
           <Trash2 className="h-3 w-3 text-gray-400 hover:text-red-500" />
         </button>
       </div>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="자료 삭제"
+        description={`"${item.title}" 자료를 삭제하시겠습니까?`}
+        onConfirm={() => {
+          onDelete(item.id);
+          toast.success("자료가 삭제되었습니다.");
+          setDeleteConfirmOpen(false);
+        }}
+        destructive
+      />
     </div>
   );
 }

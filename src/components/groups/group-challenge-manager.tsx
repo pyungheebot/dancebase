@@ -65,6 +65,7 @@ function ChallengeCard({
             else setConfirmDelete(true);
           }}
           onBlur={() => setConfirmDelete(false)}
+          aria-label="챌린지 삭제"
         >
           <Trash2 className="h-3 w-3" />
         </Button>

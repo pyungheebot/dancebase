@@ -69,12 +69,8 @@ export function useScheduleCountdown(groupId: string) {
 
   useEffect(() => {
     if (!upcomingSchedules || upcomingSchedules.length === 0) {
-      setCountdownList([]);
       return;
     }
-
-    // 초기값 설정
-    setCountdownList(upcomingSchedules.map(toCountdownSchedule));
 
     const timer = setInterval(() => {
       setCountdownList(upcomingSchedules.map(toCountdownSchedule));

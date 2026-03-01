@@ -30,6 +30,7 @@ import {
   ROLE_STATUS_COLORS,
   PRESET_ROLE_NAMES,
 } from "@/hooks/use-role-assignment";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { RoleAssignmentItem } from "@/types";
 
 // ─── 날짜 포맷 ────────────────────────────────────────────────
@@ -405,7 +406,7 @@ function RoleItemCard({ item, hook }: RoleItemCardProps) {
                     {h.nextAssignee}
                   </span>
                   <span className="ml-2 text-gray-400">
-                    {new Date(h.changedAt).toLocaleDateString("ko-KR")}
+                    {formatYearMonthDay(h.changedAt)}
                   </span>
                   {h.changedBy && (
                     <span className="ml-1 text-gray-400">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 // ============================================================
 // 알림 카테고리 타입
@@ -117,10 +117,7 @@ export function useNotificationPreferences(
   );
 
   // userId가 늦게 로드되는 경우 대비: userId 확정 후 다시 로드
-  useEffect(() => {
-    if (!groupId || !userId) return;
-    setPreferences(loadFromStorage(groupId, userId));
-  }, [groupId, userId]);
+
 
   const toggle = useCallback(
     (category: NotificationCategory) => {

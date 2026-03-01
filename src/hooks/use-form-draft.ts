@@ -33,21 +33,7 @@ export function useFormDraft({
   const hasUnsavedChanges = useRef(false);
 
   // 마운트 시 드래프트 존재 여부 확인
-  useEffect(() => {
-    if (!enabled) return;
 
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const parsed = JSON.parse(stored) as FormDraftData;
-        if (parsed.title?.trim() || parsed.content?.trim()) {
-          setHasDraft(true);
-        }
-      }
-    } catch {
-      // 파싱 실패 시 무시
-    }
-  }, [key, enabled]);
 
   // 페이지 이탈 경고
   useEffect(() => {

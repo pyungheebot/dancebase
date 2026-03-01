@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { SharedMemo, SharedMemoColor } from "@/types";
 
 const MAX_MEMOS = 30;
@@ -45,13 +45,9 @@ export type AddMemoParams = {
 };
 
 export function useSharedMemo(groupId: string) {
-  const [memos, setMemos] = useState<SharedMemo[]>([]);
-
-  useEffect(() => {
-    if (!groupId) return;
-    const loaded = loadMemos(groupId);
-    setMemos(sortMemos(loaded));
-  }, [groupId]);
+  const [memos, setMemos] = useState<SharedMemo[]>(() =>
+    groupId ? sortMemos(loadMemos(groupId)) : []
+  );
 
   const persist = useCallback(
     (updated: SharedMemo[]) => {

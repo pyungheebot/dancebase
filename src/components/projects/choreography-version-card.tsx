@@ -31,6 +31,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 // ============================================
 // 상태 배지 색상/라벨
@@ -126,7 +127,7 @@ function AddVersionForm({ onAdd, onClose }: AddVersionFormProps) {
   const [sections, setSections] = useState<SectionDraft[]>([
     { id: crypto.randomUUID(), sectionName: "", content: "" },
   ]);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function handleAddSection() {
     if (sections.length >= 20) {
@@ -149,29 +150,29 @@ function AddVersionForm({ onAdd, onClose }: AddVersionFormProps) {
     setSections((prev) => prev.filter((s) => s.id !== id));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!label.trim()) {
       toast.error("버전 라벨을 입력하세요. (예: 초안, 수정본)");
       return;
     }
     const validSections = sections.filter((s) => s.sectionName.trim());
-    setSubmitting(true);
-    const ok = onAdd({
-      label,
-      description,
-      sections: validSections.map(({ sectionName, content }) => ({
-        sectionName,
-        content,
-      })),
-      createdBy,
+    await execute(async () => {
+      const ok = onAdd({
+        label,
+        description,
+        sections: validSections.map(({ sectionName, content }) => ({
+          sectionName,
+          content,
+        })),
+        createdBy,
+      });
+      if (ok) {
+        toast.success("새 버전이 추가되었습니다.");
+        onClose();
+      } else {
+        toast.error("버전은 최대 20개까지 추가할 수 있습니다.");
+      }
     });
-    setSubmitting(false);
-    if (ok) {
-      toast.success("새 버전이 추가되었습니다.");
-      onClose();
-    } else {
-      toast.error("버전은 최대 20개까지 추가할 수 있습니다.");
-    }
   }
 
   return (

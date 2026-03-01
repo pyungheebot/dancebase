@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ChevronDown,
   ChevronRight,
@@ -300,15 +301,13 @@ function EntryRow({
 }: EntryRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [newIssueText, setNewIssueText] = useState("");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const unresolvedCount = entry.issues.filter((i) => !i.resolved).length;
 
   const handleDelete = () => {
-    if (
-      confirm(`${entry.rehearsalNumber}차 리허설 기록을 삭제하시겠습니까?`)
-    ) {
-      onDelete(entry.id);
-      toast.success("기록이 삭제되었습니다.");
-    }
+    onDelete(entry.id);
+    toast.success("기록이 삭제되었습니다.");
+    setDeleteConfirmOpen(false);
   };
 
   const handleAddIssue = () => {
@@ -538,7 +537,7 @@ function EntryRow({
               variant="ghost"
               size="sm"
               className="h-6 text-[11px] text-muted-foreground hover:text-destructive px-2"
-              onClick={handleDelete}
+              onClick={() => setDeleteConfirmOpen(true)}
             >
               <Trash2 className="h-3 w-3 mr-1" />
               이 기록 삭제
@@ -546,6 +545,15 @@ function EntryRow({
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="리허설 기록 삭제"
+        description={`${entry.rehearsalNumber}차 리허설 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }

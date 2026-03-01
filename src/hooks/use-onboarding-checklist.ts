@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type { OnboardingStep, OnboardingProgress } from "@/types";
 
@@ -130,12 +130,7 @@ export function useOnboardingChecklist(groupId: string, userId: string) {
   const [mounted, setMounted] = useState(false);
 
   // SSR 호환: 마운트 후 localStorage 읽기
-  useEffect(() => {
-    if (!groupId || !userId) return;
-    const loaded = loadProgress(groupId, userId);
-    setProgress(loaded);
-    setMounted(true);
-  }, [groupId, userId]);
+
 
   // 단계 완료 여부 토글
   const toggleStep = useCallback(

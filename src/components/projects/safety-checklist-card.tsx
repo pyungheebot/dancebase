@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Card,
   CardContent,
@@ -32,16 +33,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ChevronDown,
   ChevronUp,
@@ -58,6 +50,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSafetyChecklist } from "@/hooks/use-safety-checklist";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
   SafetyChecklistCategory,
   SafetyChecklistStatus,
@@ -469,13 +462,14 @@ export function SafetyChecklistCard({
   const [open, setOpen] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<SafetyChecklistItem | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const deleteConfirm = useDeleteConfirm<string>();
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [templateConfirmOpen, setTemplateConfirmOpen] = useState(false);
   const [filterCategory, setFilterCategory] =
     useState<SafetyChecklistCategory | "all">("all");
   const [filterStatus, setFilterStatus] =
     useState<SafetyChecklistStatus | "all">("all");
-  const [loadingTemplate, setLoadingTemplate] = useState(false);
+  const { pending: loadingTemplate, execute: executeTemplate } = useAsyncAction();
 
   // 필터 적용
   const filteredItems = items.filter((item) => {
@@ -540,14 +534,14 @@ export function SafetyChecklistCard({
 
   // 삭제 핸들러
   const handleDelete = () => {
-    if (!deleteTarget) return;
-    const ok = deleteItem(deleteTarget);
+    const id = deleteConfirm.confirm();
+    if (!id) return;
+    const ok = deleteItem(id);
     if (ok) {
       toast.success("항목이 삭제되었습니다.");
     } else {
       toast.error("항목 삭제에 실패했습니다.");
     }
-    setDeleteTarget(null);
   };
 
   // 전체 초기화 핸들러
@@ -560,16 +554,14 @@ export function SafetyChecklistCard({
   // 기본 템플릿 불러오기
   const handleLoadTemplate = () => {
     if (items.length > 0) {
-      if (
-        !confirm(
-          "기존 항목이 있습니다. 템플릿 항목을 추가로 불러오시겠습니까?"
-        )
-      ) {
-        return;
-      }
+      setTemplateConfirmOpen(true);
+      return;
     }
-    setLoadingTemplate(true);
-    try {
+    doLoadTemplate();
+  };
+
+  const doLoadTemplate = () => {
+    executeTemplate(async () => {
       DEFAULT_TEMPLATES.forEach((t) => {
         addItem({
           category: t.category,
@@ -578,9 +570,7 @@ export function SafetyChecklistCard({
         });
       });
       toast.success(`기본 템플릿 ${DEFAULT_TEMPLATES.length}개 항목을 불러왔습니다.`);
-    } finally {
-      setLoadingTemplate(false);
-    }
+    });
   };
 
   if (loading) {
@@ -814,7 +804,7 @@ export function SafetyChecklistCard({
                             item={item}
                             onStatusChange={handleStatusChange}
                             onEdit={(i) => setEditItem(i)}
-                            onDelete={(id) => setDeleteTarget(id)}
+                            onDelete={(id) => deleteConfirm.request(id)}
                           />
                         ))}
                       </div>
@@ -849,56 +839,31 @@ export function SafetyChecklistCard({
       />
 
       {/* 삭제 확인 다이얼로그 */}
-      <AlertDialog
-        open={deleteTarget !== null}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">항목 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              이 안전 체크리스트 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수
-              없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-8 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-8 text-xs bg-red-500 hover:bg-red-600"
-              onClick={handleDelete}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="항목 삭제"
+        description="이 안전 체크리스트 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        onConfirm={handleDelete}
+        destructive
+      />
 
       {/* 초기화 확인 다이얼로그 */}
-      <AlertDialog
+      <ConfirmDialog
         open={resetDialogOpen}
         onOpenChange={setResetDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">
-              체크리스트 초기화
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              모든 항목의 확인 상태를 미확인으로 초기화하시겠습니까? 항목은
-              삭제되지 않으며 확인 기록만 초기화됩니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-8 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-8 text-xs bg-orange-500 hover:bg-orange-600"
-              onClick={handleReset}
-            >
-              초기화
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="체크리스트 초기화"
+        description="모든 항목의 확인 상태를 미확인으로 초기화하시겠습니까? 항목은 삭제되지 않으며 확인 기록만 초기화됩니다."
+        onConfirm={handleReset}
+      />
+      {/* 템플릿 불러오기 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={templateConfirmOpen}
+        onOpenChange={(v) => !v && setTemplateConfirmOpen(false)}
+        title="템플릿 불러오기"
+        description="기존 항목이 있습니다. 템플릿 항목을 추가로 불러오시겠습니까?"
+        onConfirm={() => { setTemplateConfirmOpen(false); doLoadTemplate(); }}
+      />
     </>
   );
 }

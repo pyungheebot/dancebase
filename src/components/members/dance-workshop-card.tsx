@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   BookOpen,
   ChevronDown,
@@ -142,7 +143,7 @@ export function DanceWorkshopCard({ memberId }: DanceWorkshopCardProps) {
 
   const [open, setOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [form, setForm] = useState<FormState>(defaultForm);
 
   // 편집 상태
@@ -205,8 +206,7 @@ export function DanceWorkshopCard({ memberId }: DanceWorkshopCardProps) {
     }
     const finalGenre = form.genre === "__custom__" ? form.customGenre.trim() : form.genre;
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       addEntry({
         workshopName: form.workshopName.trim(),
         instructor: form.instructor.trim(),
@@ -221,11 +221,7 @@ export function DanceWorkshopCard({ memberId }: DanceWorkshopCardProps) {
       toast.success(`'${form.workshopName.trim()}' 워크숍이 추가되었습니다.`);
       resetForm();
       setFormOpen(false);
-    } catch {
-      toast.error("워크숍 추가 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   // ──────────────────────────────────────

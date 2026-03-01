@@ -124,7 +124,7 @@ function CreatePollDialog({ hook }: CreatePollDialogProps) {
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState(
-    new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    () => new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
   );
 
   const handleSubmit = () => {
@@ -141,9 +141,7 @@ function CreatePollDialog({ hook }: CreatePollDialogProps) {
       toast.success("투표 안건이 등록되었습니다.");
       setTopic("");
       setDescription("");
-      setDeadline(
-        new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-      );
+      setDeadline(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
       setOpen(false);
     } else {
       toast.error("투표 등록에 실패했습니다.");

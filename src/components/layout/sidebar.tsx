@@ -259,7 +259,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
       icon: <BarChart3 className="h-4 w-4 opacity-60" />,
     },
     {
-      label: "쪽지",
+      label: "메시지",
       href: "/messages",
       icon: <Mail className="h-4 w-4 opacity-60" />,
     },
@@ -333,7 +333,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
             >
               {item.icon}
               <span className="flex-1">{item.label}</span>
-              {item.label === "쪽지" && <UnreadCount />}
+              {item.label === "메시지" && <UnreadCount />}
             </Link>
           ))}
         </div>

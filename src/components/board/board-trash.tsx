@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { Trash2, RotateCcw, X, FolderOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useBoardTrash } from "@/hooks/use-board";
@@ -18,6 +17,8 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 interface BoardTrashProps {
   groupId: string;
@@ -29,52 +30,52 @@ export function BoardTrash({ groupId, nicknameMap = {} }: BoardTrashProps) {
   const { posts, loading, refetch } = useBoardTrash(groupId);
 
   // 복구 대상 postId
-  const [restoreTarget, setRestoreTarget] = useState<string | null>(null);
-  const [restoring, setRestoring] = useState(false);
+  const restoreConfirm = useDeleteConfirm<string>();
+  const { pending: restoring, execute: executeRestore } = useAsyncAction();
 
   // 영구 삭제 대상 postId
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const deleteConfirm = useDeleteConfirm<string>();
+  const { pending: deleting, execute: executeDelete } = useAsyncAction();
 
   const handleRestore = async () => {
-    if (!restoreTarget) return;
-    setRestoring(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("board_posts")
-      .update({ deleted_at: null })
-      .eq("id", restoreTarget);
+    const target = restoreConfirm.confirm();
+    if (!target) return;
+    await executeRestore(async () => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("board_posts")
+        .update({ deleted_at: null })
+        .eq("id", target);
 
-    if (error) {
-      toast.error("복구에 실패했습니다");
-    } else {
-      toast.success("게시글이 복구되었습니다");
-      invalidateBoard(groupId);
-      invalidateBoardTrash(groupId);
-      refetch();
-    }
-    setRestoreTarget(null);
-    setRestoring(false);
+      if (error) {
+        toast.error("복구에 실패했습니다");
+      } else {
+        toast.success("게시글이 복구되었습니다");
+        invalidateBoard(groupId);
+        invalidateBoardTrash(groupId);
+        refetch();
+      }
+    });
   };
 
   const handlePermanentDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("board_posts")
-      .delete()
-      .eq("id", deleteTarget);
+    const target = deleteConfirm.confirm();
+    if (!target) return;
+    await executeDelete(async () => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("board_posts")
+        .delete()
+        .eq("id", target);
 
-    if (error) {
-      toast.error("영구 삭제에 실패했습니다");
-    } else {
-      toast.success("게시글이 영구 삭제되었습니다");
-      invalidateBoardTrash(groupId);
-      refetch();
-    }
-    setDeleteTarget(null);
-    setDeleting(false);
+      if (error) {
+        toast.error("영구 삭제에 실패했습니다");
+      } else {
+        toast.success("게시글이 영구 삭제되었습니다");
+        invalidateBoardTrash(groupId);
+        refetch();
+      }
+    });
   };
 
   return (
@@ -119,7 +120,7 @@ export function BoardTrash({ groupId, nicknameMap = {} }: BoardTrashProps) {
                   const authorName =
                     nicknameMap[post.author_id] || post.profiles?.name || "알 수 없음";
                   const deletedAt = post.deleted_at
-                    ? format(new Date(post.deleted_at), "M/d HH:mm", { locale: ko })
+                    ? formatKo(new Date(post.deleted_at), "M/d HH:mm")
                     : "";
 
                   return (
@@ -145,7 +146,7 @@ export function BoardTrash({ groupId, nicknameMap = {} }: BoardTrashProps) {
                           variant="outline"
                           size="sm"
                           className="h-6 text-[10px] px-2 gap-0.5"
-                          onClick={() => setRestoreTarget(post.id)}
+                          onClick={() => restoreConfirm.request(post.id)}
                           disabled={restoring || deleting}
                         >
                           <RotateCcw className="h-2.5 w-2.5" />
@@ -155,7 +156,7 @@ export function BoardTrash({ groupId, nicknameMap = {} }: BoardTrashProps) {
                           variant="ghost"
                           size="sm"
                           className="h-6 text-[10px] px-2 gap-0.5 text-destructive hover:text-destructive"
-                          onClick={() => setDeleteTarget(post.id)}
+                          onClick={() => deleteConfirm.request(post.id)}
                           disabled={restoring || deleting}
                         >
                           <X className="h-2.5 w-2.5" />
@@ -181,8 +182,8 @@ export function BoardTrash({ groupId, nicknameMap = {} }: BoardTrashProps) {
 
       {/* 복구 확인 */}
       <ConfirmDialog
-        open={restoreTarget !== null}
-        onOpenChange={(open) => { if (!open) setRestoreTarget(null); }}
+        open={restoreConfirm.open}
+        onOpenChange={restoreConfirm.onOpenChange}
         title="게시글 복구"
         description="이 게시글을 복구하시겠습니까? 게시판 목록에 다시 나타납니다."
         onConfirm={handleRestore}
@@ -190,8 +191,8 @@ export function BoardTrash({ groupId, nicknameMap = {} }: BoardTrashProps) {
 
       {/* 영구 삭제 확인 */}
       <ConfirmDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
         title="영구 삭제"
         description="이 게시글을 영구적으로 삭제합니다. 댓글, 투표, 첨부파일이 모두 삭제되며 복구할 수 없습니다."
         onConfirm={handlePermanentDelete}

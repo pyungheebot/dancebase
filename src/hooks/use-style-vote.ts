@@ -91,8 +91,10 @@ export function useStyleVote(groupId: string) {
       const sessions = loadSessions(groupId);
       const idx = sessions.findIndex((s) => s.id === sessionId);
       if (idx < 0) return;
-      const { closedAt: _closedAt, ...rest } = sessions[idx];
-      sessions[idx] = { ...rest, status: "open" };
+      const next = { ...sessions[idx] };
+      delete next.closedAt;
+      next.status = "open";
+      sessions[idx] = next;
       saveSessions(groupId, sessions);
       refresh();
     },

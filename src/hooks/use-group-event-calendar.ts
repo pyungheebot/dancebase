@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   GroupCalendarEvent,
@@ -197,20 +197,14 @@ export type GroupEventCalendarStats = {
 // ============================================================
 
 export function useGroupEventCalendar(groupId: string) {
-  const [events, setEvents] = useState<GroupCalendarEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<GroupCalendarEvent[]>(() => loadData(groupId).events);
   const [userId] = useState<string>(() => getOrCreateUserId());
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setEvents(data.events);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (updated: GroupCalendarEvent[]) => {
@@ -393,7 +387,7 @@ export function useGroupEventCalendar(groupId: string) {
 
   return {
     events,
-    loading,
+    loading: false,
     userId,
     stats,
     // CRUD

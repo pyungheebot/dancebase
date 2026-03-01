@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { format, differenceInDays } from "date-fns";
-import { ko } from "date-fns/locale";
+import { differenceInDays } from "date-fns";
+import { formatKo } from "@/lib/date-utils";
 import { Bell, Send, Users, AlertCircle, Check } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -43,7 +43,7 @@ const TARGET_TYPE_DESCRIPTIONS: Record<BroadcastTargetType, string> = {
 };
 
 function formatSentAt(isoString: string): string {
-  return format(new Date(isoString), "M월 d일 HH:mm", { locale: ko });
+  return formatKo(new Date(isoString), "M월 d일 HH:mm");
 }
 
 function getDaysLeft(startsAt: string): number {
@@ -131,9 +131,7 @@ export function ScheduleBroadcastDialog({
             <div className="rounded-md border px-3 py-2 space-y-0.5">
               <p className="text-xs font-medium">{schedule.title}</p>
               <p className="text-[11px] text-muted-foreground">
-                {format(new Date(schedule.starts_at), "yyyy년 M월 d일 (EEE) HH:mm", {
-                  locale: ko,
-                })}
+                {formatKo(new Date(schedule.starts_at), "yyyy년 M월 d일 (EEE) HH:mm")}
                 {daysLeft >= 0 && (
                   <span className="ml-1.5 text-primary font-medium">
                     D-{daysLeft === 0 ? "day" : daysLeft}

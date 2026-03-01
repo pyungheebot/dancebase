@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   useFinanceSplits,
   type FinanceSplitWithMembers,
@@ -70,7 +71,7 @@ function CreateSplitDialog({
   const [selectedMembers, setSelectedMembers] = useState<string[]>(
     groupMembers.map((m) => m.user_id)
   );
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const memberCount = selectedMembers.length;
   const parsedAmount = parseInt(totalAmount.replace(/,/g, ""), 10) || 0;
@@ -102,8 +103,7 @@ function CreateSplitDialog({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       const supabase = createClient();
 
       // 1. finance_splits 행 생성
@@ -152,9 +152,7 @@ function CreateSplitDialog({
       setTotalAmount("");
       setPaidBy(currentUserId);
       setSelectedMembers(groupMembers.map((m) => m.user_id));
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   const getMemberName = (userId: string) => {

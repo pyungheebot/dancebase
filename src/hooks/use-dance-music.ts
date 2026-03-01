@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DanceMusicData,
@@ -64,7 +64,7 @@ function saveData(memberId: string, data: DanceMusicData): void {
 // ============================================================
 
 export function useDanceMusic(memberId: string) {
-  const [playlists, setPlaylists] = useState<DanceMusicPlaylist[]>([]);
+  const [playlists, setPlaylists] = useState<DanceMusicPlaylist[]>(() => loadData(memberId).playlists);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
@@ -74,12 +74,7 @@ export function useDanceMusic(memberId: string) {
     }
     const data = loadData(memberId);
     setPlaylists(data.playlists);
-    setLoading(false);
   }, [memberId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 persist 헬퍼
   const persist = useCallback(

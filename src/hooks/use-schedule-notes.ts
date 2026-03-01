@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { ScheduleNoteItem, ScheduleNoteCategory } from "@/types";
 
 const MAX_NOTES_PER_SCHEDULE = 5;
@@ -35,17 +35,9 @@ function saveAll(groupId: string, items: ScheduleNoteItem[]): void {
 
 export function useScheduleNotes(groupId: string, scheduleId: string) {
   const [allItems, setAllItems] = useState<ScheduleNoteItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // 마운트 시 localStorage에서 전체 로드
-  useEffect(() => {
-    if (!groupId) {
-      setLoading(false);
-      return;
-    }
-    setAllItems(loadAll(groupId));
-    setLoading(false);
-  }, [groupId]);
+
 
   // 해당 scheduleId에 해당하는 메모만 필터링 (최신순)
   const notes = allItems
@@ -127,7 +119,7 @@ export function useScheduleNotes(groupId: string, scheduleId: string) {
 
   return {
     notes,
-    loading,
+    loading: false,
     isMaxReached,
     maxCount: MAX_NOTES_PER_SCHEDULE,
     addNote,

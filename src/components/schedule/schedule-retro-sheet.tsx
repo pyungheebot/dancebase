@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +14,8 @@ import {
 import { ClipboardList, Smile, Wrench, Target, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useScheduleRetro } from "@/hooks/use-schedule-retro";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { formatFullDate } from "@/lib/date-utils";
 
 type ScheduleRetroSheetProps = {
   scheduleId: string;
@@ -32,7 +32,7 @@ export function ScheduleRetroSheet({
   const [good, setGood] = useState("");
   const [improve, setImprove] = useState("");
   const [nextGoal, setNextGoal] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const { retro, save, remove } = useScheduleRetro(scheduleId);
 
@@ -40,17 +40,21 @@ export function ScheduleRetroSheet({
   useEffect(() => {
     if (open) {
       if (retro) {
-        setGood(retro.good);
-        setImprove(retro.improve);
-        setNextGoal(retro.nextGoal);
-        // 이미 작성된 경우 읽기 모드로 시작
-        setEditMode(false);
+        startTransition(() => {
+          setGood(retro.good);
+          setImprove(retro.improve);
+          setNextGoal(retro.nextGoal);
+          // 이미 작성된 경우 읽기 모드로 시작
+          setEditMode(false);
+        });
       } else {
-        setGood("");
-        setImprove("");
-        setNextGoal("");
-        // 새로 작성하는 경우 편집 모드로 시작
-        setEditMode(canEdit);
+        startTransition(() => {
+          setGood("");
+          setImprove("");
+          setNextGoal("");
+          // 새로 작성하는 경우 편집 모드로 시작
+          setEditMode(canEdit);
+        });
       }
     }
   }, [open, retro, canEdit]);
@@ -61,8 +65,7 @@ export function ScheduleRetroSheet({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       const supabase = createClient();
       const {
         data: { user },
@@ -73,14 +76,14 @@ export function ScheduleRetroSheet({
         return;
       }
 
-      save({ good, improve, nextGoal }, user.id);
-      toast.success("회고록을 저장했습니다");
-      setEditMode(false);
-    } catch {
-      toast.error("회고록 저장에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+      try {
+        save({ good, improve, nextGoal }, user.id);
+        toast.success("회고록을 저장했습니다");
+        setEditMode(false);
+      } catch {
+        toast.error("회고록 저장에 실패했습니다");
+      }
+    });
   };
 
   const handleDelete = () => {
@@ -139,7 +142,7 @@ export function ScheduleRetroSheet({
             </SheetTitle>
             {retro && !editMode && (
               <p className="text-[11px] text-muted-foreground">
-                {format(new Date(retro.createdAt), "yyyy년 M월 d일 (EEE)", { locale: ko })} 작성
+                {formatFullDate(new Date(retro.createdAt))} 작성
               </p>
             )}
           </SheetHeader>

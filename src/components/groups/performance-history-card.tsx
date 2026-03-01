@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   History,
   ChevronDown,
@@ -50,6 +51,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { usePerformanceHistory } from "@/hooks/use-performance-history";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type {
   PerformanceHistoryRecord,
   PerformanceHistoryType,
@@ -169,7 +171,7 @@ function RecordDialog({ open, onClose, onSave, initial }: RecordDialogProps) {
   const [lessonsLearned, setLessonsLearned] = useState(
     initial?.lessonsLearned ?? ""
   );
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   // initial이 바뀌면 폼 초기화
   const resetToInitial = () => {
@@ -217,29 +219,28 @@ function RecordDialog({ open, onClose, onSave, initial }: RecordDialogProps) {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    setSaving(true);
-    try {
-      await onSave({
-        title: title.trim(),
-        type,
-        date,
-        venue: venue.trim(),
-        audienceCount: audienceCount ? Number(audienceCount) : undefined,
-        performers: parsedPerformers,
-        setlist: parsedSetlist,
-        awards: parsedAwards.length > 0 ? parsedAwards : undefined,
-        rating: rating > 0 ? rating : undefined,
-        highlights: highlights.trim() || undefined,
-        lessonsLearned: lessonsLearned.trim() || undefined,
-      });
-      toast.success(isEdit ? "기록이 수정되었습니다." : "공연 기록이 추가되었습니다.");
-      resetToInitial();
-      onClose();
-    } catch {
-      toast.error(isEdit ? "기록 수정에 실패했습니다." : "기록 추가에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    await execute(async () => {
+      try {
+        await onSave({
+          title: title.trim(),
+          type,
+          date,
+          venue: venue.trim(),
+          audienceCount: audienceCount ? Number(audienceCount) : undefined,
+          performers: parsedPerformers,
+          setlist: parsedSetlist,
+          awards: parsedAwards.length > 0 ? parsedAwards : undefined,
+          rating: rating > 0 ? rating : undefined,
+          highlights: highlights.trim() || undefined,
+          lessonsLearned: lessonsLearned.trim() || undefined,
+        });
+        toast.success(isEdit ? "기록이 수정되었습니다." : "공연 기록이 추가되었습니다.");
+        resetToInitial();
+        onClose();
+      } catch {
+        toast.error(isEdit ? "기록 수정에 실패했습니다." : "기록 추가에 실패했습니다.");
+      }
+    });
   }
 
   return (
@@ -427,9 +428,9 @@ type RecordItemProps = {
 
 function RecordItem({ record, onEdit, onDelete }: RecordItemProps) {
   const [expanded, setExpanded] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   async function handleDelete() {
-    if (!confirm("이 공연 기록을 삭제하시겠습니까?")) return;
     await onDelete(record.id);
     toast.success("공연 기록이 삭제되었습니다.");
   }
@@ -480,7 +481,7 @@ function RecordItem({ record, onEdit, onDelete }: RecordItemProps) {
             <Pencil className="h-3.5 w-3.5" />
           </button>
           <button
-            onClick={handleDelete}
+            onClick={() => setDeleteConfirmOpen(true)}
             className="text-muted-foreground hover:text-red-500 transition-colors"
             title="삭제"
           >
@@ -595,6 +596,14 @@ function RecordItem({ record, onEdit, onDelete }: RecordItemProps) {
           )}
         </>
       )}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="공연 기록 삭제"
+        description="이 공연 기록을 삭제하시겠습니까?"
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }

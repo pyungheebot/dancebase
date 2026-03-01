@@ -24,16 +24,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ChevronDown,
   ChevronUp,
@@ -48,6 +39,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAudienceSurvey } from "@/hooks/use-audience-survey";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
   AudienceSurveyEntry,
   AudienceSurveyQuestion,
@@ -505,7 +497,7 @@ export function AudienceSurveyCard({
 
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<AudienceSurveyEntry | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const deleteConfirm = useDeleteConfirm<string>();
   const [isOpen, setIsOpen] = useState(true);
 
   function handleAdd(data: EntryFormData) {
@@ -548,14 +540,14 @@ export function AudienceSurveyCard({
   }
 
   function handleDelete() {
-    if (!deleteTarget) return;
-    const ok = deleteEntry(deleteTarget);
+    const id = deleteConfirm.confirm();
+    if (!id) return;
+    const ok = deleteEntry(id);
     if (ok) {
       toast.success("설문 결과가 삭제되었습니다.");
     } else {
       toast.error("삭제에 실패했습니다.");
     }
-    setDeleteTarget(null);
   }
 
   return (
@@ -670,7 +662,7 @@ export function AudienceSurveyCard({
                       key={entry.id}
                       entry={entry}
                       onEdit={() => setEditTarget(entry)}
-                      onDelete={() => setDeleteTarget(entry.id)}
+                      onDelete={() => deleteConfirm.request(entry.id)}
                     />
                   ))}
                 </div>
@@ -700,28 +692,14 @@ export function AudienceSurveyCard({
       )}
 
       {/* 삭제 확인 */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">설문 결과 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              이 설문 결과를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-7 text-xs bg-destructive hover:bg-destructive/90"
-              onClick={handleDelete}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="설문 결과 삭제"
+        description="이 설문 결과를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        onConfirm={handleDelete}
+        destructive
+      />
     </>
   );
 }

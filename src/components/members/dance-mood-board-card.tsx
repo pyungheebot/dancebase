@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Tag, BarChart2, ChevronDown, ChevronUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -98,7 +99,7 @@ export function DanceMoodBoardCard({ memberId }: { memberId: string }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MoodBoardItem | null>(null);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
 
   const filteredItems =
     filterCategory === "전체"
@@ -148,8 +149,7 @@ export function DanceMoodBoardCard({ memberId }: { memberId: string }) {
       toast.error("제목을 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await executeSave(async () => {
       if (editingItem) {
         await updateItem(editingItem.id, {
           title: form.title.trim(),
@@ -170,11 +170,7 @@ export function DanceMoodBoardCard({ memberId }: { memberId: string }) {
         toast.success("항목이 추가되었습니다.");
       }
       setDialogOpen(false);
-    } catch {
-      toast.error("저장에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   async function handleDelete(id: string) {

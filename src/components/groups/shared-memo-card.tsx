@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import {
   Pin,
@@ -174,9 +175,9 @@ function AddMemoForm({
   const [author, setAuthor] = useState("");
   const [color, setColor] = useState<SharedMemoColor>("yellow");
   const [expiresAt, setExpiresAt] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!content.trim()) {
       toast.error("내용을 입력해주세요.");
       return;
@@ -185,23 +186,23 @@ function AddMemoForm({
       toast.error("메모는 최대 30개까지 저장할 수 있습니다.");
       return;
     }
-    setSubmitting(true);
-    const ok = onAdd({
-      content: content.trim(),
-      author: author.trim(),
-      color,
-      expiresAt: expiresAt || undefined,
+    await execute(async () => {
+      const ok = onAdd({
+        content: content.trim(),
+        author: author.trim(),
+        color,
+        expiresAt: expiresAt || undefined,
+      });
+      if (ok) {
+        toast.success("메모가 추가되었습니다.");
+        setContent("");
+        setAuthor("");
+        setExpiresAt("");
+        setColor("yellow");
+      } else {
+        toast.error("메모 추가에 실패했습니다.");
+      }
     });
-    setSubmitting(false);
-    if (ok) {
-      toast.success("메모가 추가되었습니다.");
-      setContent("");
-      setAuthor("");
-      setExpiresAt("");
-      setColor("yellow");
-    } else {
-      toast.error("메모 추가에 실패했습니다.");
-    }
   };
 
   return (

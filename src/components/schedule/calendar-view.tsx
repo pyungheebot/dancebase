@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, addMonths, subMonths } from "date-fns";
-import { ko } from "date-fns/locale";
+import { isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, addMonths, subMonths, format } from "date-fns";
+import { formatYearMonth, formatShortDateTime, formatKo } from "@/lib/date-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -37,11 +37,13 @@ import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
 import { scheduleToIcs, schedulesToIcs, downloadIcs, buildGoogleCalendarUrl } from "@/lib/ics";
 import { ShareButton } from "@/components/shared/share-button";
 import { MapEmbed } from "@/components/shared/map-embed";
+import { MirrorModeDialog } from "@/components/shared/mirror-mode-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,7 +73,7 @@ type CalendarViewProps = {
 // RSVP + 대기 명단 통합 섹션
 function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
   const { rsvp, loading, refetch } = useScheduleRsvp(schedule.id);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const handleRsvp = async (response: ScheduleRsvpResponse) => {
     const supabase = createClient();
@@ -85,53 +87,51 @@ function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
     }
 
     if (rsvp?.my_response === response) {
-      setSubmitting(true);
+      await execute(async () => {
+        try {
+          const { error } = await supabase
+            .from("schedule_rsvp")
+            .delete()
+            .eq("schedule_id", schedule.id)
+            .eq("user_id", user.id);
+
+          if (error) throw error;
+          invalidateScheduleRsvp(schedule.id);
+          refetch();
+          toast.success("RSVP를 취소했습니다");
+        } catch {
+          toast.error("RSVP 취소에 실패했습니다");
+        }
+      });
+      return;
+    }
+
+    await execute(async () => {
       try {
-        const { error } = await supabase
-          .from("schedule_rsvp")
-          .delete()
-          .eq("schedule_id", schedule.id)
-          .eq("user_id", user.id);
+        const { error } = await supabase.from("schedule_rsvp").upsert(
+          {
+            schedule_id: schedule.id,
+            user_id: user.id,
+            response,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "schedule_id,user_id" }
+        );
 
         if (error) throw error;
         invalidateScheduleRsvp(schedule.id);
         refetch();
-        toast.success("RSVP를 취소했습니다");
+
+        const labels: Record<ScheduleRsvpResponse, string> = {
+          going: "참석",
+          not_going: "불참",
+          maybe: "미정",
+        };
+        toast.success(`"${labels[response]}"으로 응답했습니다`);
       } catch {
-        toast.error("RSVP 취소에 실패했습니다");
-      } finally {
-        setSubmitting(false);
+        toast.error("RSVP 응답에 실패했습니다");
       }
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const { error } = await supabase.from("schedule_rsvp").upsert(
-        {
-          schedule_id: schedule.id,
-          user_id: user.id,
-          response,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "schedule_id,user_id" }
-      );
-
-      if (error) throw error;
-      invalidateScheduleRsvp(schedule.id);
-      refetch();
-
-      const labels: Record<ScheduleRsvpResponse, string> = {
-        going: "참석",
-        not_going: "불참",
-        maybe: "미정",
-      };
-      toast.success(`"${labels[response]}"으로 응답했습니다`);
-    } catch {
-      toast.error("RSVP 응답에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   if (loading) {
@@ -529,7 +529,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold">
-          {format(currentMonth, "yyyy년 M월", { locale: ko })}
+          {formatYearMonth(currentMonth)}
         </h3>
         <div className="flex gap-0.5">
           {schedules.length > 0 && (
@@ -658,7 +658,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-0.5">
                   <span className="flex items-center gap-0.5">
                     <Clock className="h-2.5 w-2.5" />
-                    {format(new Date(schedule.starts_at), "M/d (EEE) HH:mm", { locale: ko })}
+                    {formatShortDateTime(new Date(schedule.starts_at))}
                   </span>
                   {schedule.location && (
                     <span className="flex items-center gap-0.5">
@@ -743,7 +743,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 shrink-0" />
                   <span>
-                    {format(new Date(detailSchedule.starts_at), "yyyy년 M월 d일 (EEE) HH:mm", { locale: ko })}
+                    {formatKo(new Date(detailSchedule.starts_at), "yyyy년 M월 d일 (EEE) HH:mm")}
                     {" ~ "}
                     {format(new Date(detailSchedule.ends_at), "HH:mm")}
                   </span>
@@ -912,7 +912,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                 </DropdownMenu>
                 <ShareButton
                   title={detailSchedule.title}
-                  text={`${format(new Date(detailSchedule.starts_at), "M월 d일 (EEE) HH:mm", { locale: ko })}${detailSchedule.location ? ` | ${detailSchedule.location}` : ""}`}
+                  text={`${formatKo(new Date(detailSchedule.starts_at), "M월 d일 (EEE) HH:mm")}${detailSchedule.location ? ` | ${detailSchedule.location}` : ""}`}
                 />
                 {groupId && canEdit && (
                   <ScheduleBroadcastDialog
@@ -927,6 +927,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                     groupId={groupId}
                   />
                 )}
+                <MirrorModeDialog />
               </div>
             </div>
           )}
@@ -938,7 +939,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-sm">
-              {overflowDay && format(overflowDay, "M월 d일 (EEE) 일정", { locale: ko })}
+              {overflowDay && formatKo(overflowDay, "M월 d일 (EEE) 일정")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-1.5">

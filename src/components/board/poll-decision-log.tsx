@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { Gavel, BookOpen, Link, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -17,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { usePollDecisions } from "@/hooks/use-poll-decisions";
+import { EmptyState } from "@/components/shared/empty-state";
 import type { PollDecision } from "@/types";
 
 // ============================================================
@@ -135,7 +135,12 @@ export function PollDecisionLog({ groupId, basePath }: PollDecisionLogProps) {
               불러오는 중...
             </div>
           ) : decisions.length === 0 ? (
-            <EmptyState />
+            <EmptyState
+              icon={Gavel}
+              title="채택된 결정이 없습니다"
+              description='마감된 투표에서 "결정으로 채택" 버튼을 눌러 의사결정 기록을 남겨보세요.'
+              className="m-4"
+            />
           ) : (
             <div className="divide-y">
               {decisions.map((decision) => (
@@ -192,7 +197,7 @@ function DecisionItem({
     <div className="px-4 py-3 space-y-1.5 hover:bg-accent/30 transition-colors">
       {/* 날짜 */}
       <p className="text-[10px] text-muted-foreground">
-        {format(new Date(decision.decidedAt), "yyyy년 M월 d일 HH:mm", { locale: ko })}
+        {formatKo(new Date(decision.decidedAt), "yyyy년 M월 d일 HH:mm")}
       </p>
 
       {/* 투표 제목 + 이동 버튼 */}
@@ -277,24 +282,3 @@ function DecisionItem({
   );
 }
 
-// ============================================================
-// 빈 상태
-// ============================================================
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 gap-3 text-center">
-      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-        <Gavel className="h-5 w-5 text-muted-foreground" />
-      </div>
-      <div className="space-y-1">
-        <p className="text-sm font-medium">채택된 결정이 없습니다</p>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          마감된 투표에서 &quot;결정으로 채택&quot; 버튼을 눌러
-          <br />
-          의사결정 기록을 남겨보세요.
-        </p>
-      </div>
-    </div>
-  );
-}

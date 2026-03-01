@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Award,
   ChevronDown,
@@ -481,7 +482,7 @@ function CertFormDialog({
   onSubmit,
 }: CertFormDialogProps) {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   // 다이얼로그가 열릴 때 폼 초기화
   function handleOpenChange(nextOpen: boolean) {
@@ -520,8 +521,7 @@ function CertFormDialog({
       toast.error("만료일은 취득일 이후여야 합니다.");
       return;
     }
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       onSubmit({
         name: form.name.trim(),
         issuer: form.issuer.trim(),
@@ -531,9 +531,7 @@ function CertFormDialog({
         grade: form.grade.trim() || undefined,
         memo: form.memo.trim() || undefined,
       });
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   const isEdit = !!editingItem;

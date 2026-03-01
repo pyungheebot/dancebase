@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   ChevronDown,
   ChevronUp,
@@ -242,7 +243,7 @@ function DataPointForm({ trajectoryId, onAdd, onCancel }: DataPointFormProps) {
     creativity: "",
     collaboration: "",
   });
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -266,16 +267,11 @@ function DataPointForm({ trajectoryId, onAdd, onCancel }: DataPointFormProps) {
       parsed[dim] = val;
     }
 
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       onAdd(trajectoryId, month, parsed);
       toast.success("데이터가 추가되었습니다.");
       onCancel();
-    } catch {
-      toast.error("추가 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   return (
@@ -353,7 +349,7 @@ function AddMemberDialog({ onAdd }: AddMemberDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [goal, setGoal] = useState("80");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute: executeMember } = useAsyncAction();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -369,17 +365,12 @@ function AddMemberDialog({ onAdd }: AddMemberDialogProps) {
       return;
     }
 
-    setSubmitting(true);
-    try {
+    void executeMember(async () => {
       onAdd(name.trim(), goalNum);
       setName("");
       setGoal("80");
       setOpen(false);
-    } catch {
-      toast.error("추가 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   return (

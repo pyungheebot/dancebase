@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Lightbulb,
   Heart,
@@ -47,6 +48,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInspirationBoard } from "@/hooks/use-inspiration-board";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { InspirationCategory, InspirationBoardItem } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -196,7 +198,7 @@ function AddItemDialog({
   const [memo, setMemo] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
 
   function reset() {
     setCategory("choreography");
@@ -228,8 +230,7 @@ function AddItemDialog({
       toast.error("제목을 입력해 주세요.");
       return;
     }
-    setLoading(true);
-    try {
+    await execute(async () => {
       await onAdd({
         category,
         mediaType: "idea",
@@ -241,11 +242,7 @@ function AddItemDialog({
       toast.success("영감 아이템이 추가되었습니다.");
       reset();
       setOpen(false);
-    } catch {
-      toast.error("추가에 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
+    });
   }
 
   return (
@@ -490,7 +487,7 @@ function InspirationItemCard({
 
       {/* 날짜 */}
       <p className="text-[10px] text-muted-foreground">
-        {new Date(item.createdAt).toLocaleDateString("ko-KR")}
+        {formatYearMonthDay(item.createdAt)}
       </p>
     </div>
   );

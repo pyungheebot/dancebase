@@ -19,11 +19,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CardGridSkeleton } from "@/components/shared/page-skeleton";
+import { CardErrorBoundary } from "@/components/shared/card-error-boundary";
 import { Plus, Calendar, Bell, AlertCircle, CreditCard, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
-import { formatDistanceToNow } from "date-fns";
+import { formatMonthDay, formatRelative } from "@/lib/date-utils";
 
 export default function DashboardPage() {
   const { groups, loading } = useGroups();
@@ -54,11 +54,14 @@ export default function DashboardPage() {
 
         {/* 이번 달 내 활동 요약 카드 */}
         <section aria-label="이번 달 내 활동 요약">
-          <MyMonthlySummaryCard />
+          <CardErrorBoundary cardName="MyMonthlySummaryCard">
+            <MyMonthlySummaryCard />
+          </CardErrorBoundary>
         </section>
 
         {/* 오늘의 일정 카드 */}
         <section aria-label="오늘의 일정">
+          <CardErrorBoundary cardName="TodaySchedules">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
@@ -94,11 +97,13 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
+          </CardErrorBoundary>
         </section>
 
         {/* 마감 임박 프로젝트 카드 - 데이터가 있을 때만 표시 */}
         {(deadlineLoading || deadlineProjects.length > 0) && (
           <section aria-label="마감 임박 프로젝트">
+            <CardErrorBoundary cardName="DeadlineProjects">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
@@ -151,12 +156,14 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
+            </CardErrorBoundary>
           </section>
         )}
 
         {/* 결제 현황 카드 - 이번 달 거래가 있을 때만 표시 */}
         {(paymentsLoading || payments.length > 0) && (
           <section aria-label="이번 달 결제 현황">
+            <CardErrorBoundary cardName="PaymentStatus">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
@@ -196,7 +203,7 @@ export default function DashboardPage() {
                               {payment.group_name}
                               {payment.project_name && ` · ${payment.project_name}`}
                               {" · "}
-                              {format(new Date(payment.transaction_date), "M월 d일", { locale: ko })}
+                              {formatMonthDay(new Date(payment.transaction_date))}
                             </p>
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0" aria-hidden="true">
@@ -214,11 +221,13 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
+            </CardErrorBoundary>
           </section>
         )}
 
         {/* 최근 알림 카드 */}
         <section aria-label="최근 알림">
+          <CardErrorBoundary cardName="RecentNotifications">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
@@ -254,7 +263,7 @@ export default function DashboardPage() {
                           <p className="text-xs font-medium truncate">{n.title}</p>
                         )}
                         <p className="text-[10px] text-muted-foreground">
-                          {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ko })}
+                          {formatRelative(new Date(n.created_at))}
                         </p>
                       </div>
                     </li>
@@ -263,6 +272,7 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
+          </CardErrorBoundary>
         </section>
 
         {/* 최근 활동 피드 - 그룹이 있을 때만 표시 */}

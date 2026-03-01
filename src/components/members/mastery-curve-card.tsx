@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   ChevronDown,
   ChevronUp,
@@ -292,7 +293,7 @@ function CheckpointForm({ entryId, onAdd, onCancel }: CheckpointFormProps) {
   const [date, setDate] = useState(getTodayStr());
   const [progress, setProgress] = useState("");
   const [note, setNote] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -305,16 +306,11 @@ function CheckpointForm({ entryId, onAdd, onCancel }: CheckpointFormProps) {
       toast.error("진도는 0~100 사이 숫자를 입력해주세요.");
       return;
     }
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       onAdd(entryId, { date, progress: prog, note: note.trim() });
       toast.success("체크포인트가 추가되었습니다.");
       onCancel();
-    } catch {
-      toast.error("추가 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   return (
@@ -389,7 +385,7 @@ function AddEntryForm({ onAdd, onCancel }: AddEntryFormProps) {
   const [name, setName] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [initialProgress, setInitialProgress] = useState("0");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute: executeAdd } = useAsyncAction();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -406,8 +402,7 @@ function AddEntryForm({ onAdd, onCancel }: AddEntryFormProps) {
       toast.error("초기 진도는 0~100 사이 숫자를 입력해주세요.");
       return;
     }
-    setSubmitting(true);
-    try {
+    void executeAdd(async () => {
       onAdd({
         choreographyName: name.trim(),
         targetDate,
@@ -415,11 +410,7 @@ function AddEntryForm({ onAdd, onCancel }: AddEntryFormProps) {
       });
       toast.success("안무가 추가되었습니다.");
       onCancel();
-    } catch {
-      toast.error("추가 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   return (

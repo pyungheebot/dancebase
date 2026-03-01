@@ -38,23 +38,18 @@ function isPollExpired(poll: GroupPoll): boolean {
 }
 
 export function useGroupPolls(groupId: string) {
-  const [polls, setPolls] = useState<GroupPoll[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const [polls, setPolls] = useState<GroupPoll[]>(() => loadPolls(groupId));
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserName, setCurrentUserName] = useState<string>("");
 
+  // 현재 로그인 유저 정보 조회
   useEffect(() => {
-    setMounted(true);
-    setPolls(loadPolls(groupId));
-
-    // 현재 로그인 유저 정보 조회
     const supabase = createClient();
     const fetchUser = async () => {
       const { data: authData } = await supabase.auth.getUser();
       const user = authData.user;
       if (!user) return;
       setCurrentUserId(user.id);
-      // 프로필에서 이름 조회
       const { data: profileData } = await supabase
         .from("profiles")
         .select("name")
@@ -237,7 +232,7 @@ export function useGroupPolls(groupId: string) {
     polls,
     activePolls,
     expiredPolls,
-    loading: !mounted,
+    loading: false,
     currentUserId,
     createPoll,
     vote,

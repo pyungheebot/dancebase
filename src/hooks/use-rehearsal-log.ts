@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { RehearsalLogEntry, RehearsalIssue } from "@/types";
 
 // ─── localStorage 키 ────────────────────────────────────────
@@ -35,11 +35,6 @@ function saveEntries(
 export function useRehearsalLog(groupId: string, projectId: string) {
   const [entries, setEntries] = useState<RehearsalLogEntry[]>([]);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !projectId) return;
-    setEntries(loadEntries(groupId, projectId));
-  }, [groupId, projectId]);
 
   // 상태 동기화 + 저장
   const persist = useCallback(

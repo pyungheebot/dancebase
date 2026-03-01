@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { UnifiedCalendarEvent, UnifiedEventType } from "@/types";
 
 // ============================================================
@@ -116,19 +116,13 @@ export type UnifiedCalendarStats = {
 // ============================================================
 
 export function useUnifiedCalendar(groupId: string) {
-  const [events, setEvents] = useState<UnifiedCalendarEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<UnifiedCalendarEvent[]>(() => loadEvents(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadEvents(groupId);
     setEvents(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
@@ -271,7 +265,7 @@ export function useUnifiedCalendar(groupId: string) {
 
   return {
     events,
-    loading,
+    loading: false,
     addEvent,
     updateEvent,
     deleteEvent,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import {
   CloudSun,
@@ -122,9 +123,9 @@ const INITIAL_FORM = {
 
 function AddAlertDialog({ open, onClose, onAdd }: AddAlertDialogProps) {
   const [form, setForm] = useState(INITIAL_FORM);
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!form.date) {
       toast.error("날짜를 선택해주세요.");
       return;
@@ -134,28 +135,28 @@ function AddAlertDialog({ open, onClose, onAdd }: AddAlertDialogProps) {
       return;
     }
 
-    setLoading(true);
-    const ok = onAdd({
-      date: form.date,
-      condition: form.condition,
-      temperature: form.temperature ? Number(form.temperature) : undefined,
-      humidity: form.humidity ? Number(form.humidity) : undefined,
-      windSpeed: form.windSpeed ? Number(form.windSpeed) : undefined,
-      alertLevel: form.alertLevel,
-      recommendation: form.recommendation.trim(),
-      isOutdoorSafe: form.isOutdoorSafe,
-      notes: form.notes.trim() || undefined,
-      createdBy: "나",
-    });
-    setLoading(false);
+    await execute(async () => {
+      const ok = onAdd({
+        date: form.date,
+        condition: form.condition,
+        temperature: form.temperature ? Number(form.temperature) : undefined,
+        humidity: form.humidity ? Number(form.humidity) : undefined,
+        windSpeed: form.windSpeed ? Number(form.windSpeed) : undefined,
+        alertLevel: form.alertLevel,
+        recommendation: form.recommendation.trim(),
+        isOutdoorSafe: form.isOutdoorSafe,
+        notes: form.notes.trim() || undefined,
+        createdBy: "나",
+      });
 
-    if (ok) {
-      toast.success("날씨 알림이 추가되었습니다.");
-      setForm(INITIAL_FORM);
-      onClose();
-    } else {
-      toast.error("날씨 알림 추가에 실패했습니다.");
-    }
+      if (ok) {
+        toast.success("날씨 알림이 추가되었습니다.");
+        setForm(INITIAL_FORM);
+        onClose();
+      } else {
+        toast.error("날씨 알림 추가에 실패했습니다.");
+      }
+    });
   }
 
   return (

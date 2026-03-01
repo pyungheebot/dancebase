@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   DashboardWidgetId,
   DashboardWidgetItem,
@@ -76,9 +76,7 @@ export function useDashboardLayout() {
   );
 
   // SSR 이후 hydration 시 localStorage 값으로 동기화
-  useEffect(() => {
-    setLayout(loadLayoutFromStorage());
-  }, []);
+
 
   // 위젯 표시/숨김 토글
   const toggleWidget = useCallback((id: DashboardWidgetId) => {

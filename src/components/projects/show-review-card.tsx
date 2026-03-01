@@ -35,6 +35,7 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
 // 출처 메타데이터
@@ -422,12 +423,11 @@ interface ReviewItemProps {
 
 function ReviewItem({ review, onDelete }: ReviewItemProps) {
   const meta = SOURCE_META[review.source];
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const handleDelete = () => {
-    if (confirm(`"${review.reviewerName}"의 리뷰를 삭제하시겠습니까?`)) {
-      onDelete(review.id);
-      toast.success("리뷰가 삭제되었습니다.");
-    }
+    onDelete(review.id);
+    toast.success("리뷰가 삭제되었습니다.");
   };
 
   return (
@@ -446,7 +446,7 @@ function ReviewItem({ review, onDelete }: ReviewItemProps) {
         <StarRating value={review.rating} readonly size="sm" />
         <button
           type="button"
-          onClick={handleDelete}
+          onClick={() => setDeleteConfirmOpen(true)}
           className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
           aria-label="삭제"
         >
@@ -495,6 +495,14 @@ function ReviewItem({ review, onDelete }: ReviewItemProps) {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="리뷰 삭제"
+        description={`"${review.reviewerName}"의 리뷰를 삭제하시겠습니까?`}
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }

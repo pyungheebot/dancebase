@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { DietTrackerMeal, DietTrackerWater, DietTrackerDayLog, DietMealType } from "@/types";
 
 // ============================================================
@@ -90,21 +90,15 @@ function calcStats(
 // ============================================================
 
 export function useDietTracker(memberId: string) {
-  const [meals, setMeals] = useState<DietTrackerMeal[]>([]);
+  const [meals, setMeals] = useState<DietTrackerMeal[]>(() => loadData(memberId).meals);
   const [waterLogs, setWaterLogs] = useState<DietTrackerWater[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
     if (!memberId) return;
     const data = loadData(memberId);
     setMeals(data.meals);
     setWaterLogs(data.waterLogs);
-    setLoading(false);
   }, [memberId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (nextMeals: DietTrackerMeal[], nextWaterLogs: DietTrackerWater[]) => {
@@ -208,7 +202,7 @@ export function useDietTracker(memberId: string) {
   return {
     meals,
     waterLogs,
-    loading,
+    loading: false,
     addMeal,
     updateMeal,
     deleteMeal,

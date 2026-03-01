@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { Video, Plus, Trash2, ExternalLink, Film, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePracticeVideos } from "@/hooks/use-practice-videos";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { VideoTimestampSection } from "@/components/projects/video-timestamp-section";
 import { YouTubeEmbed } from "@/components/shared/youtube-embed";
 import type { ProjectSong } from "@/types";
@@ -90,7 +90,7 @@ function AddVideoDialog({ open, onOpenChange, onAdd, songs }: AddVideoDialogProp
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [songId, setSongId] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   // URL 변경 시 플랫폼 자동 감지
   function handleUrlChange(value: string) {
@@ -118,24 +118,24 @@ function AddVideoDialog({ open, onOpenChange, onAdd, songs }: AddVideoDialogProp
 
   async function handleSubmit() {
     if (!url.trim() || !title.trim()) return;
-    setSubmitting(true);
-    const ok = await onAdd({
-      url,
-      title,
-      platform,
-      tags,
-      songId: songId || null,
+    await execute(async () => {
+      const ok = await onAdd({
+        url,
+        title,
+        platform,
+        tags,
+        songId: songId || null,
+      });
+      if (ok) {
+        setUrl("");
+        setTitle("");
+        setPlatform("youtube");
+        setTagInput("");
+        setTags([]);
+        setSongId(null);
+        onOpenChange(false);
+      }
     });
-    setSubmitting(false);
-    if (ok) {
-      setUrl("");
-      setTitle("");
-      setPlatform("youtube");
-      setTagInput("");
-      setTags([]);
-      setSongId(null);
-      onOpenChange(false);
-    }
   }
 
   return (
@@ -361,9 +361,7 @@ function VideoCard({
         </p>
         <div className="flex items-center gap-1">
           <p className="text-[10px] text-muted-foreground">
-            {format(new Date(video.created_at), "M/d HH:mm", {
-              locale: ko,
-            })}
+            {formatKo(new Date(video.created_at), "M/d HH:mm")}
           </p>
           <Button
             variant="ghost"

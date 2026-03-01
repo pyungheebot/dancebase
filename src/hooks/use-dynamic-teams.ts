@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { DynamicTeam, DynamicTeamsData, TeamColor } from "@/types";
 
 const MAX_TEAMS = 8;
@@ -28,10 +28,6 @@ function saveToStorage(groupId: string, data: DynamicTeamsData): void {
 export function useDynamicTeams(groupId: string) {
   const [data, setData] = useState<DynamicTeamsData>({ teams: [] });
 
-  // 초기 로드
-  useEffect(() => {
-    setData(loadFromStorage(groupId));
-  }, [groupId]);
 
   // 저장 및 상태 갱신
   const persist = useCallback(

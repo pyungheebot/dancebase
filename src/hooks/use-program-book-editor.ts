@@ -110,7 +110,7 @@ export function useProgramBookEditor(projectId: string) {
       });
       return true;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- current/persist는 컴포넌트 내부 함수로 projectId·mutate에 의존하며 이미 포함됨
     [projectId, mutate]
   );
 
@@ -130,7 +130,7 @@ export function useProgramBookEditor(projectId: string) {
       };
       persist({ ...base, items: [...base.items, newItem] });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- current/persist는 컴포넌트 내부 함수로 projectId·mutate에 의존하며 이미 포함됨
     [projectId, mutate]
   );
 
@@ -142,7 +142,7 @@ export function useProgramBookEditor(projectId: string) {
         items: base.items.map((i) => (i.id === id ? { ...i, ...patch } : i)),
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- current/persist는 컴포넌트 내부 함수로 projectId·mutate에 의존하며 이미 포함됨
     [projectId, mutate]
   );
 
@@ -155,7 +155,7 @@ export function useProgramBookEditor(projectId: string) {
         .map((i, idx) => ({ ...i, order: idx + 1 }));
       persist({ ...base, items: remaining });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- current/persist는 컴포넌트 내부 함수로 projectId·mutate에 의존하며 이미 포함됨
     [projectId, mutate]
   );
 
@@ -173,7 +173,7 @@ export function useProgramBookEditor(projectId: string) {
       sorted[swapIdx] = { ...sorted[swapIdx], order: tmp };
       persist({ ...base, items: sorted });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- current/persist는 컴포넌트 내부 함수로 projectId·mutate에 의존하며 이미 포함됨
     [projectId, mutate]
   );
 
@@ -185,7 +185,7 @@ export function useProgramBookEditor(projectId: string) {
       const newCast: ProgramBookCast = { ...cast, id: crypto.randomUUID() };
       persist({ ...base, cast: [...base.cast, newCast] });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- current/persist는 컴포넌트 내부 함수로 projectId·mutate에 의존하며 이미 포함됨
     [projectId, mutate]
   );
 
@@ -197,7 +197,7 @@ export function useProgramBookEditor(projectId: string) {
         cast: base.cast.map((c) => (c.id === id ? { ...c, ...patch } : c)),
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- current/persist는 컴포넌트 내부 함수로 projectId·mutate에 의존하며 이미 포함됨
     [projectId, mutate]
   );
 
@@ -206,7 +206,7 @@ export function useProgramBookEditor(projectId: string) {
       const base = current();
       persist({ ...base, cast: base.cast.filter((c) => c.id !== id) });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- current/persist는 컴포넌트 내부 함수로 projectId·mutate에 의존하며 이미 포함됨
     [projectId, mutate]
   );
 

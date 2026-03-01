@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { ReadinessChecklist, ReadinessCheckItem, ReadinessCategory } from "@/types";
 
 // ─── localStorage 키 ────────────────────────────────────────
@@ -51,11 +51,6 @@ export function calcTotalProgress(items: ReadinessCheckItem[]): number {
 export function usePerformanceReadiness(groupId: string, projectId: string) {
   const [checklists, setChecklists] = useState<ReadinessChecklist[]>([]);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !projectId) return;
-    setChecklists(loadChecklists(groupId, projectId));
-  }, [groupId, projectId]);
 
   // 상태 동기화 + 저장
   const persist = useCallback(

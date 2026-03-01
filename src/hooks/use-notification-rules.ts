@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type {
   NotificationRule,
   NotificationCondition,
@@ -89,16 +89,17 @@ function saveRulesToStorage(groupId: string, rules: NotificationRule[]): void {
 // ============================================
 
 export function useNotificationRules(groupId: string) {
-  const defaultRules = buildDefaultRules(groupId);
+  const defaultRules = useMemo(() => buildDefaultRules(groupId), [groupId]);
   const [userRules, setUserRules] = useState<NotificationRule[]>([]);
 
   // 마운트 시 localStorage에서 사용자 규칙 로드
-  useEffect(() => {
-    setUserRules(loadRulesFromStorage(groupId));
-  }, [groupId]);
+
 
   // 기본 규칙 + 사용자 규칙 합산
-  const allRules = [...defaultRules, ...userRules];
+  const allRules = useMemo(
+    () => [...defaultRules, ...userRules],
+    [defaultRules, userRules]
+  );
 
   // ---- CRUD ----
 
@@ -186,7 +187,6 @@ export function useNotificationRules(groupId: string) {
       });
       return true;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [groupId, defaultRules]
   );
 
@@ -204,7 +204,6 @@ export function useNotificationRules(groupId: string) {
       });
       return true;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [groupId, defaultRules]
   );
 
@@ -215,7 +214,6 @@ export function useNotificationRules(groupId: string) {
       if (!rule) return;
       updateRule(id, { enabled: !rule.enabled });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [allRules, updateRule]
   );
 

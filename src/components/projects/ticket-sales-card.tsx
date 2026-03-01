@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import {
   Collapsible,
@@ -37,6 +38,7 @@ import {
   BadgeDollarSign,
 } from "lucide-react";
 import { useTicketSales } from "@/hooks/use-ticket-sales";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { TicketSalesTier } from "@/types";
 
 // ───────────────────────────────────────────────
@@ -86,7 +88,7 @@ function AddTierDialog({ open, onClose, onSubmit }: AddTierDialogProps) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [totalQty, setTotalQty] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
 
   async function handleSubmit() {
     if (!name.trim()) { toast.error("등급명을 입력해주세요."); return; }
@@ -94,17 +96,12 @@ function AddTierDialog({ open, onClose, onSubmit }: AddTierDialogProps) {
     const qtyNum = Number(totalQty);
     if (isNaN(priceNum) || priceNum < 0) { toast.error("올바른 가격을 입력해주세요."); return; }
     if (isNaN(qtyNum) || qtyNum <= 0) { toast.error("총 수량은 1 이상이어야 합니다."); return; }
-    setLoading(true);
-    try {
+    await execute(async () => {
       await onSubmit({ name: name.trim(), price: priceNum, totalQty: qtyNum });
       toast.success("등급이 추가되었습니다.");
       setName(""); setPrice(""); setTotalQty("");
       onClose();
-    } catch {
-      toast.error("등급 추가에 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
+    });
   }
 
   return (
@@ -191,7 +188,7 @@ function AddRecordDialog({ open, onClose, tiers, onSubmit }: AddRecordDialogProp
   const [tierId, setTierId] = useState("");
   const [qty, setQty] = useState("1");
   const [date, setDate] = useState(today);
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
 
   async function handleSubmit() {
     if (!buyerName.trim()) { toast.error("구매자명을 입력해주세요."); return; }
@@ -199,17 +196,12 @@ function AddRecordDialog({ open, onClose, tiers, onSubmit }: AddRecordDialogProp
     const qtyNum = Number(qty);
     if (isNaN(qtyNum) || qtyNum <= 0) { toast.error("수량은 1 이상이어야 합니다."); return; }
     if (!date) { toast.error("날짜를 입력해주세요."); return; }
-    setLoading(true);
-    try {
+    await execute(async () => {
       await onSubmit({ buyerName: buyerName.trim(), tierId, qty: qtyNum, date });
       toast.success("판매 기록이 추가되었습니다.");
       setBuyerName(""); setTierId(""); setQty("1"); setDate(today);
       onClose();
-    } catch {
-      toast.error("판매 기록 추가에 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
+    });
   }
 
   return (
@@ -301,6 +293,7 @@ export function TicketSalesCard({ projectId }: { projectId: string }) {
   const [tiersOpen, setTiersOpen] = useState(true);
   const [recordsOpen, setRecordsOpen] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
+  const [deleteTierTarget, setDeleteTierTarget] = useState<TicketSalesTier | null>(null);
 
   const maxDailyQty = dailySales.length > 0 ? Math.max(...dailySales.map((d) => d.qty)) : 1;
 
@@ -438,12 +431,7 @@ export function TicketSalesCard({ projectId }: { projectId: string }) {
                                 size="sm"
                                 variant="ghost"
                                 className="h-5 w-5 p-0 text-gray-400 hover:text-red-500"
-                                onClick={() => {
-                                  if (confirm(`"${tier.name}" 등급을 삭제하시겠습니까? 관련 판매 기록도 모두 삭제됩니다.`)) {
-                                    removeTier(tier.id).catch(() => toast.error("삭제에 실패했습니다."));
-                                    toast.success("등급이 삭제되었습니다.");
-                                  }
-                                }}
+                                onClick={() => setDeleteTierTarget(tier)}
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
@@ -627,6 +615,19 @@ export function TicketSalesCard({ projectId }: { projectId: string }) {
         onClose={() => setShowRecordDialog(false)}
         tiers={data.tiers}
         onSubmit={addRecord}
+      />
+      <ConfirmDialog
+        open={deleteTierTarget !== null}
+        onOpenChange={(v) => !v && setDeleteTierTarget(null)}
+        title="등급 삭제"
+        description={deleteTierTarget ? `"${deleteTierTarget.name}" 등급을 삭제하시겠습니까? 관련 판매 기록도 모두 삭제됩니다.` : ""}
+        onConfirm={() => {
+          if (!deleteTierTarget) return;
+          removeTier(deleteTierTarget.id).catch(() => toast.error("삭제에 실패했습니다."));
+          toast.success("등급이 삭제되었습니다.");
+          setDeleteTierTarget(null);
+        }}
+        destructive
       />
     </div>
   );

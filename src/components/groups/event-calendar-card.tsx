@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   CalendarDays,
   ChevronDown,
@@ -282,7 +283,7 @@ function AddEventDialog({
   const [category, setCategory] = useState<GroupEventCategory>("연습");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   // open 상태 변경 시 date 동기화
   function handleOpenChange(isOpen: boolean) {
@@ -308,7 +309,7 @@ function AddEventDialog({
     onClose();
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) {
       toast.error("이벤트 제목을 입력해주세요.");
@@ -318,8 +319,7 @@ function AddEventDialog({
       toast.error("날짜를 선택해주세요.");
       return;
     }
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       onAdd({
         title: title.trim(),
         date,
@@ -331,9 +331,7 @@ function AddEventDialog({
       });
       toast.success("이벤트가 추가되었습니다.");
       handleClose();
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   return (

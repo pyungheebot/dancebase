@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   ChevronDown,
   ChevronUp,
@@ -160,7 +161,7 @@ function CreateCampaignDialog({
   onSubmit: (input: CreateCampaignInput) => void;
 }) {
   const [form, setForm] = useState<CreateCampaignInput>(DEFAULT_FORM);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const handleClose = useCallback(() => {
     setForm(DEFAULT_FORM);
@@ -168,14 +169,11 @@ function CreateCampaignDialog({
   }, [onOpenChange]);
 
   const handleSubmit = useCallback(() => {
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       onSubmit(form);
-    } finally {
-      setSubmitting(false);
       setForm(DEFAULT_FORM);
-    }
-  }, [form, onSubmit]);
+    });
+  }, [execute, form, onSubmit]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>

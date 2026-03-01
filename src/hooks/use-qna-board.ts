@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { QnaQuestion, QnaAnswer, QnaStatus } from "@/types";
 
@@ -64,8 +64,7 @@ export type QnaStats = {
 // ============================================
 
 export function useQnaBoard(groupId: string) {
-  const [questions, setQuestions] = useState<QnaQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState<QnaQuestion[]>(() => loadQuestions(groupId));
   const [categoryFilter, setCategoryFilter] = useState<QnaCategory>("전체");
   const [statusFilter, setStatusFilter] = useState<QnaStatusFilter>("전체");
   const [searchQuery, setSearchQuery] = useState("");
@@ -79,12 +78,7 @@ export function useQnaBoard(groupId: string) {
     if (!groupId) return;
     const data = loadQuestions(groupId);
     setQuestions(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 질문 추가
   const addQuestion = useCallback(
@@ -209,7 +203,7 @@ export function useQnaBoard(groupId: string) {
   return {
     questions,
     filteredQuestions,
-    loading,
+    loading: false,
     stats,
     categoryFilter,
     setCategoryFilter,

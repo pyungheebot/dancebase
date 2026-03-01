@@ -315,7 +315,7 @@ export function MembershipFeeCard({
               {formatMonth(selectedMonth)} 납부 항목이 없습니다.
             </p>
             <p className="text-[10px] text-muted-foreground/70 mt-1">
-              "일괄 생성" 버튼으로 멤버 전원의 납부 항목을 만드세요.
+              &quot;일괄 생성&quot; 버튼으로 멤버 전원의 납부 항목을 만드세요.
             </p>
           </div>
         ) : (

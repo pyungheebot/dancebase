@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Collapsible,
   CollapsibleContent,
@@ -283,7 +284,7 @@ export function SkillEvolutionTracker({
 }: SkillEvolutionTrackerProps) {
   const [open, setOpen] = useState(false);
   const [recording, setRecording] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
   const [draftScores, setDraftScores] = useState<Record<SkillCategory, number>>(
     () =>
       Object.fromEntries(
@@ -327,16 +328,11 @@ export function SkillEvolutionTracker({
   };
 
   const handleSave = () => {
-    setSaving(true);
-    try {
+    void executeSave(async () => {
       saveSnapshot(draftScores);
       toast.success("이번 달 스킬이 기록되었습니다");
       setRecording(false);
-    } catch {
-      toast.error("저장에 실패했습니다");
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   const handleScoreChange = (cat: SkillCategory, value: number[]) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Card,
   CardContent,
@@ -285,7 +286,7 @@ export function AudienceCountCard({
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] =
     useState<AudienceCountRecord | null>(null);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
   const [form, setForm] = useState(EMPTY_FORM);
 
   // ── 폼 리셋 ──
@@ -327,35 +328,35 @@ export function AudienceCountCard({
 
   // ── 저장 (추가/수정 공용) ──
   async function handleSave() {
-    setSaving(true);
-    const payload = {
-      sessionNumber: form.sessionNumber,
-      sessionLabel: form.sessionLabel || undefined,
-      date: form.date,
-      totalSeats: Number(form.totalSeats),
-      actualCount: Number(form.actualCount),
-      vipCount: Number(form.vipCount),
-      byType: {
-        paid: Number(form.paid),
-        invited: Number(form.invited),
-        free: Number(form.free),
-        staff: Number(form.staff),
-      },
-      note: form.note || undefined,
-    };
+    await execute(async () => {
+      const payload = {
+        sessionNumber: form.sessionNumber,
+        sessionLabel: form.sessionLabel || undefined,
+        date: form.date,
+        totalSeats: Number(form.totalSeats),
+        actualCount: Number(form.actualCount),
+        vipCount: Number(form.vipCount),
+        byType: {
+          paid: Number(form.paid),
+          invited: Number(form.invited),
+          free: Number(form.free),
+          staff: Number(form.staff),
+        },
+        note: form.note || undefined,
+      };
 
-    let ok: boolean;
-    if (editTarget) {
-      ok = await updateRecord(editTarget.id, payload);
-    } else {
-      ok = await addRecord(payload);
-    }
+      let ok: boolean;
+      if (editTarget) {
+        ok = await updateRecord(editTarget.id, payload);
+      } else {
+        ok = await addRecord(payload);
+      }
 
-    if (ok) {
-      setShowAdd(false);
-      setEditTarget(null);
-    }
-    setSaving(false);
+      if (ok) {
+        setShowAdd(false);
+        setEditTarget(null);
+      }
+    });
   }
 
   // ── 삭제 ──

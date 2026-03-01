@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { format, parseISO } from "date-fns";
-import { ko } from "date-fns/locale";
+import { parseISO } from "date-fns";
+import { formatKo } from "@/lib/date-utils";
 import {
   UserCheck,
   FileText,
@@ -98,7 +98,7 @@ const FILTER_OPTIONS: { value: FilteredActivityFilterType; label: string }[] = [
 
 function formatDayLabel(isoString: string): string {
   try {
-    return format(parseISO(isoString), "M월 d일 EEEE", { locale: ko });
+    return formatKo(parseISO(isoString), "M월 d일 EEEE");
   } catch {
     return isoString.slice(0, 10);
   }
@@ -107,7 +107,7 @@ function formatDayLabel(isoString: string): string {
 // 시간 포맷 (예: "오후 3:30")
 function formatTimeLabel(isoString: string): string {
   try {
-    return format(parseISO(isoString), "a h:mm", { locale: ko });
+    return formatKo(parseISO(isoString), "a h:mm");
   } catch {
     return "";
   }

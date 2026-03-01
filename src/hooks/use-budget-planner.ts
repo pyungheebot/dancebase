@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   BudgetPlannerCategory,
   BudgetPlannerItem,
@@ -60,19 +60,13 @@ export type BudgetPlannerStats = {
 // ============================================================
 
 export function useBudgetPlanner(groupId: string) {
-  const [plans, setPlans] = useState<BudgetPlannerPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [plans, setPlans] = useState<BudgetPlannerPlan[]>(() => loadData(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setPlans(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: BudgetPlannerPlan[]) => {
@@ -260,7 +254,7 @@ export function useBudgetPlanner(groupId: string) {
 
   return {
     plans,
-    loading,
+    loading: false,
     addPlan,
     updatePlan,
     deletePlan,

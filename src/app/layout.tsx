@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { SettingsProvider } from "@/hooks/use-settings";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { SWRProvider } from "@/lib/swr/provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { CommandPalette } from "@/components/shared/command-palette";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,9 +18,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#000000",
+};
+
 export const metadata: Metadata = {
   title: "Groop - 댄서를 위한 그룹 관리 서비스",
   description: "그룹을 만들고, 멤버를 관리하고, 연습 일정과 출석을 한 곳에서 관리하세요.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Groop",
+  },
+  icons: {
+    apple: "/icons/icon-192.svg",
+  },
 };
 
 export default function RootLayout({
@@ -39,12 +52,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Script id="sw-register" strategy="afterInteractive">
+          {`if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js");}`}
+        </Script>
         <AuthProvider>
           <SWRProvider>
             <SettingsProvider>
               <TooltipProvider>
                 {children}
-                <CommandPalette />
                 <Toaster richColors position="top-center" />
               </TooltipProvider>
             </SettingsProvider>

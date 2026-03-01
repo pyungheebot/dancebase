@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -56,13 +57,13 @@ export function useAttendanceException(groupId: string) {
 
   // ── 예외 추가 ────────────────────────────────────────────
 
-  function addException(
+  const addException = useCallback((
     memberName: string,
     date: string,
     type: AttendanceExceptionType,
     reason: string,
     duration?: number
-  ): void {
+  ): void => {
     const now = new Date().toISOString();
     const newEntry: AttendanceExceptionEntry = {
       id: `exception-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -77,7 +78,7 @@ export function useAttendanceException(groupId: string) {
     const next = [...entries, newEntry];
     saveEntries(groupId, next);
     mutate(next, false);
-  }
+  }, [entries, groupId, mutate]);
 
   // ── 승인 ─────────────────────────────────────────────────
 

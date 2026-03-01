@@ -1,7 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -32,8 +31,8 @@ export function BoardScheduledBadge({
   const isReleased = scheduledDate <= now;
 
   const label = isReleased
-    ? `${format(scheduledDate, "M/d HH:mm", { locale: ko })} 발행됨`
-    : `예약됨 · ${format(scheduledDate, "M/d HH:mm", { locale: ko })} 발행`;
+    ? `${formatKo(scheduledDate, "M/d HH:mm")} 발행됨`
+    : `예약됨 · ${formatKo(scheduledDate, "M/d HH:mm")} 발행`;
 
   return (
     <Badge
@@ -45,7 +44,7 @@ export function BoardScheduledBadge({
           : "border-yellow-400 text-yellow-700 bg-yellow-50 dark:border-yellow-600 dark:text-yellow-400 dark:bg-yellow-950/40",
         className,
       )}
-      aria-label={isReleased ? `${format(scheduledDate, "M월 d일 HH시 mm분", { locale: ko })}에 발행됨` : `${format(scheduledDate, "M월 d일 HH시 mm분", { locale: ko })}에 예약 발행`}
+      aria-label={isReleased ? `${formatKo(scheduledDate, "M월 d일 HH시 mm분")}에 발행됨` : `${formatKo(scheduledDate, "M월 d일 HH시 mm분")}에 예약 발행`}
     >
       <CalendarClock className="h-2.5 w-2.5" aria-hidden="true" />
       {label}

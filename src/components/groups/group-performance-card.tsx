@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 import { useGroupPerformanceSnapshot } from "@/hooks/use-group-performance-snapshot";
 import type { PerformancePeriod, PerformanceMetric, TopContributor } from "@/types";
 
@@ -134,11 +135,13 @@ function TopContributorChip({
       {/* 아바타 */}
       <div className="h-7 w-7 shrink-0 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
         {contributor.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={contributor.avatarUrl}
             alt={contributor.name}
+            width={28}
+            height={28}
             className="h-full w-full object-cover"
+            unoptimized
           />
         ) : (
           <span className="text-[11px] font-bold text-primary">{initial}</span>

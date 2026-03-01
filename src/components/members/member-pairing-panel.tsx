@@ -90,6 +90,7 @@ function RecommendationCard({
           size="icon"
           className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive"
           title="관심 없음"
+          aria-label="관심 없음"
           onClick={() => onDismiss(rec.userId)}
         >
           <X className="h-3 w-3" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   PartyPopper,
   ChevronDown,
@@ -56,6 +57,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useTeamBuilding } from "@/hooks/use-team-building";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { TeamBuildingCategory, TeamBuildingEvent } from "@/types";
 
 // ============================================================
@@ -177,7 +179,7 @@ function AddEventDialog({
   const [duration, setDuration] = useState("");
   const [budget, setBudget] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeAdd } = useAsyncAction();
 
   function reset() {
     setTitle("");
@@ -205,8 +207,7 @@ function AddEventDialog({
       toast.error("주최자를 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await executeAdd(async () => {
       await onAdd({
         title: title.trim(),
         category,
@@ -222,11 +223,7 @@ function AddEventDialog({
       toast.success("팀빌딩 활동이 추가되었습니다.");
       reset();
       onClose();
-    } catch {
-      toast.error("활동 추가에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   return (
@@ -410,23 +407,18 @@ function FeedbackDialog({
 }: FeedbackDialogProps) {
   const [rating, setRating] = useState(existingRating);
   const [feedback, setFeedback] = useState(existingFeedback);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeFeedback } = useAsyncAction();
 
   async function handleSubmit() {
     if (rating === 0) {
       toast.error("별점을 선택해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await executeFeedback(async () => {
       await onSubmit(rating, feedback.trim() || undefined);
       toast.success("피드백이 저장되었습니다.");
       onClose();
-    } catch {
-      toast.error("피드백 저장에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   return (
@@ -506,6 +498,7 @@ function EventCard({
 }: EventCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const isParticipating =
     currentMemberName !== undefined &&
@@ -557,7 +550,6 @@ function EventCard({
   }
 
   async function handleDelete() {
-    if (!confirm("이 활동을 삭제하시겠습니까?")) return;
     await onDelete(event.id);
     toast.success("활동이 삭제되었습니다.");
   }
@@ -610,7 +602,7 @@ function EventCard({
             )}
           </button>
           <button
-            onClick={handleDelete}
+            onClick={() => setDeleteConfirmOpen(true)}
             className="text-muted-foreground hover:text-red-500 transition-colors"
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -760,6 +752,14 @@ function EventCard({
         onSubmit={handleFeedbackSubmit}
         existingRating={myParticipant?.rating ?? 0}
         existingFeedback={myParticipant?.feedback ?? ""}
+      />
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="활동 삭제"
+        description="이 활동을 삭제하시겠습니까?"
+        onConfirm={handleDelete}
+        destructive
       />
     </div>
   );

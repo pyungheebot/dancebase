@@ -31,6 +31,7 @@ import {
 } from "@/lib/attendance-report-generator";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { EntityMember } from "@/types/entity-context";
 import type { AttendanceStatus } from "@/types";
 
@@ -49,7 +50,7 @@ export function AttendanceExportButton({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<PdfPeriod>("3m");
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
   const [reportData, setReportData] = useState<PdfReportData | null>(null);
 
   const supabase = createClient();
@@ -60,10 +61,9 @@ export function AttendanceExportButton({
       return;
     }
 
-    setLoading(true);
     setReportData(null);
 
-    try {
+    await execute(async () => {
       const { from, to, label } = getPdfPeriodRange(period);
 
       // 1. 일정 조회
@@ -138,9 +138,7 @@ export function AttendanceExportButton({
       );
 
       setReportData(pdfData);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleOpen = () => {

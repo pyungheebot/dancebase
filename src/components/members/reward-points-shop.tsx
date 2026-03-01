@@ -473,7 +473,7 @@ export function RewardPointsShop({
                   <p className="text-xs text-muted-foreground">등록된 보상이 없습니다</p>
                   {canEdit && (
                     <p className="text-[10px] text-muted-foreground mt-1">
-                      "보상 추가" 버튼으로 보상을 등록해보세요
+                      &quot;보상 추가&quot; 버튼으로 보상을 등록해보세요
                     </p>
                   )}
                 </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
@@ -100,7 +100,7 @@ export function OnboardingTaskChecklistCard({
 
   useEffect(() => {
     if (isAllDone) {
-      setOpen(false);
+      startTransition(() => { setOpen(false); });
     }
   }, [isAllDone]);
 

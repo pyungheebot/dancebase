@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   ScheduleFeedbackItem,
   ScheduleFeedbackMood,
@@ -42,10 +42,7 @@ export function useScheduleFeedbackLocal(
   const [allItems, setAllItems] = useState<ScheduleFeedbackItem[]>([]);
 
   // 마운트 시 localStorage에서 로드
-  useEffect(() => {
-    if (!groupId) return;
-    setAllItems(loadAll(groupId));
-  }, [groupId]);
+
 
   // 해당 scheduleId에 해당하는 피드백만 필터링 (최신순, 최대 10개)
   const feedbacks = allItems

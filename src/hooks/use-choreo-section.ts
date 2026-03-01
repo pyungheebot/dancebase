@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { ChoreoSectionEntry, ChoreoSectionDifficulty } from "@/types";
 
 // ============================================
@@ -39,13 +39,7 @@ function saveSections(
 
 export function useChoreoSection(groupId: string, projectId: string) {
   const [sections, setSections] = useState<ChoreoSectionEntry[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    setSections(loadSections(groupId, projectId));
-    setLoading(false);
-  }, [groupId, projectId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateSections = useCallback(
@@ -183,7 +177,7 @@ export function useChoreoSection(groupId: string, projectId: string) {
 
   return {
     sections: sorted,
-    loading,
+    loading: false,
     totalSections,
     averageDifficulty,
     averageCompletion,

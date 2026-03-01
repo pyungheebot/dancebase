@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import {
   UserCheck,
   ChevronDown,
@@ -32,6 +33,7 @@ import {
   type AddGuestInstructorInput,
   type AddGuestLessonInput,
 } from "@/hooks/use-guest-instructor";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { GuestInstructorEntry } from "@/types";
 
 // ─── 상수 ────────────────────────────────────────────────────
@@ -607,6 +609,7 @@ export function GuestInstructorCard({ groupId }: GuestInstructorCardProps) {
   const [open, setOpen] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [filterGenre, setFilterGenre] = useState<string>("전체");
+  const deleteConfirm = useDeleteConfirm<GuestInstructorEntry>();
 
   const {
     instructors,
@@ -625,14 +628,18 @@ export function GuestInstructorCard({ groupId }: GuestInstructorCardProps) {
       ? instructors
       : instructors.filter((i) => i.genre === filterGenre);
 
-  const handleDelete = async (instructor: GuestInstructorEntry) => {
+  const requestDelete = (instructor: GuestInstructorEntry) => {
     if (instructor.lessons.length > 0) {
-      const confirmed = confirm(
-        `${instructor.name} 강사를 삭제하면 ${instructor.lessons.length}개의 수업 이력도 함께 삭제됩니다. 계속하시겠습니까?`
-      );
-      if (!confirmed) return;
+      deleteConfirm.request(instructor);
+    } else {
+      deleteInstructor(instructor.id);
     }
-    await deleteInstructor(instructor.id);
+  };
+
+  const handleDelete = async () => {
+    const target = deleteConfirm.confirm();
+    if (!target) return;
+    await deleteInstructor(target.id);
   };
 
   return (
@@ -746,7 +753,7 @@ export function GuestInstructorCard({ groupId }: GuestInstructorCardProps) {
                 <InstructorCard
                   key={instructor.id}
                   instructor={instructor}
-                  onDelete={() => handleDelete(instructor)}
+                  onDelete={() => requestDelete(instructor)}
                   onAddLesson={addLesson}
                   onDeleteLesson={deleteLesson}
                 />
@@ -755,6 +762,14 @@ export function GuestInstructorCard({ groupId }: GuestInstructorCardProps) {
           )}
         </div>
       </CollapsibleContent>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="강사 삭제"
+        description={deleteConfirm.target ? `${deleteConfirm.target.name} 강사를 삭제하면 ${deleteConfirm.target.lessons.length}개의 수업 이력도 함께 삭제됩니다. 계속하시겠습니까?` : ""}
+        onConfirm={handleDelete}
+        destructive
+      />
     </Collapsible>
   );
 }

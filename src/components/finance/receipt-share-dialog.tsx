@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { formatKo } from "@/lib/date-utils";
 import {
   Dialog,
   DialogContent,
@@ -25,8 +25,8 @@ export function ReceiptShareDialog({ transaction }: Props) {
   const [open, setOpen] = useState(false);
   const { token, loading, createToken, deleteToken, copyLink, isExpired } =
     useReceiptShare(transaction.id);
-  const [creating, setCreating] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { pending: creating, execute: executeCreate } = useAsyncAction();
+  const { pending: deleting, execute: executeDelete } = useAsyncAction();
 
   const shareUrl =
     typeof window !== "undefined" && token
@@ -36,16 +36,12 @@ export function ReceiptShareDialog({ transaction }: Props) {
       : "";
 
   const handleCreate = async () => {
-    setCreating(true);
-    await createToken();
-    setCreating(false);
+    await executeCreate(() => createToken());
   };
 
   const handleDelete = async () => {
     if (!token) return;
-    setDeleting(true);
-    await deleteToken(token.id);
-    setDeleting(false);
+    await executeDelete(() => deleteToken(token.id));
   };
 
   const handleCopy = async () => {
@@ -113,9 +109,7 @@ export function ReceiptShareDialog({ transaction }: Props) {
               <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
                 <Clock className="h-3 w-3 shrink-0" />
                 <span>
-                  {format(new Date(token.expires_at), "M월 d일(EEE) HH:mm 만료", {
-                    locale: ko,
-                  })}
+                  {formatKo(new Date(token.expires_at), "M월 d일(EEE) HH:mm 만료")}
                 </span>
               </div>
             </div>

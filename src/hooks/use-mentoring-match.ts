@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   MentoringMatchPair,
   MentoringMatchStatus,
@@ -54,19 +54,13 @@ export type MentoringMatchStats = {
 // ============================================================
 
 export function useMentoringMatch(groupId: string) {
-  const [pairs, setPairs] = useState<MentoringMatchPair[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pairs, setPairs] = useState<MentoringMatchPair[]>(() => loadData(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setPairs(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: MentoringMatchPair[]) => {
@@ -209,7 +203,7 @@ export function useMentoringMatch(groupId: string) {
 
   return {
     pairs,
-    loading,
+    loading: false,
     addPair,
     updatePair,
     deletePair,

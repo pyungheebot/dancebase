@@ -100,8 +100,12 @@ export function calcBpmFromTaps(tapTimestamps: number[]): number | null {
 // ============================================
 
 export function useMusicTempo(groupId: string, projectId: string) {
-  const [entries, setEntries] = useState<MusicTempoEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entries, setEntries] = useState<MusicTempoEntry[]>(() => {
+    if (!groupId || !projectId) return [];
+    const data = loadEntries(groupId, projectId);
+    data.sort((a, b) => a.bpm - b.bpm);
+    return data;
+  });
 
   // 메트로놈 상태
   const [metronomeActive, setMetronomeActive] = useState(false);
@@ -138,20 +142,11 @@ export function useMusicTempo(groupId: string, projectId: string) {
 
   // ---- 로드 ----
   const reload = useCallback(() => {
-    if (!groupId || !projectId) {
-      setLoading(false);
-      return;
-    }
+    if (!groupId || !projectId) return;
     const data = loadEntries(groupId, projectId);
-    // BPM 오름차순 정렬
     data.sort((a, b) => a.bpm - b.bpm);
     setEntries(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // ---- 메트로놈 오디오 ----
   const getAudioContext = useCallback(() => {
@@ -326,7 +321,7 @@ export function useMusicTempo(groupId: string, projectId: string) {
 
   return {
     entries,
-    loading,
+    loading: false,
     canAdd,
     addEntry,
     updateEntry,

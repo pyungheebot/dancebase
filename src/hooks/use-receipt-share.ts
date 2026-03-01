@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateReceiptShareTokens } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { copyToClipboard } from "@/lib/clipboard";
 import type { ReceiptShareToken } from "@/types";
 
 /** 32자리 랜덤 hex 토큰 생성 */
@@ -98,12 +99,7 @@ export function useReceiptShare(transactionId: string) {
     const origin =
       typeof window !== "undefined" ? window.location.origin : "";
     const url = `${origin}/receipt/${token}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("클립보드에 복사되었습니다");
-    } catch {
-      toast.error("복사에 실패했습니다");
-    }
+    await copyToClipboard(url, "클립보드에 복사되었습니다", "복사에 실패했습니다");
   }
 
   /** 만료 여부 확인 */

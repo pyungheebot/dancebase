@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { DanceGenreType, GenreExplorerEntry, GenreMemberInterest } from "@/types";
 
 // ─── localStorage 키 ──────────────────────────────────────────
@@ -41,11 +41,6 @@ export function useGenreExplorer(groupId: string) {
     interests: [],
   });
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId) return;
-    setStore(loadStore(groupId));
-  }, [groupId]);
 
   // 저장 + 상태 갱신
   const persist = useCallback(

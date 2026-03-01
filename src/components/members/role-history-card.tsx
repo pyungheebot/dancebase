@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Collapsible,
   CollapsibleContent,
@@ -171,7 +172,7 @@ function AssignRoleDialog({
   );
   const [assignedBy, setAssignedBy] = useState("");
   const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const handleSubmit = () => {
     if (!memberName) {
@@ -191,8 +192,7 @@ function AssignRoleDialog({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       assignRole({
         memberName,
         role,
@@ -210,11 +210,7 @@ function AssignRoleDialog({
       setAssignedBy("");
       setNotes("");
       onAssigned();
-    } catch {
-      toast.error("역할 배정에 실패했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (

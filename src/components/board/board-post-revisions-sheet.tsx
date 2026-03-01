@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { usePostRevisions } from "@/hooks/use-post-revisions";
 import { BoardPostContent } from "@/components/board/board-post-content";
 import { Button } from "@/components/ui/button";
@@ -89,11 +88,7 @@ export function BoardPostRevisionsSheet({
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3 shrink-0" />
                 <span>
-                  {format(
-                    new Date(selectedRevision.revised_at),
-                    "yyyy.M.d HH:mm",
-                    { locale: ko }
-                  )}
+                  {formatKo(new Date(selectedRevision.revised_at), "yyyy.M.d HH:mm")}
                 </span>
               </div>
             </div>
@@ -161,11 +156,7 @@ export function BoardPostRevisionsSheet({
                           <div className="flex items-center gap-1.5">
                             <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
                             <span className="text-xs font-medium">
-                              {format(
-                                new Date(revision.revised_at),
-                                "yyyy.M.d HH:mm",
-                                { locale: ko }
-                              )}
+                              {formatKo(new Date(revision.revised_at), "yyyy.M.d HH:mm")}
                             </span>
                             {index === 0 && (
                               <Badge className="text-[10px] px-1.5 py-0 h-4 bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">

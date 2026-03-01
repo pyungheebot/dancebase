@@ -31,6 +31,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSessionAutoFeedback } from "@/hooks/use-session-auto-feedback";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { SessionAutoFeedback } from "@/types";
 import type { Schedule } from "@/types";
 
@@ -156,7 +158,7 @@ function SavedFeedbackItem({
             <div className="flex justify-between items-center">
               <span className="text-[10px] text-muted-foreground">
                 저장일:{" "}
-                {new Date(feedback.createdAt).toLocaleDateString("ko-KR")}
+                {formatYearMonthDay(feedback.createdAt)}
               </span>
               <Button
                 size="sm"
@@ -195,7 +197,7 @@ export function SessionFeedbackGenerator({
     defaultScheduleId ?? ""
   );
   const [generating, setGenerating] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
   const [draft, setDraft] = useState<SessionAutoFeedback | null>(null);
   const [customNote, setCustomNote] = useState("");
 
@@ -225,17 +227,16 @@ export function SessionFeedbackGenerator({
 
   const handleSave = () => {
     if (!draft) return;
-    setSaving(true);
-    try {
-      saveFeedback({ ...draft, customNote });
-      toast.success("피드백이 저장되었습니다.");
-      setDraft(null);
-      setCustomNote("");
-    } catch {
-      toast.error("저장에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    executeSave(async () => {
+      try {
+        saveFeedback({ ...draft, customNote });
+        toast.success("피드백이 저장되었습니다.");
+        setDraft(null);
+        setCustomNote("");
+      } catch {
+        toast.error("저장에 실패했습니다.");
+      }
+    });
   };
 
   const handleDelete = (id: string) => {

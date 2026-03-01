@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format, parseISO, isValid, getDay } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatYearMonth } from "@/lib/date-utils";
 import {
   ChevronDown,
   ChevronUp,
@@ -184,7 +184,7 @@ export function AttendancePredictionCalendar({
   const gridRows = Math.ceil(totalCells / 7);
 
   const monthLabel = isValid(parseISO(`${currentDate}-01`))
-    ? format(parseISO(`${currentDate}-01`), "yyyy년 M월", { locale: ko })
+    ? formatYearMonth(parseISO(`${currentDate}-01`))
     : currentDate;
 
   return (

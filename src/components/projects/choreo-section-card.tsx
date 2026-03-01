@@ -37,6 +37,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 // ============================================
 // 난이도 유틸
@@ -302,7 +303,7 @@ function AddSectionDialog({
   const [keyMovesRaw, setKeyMovesRaw] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function reset() {
     setName("");
@@ -320,7 +321,7 @@ function AddSectionDialog({
     );
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!name.trim()) {
       toast.error("구간 이름을 입력하세요.");
       return;
@@ -339,25 +340,25 @@ function AddSectionDialog({
       .map((m) => m.trim())
       .filter(Boolean);
 
-    setSubmitting(true);
-    const ok = onAdd(
-      name,
-      startTime,
-      endTime,
-      difficulty,
-      keyMoves,
-      selectedMembers,
-      notes || undefined
-    );
-    setSubmitting(false);
+    await execute(async () => {
+      const ok = onAdd(
+        name,
+        startTime,
+        endTime,
+        difficulty,
+        keyMoves,
+        selectedMembers,
+        notes || undefined
+      );
 
-    if (ok) {
-      toast.success(`"${name.trim()}" 구간이 추가되었습니다.`);
-      reset();
-      onClose();
-    } else {
-      toast.error("구간 추가에 실패했습니다.");
-    }
+      if (ok) {
+        toast.success(`"${name.trim()}" 구간이 추가되었습니다.`);
+        reset();
+        onClose();
+      } else {
+        toast.error("구간 추가에 실패했습니다.");
+      }
+    });
   }
 
   return (

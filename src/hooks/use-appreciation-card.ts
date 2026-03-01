@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   AppreciationCardCategory,
@@ -44,18 +44,7 @@ function saveData(data: AppreciationCardData): void {
 
 export function useAppreciationCard(groupId: string) {
   const [entries, setEntries] = useState<AppreciationCardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId) {
-      setLoading(false);
-      return;
-    }
-    const data = loadData(groupId);
-    setEntries(data.entries);
-    setLoading(false);
-  }, [groupId]);
 
   // 감사 카드 보내기
   const sendCard = useCallback(
@@ -201,7 +190,7 @@ export function useAppreciationCard(groupId: string) {
 
   return {
     entries,
-    loading,
+    loading: false,
     totalEntries: entries.length,
     topReceiver,
     topSender,

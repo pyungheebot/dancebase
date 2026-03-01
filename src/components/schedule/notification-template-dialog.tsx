@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { useState, useEffect, startTransition } from "react";
+import { formatKo } from "@/lib/date-utils";
 import { Bell, FileText, Send, Plus, Trash2, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -245,21 +244,25 @@ export function NotificationTemplateDialog({
   useEffect(() => {
     if (open) {
       const loaded = getTemplates();
-      setTemplates(loaded);
-      setEditingId(null);
-      setShowAddForm(false);
-      // 발송 탭 초기화
-      if (loaded.length > 0) setSelectedTemplateId(loaded[0].id);
-      if (upcomingSchedules.length > 0) setSelectedScheduleId(upcomingSchedules[0].id);
-      setSelectAll(true);
-      setSelectedMemberIds(new Set());
+      const firstTemplateId = loaded.length > 0 ? loaded[0].id : null;
+      const firstScheduleId = upcomingSchedules.length > 0 ? upcomingSchedules[0].id : null;
+      startTransition(() => {
+        setTemplates(loaded);
+        setEditingId(null);
+        setShowAddForm(false);
+        if (firstTemplateId) setSelectedTemplateId(firstTemplateId);
+        if (firstScheduleId) setSelectedScheduleId(firstScheduleId);
+        setSelectAll(true);
+        setSelectedMemberIds(new Set());
+      });
     }
   }, [open, getTemplates, upcomingSchedules]);
 
   // 전체 선택 연동
   useEffect(() => {
     if (selectAll) {
-      setSelectedMemberIds(new Set(members.map((m) => m.userId)));
+      const allIds = new Set(members.map((m) => m.userId));
+      startTransition(() => { setSelectedMemberIds(allIds); });
     }
   }, [selectAll, members]);
 
@@ -493,7 +496,7 @@ export function NotificationTemplateDialog({
                       <SelectItem key={s.id} value={s.id} className="text-xs">
                         <span className="font-medium">{s.title}</span>
                         <span className="ml-1.5 text-muted-foreground">
-                          {format(new Date(s.starts_at), "M/d HH:mm", { locale: ko })}
+                          {formatKo(new Date(s.starts_at), "M/d HH:mm")}
                         </span>
                       </SelectItem>
                     ))}
@@ -517,7 +520,7 @@ export function NotificationTemplateDialog({
                       </Badge>
                     )}
                     <Badge className="text-[9px] px-1.5 py-0 bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100">
-                      {format(new Date(selectedSchedule.starts_at), "HH:mm", { locale: ko })}
+                      {formatKo(new Date(selectedSchedule.starts_at), "HH:mm")}
                     </Badge>
                   </div>
                 )}

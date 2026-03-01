@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { type GroupNotice, type NoticePriority } from "@/types";
 
 const NOTICES_KEY_PREFIX = "dancebase:group-notices:";
@@ -64,11 +64,7 @@ export function useGroupNotices(groupId: string, userId: string) {
   const [notices, setNotices] = useState<GroupNotice[]>([]);
   const [readSet, setReadSet] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const loaded = loadNotices(groupId);
-    setNotices(loaded);
-    setReadSet(loadReadSet(groupId, userId));
-  }, [groupId, userId]);
+
 
   const activeNotices = notices
     .filter((n) => !isExpired(n))

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { ChevronDown, ChevronUp, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -163,7 +164,7 @@ export function MoodCheckinCard({ groupId, userId }: MoodCheckinCardProps) {
   const [open, setOpen] = useState(false);
   const [selectedMood, setSelectedMood] = useState<MoodType | null>(null);
   const [note, setNote] = useState("");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
 
   const { checkIn, getTodayMood, getRecentEntries, getStats } = useMoodCheckin(
     groupId,
@@ -193,18 +194,13 @@ export function MoodCheckinCard({ groupId, userId }: MoodCheckinCardProps) {
       toast.error("기분을 선택해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await executeSave(async () => {
       checkIn(selectedMood, note);
       toast.success("기분이 저장되었습니다.");
       setOpen(false);
       setSelectedMood(null);
       setNote("");
-    } catch {
-      toast.error("저장 중 오류가 발생했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   return (

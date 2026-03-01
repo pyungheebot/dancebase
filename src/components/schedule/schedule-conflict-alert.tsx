@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import {
   CheckCircle2,
   ChevronDown,
@@ -51,7 +51,7 @@ function ScheduleInfo({ title, startsAt, endsAt, location }: ScheduleInfoProps) 
       <div className="flex items-center gap-1 mt-0.5 text-[10px] text-gray-500">
         <Clock className="h-3 w-3 shrink-0" />
         <span>
-          {format(new Date(startsAt), "M/d(EEE) HH:mm", { locale: ko })}
+          {formatKo(new Date(startsAt), "M/d(EEE) HH:mm")}
           {" ~ "}
           {format(new Date(endsAt), "HH:mm")}
         </span>

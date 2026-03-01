@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   EngagementCampaign,
   EngagementCampaignStatus,
@@ -47,28 +47,9 @@ export type CreateCampaignInput = {
 
 export function useEngagementCampaign(groupId: string) {
   const [campaigns, setCampaigns] = useState<EngagementCampaign[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // ---- 초기 로드 ----
-  useEffect(() => {
-    if (!groupId) {
-      setLoading(false);
-      return;
-    }
-    try {
-      const raw = localStorage.getItem(getStorageKey(groupId));
-      const parsed: EngagementCampaign[] = raw ? JSON.parse(raw) : [];
-      // 만료 상태 자동 업데이트
-      const updated = parsed.map((c) => ({ ...c, status: resolveStatus(c) }));
-      setCampaigns(updated);
-      // 변경된 상태를 저장
-      localStorage.setItem(getStorageKey(groupId), JSON.stringify(updated));
-    } catch {
-      setCampaigns([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [groupId]);
+
 
   // ---- 저장 헬퍼 ----
   const persist = useCallback(
@@ -187,7 +168,7 @@ export function useEngagementCampaign(groupId: string) {
 
   return {
     campaigns,
-    loading,
+    loading: false,
     activeCount,
     createCampaign,
     completeCampaign,

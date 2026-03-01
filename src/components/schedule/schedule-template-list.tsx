@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useScheduleTemplates } from "@/hooks/use-schedule-templates";
 import { invalidateScheduleTemplates } from "@/lib/swr/invalidate";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { ScheduleTemplate } from "@/types";
 
 type TemplateFieldValues = {
@@ -65,7 +66,7 @@ function ScheduleTemplateAddDialog({
   onSaved,
 }: ScheduleTemplateAddDialogProps) {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
   const [fields, setFields] = useState<TemplateFieldValues>(DEFAULT_TEMPLATE_FIELDS);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -80,8 +81,7 @@ function ScheduleTemplateAddDialog({
       return;
     }
 
-    setLoading(true);
-    try {
+    await execute(async () => {
       const supabase = createClient();
       const {
         data: { user },
@@ -105,18 +105,17 @@ function ScheduleTemplateAddDialog({
         created_by: user.id,
       });
 
-      if (error) throw error;
+      if (error) {
+        toast.error("템플릿 저장에 실패했습니다.");
+        throw error;
+      }
 
       toast.success("템플릿이 저장되었습니다.");
       invalidateScheduleTemplates(entityType, entityId);
       setOpen(false);
       resetFields();
       onSaved();
-    } catch {
-      toast.error("템플릿 저장에 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -229,27 +228,25 @@ type TemplateCardProps = {
 };
 
 function TemplateCard({ template, onUse, canEdit, onDeleted }: TemplateCardProps) {
-  const [deleting, setDeleting] = useState(false);
+  const { pending: deleting, execute } = useAsyncAction();
 
   const handleDelete = async () => {
-    setDeleting(true);
-    try {
+    await execute(async () => {
       const supabase = createClient();
       const { error } = await supabase
         .from("schedule_templates")
         .delete()
         .eq("id", template.id);
 
-      if (error) throw error;
+      if (error) {
+        toast.error("템플릿 삭제에 실패했습니다.");
+        throw error;
+      }
 
       toast.success("템플릿이 삭제되었습니다.");
       invalidateScheduleTemplates(template.entity_type, template.entity_id);
       onDeleted();
-    } catch {
-      toast.error("템플릿 삭제에 실패했습니다.");
-    } finally {
-      setDeleting(false);
-    }
+    });
   };
 
   const durationLabel = template.duration_minutes

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -86,18 +86,19 @@ export function RoleOnboardingChecklist({ groupId, role }: RoleOnboardingCheckli
     const storageKey = getStorageKey(groupId, role as "leader" | "sub_leader");
 
     const isHidden = localStorage.getItem(hiddenKey) === "true";
-    setHidden(isHidden);
-
+    let storedChecked: Record<string, boolean> | null = null;
     try {
       const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        setChecked(JSON.parse(stored));
-      }
+      if (stored) storedChecked = JSON.parse(stored);
     } catch {
       // 파싱 오류 무시
     }
 
-    setMounted(true);
+    startTransition(() => {
+      setHidden(isHidden);
+      if (storedChecked) setChecked(storedChecked);
+      setMounted(true);
+    });
   }, [groupId, role, isEligible]);
 
   // 체크 상태 변경 시 localStorage 저장

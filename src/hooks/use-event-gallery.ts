@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type { GroupEvent, EventTag } from "@/types";
 
@@ -48,16 +48,9 @@ export type GroupEventInput = {
 
 export function useEventGallery(groupId: string) {
   const [events, setEvents] = useState<GroupEvent[]>([]);
-  const [loading, setLoading] = useState(true);
   const [tagFilter, setTagFilter] = useState<EventTag | "all">("all");
   const [yearFilter, setYearFilter] = useState<number | "all">("all");
 
-  // 초기 로드
-  useEffect(() => {
-    const loaded = loadEvents(groupId);
-    setEvents(sortByDateDesc(loaded));
-    setLoading(false);
-  }, [groupId]);
 
   // 저장 + 상태 업데이트
   const persistAndUpdate = useCallback(
@@ -164,7 +157,7 @@ export function useEventGallery(groupId: string) {
   return {
     events,
     filteredEvents,
-    loading,
+    loading: false,
     tagFilter,
     setTagFilter,
     yearFilter,

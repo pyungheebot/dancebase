@@ -27,16 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -56,6 +47,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConsentForm } from "@/hooks/use-consent-form";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type { ConsentFormItem, ConsentFormType, ConsentFormStatus } from "@/types";
 
 // ============================================================
@@ -484,7 +476,7 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<ConsentFormItem | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const deleteConfirm = useDeleteConfirm<string>();
   const [filterStatus, setFilterStatus] = useState<ConsentFormStatus | "all">("all");
 
   const filteredItems = filterStatus === "all"
@@ -543,14 +535,14 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
 
   // 삭제 핸들러
   const handleDelete = () => {
-    if (!deleteTarget) return;
-    const ok = deleteItem(deleteTarget);
+    const id = deleteConfirm.confirm();
+    if (!id) return;
+    const ok = deleteItem(id);
     if (ok) {
       toast.success("항목이 삭제되었습니다.");
     } else {
       toast.error("항목 삭제에 실패했습니다.");
     }
-    setDeleteTarget(null);
   };
 
   // 일괄 생성 핸들러
@@ -702,7 +694,7 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
                       onSign={handleSign}
                       onDecline={handleDecline}
                       onEdit={(i) => setEditItem(i)}
-                      onDelete={(id) => setDeleteTarget(id)}
+                      onDelete={(id) => deleteConfirm.request(id)}
                     />
                   ))}
                 </div>
@@ -742,28 +734,14 @@ export function ConsentFormCard({ projectId }: ConsentFormCardProps) {
       />
 
       {/* 삭제 확인 다이얼로그 */}
-      <AlertDialog
-        open={deleteTarget !== null}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">항목 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              이 동의서 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-8 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-8 text-xs bg-red-500 hover:bg-red-600"
-              onClick={handleDelete}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="항목 삭제"
+        description="이 동의서 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        onConfirm={handleDelete}
+        destructive
+      />
     </>
   );
 }

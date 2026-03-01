@@ -18,7 +18,7 @@ const STATIC_COMMANDS: CommandItem[] = [
   },
   {
     id: "nav-messages",
-    label: "쪽지",
+    label: "메시지",
     href: "/messages",
     type: "navigation",
     group: "빠른 이동",
@@ -100,11 +100,7 @@ export function useCommandPalette() {
   const [recentPages, setRecentPages] = useState<RecentPage[]>([]);
 
   // 팔레트가 열릴 때 최근 방문 페이지 로드
-  useEffect(() => {
-    if (open) {
-      setRecentPages(loadRecentPages());
-    }
-  }, [open]);
+
 
   // 키보드 단축키 등록
   useEffect(() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import {
   Medal,
@@ -44,6 +45,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCompetitionPrep } from "@/hooks/use-competition-prep";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { CompetitionPrepCategory, CompetitionPrepEvent } from "@/types";
 
 // ─── 상수 ────────────────────────────────────────────────────
@@ -123,7 +125,7 @@ function AddEventDialog({
   const [teamSize, setTeamSize] = useState("");
   const [regDeadline, setRegDeadline] = useState("");
   const [notes, setNotes] = useState("");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   async function handleSubmit() {
     if (!name.trim()) {
@@ -138,31 +140,30 @@ function AddEventDialog({
       toast.error("장소를 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
-      await onAdd({
-        competitionName: name.trim(),
-        date,
-        location: location.trim(),
-        category: category.trim() || undefined,
-        teamSize: teamSize ? Number(teamSize) : undefined,
-        registrationDeadline: regDeadline || undefined,
-        notes: notes.trim() || undefined,
-      });
-      toast.success("대회가 추가되었습니다.");
-      setName("");
-      setDate("");
-      setLocation("");
-      setCategory("");
-      setTeamSize("");
-      setRegDeadline("");
-      setNotes("");
-      setOpen(false);
-    } catch {
-      toast.error("대회 추가에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    await execute(async () => {
+      try {
+        await onAdd({
+          competitionName: name.trim(),
+          date,
+          location: location.trim(),
+          category: category.trim() || undefined,
+          teamSize: teamSize ? Number(teamSize) : undefined,
+          registrationDeadline: regDeadline || undefined,
+          notes: notes.trim() || undefined,
+        });
+        toast.success("대회가 추가되었습니다.");
+        setName("");
+        setDate("");
+        setLocation("");
+        setCategory("");
+        setTeamSize("");
+        setRegDeadline("");
+        setNotes("");
+        setOpen(false);
+      } catch {
+        toast.error("대회 추가에 실패했습니다.");
+      }
+    });
   }
 
   return (
@@ -290,34 +291,33 @@ function AddItemDialog({
   const [assignee, setAssignee] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeTask } = useAsyncAction();
 
   async function handleSubmit() {
     if (!task.trim()) {
       toast.error("과제명을 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
-      await onAdd(eventId, {
-        task: task.trim(),
-        category,
-        assignee: assignee.trim() || undefined,
-        dueDate: dueDate || undefined,
-        notes: notes.trim() || undefined,
-      });
-      toast.success("체크 항목이 추가되었습니다.");
-      setTask("");
-      setCategory("other");
-      setAssignee("");
-      setDueDate("");
-      setNotes("");
-      setOpen(false);
-    } catch {
-      toast.error("항목 추가에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    await executeTask(async () => {
+      try {
+        await onAdd(eventId, {
+          task: task.trim(),
+          category,
+          assignee: assignee.trim() || undefined,
+          dueDate: dueDate || undefined,
+          notes: notes.trim() || undefined,
+        });
+        toast.success("체크 항목이 추가되었습니다.");
+        setTask("");
+        setCategory("other");
+        setAssignee("");
+        setDueDate("");
+        setNotes("");
+        setOpen(false);
+      } catch {
+        toast.error("항목 추가에 실패했습니다.");
+      }
+    });
   }
 
   return (
@@ -454,6 +454,7 @@ function EventPanel({
   const [open, setOpen] = useState(false);
   const [activeCategory, setActiveCategory] =
     useState<CompetitionPrepCategory | "all">("all");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const totalItems = event.items.length;
   const completedItems = event.items.filter((i) => i.isCompleted).length;
@@ -473,8 +474,6 @@ function EventPanel({
   ) as CompetitionPrepCategory[];
 
   async function handleDeleteEvent() {
-    if (!confirm(`"${event.competitionName}" 대회를 삭제하시겠습니까?`))
-      return;
     try {
       await onDeleteEvent(event.id);
       toast.success("대회가 삭제되었습니다.");
@@ -555,7 +554,7 @@ function EventPanel({
               className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive"
               onClick={(e) => {
                 e.stopPropagation();
-                handleDeleteEvent();
+                setDeleteConfirmOpen(true);
               }}
             >
               <Trash2 className="h-3 w-3" />
@@ -703,6 +702,14 @@ function EventPanel({
           </div>
         </div>
       </CollapsibleContent>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="대회 삭제"
+        description={`"${event.competitionName}" 대회를 삭제하시겠습니까?`}
+        onConfirm={handleDeleteEvent}
+        destructive
+      />
     </Collapsible>
   );
 }

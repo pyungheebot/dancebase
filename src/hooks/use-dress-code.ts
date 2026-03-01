@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   DressCodeSet,
   DressCodeGuideItem,
@@ -61,19 +61,13 @@ export type DressCodeMemberReadiness = {
 // ============================================================
 
 export function useDressCode(groupId: string, projectId: string) {
-  const [sets, setSets] = useState<DressCodeSet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sets, setSets] = useState<DressCodeSet[]>(() => loadData(groupId, projectId));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
     const data = loadData(groupId, projectId);
     setSets(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: DressCodeSet[]) => {
@@ -296,7 +290,7 @@ export function useDressCode(groupId: string, projectId: string) {
 
   return {
     sets,
-    loading,
+    loading: false,
     addSet,
     updateSet,
     deleteSet,

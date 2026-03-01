@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatMonthDay } from "@/lib/date-utils";
 import {
   Star,
   FileText,
@@ -24,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useBookmarks } from "@/hooks/use-bookmarks";
+import { EmptyState } from "@/components/shared/empty-state";
 import type { BookmarkItem, BookmarkTargetType } from "@/types";
 
 const TAB_ITEMS: { value: BookmarkTargetType | "all"; label: string }[] = [
@@ -83,7 +83,7 @@ function BookmarkListItem({
         <p className="text-[10px] text-muted-foreground mt-0.5">
           <span className="mr-1.5">{getTypeLabel(item.targetType)}</span>
           <span>
-            {format(new Date(item.createdAt), "M월 d일", { locale: ko })}
+            {formatMonthDay(new Date(item.createdAt))}
           </span>
         </p>
       </Link>
@@ -96,18 +96,6 @@ function BookmarkListItem({
       >
         <Trash2 className="h-3 w-3 text-muted-foreground" />
       </Button>
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-      <Star className="h-8 w-8 text-muted-foreground/40 mb-3" />
-      <p className="text-sm font-medium text-muted-foreground">북마크가 없습니다</p>
-      <p className="text-xs text-muted-foreground/70 mt-1">
-        게시글, 일정, 멤버 옆의 별 아이콘을 눌러 북마크를 추가하세요.
-      </p>
     </div>
   );
 }
@@ -187,7 +175,12 @@ export function BookmarksPanel() {
                   className="flex-1 overflow-y-auto mt-0 px-2 pb-4"
                 >
                   {items.length === 0 ? (
-                    <EmptyState />
+                    <EmptyState
+                      icon={Star}
+                      title="북마크가 없습니다"
+                      description="게시글, 일정, 멤버 옆의 별 아이콘을 눌러 북마크를 추가하세요."
+                      className="mt-2"
+                    />
                   ) : (
                     <div className="space-y-0.5 mt-2">
                       {items.map((item) => (

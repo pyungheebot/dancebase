@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { ScheduleCheckItem, ScheduleChecklist } from "@/types";
 
 const STORAGE_PREFIX = "dancebase:schedule-checklist:";
@@ -42,34 +42,7 @@ function saveToStorage(checklist: ScheduleChecklist): void {
 
 export function useScheduleChecklist(scheduleId: string) {
   const [items, setItems] = useState<ScheduleCheckItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!scheduleId) {
-      setLoading(false);
-      return;
-    }
-    const stored = loadFromStorage(scheduleId);
-    if (stored) {
-      const sorted = [...stored.items].sort((a, b) => a.order - b.order);
-      setItems(sorted);
-    } else {
-      // 최초 접근 시 기본 항목 자동 생성
-      const defaults: ScheduleCheckItem[] = DEFAULT_ITEMS.map((item) => ({
-        ...item,
-        id: generateId(),
-      }));
-      const checklist: ScheduleChecklist = {
-        scheduleId,
-        items: defaults,
-        updatedAt: new Date().toISOString(),
-      };
-      saveToStorage(checklist);
-      setItems(defaults);
-    }
-    setLoading(false);
-  }, [scheduleId]);
 
   /** 저장 헬퍼 */
   const persist = useCallback(
@@ -152,7 +125,7 @@ export function useScheduleChecklist(scheduleId: string) {
 
   return {
     items,
-    loading,
+    loading: false,
     addItem,
     removeItem,
     toggleItem,

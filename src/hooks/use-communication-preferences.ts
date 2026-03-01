@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   CommunicationPreference,
   CommPreferredTime,
@@ -55,17 +55,8 @@ const DEFAULT_PREFERENCE: Omit<CommunicationPreference, "userId" | "updatedAt"> 
 
 export function useCommunicationPreferences(groupId: string, userId: string) {
   const [preference, setPreference] = useState<CommunicationPreference | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!groupId || !userId) {
-      setLoading(false);
-      return;
-    }
-    const loaded = loadPreference(groupId, userId);
-    setPreference(loaded);
-    setLoading(false);
-  }, [groupId, userId]);
+
 
   const updatePreferences = useCallback(
     (updates: Partial<Omit<CommunicationPreference, "userId" | "updatedAt">>): boolean => {
@@ -119,7 +110,7 @@ export function useCommunicationPreferences(groupId: string, userId: string) {
 
   return {
     preference: effectivePreference,
-    loading,
+    loading: false,
     hasData: preference !== null,
     updatePreferences,
     togglePreferredTime,

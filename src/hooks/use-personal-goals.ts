@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { PersonalGoalItem, PersonalGoalStatus } from "@/types";
 
 // ============================================
@@ -54,18 +54,7 @@ function saveToStorage(
 
 export function usePersonalGoals(groupId: string, userId: string) {
   const [goals, setGoals] = useState<PersonalGoalItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !userId) {
-      setLoading(false);
-      return;
-    }
-    const loaded = loadFromStorage(groupId, userId);
-    setGoals(loaded);
-    setLoading(false);
-  }, [groupId, userId]);
 
   // 내부 상태 + 스토리지 동시 업데이트
   const persist = useCallback(
@@ -157,7 +146,7 @@ export function usePersonalGoals(groupId: string, userId: string) {
 
   return {
     goals,
-    loading,
+    loading: false,
     activeCount,
     completedCount,
     canAddMore,

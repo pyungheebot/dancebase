@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useBackstageComm } from "@/hooks/use-backstage-comm";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
   BackstageCommType,
   BackstageCommTargetScope,
@@ -522,7 +523,7 @@ export function BackstageCommCard({
     addReadBy,
   } = useBackstageComm(groupId, projectId);
 
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const deleteConfirm = useDeleteConfirm<string>();
   const [activeTab, setActiveTab] = useState("all");
 
   function handleAddMessage(form: {
@@ -660,7 +661,7 @@ export function BackstageCommCard({
                       msg={msg}
                       onTogglePin={() => togglePin(msg.id)}
                       onToggleRead={() => toggleRead(msg.id)}
-                      onDelete={() => setDeleteTarget(msg.id)}
+                      onDelete={() => deleteConfirm.request(msg.id)}
                       onReadBy={(name) => addReadBy(msg.id, name)}
                     />
                   ))}
@@ -681,11 +682,11 @@ export function BackstageCommCard({
 
       {/* 삭제 확인 다이얼로그 */}
       <DeleteConfirmDialog
-        open={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
+        open={deleteConfirm.open}
+        onClose={deleteConfirm.cancel}
         onConfirm={() => {
-          if (deleteTarget) handleDelete(deleteTarget);
-          setDeleteTarget(null);
+          const id = deleteConfirm.confirm();
+          if (id) handleDelete(id);
         }}
       />
     </>

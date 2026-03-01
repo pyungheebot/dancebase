@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Collapsible,
   CollapsibleContent,
@@ -145,7 +146,7 @@ function EventFormDialog({
   isEdit: boolean;
 }) {
   const [form, setForm] = useState<FormState>(initial);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   // open될 때마다 initial 동기화
   useMemo(() => {
@@ -162,13 +163,10 @@ function EventFormDialog({
       toast.error("제목을 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await execute(async () => {
       await onSubmit(form);
       onClose();
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   return (

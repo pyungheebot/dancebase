@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Video,
   Plus,
@@ -79,7 +80,7 @@ function VideoDialog({ initial, onSave, trigger }: VideoDialogProps) {
   const [isFeatured, setIsFeatured] = useState(initial?.isFeatured ?? false);
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
 
   function resetForm() {
     setTitle(initial?.title ?? "");
@@ -126,8 +127,7 @@ function VideoDialog({ initial, onSave, trigger }: VideoDialogProps) {
       toast.error("영상 URL을 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    void executeSave(async () => {
       onSave({
         title: title.trim(),
         url: url.trim(),
@@ -141,11 +141,7 @@ function VideoDialog({ initial, onSave, trigger }: VideoDialogProps) {
       });
       toast.success(initial ? "영상 정보가 수정되었습니다." : "영상이 추가되었습니다.");
       setOpen(false);
-    } catch {
-      toast.error("저장에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   return (

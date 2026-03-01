@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { ShieldAlert, EyeOff, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -235,9 +234,7 @@ export function ContentModerationPanel({ groupId }: ContentModerationPanelProps)
                               {REASON_LABELS[report.reason] ?? report.reason}
                             </Badge>
                             <span className="text-[10px] text-muted-foreground">
-                              {format(new Date(report.created_at), "M/d HH:mm", {
-                                locale: ko,
-                              })}
+                              {formatKo(new Date(report.created_at), "M/d HH:mm")}
                             </span>
                           </div>
                           <p className="text-[11px] text-muted-foreground truncate">
@@ -251,7 +248,7 @@ export function ContentModerationPanel({ groupId }: ContentModerationPanelProps)
                           )}
                           {report.description && (
                             <p className="text-[11px] text-muted-foreground italic">
-                              "{report.description}"
+                              &quot;{report.description}&quot;
                             </p>
                           )}
                         </div>
@@ -336,9 +333,7 @@ export function ContentModerationPanel({ groupId }: ContentModerationPanelProps)
                           {STATUS_LABELS[report.status] ?? report.status}
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">
-                          {format(new Date(report.created_at), "M/d", {
-                            locale: ko,
-                          })}
+                          {formatKo(new Date(report.created_at), "M/d")}
                         </span>
                       </div>
                       {(report.post_title || report.comment_content) && (

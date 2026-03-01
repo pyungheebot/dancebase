@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   PerfTicketTier,
@@ -97,10 +97,9 @@ export type PerfTicketStats = {
 // ============================================================
 
 export function usePerformanceTicket(projectId: string) {
-  const [tiers, setTiers] = useState<PerfTicketTier[]>([]);
+  const [tiers, setTiers] = useState<PerfTicketTier[]>(() => loadData(projectId).tiers);
   const [allocations, setAllocations] = useState<PerfTicketAllocation[]>([]);
   const [salesGoal, setSalesGoal] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
     if (!projectId) return;
@@ -108,12 +107,7 @@ export function usePerformanceTicket(projectId: string) {
     setTiers(data.tiers);
     setAllocations(data.allocations);
     setSalesGoal(data.salesGoal);
-    setLoading(false);
   }, [projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (updated: {
@@ -299,7 +293,7 @@ export function usePerformanceTicket(projectId: string) {
     tiers,
     allocations,
     salesGoal,
-    loading,
+    loading: false,
     stats,
     // 등급
     addTier,

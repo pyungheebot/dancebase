@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DanceRoutine,
@@ -60,20 +60,14 @@ export type DanceRoutineStats = {
 // ============================================================
 
 export function useDanceRoutineBuilder(memberId: string) {
-  const [routines, setRoutines] = useState<DanceRoutine[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [routines, setRoutines] = useState<DanceRoutine[]>(() => loadData(memberId).routines);
 
   // localStorage에서 데이터 불러오기
   const reload = useCallback(() => {
     if (!memberId) return;
     const data = loadData(memberId);
     setRoutines(data.routines);
-    setLoading(false);
   }, [memberId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
@@ -284,7 +278,7 @@ export function useDanceRoutineBuilder(memberId: string) {
 
   return {
     routines,
-    loading,
+    loading: false,
     stats,
     addRoutine,
     updateRoutine,

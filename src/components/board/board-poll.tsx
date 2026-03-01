@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { BoardPoll, BoardPollOptionWithVotes } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -36,7 +37,7 @@ export function BoardPollView({
   canAnnounce,
 }: BoardPollProps) {
   const [selected, setSelected] = useState<string[]>([]);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const supabase = createClient();
 
   const totalVotes = options.reduce((sum, o) => sum + o.vote_count, 0);
@@ -63,26 +64,23 @@ export function BoardPollView({
 
   const handleVote = async () => {
     if (selected.length === 0) return;
-    setSubmitting(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setSubmitting(false);
-      return;
-    }
+    await execute(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
-    for (const optionId of selected) {
-      await supabase.from("board_poll_votes").insert({
-        option_id: optionId,
-        user_id: user.id,
-      });
-    }
+      for (const optionId of selected) {
+        await supabase.from("board_poll_votes").insert({
+          option_id: optionId,
+          user_id: user.id,
+        });
+      }
 
-    setSelected([]);
-    setSubmitting(false);
-    onUpdate();
+      setSelected([]);
+      onUpdate();
+    });
   };
 
   const handleUnvote = async () => {

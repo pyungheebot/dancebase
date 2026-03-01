@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { copyToClipboard } from "@/lib/clipboard";
 
 type ScheduleIcsSubscribeProps = {
   groupId: string;
@@ -26,12 +26,7 @@ export function ScheduleIcsSubscribe({ groupId }: ScheduleIcsSubscribeProps) {
   const webcalUrl = httpsUrl.replace(/^https?:\/\//, "webcal://");
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(httpsUrl);
-      toast.success("구독 URL이 클립보드에 복사되었습니다.");
-    } catch {
-      toast.error("클립보드 복사에 실패했습니다.");
-    }
+    await copyToClipboard(httpsUrl, "구독 URL이 클립보드에 복사되었습니다.", "클립보드 복사에 실패했습니다.");
   };
 
   const handleGoogleCalendar = () => {

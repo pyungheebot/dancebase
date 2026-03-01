@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type {
   DecisionLogItem,
@@ -45,7 +45,6 @@ export type DecisionLogInput = {
 
 export function useDecisionLog(groupId: string) {
   const [items, setItems] = useState<DecisionLogItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState<
     DecisionCategory | "all"
   >("all");
@@ -53,17 +52,6 @@ export function useDecisionLog(groupId: string) {
     "all"
   );
 
-  // 초기 로드
-  useEffect(() => {
-    const loaded = loadItems(groupId);
-    // 최신순 정렬
-    const sorted = [...loaded].sort(
-      (a, b) =>
-        new Date(b.decidedAt).getTime() - new Date(a.decidedAt).getTime()
-    );
-    setItems(sorted);
-    setLoading(false);
-  }, [groupId]);
 
   // 필터링된 항목
   const filteredItems = items.filter((item) => {
@@ -131,7 +119,7 @@ export function useDecisionLog(groupId: string) {
   return {
     items,
     filteredItems,
-    loading,
+    loading: false,
     categoryFilter,
     setCategoryFilter,
     impactFilter,

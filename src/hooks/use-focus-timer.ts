@@ -132,6 +132,7 @@ export function useFocusTimer(groupId: string) {
 
   // config가 변경되면 secondsLeft 리셋 (타이머 정지 중일 때만)
   const prevConfigRef = useRef(config);
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!isRunning) {
       const prev = prevConfigRef.current;
@@ -145,6 +146,7 @@ export function useFocusTimer(groupId: string) {
     }
     prevConfigRef.current = config;
   }, [config, isRunning, phase, totalSeconds]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // ── 인터벌 ──────────────────────────────────────────────
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

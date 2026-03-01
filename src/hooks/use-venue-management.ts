@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
@@ -84,32 +84,15 @@ export type VenueMgmtVenueInput = {
 // ============================================
 
 export function useVenueManagement(projectId: string) {
-  const [data, setData] = useState<VenueMgmtData | null>(null);
-  const [initialized, setInitialized] = useState(false);
-
-  const { data: swrData, mutate } = useSWR(
+  const { data, mutate } = useSWR(
     swrKeys.venueManagement(projectId),
     () => loadFromStorage(projectId),
     { revalidateOnFocus: false }
   );
 
-  useEffect(() => {
-    if (!initialized) {
-      setData(loadFromStorage(projectId));
-      setInitialized(true);
-    }
-  }, [projectId, initialized]);
-
-  useEffect(() => {
-    if (swrData) {
-      setData(swrData);
-    }
-  }, [swrData]);
-
   const persist = useCallback(
     (next: VenueMgmtData) => {
       saveToStorage(next);
-      setData(next);
       mutate(next, false);
     },
     [mutate]
@@ -260,7 +243,7 @@ export function useVenueManagement(projectId: string) {
 
   return {
     venues: current.venues,
-    loading: !initialized,
+    loading: false,
     addVenue,
     updateVenue,
     deleteVenue,

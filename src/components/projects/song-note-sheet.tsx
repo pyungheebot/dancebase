@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSongNotes } from "@/hooks/use-song-notes";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import {
   Sheet,
@@ -13,8 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StickyNote, Plus, Trash2, Loader2 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatRelative } from "@/lib/date-utils";
 import useSWR from "swr";
 
 interface SongNoteSheetProps {
@@ -44,17 +44,17 @@ export function SongNoteSheet({
   const { notes, loading, addNote, deleteNote } = useSongNotes(songId);
   const currentUserId = useCurrentUserId();
   const [content, setContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function handleAdd() {
     if (!content.trim()) return;
-    setSubmitting(true);
-    const ok = await addNote(content);
-    if (ok) {
-      setContent("");
-    }
-    setSubmitting(false);
+    await execute(async () => {
+      const ok = await addNote(content);
+      if (ok) {
+        setContent("");
+      }
+    });
   }
 
   async function handleDelete(noteId: string) {
@@ -121,10 +121,7 @@ export function SongNoteSheet({
                         {note.profiles?.name ?? "알 수 없음"}
                       </span>
                       <span className="text-[10px] text-muted-foreground shrink-0">
-                        {formatDistanceToNow(new Date(note.created_at), {
-                          addSuffix: true,
-                          locale: ko,
-                        })}
+                        {formatRelative(new Date(note.created_at))}
                       </span>
                     </div>
                     <p className="text-xs text-foreground whitespace-pre-wrap break-words leading-relaxed bg-muted/40 rounded px-2 py-1.5">

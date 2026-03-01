@@ -50,7 +50,6 @@ function calcStreak(history: WeeklyCheckinRecord[], currentWeekStart: string): n
   let cursor = startOfWeek(now, { weekStartsOn: 1 });
 
   for (const record of sorted) {
-    const recordDate = new Date(record.weekStart + "T00:00:00");
     const cursorStr = format(cursor, "yyyy-MM-dd");
 
     // 현재 커서 주와 일치하는 기록인지 확인

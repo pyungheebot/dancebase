@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +51,7 @@ function DayCellPopover({
         sideOffset={6}
       >
         <p className="text-xs font-medium mb-2">
-          {format(date, "M월 d일 (EEE)", { locale: ko })}
+          {formatKo(date, "M월 d일 (EEE)")}
           <span className="ml-1.5 text-muted-foreground">
             {cell.schedules.length}개 일정
           </span>
@@ -114,9 +114,7 @@ function HeatmapCell({ cell }: { cell: DayCell }) {
         </TooltipTrigger>
         <TooltipContent side="top" sideOffset={4}>
           <p className="text-xs">
-            {format(new Date(cell.date + "T00:00:00"), "M월 d일 (EEE)", {
-              locale: ko,
-            })}
+            {formatKo(new Date(cell.date + "T00:00:00"), "M월 d일 (EEE)")}
           </p>
           <p className="text-[10px] text-muted-foreground">일정 없음</p>
         </TooltipContent>
@@ -138,9 +136,7 @@ function HeatmapCell({ cell }: { cell: DayCell }) {
       </TooltipTrigger>
       <TooltipContent side="top" sideOffset={4}>
         <p className="text-xs">
-          {format(new Date(cell.date + "T00:00:00"), "M월 d일 (EEE)", {
-            locale: ko,
-          })}
+          {formatKo(new Date(cell.date + "T00:00:00"), "M월 d일 (EEE)")}
         </p>
         <p className="text-[10px] text-muted-foreground">
           {cell.count}개 일정 · 클릭하여 보기

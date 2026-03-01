@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 export default function UpdatePasswordPage() {
   const supabase = createClient();
@@ -14,7 +15,7 @@ export default function UpdatePasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,17 +26,14 @@ export default function UpdatePasswordPage() {
       return;
     }
 
-    setLoading(true);
-
-    try {
+    await execute(async () => {
       const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      if (error) {
+        setError(error.message);
+        return;
+      }
       router.push("/dashboard");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "오류가 발생했습니다");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (

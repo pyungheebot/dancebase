@@ -38,6 +38,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 유틸리티
@@ -363,7 +364,7 @@ function EntryRow({ entry, onDelete, onStartMetronome }: EntryRowProps) {
               <p className="text-[11px] text-muted-foreground">{entry.note}</p>
             )}
             <p className="text-[10px] text-muted-foreground/60">
-              {new Date(entry.createdAt).toLocaleDateString("ko-KR")}
+              {formatYearMonthDay(entry.createdAt)}
             </p>
           </div>
         </CollapsibleContent>

@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronUp, Pencil, Save, X, User } from "lucide-react";
 import { usePersonalityProfile } from "@/hooks/use-personality-profile";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { PersonalityDanceRole, PersonalityTrait } from "@/types";
 
 // ============================================================
@@ -495,7 +496,7 @@ export function PersonalityProfileCard({
               {hasProfile && (
                 <p className="text-[10px] text-muted-foreground text-right">
                   마지막 수정:{" "}
-                  {new Date(profile.updatedAt).toLocaleDateString("ko-KR")}
+                  {formatYearMonthDay(profile.updatedAt)}
                 </p>
               )}
             </>

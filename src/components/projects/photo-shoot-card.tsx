@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { usePhotoShoot, type PhotoShootPlanInput } from "@/hooks/use-photo-shoot";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { PhotoShootPlan, PhotoShootPlanType } from "@/types";
 
 // ============================================
@@ -588,6 +589,7 @@ export function PhotoShootCard({ projectId }: PhotoShootCardProps) {
   const [filterType, setFilterType] = useState<PhotoShootPlanType | "all">(
     "all"
   );
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // 필터링된 계획 목록
   const filteredPlans = useMemo(() => {
@@ -599,9 +601,10 @@ export function PhotoShootCard({ projectId }: PhotoShootCardProps) {
   const completionRate =
     totalPlans > 0 ? Math.round((completedCount / totalPlans) * 100) : 0;
 
-  function handleDelete(id: string) {
-    if (!confirm("촬영 계획을 삭제하시겠습니까?")) return;
-    deletePlan(id);
+  function handleDelete() {
+    if (!deleteConfirmId) return;
+    deletePlan(deleteConfirmId);
+    setDeleteConfirmId(null);
   }
 
   if (loading) {
@@ -724,7 +727,7 @@ export function PhotoShootCard({ projectId }: PhotoShootCardProps) {
                   plan={plan}
                   onToggle={toggleCompleted}
                   onEdit={(p) => setEditTarget(p)}
-                  onDelete={handleDelete}
+                  onDelete={setDeleteConfirmId}
                 />
               ))}
             </div>
@@ -758,6 +761,14 @@ export function PhotoShootCard({ projectId }: PhotoShootCardProps) {
         onOpenChange={setPhotographerDialogOpen}
         currentName={photographerName}
         onSave={setPhotographer}
+      />
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onOpenChange={(v) => !v && setDeleteConfirmId(null)}
+        title="촬영 계획 삭제"
+        description="촬영 계획을 삭제하시겠습니까?"
+        onConfirm={handleDelete}
+        destructive
       />
     </>
   );

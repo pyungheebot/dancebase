@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Card,
   CardContent,
@@ -360,7 +361,7 @@ export function ThankYouLetterCard({
   const [showDialog, setShowDialog] = useState(false);
   const [editTarget, setEditTarget] = useState<ThankYouLetterEntry | null>(null);
   const [form, setForm] = useState<AddThankYouLetterInput>(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   // 발송 날짜 다이얼로그
   const [sentTargetId, setSentTargetId] = useState<string | null>(null);
@@ -389,30 +390,30 @@ export function ThankYouLetterCard({
 
   // ── 저장 ──
   async function handleSave() {
-    setSaving(true);
-    const payload: AddThankYouLetterInput = {
-      sponsorName: form.sponsorName,
-      sponsorType: form.sponsorType,
-      sponsorDetail: form.sponsorDetail || undefined,
-      letterContent: form.letterContent,
-      managerName: form.managerName,
-      sponsorContact: form.sponsorContact || undefined,
-      sponsorEmail: form.sponsorEmail || undefined,
-      note: form.note || undefined,
-    };
+    await execute(async () => {
+      const payload: AddThankYouLetterInput = {
+        sponsorName: form.sponsorName,
+        sponsorType: form.sponsorType,
+        sponsorDetail: form.sponsorDetail || undefined,
+        letterContent: form.letterContent,
+        managerName: form.managerName,
+        sponsorContact: form.sponsorContact || undefined,
+        sponsorEmail: form.sponsorEmail || undefined,
+        note: form.note || undefined,
+      };
 
-    let ok: boolean;
-    if (editTarget) {
-      ok = await updateEntry(editTarget.id, payload);
-    } else {
-      ok = await addEntry(payload);
-    }
+      let ok: boolean;
+      if (editTarget) {
+        ok = await updateEntry(editTarget.id, payload);
+      } else {
+        ok = await addEntry(payload);
+      }
 
-    if (ok) {
-      setShowDialog(false);
-      setEditTarget(null);
-    }
-    setSaving(false);
+      if (ok) {
+        setShowDialog(false);
+        setEditTarget(null);
+      }
+    });
   }
 
   // ── 발송 완료 처리 ──

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useGroupPortfolio } from "@/hooks/use-group-portfolio";
 import { useAuth } from "@/hooks/use-auth";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +17,8 @@ import {
   Globe,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { differenceInMonths, parseISO, format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { differenceInMonths, parseISO } from "date-fns";
+import { formatKo } from "@/lib/date-utils";
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   performance: "공연",
@@ -64,7 +65,7 @@ function getActiveMonths(createdAt: string) {
 
 function formatEventDate(dateStr: string) {
   try {
-    return format(parseISO(dateStr), "yyyy.MM.dd", { locale: ko });
+    return formatKo(parseISO(dateStr), "yyyy.MM.dd");
   } catch {
     return dateStr;
   }
@@ -281,11 +282,13 @@ export function GroupPortfolioPage({ groupId }: { groupId: string }) {
                   {/* 아바타 */}
                   <div className="relative">
                     {member.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={member.avatar_url}
                         alt={member.name}
+                        width={48}
+                        height={48}
                         className="h-12 w-12 rounded-full object-cover border"
+                        unoptimized
                       />
                     ) : (
                       <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-sm font-semibold border">

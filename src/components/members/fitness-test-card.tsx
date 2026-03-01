@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Activity,
   ChevronDown,
@@ -671,7 +672,7 @@ function RecordResultDialog({
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [values, setValues] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function resetForm() {
     setMemberName("");
@@ -708,13 +709,10 @@ function RecordResultDialog({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       onSubmit(memberName, date, recordedItems, notes.trim() || undefined);
       resetForm();
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   // 카테고리별 그룹화

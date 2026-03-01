@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePracticePlan } from "@/hooks/use-practice-plan";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // Props
@@ -297,7 +298,7 @@ export function PracticePlanSheet({
                   <span className="text-xs font-medium">연습 플랜 내용</span>
                   {plan && (
                     <span className="text-[10px] text-muted-foreground">
-                      저장됨 {new Date(plan.createdAt).toLocaleDateString("ko-KR")}
+                      저장됨 {formatYearMonthDay(plan.createdAt)}
                     </span>
                   )}
                 </div>
@@ -380,6 +381,7 @@ export function PracticePlanSheet({
                             className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
                             onClick={handleDelete}
                             title="플랜 삭제"
+                            aria-label="플랜 삭제"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>

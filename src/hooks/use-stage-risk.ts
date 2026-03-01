@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   StageRiskItem,
@@ -78,19 +78,13 @@ export type StageRiskStats = {
 // ============================================================
 
 export function useStageRisk(projectId: string) {
-  const [items, setItems] = useState<StageRiskItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<StageRiskItem[]>(() => loadData(projectId).items);
 
   const reload = useCallback(() => {
     if (!projectId) return;
     const data = loadData(projectId);
     setItems(data.items);
-    setLoading(false);
   }, [projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (updated: StageRiskItem[]) => {
@@ -244,7 +238,7 @@ export function useStageRisk(projectId: string) {
 
   return {
     items,
-    loading,
+    loading: false,
     stats,
     addItem,
     updateItem,

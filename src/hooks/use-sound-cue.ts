@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { SoundCueSheet, SoundCueEntry, SoundCueType } from "@/types";
 
 // ============================================================
@@ -75,19 +75,13 @@ export type SoundCueStats = {
 // ============================================================
 
 export function useSoundCue(groupId: string, projectId: string) {
-  const [sheets, setSheets] = useState<SoundCueSheet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sheets, setSheets] = useState<SoundCueSheet[]>(() => loadData(groupId, projectId));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
     const data = loadData(groupId, projectId);
     setSheets(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: SoundCueSheet[]) => {
@@ -363,7 +357,7 @@ export function useSoundCue(groupId: string, projectId: string) {
 
   return {
     sheets,
-    loading,
+    loading: false,
     addSheet,
     updateSheet,
     deleteSheet,

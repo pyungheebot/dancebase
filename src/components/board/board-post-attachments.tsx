@@ -66,6 +66,7 @@ function ImageLightbox({ attachments, initialIndex, onClose }: LightboxProps) {
               className="h-7 w-7 text-white hover:bg-white/20"
               onClick={goPrev}
               disabled={current === 0}
+              aria-label="이전 이미지"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -78,6 +79,7 @@ function ImageLightbox({ attachments, initialIndex, onClose }: LightboxProps) {
               className="h-7 w-7 text-white hover:bg-white/20"
               onClick={goNext}
               disabled={current === images.length - 1}
+              aria-label="다음 이미지"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

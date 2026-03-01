@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatShortDateTime } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { AttendanceTable } from "@/components/attendance/attendance-table";
 import { AttendanceStats } from "@/components/attendance/attendance-stats";
@@ -426,9 +426,7 @@ export function AttendanceContent({
                 {schedules.map((schedule) => (
                   <SelectItem key={schedule.id} value={schedule.id}>
                     {schedule.title} -{" "}
-                    {format(new Date(schedule.starts_at), "M/d (EEE) HH:mm", {
-                      locale: ko,
-                    })}
+                    {formatShortDateTime(new Date(schedule.starts_at))}
                   </SelectItem>
                 ))}
               </SelectContent>

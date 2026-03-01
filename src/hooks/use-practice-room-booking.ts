@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   PracticeRoom,
@@ -142,21 +142,15 @@ export type PracticeRoomBookingStats = {
 // ============================================================
 
 export function usePracticeRoomBooking(groupId: string) {
-  const [rooms, setRooms] = useState<PracticeRoom[]>([]);
+  const [rooms, setRooms] = useState<PracticeRoom[]>(() => loadData(groupId).rooms);
   const [bookings, setBookings] = useState<PracticeRoomBooking[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setRooms(data.rooms);
     setBookings(data.bookings);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (updatedRooms: PracticeRoom[], updatedBookings: PracticeRoomBooking[]) => {
@@ -403,7 +397,7 @@ export function usePracticeRoomBooking(groupId: string) {
   return {
     rooms,
     bookings,
-    loading,
+    loading: false,
     stats,
     // 연습실 CRUD
     addRoom,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Card,
   CardContent,
@@ -224,7 +225,7 @@ function PhotoCallFormDialog({
         }
       : EMPTY_FORM
   );
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   function setField<K extends keyof AddPhotoCallInput>(
     key: K,
@@ -234,13 +235,13 @@ function PhotoCallFormDialog({
   }
 
   async function handleSubmit() {
-    setSaving(true);
-    const ok = await onSubmit(form);
-    setSaving(false);
-    if (ok) {
-      setForm(EMPTY_FORM);
-      onOpenChange(false);
-    }
+    await execute(async () => {
+      const ok = await onSubmit(form);
+      if (ok) {
+        setForm(EMPTY_FORM);
+        onOpenChange(false);
+      }
+    });
   }
 
   return (

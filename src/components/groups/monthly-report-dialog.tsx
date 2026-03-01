@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { format, subMonths, addMonths } from "date-fns";
-import { ko } from "date-fns/locale";
+import { subMonths, addMonths } from "date-fns";
+import { formatYearMonth } from "@/lib/date-utils";
 import {
   Calendar,
   Users,
@@ -175,7 +175,7 @@ export function MonthlyReportDialog({
     }
   }
 
-  const monthLabel = format(selectedDate, "yyyy년 M월", { locale: ko });
+  const monthLabel = formatYearMonth(selectedDate);
 
   const isEmpty =
     !loading &&

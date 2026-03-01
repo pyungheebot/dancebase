@@ -546,7 +546,7 @@ CREATE POLICY "group_members_insert" ON group_members FOR INSERT WITH CHECK (
 -- 3. profiles SELECT 정책 검토
 -- profiles 테이블에 phone, birth_date 등 민감한 필드가 있으나
 -- privacy_settings로 앱 레벨에서 제어 중임
--- 동일 그룹 제한을 걸면 프로필 조회/팔로우/쪽지 등 여러 기능이 깨질 수 있음
+-- 동일 그룹 제한을 걸면 프로필 조회/팔로우/메시지 등 여러 기능이 깨질 수 있음
 -- 따라서 현재 정책(모든 인증된 사용자 조회 가능)을 유지하되,
 -- 비인증 사용자 접근만 차단
 -- ============================================

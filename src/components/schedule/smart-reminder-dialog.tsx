@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import {
   Dialog,
   DialogContent,
@@ -190,7 +189,7 @@ export function SmartReminderDialog({ schedule, groupId }: SmartReminderDialogPr
         <div className="rounded border px-3 py-2 bg-muted/30">
           <p className="text-xs font-medium">{schedule.title}</p>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {format(new Date(schedule.starts_at), "M월 d일 (EEE) HH:mm", { locale: ko })}
+            {formatKo(new Date(schedule.starts_at), "M월 d일 (EEE) HH:mm")}
           </p>
         </div>
 

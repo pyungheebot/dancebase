@@ -139,7 +139,7 @@ export function useSessionTimer(groupId: string) {
     }, 1000);
 
     return () => clearTimerInterval();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- status 변경 시에만 인터벌 재설정 의도 (clearTimerInterval은 stable useCallback)
   }, [status]);
 
   // remainingSeconds === 0 && running 일 때 구간 전환 처리
@@ -167,7 +167,7 @@ export function useSessionTimer(groupId: string) {
       triggerFlash();
       return nextIdx;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- presets/selectedPresetId/totalSeconds는 setState 콜백 내에서 최신 값 직접 참조하므로 의도적으로 제외
   }, [remainingSeconds, status]);
 
   // ============================================

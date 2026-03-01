@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import type { PartnerMatchingData, PartnerMatchingRecord, PartnerPair } from "@/types";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 const MAX_HISTORY = 5;
 const STORAGE_KEY_PREFIX = "dancebase:partner-matching:";
@@ -205,7 +206,7 @@ export function usePartnerMatching(groupId: string): UsePartnerMatchingReturn {
         id: crypto.randomUUID(),
         pairs,
         matchedAt: new Date().toISOString(),
-        label: label.trim() || `매칭 ${new Date().toLocaleDateString("ko-KR")}`,
+        label: label.trim() || `매칭 ${formatYearMonthDay(new Date())}`,
       };
 
       const updated: PartnerMatchingData = {

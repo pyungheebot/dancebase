@@ -24,16 +24,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Select,
   SelectContent,
@@ -63,6 +54,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useVipGuest } from "@/hooks/use-vip-guest";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type { VipGuestEntry, VipGuestTier, VipGuestStatus } from "@/types";
 
 // ============================================================
@@ -178,8 +171,8 @@ export function VipGuestCard({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<VipGuestEntry | null>(null);
   const [form, setForm] = useState<GuestFormData>(emptyForm());
-  const [saving, setSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<VipGuestEntry | null>(null);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
+  const deleteConfirm = useDeleteConfirm<VipGuestEntry>();
 
   // 필터링된 게스트 목록
   const filtered = entries.filter((e) => {
@@ -202,13 +195,12 @@ export function VipGuestCard({
   }
 
   // 저장
-  function handleSave() {
+  async function handleSave() {
     if (!form.name.trim()) {
       toast.error("게스트 이름을 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await executeSave(async () => {
       if (editTarget) {
         const ok = updateEntry(editTarget.id, {
           name: form.name,
@@ -243,21 +235,19 @@ export function VipGuestCard({
         toast.success("VIP 게스트가 추가되었습니다.");
       }
       setDialogOpen(false);
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   // 삭제 확인
   function handleDeleteConfirm() {
-    if (!deleteTarget) return;
-    const ok = deleteEntry(deleteTarget.id);
+    const target = deleteConfirm.confirm();
+    if (!target) return;
+    const ok = deleteEntry(target.id);
     if (ok) {
-      toast.success(`${deleteTarget.name} 게스트가 삭제되었습니다.`);
+      toast.success(`${target.name} 게스트가 삭제되었습니다.`);
     } else {
       toast.error("삭제에 실패했습니다.");
     }
-    setDeleteTarget(null);
   }
 
   // 상태 변경
@@ -405,7 +395,7 @@ export function VipGuestCard({
                       key={entry.id}
                       entry={entry}
                       onEdit={() => openEdit(entry)}
-                      onDelete={() => setDeleteTarget(entry)}
+                      onDelete={() => deleteConfirm.request(entry)}
                       onStatusChange={(status) =>
                         handleStatusChange(entry.id, status)
                       }
@@ -430,28 +420,14 @@ export function VipGuestCard({
       />
 
       {/* 삭제 확인 */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">게스트 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              {deleteTarget?.name} 게스트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-7 text-xs bg-destructive hover:bg-destructive/90"
-              onClick={handleDeleteConfirm}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="게스트 삭제"
+        description={`${deleteConfirm.target?.name} 게스트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+        onConfirm={handleDeleteConfirm}
+        destructive
+      />
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { ChoreoVersion, ChoreoVersionStatus, ChoreoVersionStore, ChoreoSectionNote } from "@/types";
 
 // ============================================
@@ -79,12 +79,7 @@ export function useChoreographyVersion(groupId: string, projectId: string) {
     }
     const data = loadStore(groupId, projectId);
     setStore(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 스토어 업데이트 헬퍼
   const update = useCallback(

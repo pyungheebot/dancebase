@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import {
   Dialog,
   DialogContent,
@@ -53,7 +53,7 @@ export function DashboardLayoutEditor() {
         })
         .filter((row): row is WidgetRow => row !== null)
         .sort((a, b) => a.order - b.order);
-      setLocalRows(rows);
+      startTransition(() => { setLocalRows(rows); });
     }
   }, [open, layout]);
 

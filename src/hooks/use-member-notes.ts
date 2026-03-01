@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { MemberNoteV2, MemberNoteCategory } from "@/types";
 
 // ============================================
@@ -48,18 +48,7 @@ function sortByUpdated(notes: MemberNoteV2[]): MemberNoteV2[] {
 
 export function useMemberNotes(groupId: string, writerId: string) {
   const [notes, setNotes] = useState<MemberNoteV2[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !writerId) {
-      setLoading(false);
-      return;
-    }
-    const loaded = loadFromStorage(groupId, writerId);
-    setNotes(sortByUpdated(loaded));
-    setLoading(false);
-  }, [groupId, writerId]);
 
   // 메모 추가
   const addNote = useCallback(
@@ -133,7 +122,7 @@ export function useMemberNotes(groupId: string, writerId: string) {
 
   return {
     notes,
-    loading,
+    loading: false,
     addNote,
     updateNote,
     deleteNote,

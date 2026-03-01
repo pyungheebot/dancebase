@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Card,
   CardContent,
@@ -99,36 +100,35 @@ export function FinanceReminderSettings({
   const [enabled, setEnabled] = useState(false);
   const [interval, setInterval] = useState<FinanceAutoReminderSettingValue["interval"]>("monthly");
   const [message, setMessage] = useState(DEFAULT_FINANCE_AUTO_REMINDER_SETTING.message);
-  const [saving, setSaving] = useState(false);
-  const [sendingNow, setSendingNow] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
+  const { pending: sendingNow, execute: executeSend } = useAsyncAction();
 
   // 설정 로드 후 로컬 상태 동기화
   useEffect(() => {
     if (!reminderLoading) {
-      setEnabled(reminderSetting.enabled);
-      setInterval(reminderSetting.interval);
-      setMessage(reminderSetting.message);
+      startTransition(() => {
+        setEnabled(reminderSetting.enabled);
+        setInterval(reminderSetting.interval);
+        setMessage(reminderSetting.message);
+      });
     }
   }, [reminderLoading, reminderSetting]);
 
   // 설정 저장
   const handleSave = async () => {
-    setSaving(true);
-    const { error } = await saveReminder({ enabled, interval, message });
-    setSaving(false);
-
-    if (error) {
-      toast.error("알림 설정 저장에 실패했습니다");
-    } else {
-      toast.success("알림 설정이 저장되었습니다");
-    }
+    await executeSave(async () => {
+      const { error } = await saveReminder({ enabled, interval, message });
+      if (error) {
+        toast.error("알림 설정 저장에 실패했습니다");
+      } else {
+        toast.success("알림 설정이 저장되었습니다");
+      }
+    });
   };
 
   // 지금 알림 보내기 (미납 멤버 조회 후 발송)
   const handleSendNow = async () => {
-    setSendingNow(true);
-
-    try {
+    await executeSend(async () => {
       const supabase = createClient();
 
       // 미납 멤버 조회 (paid_by가 있는 수입 거래 기준)
@@ -141,7 +141,6 @@ export function FinanceReminderSettings({
 
       if (txnError) {
         toast.error("미납 멤버 조회에 실패했습니다");
-        setSendingNow(false);
         return;
       }
 
@@ -155,7 +154,6 @@ export function FinanceReminderSettings({
 
       if (paidMap.size === 0) {
         toast.error("납부 데이터가 없어 발송할 대상이 없습니다");
-        setSendingNow(false);
         return;
       }
 
@@ -167,7 +165,6 @@ export function FinanceReminderSettings({
 
       if (memberError) {
         toast.error("멤버 목록 조회에 실패했습니다");
-        setSendingNow(false);
         return;
       }
 
@@ -179,7 +176,6 @@ export function FinanceReminderSettings({
 
       if (unpaidMembers.length === 0) {
         toast.success("미납 멤버가 없습니다");
-        setSendingNow(false);
         return;
       }
 
@@ -224,11 +220,7 @@ export function FinanceReminderSettings({
       } else {
         toast.error("알림 발송에 실패했습니다");
       }
-    } catch {
-      toast.error("알림 발송 중 오류가 발생했습니다");
-    }
-
-    setSendingNow(false);
+    });
   };
 
   if (reminderLoading) {

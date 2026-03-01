@@ -400,7 +400,7 @@ function LostFoundItemCard({
                   분실물 삭제
                 </AlertDialogTitle>
                 <AlertDialogDescription className="text-xs">
-                  "{item.itemName}" 분실물 항목을 삭제합니다. 이 작업은
+                  &quot;{item.itemName}&quot; 분실물 항목을 삭제합니다. 이 작업은
                   되돌릴 수 없습니다.
                 </AlertDialogDescription>
               </AlertDialogHeader>

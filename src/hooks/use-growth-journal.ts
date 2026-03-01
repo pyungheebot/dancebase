@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   GrowthJournalEntry,
@@ -71,20 +71,14 @@ export type GrowthJournalStats = {
 // ============================================================
 
 export function useGrowthJournal(groupId: string) {
-  const [entries, setEntries] = useState<GrowthJournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entries, setEntries] = useState<GrowthJournalEntry[]>(() => loadData(groupId).entries);
 
   // localStorage에서 데이터 불러오기
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setEntries(data.entries);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
@@ -279,7 +273,7 @@ export function useGrowthJournal(groupId: string) {
 
   return {
     entries,
-    loading,
+    loading: false,
     stats,
     addEntry,
     updateEntry,

@@ -120,7 +120,7 @@ export function useWeeklyChallengeBoard(
       const weekScheduleIds = (scheduleRows ?? []).map((s: { id: string }) => s.id);
 
       // 3. 이번 주 출석 기록 조회
-      let attendanceCountMap = new Map<string, number>(); // userId → 출석 횟수
+      const attendanceCountMap = new Map<string, number>(); // userId → 출석 횟수
       if (weekScheduleIds.length > 0) {
         const { data: attRows, error: attErr } = await supabase
           .from("attendance")

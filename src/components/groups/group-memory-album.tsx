@@ -115,6 +115,7 @@ export function GroupMemoryAlbum({ groupId }: { groupId: string }) {
                       variant="ghost" size="icon" className={`h-5 w-5 ${deleteConfirm === item.id ? "text-red-600" : ""}`}
                       onClick={() => { if (deleteConfirm === item.id) { deleteItem(item.id); setDeleteConfirm(null); } else setDeleteConfirm(item.id); }}
                       onBlur={() => setDeleteConfirm(null)}
+                      aria-label="삭제"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>

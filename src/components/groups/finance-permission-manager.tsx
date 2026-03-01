@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,7 +36,7 @@ export function FinancePermissionManager({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [roles, setRoles] = useState<Record<string, MemberRole>>({});
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
   const [fetching, setFetching] = useState(false);
   const supabase = createClient();
 
@@ -74,43 +75,42 @@ export function FinancePermissionManager({
   }, [open, groupId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
-    setLoading(true);
+    await execute(async () => {
+      // 기존 finance 권한 모두 삭제
+      await supabase
+        .from("entity_permissions")
+        .delete()
+        .eq("entity_type", "group")
+        .eq("entity_id", groupId)
+        .in("permission", ["finance_manage", "finance_view"]);
 
-    // 기존 finance 권한 모두 삭제
-    await supabase
-      .from("entity_permissions")
-      .delete()
-      .eq("entity_type", "group")
-      .eq("entity_id", groupId)
-      .in("permission", ["finance_manage", "finance_view"]);
-
-    // 새 권한 삽입
-    const inserts: { entity_type: string; entity_id: string; user_id: string; permission: string }[] = [];
-    for (const [userId, role] of Object.entries(roles)) {
-      if (role === "manager") {
-        inserts.push({
-          entity_type: "group",
-          entity_id: groupId,
-          user_id: userId,
-          permission: "finance_manage",
-        });
-      } else if (role === "viewer") {
-        inserts.push({
-          entity_type: "group",
-          entity_id: groupId,
-          user_id: userId,
-          permission: "finance_view",
-        });
+      // 새 권한 삽입
+      const inserts: { entity_type: string; entity_id: string; user_id: string; permission: string }[] = [];
+      for (const [userId, role] of Object.entries(roles)) {
+        if (role === "manager") {
+          inserts.push({
+            entity_type: "group",
+            entity_id: groupId,
+            user_id: userId,
+            permission: "finance_manage",
+          });
+        } else if (role === "viewer") {
+          inserts.push({
+            entity_type: "group",
+            entity_id: groupId,
+            user_id: userId,
+            permission: "finance_view",
+          });
+        }
       }
-    }
 
-    if (inserts.length > 0) {
-      await supabase.from("entity_permissions").insert(inserts);
-    }
+      if (inserts.length > 0) {
+        await supabase.from("entity_permissions").insert(inserts);
+      }
 
-    setLoading(false);
-    setOpen(false);
-    onSuccess();
+      setOpen(false);
+      onSuccess();
+    });
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { VideoTimestamp } from "@/types";
 
 function getStorageKey(groupId: string): string {
@@ -70,10 +70,7 @@ export function useVideoTimestamps(groupId: string, videoId: string) {
   const [all, setAll] = useState<VideoTimestamp[]>([]);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    setAll(loadAll(groupId));
-  }, [groupId]);
+
 
   // 특정 videoId 필터 후 시간순 정렬
   const timestamps = all

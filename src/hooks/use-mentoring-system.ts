@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MentoringPair, MentoringStatus, MentoringFeedback } from "@/types";
 
@@ -45,21 +45,14 @@ export type MentoringStats = {
 };
 
 export function useMentoringSystem(groupId: string) {
-  const [pairs, setPairs] = useState<MentoringPair[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pairs, setPairs] = useState<MentoringPair[]>(() => loadPairs(groupId));
 
   // localStorage에서 매칭 불러오기
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadPairs(groupId);
-    setPairs(data);
-    setLoading(false);
+    setPairs(loadPairs(groupId));
   }, [groupId]);
 
-  // 초기 로드
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // SWR 키 (localStorage 기반 갱신 트리거용)
   const _swrKey = swrKeys.mentoringSystem(groupId);
@@ -186,7 +179,7 @@ export function useMentoringSystem(groupId: string) {
     activePairs,
     completedPairs,
     pausedPairs,
-    loading,
+    loading: false,
     stats,
     createPair,
     completePair,

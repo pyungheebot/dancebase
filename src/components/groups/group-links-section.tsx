@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { ExternalLink, Plus, Trash2, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +40,7 @@ export function GroupLinksSection({ groupId, canEdit }: GroupLinksSectionProps) 
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<AddLinkForm>(DEFAULT_FORM);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [movingId, setMovingId] = useState<string | null>(null);
 
@@ -50,18 +51,17 @@ export function GroupLinksSection({ groupId, canEdit }: GroupLinksSectionProps) 
   const handleAddSubmit = async () => {
     if (!form.url.trim() || !form.title.trim()) return;
 
-    setSubmitting(true);
-    const ok = await addLink({
-      url: form.url.trim(),
-      title: form.title.trim(),
-      icon: form.icon,
+    await execute(async () => {
+      const ok = await addLink({
+        url: form.url.trim(),
+        title: form.title.trim(),
+        icon: form.icon,
+      });
+      if (ok) {
+        setForm(DEFAULT_FORM);
+        setShowForm(false);
+      }
     });
-    setSubmitting(false);
-
-    if (ok) {
-      setForm(DEFAULT_FORM);
-      setShowForm(false);
-    }
   };
 
   const handleDelete = async (id: string) => {

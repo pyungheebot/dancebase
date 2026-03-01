@@ -50,6 +50,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useCostumeChange, type AddCostumeChangeInput } from "@/hooks/use-costume-change";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type { CostumeChangeEntry, CostumeChangeLocation } from "@/types";
 
 // ============================================================
@@ -623,7 +624,7 @@ export function CostumeChangeCard({
 
   const [showForm, setShowForm] = useState(false);
   const [editTarget, setEditTarget] = useState<CostumeChangeEntry | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const deleteConfirm = useDeleteConfirm<string>();
   const [memberFilter, setMemberFilter] = useState("");
 
   const displayEntries = memberFilter.trim()
@@ -751,7 +752,7 @@ export function CostumeChangeCard({
                   index={index}
                   total={displayEntries.length}
                   onEdit={() => setEditTarget(entry)}
-                  onDelete={() => setDeleteTarget(entry.id)}
+                  onDelete={() => deleteConfirm.request(entry.id)}
                   onMoveUp={() => moveEntry(entry.id, "up")}
                   onMoveDown={() => moveEntry(entry.id, "down")}
                 />
@@ -792,11 +793,11 @@ export function CostumeChangeCard({
 
       {/* 삭제 확인 다이얼로그 */}
       <DeleteConfirmDialog
-        open={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
+        open={deleteConfirm.open}
+        onClose={deleteConfirm.cancel}
         onConfirm={() => {
-          if (deleteTarget) deleteEntry(deleteTarget);
-          setDeleteTarget(null);
+          const id = deleteConfirm.confirm();
+          if (id) deleteEntry(id);
         }}
       />
     </>

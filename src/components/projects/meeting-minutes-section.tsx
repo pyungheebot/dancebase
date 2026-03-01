@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import { useMeetingMinutes } from "@/hooks/use-meeting-minutes";
 import { invalidateMeetingMinutes } from "@/lib/swr/invalidate";
@@ -92,7 +93,7 @@ interface WriteDialogProps {
 
 function WriteDialog({ ctx, onSuccess }: WriteDialogProps) {
   const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   // 폼 상태
   const [title, setTitle] = useState("");
@@ -171,8 +172,7 @@ function WriteDialog({ ctx, onSuccess }: WriteDialogProps) {
       return;
     }
 
-    setSaving(true);
-    try {
+    await execute(async () => {
       const supabase = createClient();
       const {
         data: { user },
@@ -244,9 +244,7 @@ function WriteDialog({ ctx, onSuccess }: WriteDialogProps) {
       setOpen(false);
       resetForm();
       onSuccess();
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   if (!canWrite) return null;

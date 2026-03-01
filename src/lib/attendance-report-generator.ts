@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatYearMonth } from "@/lib/date-utils";
 import type { AttendanceStatus } from "@/types";
 
 // ============================================
@@ -150,9 +150,6 @@ export function generateAttendanceReport(
     };
   }
 
-  // schedule_id → schedule 매핑
-  const scheduleMap = new Map(schedules.map((s) => [s.id, s]));
-
   // =============================================
   // 1. 멤버별 통계
   // =============================================
@@ -285,7 +282,7 @@ export function generateAttendanceReport(
         (a.status === "present" || a.status === "late")
     ).length;
     const avgRate = possible > 0 ? Math.round((attended / possible) * 100) : 0;
-    const label = format(new Date(`${ym}-01`), "yyyy년 M월", { locale: ko });
+    const label = formatYearMonth(new Date(`${ym}-01`));
 
     return { yearMonth: ym, label, avgRate, scheduleCount: ids.length };
   });

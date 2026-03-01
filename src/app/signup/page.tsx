@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 export default function SignupPage() {
   const supabase = createClient();
@@ -14,15 +15,14 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
   const [success, setSuccess] = useState(false);
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
 
-    try {
+    await execute(async () => {
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -30,13 +30,12 @@ export default function SignupPage() {
           data: { full_name: name },
         },
       });
-      if (error) throw error;
+      if (error) {
+        setError(error.message);
+        return;
+      }
       setSuccess(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "회원가입 중 오류가 발생했습니다");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleGoogleSignup = async () => {

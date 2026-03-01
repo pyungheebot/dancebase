@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { usePaymentMethods } from "@/hooks/use-payment-methods";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -176,7 +177,7 @@ export function PaymentMethodManager({ groupId }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<GroupPaymentMethod | null>(null);
   const [form, setForm] = useState<FormValues>(DEFAULT_FORM);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function openAdd() {
     setForm(DEFAULT_FORM);
@@ -201,23 +202,23 @@ export function PaymentMethodManager({ groupId }: Props) {
       toast.error("표시 이름을 입력해주세요");
       return;
     }
-    setSubmitting(true);
-    const { error } = await createPaymentMethod({
-      type: form.type,
-      label: form.label.trim(),
-      bank_name: form.bank_name.trim() || undefined,
-      account_number: form.account_number.trim() || undefined,
-      account_holder: form.account_holder.trim() || undefined,
-      toss_id: form.toss_id.trim() || undefined,
-      kakao_link: form.kakao_link.trim() || undefined,
+    await execute(async () => {
+      const { error } = await createPaymentMethod({
+        type: form.type,
+        label: form.label.trim(),
+        bank_name: form.bank_name.trim() || undefined,
+        account_number: form.account_number.trim() || undefined,
+        account_holder: form.account_holder.trim() || undefined,
+        toss_id: form.toss_id.trim() || undefined,
+        kakao_link: form.kakao_link.trim() || undefined,
+      });
+      if (error) {
+        toast.error("정산 수단 추가에 실패했습니다");
+      } else {
+        toast.success("정산 수단이 추가되었습니다");
+        setAddOpen(false);
+      }
     });
-    setSubmitting(false);
-    if (error) {
-      toast.error("정산 수단 추가에 실패했습니다");
-    } else {
-      toast.success("정산 수단이 추가되었습니다");
-      setAddOpen(false);
-    }
   }
 
   async function handleEdit() {
@@ -226,22 +227,22 @@ export function PaymentMethodManager({ groupId }: Props) {
       toast.error("표시 이름을 입력해주세요");
       return;
     }
-    setSubmitting(true);
-    const { error } = await updatePaymentMethod(editTarget.id, {
-      label: form.label.trim(),
-      bank_name: form.bank_name.trim() || undefined,
-      account_number: form.account_number.trim() || undefined,
-      account_holder: form.account_holder.trim() || undefined,
-      toss_id: form.toss_id.trim() || undefined,
-      kakao_link: form.kakao_link.trim() || undefined,
+    await execute(async () => {
+      const { error } = await updatePaymentMethod(editTarget.id, {
+        label: form.label.trim(),
+        bank_name: form.bank_name.trim() || undefined,
+        account_number: form.account_number.trim() || undefined,
+        account_holder: form.account_holder.trim() || undefined,
+        toss_id: form.toss_id.trim() || undefined,
+        kakao_link: form.kakao_link.trim() || undefined,
+      });
+      if (error) {
+        toast.error("정산 수단 수정에 실패했습니다");
+      } else {
+        toast.success("정산 수단이 수정되었습니다");
+        setEditTarget(null);
+      }
     });
-    setSubmitting(false);
-    if (error) {
-      toast.error("정산 수단 수정에 실패했습니다");
-    } else {
-      toast.success("정산 수단이 수정되었습니다");
-      setEditTarget(null);
-    }
   }
 
   async function handleDelete(method: GroupPaymentMethod) {
@@ -297,6 +298,7 @@ export function PaymentMethodManager({ groupId }: Props) {
                   size="icon"
                   className="h-6 w-6 text-muted-foreground hover:text-foreground"
                   onClick={() => openEdit(method)}
+                  aria-label="결제 수단 수정"
                 >
                   <Pencil className="h-3 w-3" />
                 </Button>
@@ -305,6 +307,7 @@ export function PaymentMethodManager({ groupId }: Props) {
                   size="icon"
                   className="h-6 w-6 text-muted-foreground hover:text-destructive"
                   onClick={() => handleDelete(method)}
+                  aria-label="결제 수단 삭제"
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>

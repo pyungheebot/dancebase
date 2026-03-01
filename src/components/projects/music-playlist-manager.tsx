@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useMusicPlaylist } from "@/hooks/use-music-playlist";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/shared/empty-state";
 import type { MusicPlaylist, MusicPlaylistTrack } from "@/types";
 
 // ============================================
@@ -31,19 +33,6 @@ import type { MusicPlaylist, MusicPlaylistTrack } from "@/types";
 // ============================================
 
 const GENRE_SUGGESTIONS = ["팝", "힙합", "R&B", "K-POP", "EDM", "재즈", "록", "클래식", "발라드", "댄스"];
-
-// ============================================
-// 서브 컴포넌트: 빈 상태
-// ============================================
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground gap-2">
-      <Music className="h-8 w-8 opacity-30" />
-      <p className="text-sm">{message}</p>
-    </div>
-  );
-}
 
 // ============================================
 // 서브 컴포넌트: 곡 추가 폼
@@ -305,9 +294,9 @@ function PlaylistDetail({
   maxTracks,
 }: PlaylistDetailProps) {
   const sortedTracks = [...playlist.tracks].sort((a, b) => a.order - b.order);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   function handleDelete() {
-    if (!confirm(`"${playlist.name}" 플레이리스트를 삭제하시겠습니까?\n곡 목록도 함께 삭제됩니다.`)) return;
     onDeletePlaylist();
     onBack();
     toast.success("플레이리스트가 삭제되었습니다.");
@@ -339,7 +328,7 @@ function PlaylistDetail({
           size="sm"
           variant="ghost"
           className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-          onClick={handleDelete}
+          onClick={() => setDeleteConfirmOpen(true)}
           title="플레이리스트 삭제"
         >
           <Trash2 className="h-3 w-3" />
@@ -349,7 +338,7 @@ function PlaylistDetail({
       {/* 곡 목록 */}
       <ScrollArea className="flex-1 py-2">
         {sortedTracks.length === 0 ? (
-          <EmptyState message="아직 곡이 없습니다. 첫 곡을 추가해보세요." />
+          <EmptyState icon={Music} title="아직 곡이 없습니다. 첫 곡을 추가해보세요." />
         ) : (
           <div>
             {sortedTracks.map((track, idx) => (
@@ -379,6 +368,14 @@ function PlaylistDetail({
           maxTracks={maxTracks}
         />
       </div>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="플레이리스트 삭제"
+        description={`"${playlist.name}" 플레이리스트를 삭제하시겠습니까? 곡 목록도 함께 삭제됩니다.`}
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }
@@ -577,7 +574,7 @@ export function MusicPlaylistManager({ groupId }: MusicPlaylistManagerProps) {
                 {/* 플레이리스트 목록 */}
                 <ScrollArea className="flex-1">
                   {playlists.length === 0 ? (
-                    <EmptyState message="플레이리스트가 없습니다. 새 플레이리스트를 만들어보세요." />
+                    <EmptyState icon={Music} title="플레이리스트가 없습니다. 새 플레이리스트를 만들어보세요." />
                   ) : (
                     <div className="space-y-1">
                       {playlists.map((playlist) => (

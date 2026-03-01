@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Trophy,
   ChevronDown,
@@ -95,7 +96,7 @@ export function DanceAuditionCard({ memberId }: DanceAuditionCardProps) {
 
   const [open, setOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [form, setForm] = useState<FormState>(defaultForm);
 
   // 편집 상태
@@ -158,8 +159,7 @@ export function DanceAuditionCard({ memberId }: DanceAuditionCardProps) {
     const finalGenre =
       form.genre === "__custom__" ? form.customGenre.trim() : form.genre;
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       addRecord({
         auditionName: form.auditionName.trim(),
         organizer: form.organizer.trim(),
@@ -173,11 +173,7 @@ export function DanceAuditionCard({ memberId }: DanceAuditionCardProps) {
       toast.success(`'${form.auditionName.trim()}' 오디션 기록이 추가되었습니다.`);
       resetForm();
       setFormOpen(false);
-    } catch {
-      toast.error("오디션 기록 추가 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   // ──────────────────────────────────────

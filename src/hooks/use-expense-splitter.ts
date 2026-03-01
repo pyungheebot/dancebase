@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { ExpenseSplitItem, ExpenseSplitSession } from "@/types";
 
 const MAX_SESSIONS = 10;
@@ -98,18 +98,7 @@ export function calculateSettlements(items: ExpenseSplitItem[]): Settlement[] {
 
 export function useExpenseSplitter(groupId: string) {
   const [sessions, setSessions] = useState<ExpenseSplitSession[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId) {
-      setLoading(false);
-      return;
-    }
-    const stored = loadSessions(groupId);
-    setSessions(stored);
-    setLoading(false);
-  }, [groupId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateSessions = useCallback(
@@ -186,7 +175,7 @@ export function useExpenseSplitter(groupId: string) {
 
   return {
     sessions,
-    loading,
+    loading: false,
     canCreateSession: sessions.length < MAX_SESSIONS,
     createSession,
     addItem,

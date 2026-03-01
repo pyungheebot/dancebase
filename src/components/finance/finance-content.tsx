@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FinanceExportButton } from "@/components/finance/finance-export-button";
 import { Pencil, Trash2, Download, Search, X, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -108,12 +109,12 @@ export function FinanceContent({
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
 
-  // 현재 유저 ID 조회
+  // 현재 유저 ID 조회 (마운트 시 1회만 실행 의도 — supabase는 매 렌더마다 새 인스턴스이므로 deps 제외)
   useEffect(() => {
     void supabase.auth.getUser().then((res: Awaited<ReturnType<typeof supabase.auth.getUser>>) => {
       if (res.data.user) setCurrentUserId(res.data.user.id);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- 마운트 시 1회만 실행 의도, supabase는 매 렌더마다 새 인스턴스이므로 deps 제외
   }, []);
 
   // 납부 기한 설정 훅 (entity_settings 재사용)
@@ -404,6 +405,12 @@ export function FinanceContent({
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-xs font-medium text-muted-foreground">거래 내역</h2>
               <div className="flex items-center gap-1.5">
+                <FinanceExportButton
+                  transactions={filteredTransactions}
+                  groupName={ctx.header.name}
+                  periodLabel={selectedMonth === "all" ? "전체" : formatMonthLabel(selectedMonth)}
+                  nicknameMap={ctx.nicknameMap}
+                />
                 <Button
                   variant="outline"
                   size="sm"

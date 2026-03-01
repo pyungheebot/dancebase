@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   BackstageLogData,
@@ -46,22 +46,15 @@ function saveData(projectId: string, data: BackstageLogData): void {
 // ============================================================
 
 export function useBackstageLog(projectId: string) {
-  const [sessions, setSessions] = useState<BackstageLogSession[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sessions, setSessions] = useState<BackstageLogSession[]>(() =>
+    projectId ? loadData(projectId).sessions : []
+  );
 
   const reload = useCallback(() => {
-    if (!projectId) {
-      setLoading(false);
-      return;
-    }
-    const data = loadData(projectId);
-    setSessions(data.sessions);
-    setLoading(false);
+    setSessions(projectId ? loadData(projectId).sessions : []);
   }, [projectId]);
 
-  useEffect(() => {
-    reload();
-  }, [reload]);
+
 
   // 내부 persist 헬퍼
   const persist = useCallback(
@@ -241,7 +234,7 @@ export function useBackstageLog(projectId: string) {
 
   return {
     sessions,
-    loading,
+    loading: false,
     // 세션 CRUD
     createSession,
     endSession,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Collapsible,
   CollapsibleContent,
@@ -319,7 +320,7 @@ export function DanceStyleCompatibilityCard({
     defaultDanceStyleScores()
   );
   const [draftStyle, setDraftStyle] = useState("");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
 
   const { myProfile, getCompatibilityResults, loading, saveMyProfile } =
     useDanceStyleCompatibility(groupId, userId);
@@ -340,16 +341,11 @@ export function DanceStyleCompatibilityCard({
 
   // 저장
   function handleSave() {
-    setSaving(true);
-    try {
+    void executeSave(async () => {
       saveMyProfile(userId, userName, draftScores, draftStyle.trim());
       toast.success("댄스 스타일 프로필이 저장되었습니다");
       setEditing(false);
-    } catch {
-      toast.error("저장에 실패했습니다");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   // 점수 변경

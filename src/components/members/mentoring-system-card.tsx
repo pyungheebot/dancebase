@@ -463,6 +463,7 @@ function PairRow({
                 size="icon"
                 className="h-5 w-5 text-muted-foreground hover:text-blue-600"
                 title="완료 처리"
+                aria-label="완료 처리"
                 onClick={onComplete}
               >
                 <Check className="h-3 w-3" />
@@ -474,6 +475,7 @@ function PairRow({
                 size="icon"
                 className="h-5 w-5 text-muted-foreground hover:text-yellow-600"
                 title="일시정지"
+                aria-label="일시정지"
                 onClick={onPause}
               >
                 <Pause className="h-3 w-3" />
@@ -485,6 +487,7 @@ function PairRow({
                 size="icon"
                 className="h-5 w-5 text-muted-foreground hover:text-green-600"
                 title="재개"
+                aria-label="재개"
                 onClick={onResume}
               >
                 <Play className="h-3 w-3" />
@@ -496,6 +499,7 @@ function PairRow({
                 size="icon"
                 className="h-5 w-5 text-muted-foreground hover:text-destructive"
                 title="삭제"
+                aria-label="삭제"
                 onClick={onDelete}
               >
                 <Trash2 className="h-3 w-3" />

@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useScheduleCarpool, type CarpoolOfferWithDetails } from "@/hooks/use-schedule-carpool";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 type Props = {
   scheduleId: string;
@@ -59,7 +60,7 @@ function CarpoolOfferCard({
   onCancelRequest: (requestId: string) => Promise<void>;
   onDeleteOffer: (offerId: string) => Promise<void>;
 }) {
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
 
   const isDriver = offer.driver_id === currentUserId;
   const myRequest = offer.requests.find((r) => r.passenger_id === currentUserId);
@@ -68,52 +69,48 @@ function CarpoolOfferCard({
   const rejectedRequests = offer.requests.filter((r) => r.status === "rejected");
 
   const handleRequestRide = async () => {
-    setLoading(true);
-    try {
-      await onRequestRide(offer.id);
-      toast.success("탑승 요청을 보냈습니다");
-    } catch {
-      toast.error("탑승 요청에 실패했습니다");
-    } finally {
-      setLoading(false);
-    }
+    await execute(async () => {
+      try {
+        await onRequestRide(offer.id);
+        toast.success("탑승 요청을 보냈습니다");
+      } catch {
+        toast.error("탑승 요청에 실패했습니다");
+      }
+    });
   };
 
   const handleRespond = async (requestId: string, status: "accepted" | "rejected") => {
-    setLoading(true);
-    try {
-      await onRespondToRequest(requestId, status);
-      toast.success(status === "accepted" ? "탑승 요청을 수락했습니다" : "탑승 요청을 거절했습니다");
-    } catch {
-      toast.error("응답 처리에 실패했습니다");
-    } finally {
-      setLoading(false);
-    }
+    await execute(async () => {
+      try {
+        await onRespondToRequest(requestId, status);
+        toast.success(status === "accepted" ? "탑승 요청을 수락했습니다" : "탑승 요청을 거절했습니다");
+      } catch {
+        toast.error("응답 처리에 실패했습니다");
+      }
+    });
   };
 
   const handleCancelRequest = async () => {
     if (!myRequest) return;
-    setLoading(true);
-    try {
-      await onCancelRequest(myRequest.id);
-      toast.success("탑승 요청을 취소했습니다");
-    } catch {
-      toast.error("요청 취소에 실패했습니다");
-    } finally {
-      setLoading(false);
-    }
+    await execute(async () => {
+      try {
+        await onCancelRequest(myRequest.id);
+        toast.success("탑승 요청을 취소했습니다");
+      } catch {
+        toast.error("요청 취소에 실패했습니다");
+      }
+    });
   };
 
   const handleDeleteOffer = async () => {
-    setLoading(true);
-    try {
-      await onDeleteOffer(offer.id);
-      toast.success("카풀 제공을 삭제했습니다");
-    } catch {
-      toast.error("카풀 제공 삭제에 실패했습니다");
-    } finally {
-      setLoading(false);
-    }
+    await execute(async () => {
+      try {
+        await onDeleteOffer(offer.id);
+        toast.success("카풀 제공을 삭제했습니다");
+      } catch {
+        toast.error("카풀 제공 삭제에 실패했습니다");
+      }
+    });
   };
 
   const seatLabel = `${acceptedRequests.length}/${offer.total_seats}석`;
@@ -274,7 +271,7 @@ export function ScheduleCarpoolSection({ scheduleId }: Props) {
   const [departureLocation, setDepartureLocation] = useState("");
   const [departureTime, setDepartureTime] = useState("");
   const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute: executeCreate } = useAsyncAction();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const { offers, loading, createOffer, deleteOffer, requestRide, respondToRequest, cancelRequest } =
@@ -301,20 +298,19 @@ export function ScheduleCarpoolSection({ scheduleId }: Props) {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      await createOffer(seats, departureLocation || undefined, departureTime || undefined, notes || undefined);
-      toast.success("카풀 제공을 등록했습니다");
-      setDialogOpen(false);
-      setTotalSeats("3");
-      setDepartureLocation("");
-      setDepartureTime("");
-      setNotes("");
-    } catch {
-      toast.error("카풀 제공 등록에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    await executeCreate(async () => {
+      try {
+        await createOffer(seats, departureLocation || undefined, departureTime || undefined, notes || undefined);
+        toast.success("카풀 제공을 등록했습니다");
+        setDialogOpen(false);
+        setTotalSeats("3");
+        setDepartureLocation("");
+        setDepartureTime("");
+        setNotes("");
+      } catch {
+        toast.error("카풀 제공 등록에 실패했습니다");
+      }
+    });
   };
 
   return (

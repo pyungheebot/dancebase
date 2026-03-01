@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { JoinClient } from "./join-client";
 
@@ -26,12 +27,12 @@ export default async function JoinPage({
           <p className="text-sm text-muted-foreground">
             유효하지 않은 초대 링크입니다
           </p>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             홈으로 이동
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -46,12 +47,12 @@ export default async function JoinPage({
           <p className="text-sm text-muted-foreground">
             현재 이 초대 링크는 비활성화되어 있습니다
           </p>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             홈으로 이동
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -68,12 +69,12 @@ export default async function JoinPage({
             <p className="text-sm text-muted-foreground">
               이 초대 링크는 만료되었습니다
             </p>
-            <a
+            <Link
               href="/"
               className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90"
             >
               홈으로 이동
-            </a>
+            </Link>
           </div>
         </div>
       );

@@ -31,16 +31,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ChevronDown,
   ChevronUp,
@@ -58,6 +49,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSocialPostPlanner } from "@/hooks/use-social-post-planner";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
   SocialPostEntry,
   SocialPlatform,
@@ -580,7 +572,7 @@ export function SocialPostPlannerCard({
 
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<SocialPostEntry | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const deleteConfirm = useDeleteConfirm<string>();
   const [isOpen, setIsOpen] = useState(true);
 
   function handleAdd(data: PostFormData) {
@@ -623,14 +615,14 @@ export function SocialPostPlannerCard({
   }
 
   function handleDelete() {
-    if (!deleteTarget) return;
-    const ok = deleteEntry(deleteTarget);
+    const id = deleteConfirm.confirm();
+    if (!id) return;
+    const ok = deleteEntry(id);
     if (ok) {
       toast.success("포스트 계획이 삭제되었습니다.");
     } else {
       toast.error("삭제에 실패했습니다.");
     }
-    setDeleteTarget(null);
   }
 
   const platforms: SocialPlatform[] = [
@@ -755,7 +747,7 @@ export function SocialPostPlannerCard({
                       key={entry.id}
                       entry={entry}
                       onEdit={() => setEditTarget(entry)}
-                      onDelete={() => setDeleteTarget(entry.id)}
+                      onDelete={() => deleteConfirm.request(entry.id)}
                     />
                   ))}
                 </div>
@@ -787,30 +779,14 @@ export function SocialPostPlannerCard({
       )}
 
       {/* 삭제 확인 */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(v) => {
-          if (!v) setDeleteTarget(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">포스트 계획 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              이 소셜 포스트 계획을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-7 text-xs bg-destructive hover:bg-destructive/90"
-              onClick={handleDelete}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="포스트 계획 삭제"
+        description="이 소셜 포스트 계획을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        onConfirm={handleDelete}
+        destructive
+      />
     </>
   );
 }

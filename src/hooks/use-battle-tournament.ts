@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   BattleTournamentEntry,
   TournamentFormat,
@@ -103,19 +103,13 @@ export type BattleTournamentStats = {
 // ============================================================
 
 export function useBattleTournament(groupId: string) {
-  const [tournaments, setTournaments] = useState<BattleTournamentEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tournaments, setTournaments] = useState<BattleTournamentEntry[]>(() => loadData(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setTournaments(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
@@ -273,7 +267,7 @@ export function useBattleTournament(groupId: string) {
 
   return {
     tournaments,
-    loading,
+    loading: false,
     createTournament,
     startTournament,
     recordResult,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRolePromotionCandidates } from "@/hooks/use-role-promotion-candidates";
 import { invalidateRolePromotionCandidates } from "@/lib/swr/invalidate";
@@ -8,16 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { TrendingUp, X } from "lucide-react";
 import { toast } from "sonner";
 import type { EntityMember } from "@/types/entity-context";
@@ -70,8 +61,11 @@ export function RolePromotionSection({
 
   // 클라이언트에서만 localStorage 읽기
   useEffect(() => {
-    setDismissedIds(loadDismissed(groupId));
-    setHydrated(true);
+    const dismissed = loadDismissed(groupId);
+    startTransition(() => {
+      setDismissedIds(dismissed);
+      setHydrated(true);
+    });
   }, [groupId]);
 
   // 승격 확인 다이얼로그 상태
@@ -156,31 +150,13 @@ export function RolePromotionSection({
       </Card>
 
       {/* 승격 확인 다이얼로그 */}
-      <AlertDialog
+      <ConfirmDialog
         open={!!promoteTarget}
-        onOpenChange={(open) => {
-          if (!open) setPromoteTarget(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>부리더로 승격</AlertDialogTitle>
-            <AlertDialogDescription>
-              {promoteTarget?.name}님을 부리더로 승격하시겠습니까?
-              부리더는 멤버 관리 및 일부 그룹 설정 권한을 갖게 됩니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={promoting}>취소</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handlePromoteConfirm}
-              disabled={promoting}
-            >
-              {promoting ? "승격 중..." : "승격하기"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onOpenChange={(open) => { if (!open) setPromoteTarget(null); }}
+        title="부리더로 승격"
+        description={`${promoteTarget?.name}님을 부리더로 승격하시겠습니까? 부리더는 멤버 관리 및 일부 그룹 설정 권한을 갖게 됩니다.`}
+        onConfirm={handlePromoteConfirm}
+      />
     </>
   );
 }
@@ -253,6 +229,7 @@ function CandidateRow({ candidate, onPromote, onDismiss }: CandidateRowProps) {
           className="h-7 w-7 text-muted-foreground hover:text-foreground"
           onClick={onDismiss}
           title="무시"
+          aria-label="무시"
         >
           <X className="h-3.5 w-3.5" />
         </Button>

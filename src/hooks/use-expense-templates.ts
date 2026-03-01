@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateFinance } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
@@ -59,9 +59,7 @@ export function useExpenseTemplates(groupId: string) {
   const [applyingId, setApplyingId] = useState<string | null>(null);
 
   // 마운트 시 로드
-  useEffect(() => {
-    setTemplates(loadTemplates(groupId));
-  }, [groupId]);
+
 
   // ---- CRUD ----
 

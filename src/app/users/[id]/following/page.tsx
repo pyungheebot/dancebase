@@ -24,7 +24,7 @@ export default function FollowingPage({
     <AppLayout>
       <div className="max-w-2xl mx-auto px-6 py-6">
         <div className="flex items-center gap-2 mb-4">
-          <Button variant="ghost" size="icon" className="h-6 w-6" asChild>
+          <Button variant="ghost" size="icon" className="h-6 w-6" asChild aria-label="뒤로">
             <Link href={`/users/${id}`}>
               <ArrowLeft className="h-3.5 w-3.5" />
             </Link>

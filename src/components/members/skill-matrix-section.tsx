@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import { useMemberSkills } from "@/hooks/use-member-skills";
 import { invalidateMemberSkills } from "@/lib/swr/invalidate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,9 +74,9 @@ export function SkillMatrixSection({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [skillNameInput, setSkillNameInput] = useState("");
   const [levelMap, setLevelMap] = useState<Record<string, number>>({});
-  const [saving, setSaving] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
+  const deleteConfirm = useDeleteConfirm<string>();
+  const { pending: deleting, execute: executeDelete } = useAsyncAction();
 
   // 고유 스킬 이름 목록 추출 (현재 등록된 스킬)
   const allSkillNames = Array.from(new Set(skills.map((s) => s.skill_name))).sort();
@@ -111,32 +113,31 @@ export function SkillMatrixSection({
       return;
     }
 
-    setSaving(true);
-    const supabase = createClient();
+    await executeSave(async () => {
+      const supabase = createClient();
 
-    // 각 멤버별로 upsert
-    const rows = members.map((m) => ({
-      group_id: groupId,
-      user_id: m.userId,
-      skill_name: skillName,
-      skill_level: levelMap[m.userId] ?? 1,
-      updated_at: new Date().toISOString(),
-    }));
+      // 각 멤버별로 upsert
+      const rows = members.map((m) => ({
+        group_id: groupId,
+        user_id: m.userId,
+        skill_name: skillName,
+        skill_level: levelMap[m.userId] ?? 1,
+        updated_at: new Date().toISOString(),
+      }));
 
-    const { error } = await supabase
-      .from("member_skills")
-      .upsert(rows, { onConflict: "group_id,user_id,skill_name" });
+      const { error } = await supabase
+        .from("member_skills")
+        .upsert(rows, { onConflict: "group_id,user_id,skill_name" });
 
-    setSaving(false);
+      if (error) {
+        toast.error("스킬 저장에 실패했습니다");
+        return;
+      }
 
-    if (error) {
-      toast.error("스킬 저장에 실패했습니다");
-      return;
-    }
-
-    toast.success(`'${skillName}' 스킬이 추가되었습니다`);
-    invalidateMemberSkills(groupId);
-    setDialogOpen(false);
+      toast.success(`'${skillName}' 스킬이 추가되었습니다`);
+      invalidateMemberSkills(groupId);
+      setDialogOpen(false);
+    });
   };
 
   const handleLevelChange = async (
@@ -167,25 +168,25 @@ export function SkillMatrixSection({
   };
 
   const handleDeleteSkill = async (skillName: string) => {
-    setDeleting(true);
-    const supabase = createClient();
+    await executeDelete(async () => {
+      const supabase = createClient();
 
-    const { error } = await supabase
-      .from("member_skills")
-      .delete()
-      .eq("group_id", groupId)
-      .eq("skill_name", skillName);
+      const { error } = await supabase
+        .from("member_skills")
+        .delete()
+        .eq("group_id", groupId)
+        .eq("skill_name", skillName);
 
-    setDeleting(false);
-    setDeleteTarget(null);
+      deleteConfirm.cancel();
 
-    if (error) {
-      toast.error("스킬 삭제에 실패했습니다");
-      return;
-    }
+      if (error) {
+        toast.error("스킬 삭제에 실패했습니다");
+        return;
+      }
 
-    toast.success(`'${skillName}' 스킬이 삭제되었습니다`);
-    invalidateMemberSkills(groupId);
+      toast.success(`'${skillName}' 스킬이 삭제되었습니다`);
+      invalidateMemberSkills(groupId);
+    });
   };
 
   if (loading) {
@@ -362,18 +363,18 @@ export function SkillMatrixSection({
                             <button
                               type="button"
                               onClick={() =>
-                                deleteTarget === skillName
+                                deleteConfirm.target === skillName
                                   ? handleDeleteSkill(skillName)
-                                  : setDeleteTarget(skillName)
+                                  : deleteConfirm.request(skillName)
                               }
                               disabled={deleting}
                               className={`transition-colors ${
-                                deleteTarget === skillName
+                                deleteConfirm.target === skillName
                                   ? "text-destructive"
                                   : "text-muted-foreground hover:text-destructive"
                               }`}
                               title={
-                                deleteTarget === skillName
+                                deleteConfirm.target === skillName
                                   ? "다시 클릭하면 삭제됩니다"
                                   : "스킬 삭제"
                               }
@@ -381,10 +382,10 @@ export function SkillMatrixSection({
                               <Trash2 className="h-3 w-3" />
                             </button>
                           )}
-                          {deleteTarget === skillName && (
+                          {deleteConfirm.target === skillName && (
                             <button
                               type="button"
-                              onClick={() => setDeleteTarget(null)}
+                              onClick={() => deleteConfirm.cancel()}
                               className="text-[9px] text-muted-foreground underline"
                             >
                               취소

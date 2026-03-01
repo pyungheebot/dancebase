@@ -1,5 +1,5 @@
-import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { ko } from "date-fns/locale";
+import { subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { formatYearMonth, formatKo } from "@/lib/date-utils";
 import type { MemberReportStat } from "@/lib/attendance-report-generator";
 
 // ============================================
@@ -75,8 +75,8 @@ export function getPdfPeriodRange(period: PdfPeriod): PeriodRange {
   const from = startOfMonth(subMonths(now, months - 1));
   const to = endOfMonth(now);
 
-  const fromLabel = format(from, "yyyy년 M월", { locale: ko });
-  const toLabel = format(to, "yyyy년 M월", { locale: ko });
+  const fromLabel = formatYearMonth(from);
+  const toLabel = formatYearMonth(to);
 
   return {
     from: from.toISOString(),
@@ -146,7 +146,7 @@ export function buildPdfReportData(
   const header: PdfReportHeader = {
     groupName,
     periodLabel,
-    generatedAt: format(new Date(), "yyyy년 M월 d일 HH:mm", { locale: ko }),
+    generatedAt: formatKo(new Date(), "yyyy년 M월 d일 HH:mm"),
     totalSchedules,
     overallRate: summary.overallRate,
   };

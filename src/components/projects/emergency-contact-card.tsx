@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Card,
   CardContent,
@@ -264,7 +265,7 @@ export function EmergencyContactCard({ projectId }: { projectId: string }) {
   const [editingContact, setEditingContact] =
     useState<EmergencyContact | null>(null);
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   // ── 검색 필터 ─────────────────────────────────────────────
 
@@ -322,8 +323,7 @@ export function EmergencyContactCard({ projectId }: { projectId: string }) {
       return;
     }
 
-    setSaving(true);
-    try {
+    await execute(async () => {
       if (editingContact) {
         const ok = updateContact(editingContact.id, {
           name: form.name.trim(),
@@ -350,9 +350,7 @@ export function EmergencyContactCard({ projectId }: { projectId: string }) {
         toast.success("연락처가 추가되었습니다");
       }
       setDialogOpen(false);
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   // ── 삭제 ──────────────────────────────────────────────────

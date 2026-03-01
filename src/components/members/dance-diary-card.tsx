@@ -677,23 +677,23 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
   );
 
   // 이전/다음 달
-  const prevMonth = useCallback(() => {
+  function prevMonth() {
     if (calMonth === 1) {
       setCalYear((y) => y - 1);
       setCalMonth(12);
     } else {
       setCalMonth((m) => m - 1);
     }
-  }, [calMonth]);
+  }
 
-  const nextMonth = useCallback(() => {
+  function nextMonth() {
     if (calMonth === 12) {
       setCalYear((y) => y + 1);
       setCalMonth(1);
     } else {
       setCalMonth((m) => m + 1);
     }
-  }, [calMonth]);
+  }
 
   const selectedEntry = entries.find((e) => e.date === selectedDate);
 

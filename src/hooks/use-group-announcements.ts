@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type {
   GroupAnnouncementItem,
@@ -80,15 +80,7 @@ export function useGroupAnnouncements(groupId: string) {
     []
   );
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    const items = loadAnnouncements(groupId);
-    setAnnouncements(sortAnnouncements(items));
-    setReadIds(loadReadIds(groupId));
-    setLoading(false);
-  }, [groupId]);
 
   const persistAndUpdate = useCallback(
     (newItems: GroupAnnouncementItem[]) => {
@@ -192,7 +184,7 @@ export function useGroupAnnouncements(groupId: string) {
 
   return {
     announcements,
-    loading,
+    loading: false,
     unreadCount,
     readIds,
     addAnnouncement,

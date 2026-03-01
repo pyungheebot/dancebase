@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Award,
   ChevronDown,
@@ -298,7 +299,7 @@ function AddPointDialog({
   const [calOpen, setCalOpen] = useState(false);
   const [grantedBy, setGrantedBy] = useState("");
   const [note, setNote] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const reset = () => {
     setMemberName("");
@@ -311,7 +312,6 @@ function AddPointDialog({
     setDate(new Date());
     setGrantedBy("");
     setNote("");
-    setSubmitting(false);
   };
 
   const handleClose = () => {
@@ -323,26 +323,24 @@ function AddPointDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitting) return;
-
     const resolvedMemberId = memberId.trim() || `member-${memberName.trim()}`;
 
-    setSubmitting(true);
-    const ok = await onAdd({
-      memberId: resolvedMemberId,
-      memberName: memberName.trim(),
-      category,
-      points: finalPoints,
-      reason: reason.trim(),
-      date: date ? dateToYMD(date) : todayYMD(),
-      grantedBy: grantedBy.trim(),
-      note: note.trim() || undefined,
+    await execute(async () => {
+      const ok = await onAdd({
+        memberId: resolvedMemberId,
+        memberName: memberName.trim(),
+        category,
+        points: finalPoints,
+        reason: reason.trim(),
+        date: date ? dateToYMD(date) : todayYMD(),
+        grantedBy: grantedBy.trim(),
+        note: note.trim() || undefined,
+      });
+      if (ok) {
+        reset();
+        onOpenChange(false);
+      }
     });
-    setSubmitting(false);
-    if (ok) {
-      reset();
-      onOpenChange(false);
-    }
   };
 
   return (

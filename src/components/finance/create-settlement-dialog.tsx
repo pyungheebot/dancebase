@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { useSettlementRequests } from "@/hooks/use-settlement-requests";
 import { usePaymentMethods } from "@/hooks/use-payment-methods";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ export function CreateSettlementDialog({
   const [selectedMembers, setSelectedMembers] = useState<string[]>(
     groupMembers.filter((m) => m.user_id !== currentUserId).map((m) => m.user_id)
   );
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function resetForm() {
     setTitle("");
@@ -96,24 +97,24 @@ export function CreateSettlementDialog({
       return;
     }
 
-    setSubmitting(true);
-    const { error } = await createRequest({
-      title: title.trim(),
-      memo: memo.trim() || undefined,
-      amount: parsedAmount,
-      due_date: dueDate || undefined,
-      payment_method_id: paymentMethodId === "none" ? undefined : paymentMethodId,
-      member_ids: selectedMembers,
-    });
-    setSubmitting(false);
+    await execute(async () => {
+      const { error } = await createRequest({
+        title: title.trim(),
+        memo: memo.trim() || undefined,
+        amount: parsedAmount,
+        due_date: dueDate || undefined,
+        payment_method_id: paymentMethodId === "none" ? undefined : paymentMethodId,
+        member_ids: selectedMembers,
+      });
 
-    if (error) {
-      toast.error("정산 요청 발송에 실패했습니다");
-    } else {
-      toast.success("정산 요청이 발송되었습니다");
-      resetForm();
-      setOpen(false);
-    }
+      if (error) {
+        toast.error("정산 요청 발송에 실패했습니다");
+      } else {
+        toast.success("정산 요청이 발송되었습니다");
+        resetForm();
+        setOpen(false);
+      }
+    });
   }
 
   const eligibleMembers = groupMembers.filter((m) => m.user_id !== currentUserId);

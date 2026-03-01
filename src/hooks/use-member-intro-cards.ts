@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { MemberIntroCard } from "@/types";
 
 // ============================================
@@ -42,11 +42,6 @@ function persistCards(groupId: string, cards: MemberIntroCard[]): void {
 export function useMemberIntroCards(groupId: string) {
   const [introCards, setIntroCards] = useState<MemberIntroCard[]>([]);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId) return;
-    setIntroCards(loadCards(groupId));
-  }, [groupId]);
 
   // 특정 유저의 카드 조회
   const getCard = useCallback(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type { WikiDocument, WikiCategory } from "@/types";
 
@@ -39,22 +39,9 @@ export type WikiDocumentInput = {
 
 export function useGroupWiki(groupId: string) {
   const [documents, setDocuments] = useState<WikiDocument[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<WikiCategory | "all">("all");
 
-  // 초기 로드
-  useEffect(() => {
-    const docs = loadDocuments(groupId);
-    // 최근 수정순으로 정렬 (고정 문서 우선)
-    const sorted = [...docs].sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    });
-    setDocuments(sorted);
-    setLoading(false);
-  }, [groupId]);
 
   // 필터링된 문서 목록
   const filteredDocuments = documents.filter((doc) => {
@@ -174,7 +161,7 @@ export function useGroupWiki(groupId: string) {
     filteredDocuments,
     pinnedDocuments,
     unpinnedDocuments,
-    loading,
+    loading: false,
     searchQuery,
     setSearchQuery,
     categoryFilter,

@@ -87,34 +87,7 @@ export function useMemberOnboarding(
   })();
 
   // SSR 호환: useEffect에서 localStorage 읽기
-  useEffect(() => {
-    if (!groupId || !userId) return;
 
-    const dismissedKey = getDismissedKey(groupId, userId);
-    const itemsKey = getItemsKey(groupId, userId);
-
-    const dismissed = localStorage.getItem(dismissedKey) === "true";
-    setIsDismissed(dismissed);
-
-    try {
-      const stored = localStorage.getItem(itemsKey);
-      if (stored) {
-        const storedDoneMap: Record<string, boolean> = JSON.parse(stored);
-        setItems(
-          DEFAULT_ITEMS.map((item) => ({
-            ...item,
-            isDone: storedDoneMap[item.id] ?? false,
-          })),
-        );
-      } else {
-        setItems(DEFAULT_ITEMS.map((item) => ({ ...item, isDone: false })));
-      }
-    } catch {
-      setItems(DEFAULT_ITEMS.map((item) => ({ ...item, isDone: false })));
-    }
-
-    setMounted(true);
-  }, [groupId, userId]);
 
   // 항목 완료 토글
   const toggleItem = useCallback(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   CostumeDesignEntry,
   CostumeDesignStatus,
@@ -57,19 +57,13 @@ export type CostumeDesignStats = {
 // ============================================================
 
 export function useCostumeDesign(groupId: string, projectId: string) {
-  const [designs, setDesigns] = useState<CostumeDesignEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [designs, setDesigns] = useState<CostumeDesignEntry[]>(() => loadData(groupId, projectId));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
     const data = loadData(groupId, projectId);
     setDesigns(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: CostumeDesignEntry[]) => {
@@ -215,7 +209,7 @@ export function useCostumeDesign(groupId: string, projectId: string) {
 
   return {
     designs,
-    loading,
+    loading: false,
     addDesign,
     updateDesign,
     deleteDesign,

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatRelative } from "@/lib/date-utils";
 import {
   Dialog,
   DialogContent,
@@ -42,10 +41,7 @@ function CandidateRow({
   onCheckedChange: (checked: boolean) => void;
 }) {
   const lastActivityLabel = candidate.lastActivityAt
-    ? formatDistanceToNow(new Date(candidate.lastActivityAt), {
-        addSuffix: true,
-        locale: ko,
-      })
+    ? formatRelative(new Date(candidate.lastActivityAt))
     : "활동 기록 없음";
 
   const inactiveBadgeColor =

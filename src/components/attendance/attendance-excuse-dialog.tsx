@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ import {
   getMyExcuse,
   type AttendanceExcuse,
 } from "@/hooks/use-attendance-excuses";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 type AttendanceExcuseDialogProps = {
   scheduleId: string;
@@ -53,22 +54,24 @@ export function AttendanceExcuseDialog({
   onSubmitted,
 }: AttendanceExcuseDialogProps) {
   const [reason, setReason] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [existing, setExisting] = useState<AttendanceExcuse | null>(null);
   const [loadingExisting, setLoadingExisting] = useState(false);
 
   // Dialog 열릴 때 기존 신청 내역 조회
   useEffect(() => {
     if (!open) return;
-    setLoadingExisting(true);
-    getMyExcuse(scheduleId, userId)
-      .then((data) => {
-        setExisting(data);
-        if (data?.excuse_reason) {
-          setReason(data.excuse_reason);
-        }
-      })
-      .finally(() => setLoadingExisting(false));
+    startTransition(() => {
+      setLoadingExisting(true);
+      getMyExcuse(scheduleId, userId)
+        .then((data) => {
+          setExisting(data);
+          if (data?.excuse_reason) {
+            setReason(data.excuse_reason);
+          }
+        })
+        .finally(() => setLoadingExisting(false));
+    });
   }, [open, scheduleId, userId]);
 
   const handleSubmit = async () => {
@@ -82,18 +85,18 @@ export function AttendanceExcuseDialog({
       return;
     }
 
-    setSubmitting(true);
-    const { error } = await submitExcuse(scheduleId, userId, trimmed);
-    setSubmitting(false);
+    await execute(async () => {
+      const { error } = await submitExcuse(scheduleId, userId, trimmed);
 
-    if (error) {
-      toast.error("면제 신청에 실패했습니다");
-      return;
-    }
+      if (error) {
+        toast.error("면제 신청에 실패했습니다");
+        return;
+      }
 
-    toast.success("면제 신청이 제출되었습니다. 리더의 승인을 기다려주세요.");
-    onOpenChange(false);
-    onSubmitted?.();
+      toast.success("면제 신청이 제출되었습니다. 리더의 승인을 기다려주세요.");
+      onOpenChange(false);
+      onSubmitted?.();
+    });
   };
 
   const hasExistingExcuse =

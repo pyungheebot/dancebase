@@ -46,6 +46,7 @@ import {
   Music2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================================
 // 유형 헬퍼
@@ -384,6 +385,7 @@ export function SetListCard({
 }: SetListCardProps) {
   const [open, setOpen] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const {
     items,
@@ -421,11 +423,11 @@ export function SetListCard({
     }
   };
 
-  const handleDeleteItem = (id: string) => {
-    if (confirm("이 항목을 삭제하시겠습니까?")) {
-      deleteItem(id);
-      toast.success("항목이 삭제되었습니다.");
-    }
+  const handleDeleteItem = () => {
+    if (!deleteConfirmId) return;
+    deleteItem(deleteConfirmId);
+    toast.success("항목이 삭제되었습니다.");
+    setDeleteConfirmId(null);
   };
 
   // 누적 시간 계산 (order 순)
@@ -676,7 +678,7 @@ export function SetListCard({
                               variant="ghost"
                               size="sm"
                               className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDeleteItem(item.id)}
+                              onClick={() => setDeleteConfirmId(item.id)}
                               title="삭제"
                             >
                               <Trash2 className="h-3 w-3" />
@@ -692,6 +694,14 @@ export function SetListCard({
           </div>
         </CollapsibleContent>
       </Collapsible>
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onOpenChange={(v) => !v && setDeleteConfirmId(null)}
+        title="항목 삭제"
+        description="이 항목을 삭제하시겠습니까?"
+        onConfirm={handleDeleteItem}
+        destructive
+      />
     </>
   );
 }

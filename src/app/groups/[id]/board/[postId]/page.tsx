@@ -3,8 +3,7 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { AppLayout } from "@/components/layout/app-layout";
 import { BoardPostContent } from "@/components/board/board-post-content";
@@ -27,10 +26,10 @@ import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { BoardBookmarkButton } from "@/components/board/board-bookmark-button";
 import { BoardPostRevisionsSheet } from "@/components/board/board-post-revisions-sheet";
-import { PollDecisionLog } from "@/components/board/poll-decision-log";
 import { ArrowLeft, Loader2, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
 import { ShareButton } from "@/components/shared/share-button";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 export default function BoardPostPage({
   params,
@@ -49,8 +48,8 @@ export default function BoardPostPage({
 
   const [editOpen, setEditOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [pinning, setPinning] = useState(false);
+  const { pending: deleting, execute: executeDelete } = useAsyncAction();
+  const { pending: pinning, execute: executePin } = useAsyncAction();
 
   const canEditOrDelete =
     post && user && (post.author_id === user.id || myRole === "leader");
@@ -58,43 +57,43 @@ export default function BoardPostPage({
 
   const handleTogglePin = async () => {
     if (!post) return;
-    setPinning(true);
     const isPinned = post.pinned_at !== null;
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser();
-    const updateData = isPinned
-      ? { pinned_at: null, pinned_by: null }
-      : { pinned_at: new Date().toISOString(), pinned_by: currentUser?.id ?? null };
-    const { error } = await supabase
-      .from("board_posts")
-      .update(updateData)
-      .eq("id", postId);
-    if (error) {
-      toast.error("고정 설정에 실패했습니다");
-    } else {
-      toast.success(isPinned ? "고정을 해제했습니다" : "게시글을 상단에 고정했습니다");
-      refetch();
-    }
-    setPinning(false);
+    await executePin(async () => {
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+      const updateData = isPinned
+        ? { pinned_at: null, pinned_by: null }
+        : { pinned_at: new Date().toISOString(), pinned_by: currentUser?.id ?? null };
+      const { error } = await supabase
+        .from("board_posts")
+        .update(updateData)
+        .eq("id", postId);
+      if (error) {
+        toast.error("고정 설정에 실패했습니다");
+      } else {
+        toast.success(isPinned ? "고정을 해제했습니다" : "게시글을 상단에 고정했습니다");
+        refetch();
+      }
+    });
   };
 
   const handleDelete = async () => {
-    setDeleting(true);
-    const { error } = await supabase
-      .from("board_posts")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", postId);
-    if (error) {
-      toast.error("게시글 삭제에 실패했습니다");
-      setDeleting(false);
-      return;
-    }
-    toast.success("게시글이 휴지통으로 이동했습니다");
-    const backPath = post?.project_id
-      ? `/groups/${id}/projects/${post.project_id}/board`
-      : `/groups/${id}/board`;
-    router.push(backPath);
+    await executeDelete(async () => {
+      const { error } = await supabase
+        .from("board_posts")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", postId);
+      if (error) {
+        toast.error("게시글 삭제에 실패했습니다");
+        return;
+      }
+      toast.success("게시글이 휴지통으로 이동했습니다");
+      const backPath = post?.project_id
+        ? `/groups/${id}/projects/${post.project_id}/board`
+        : `/groups/${id}/board`;
+      router.push(backPath);
+    });
   };
 
   if (loading) {
@@ -214,7 +213,7 @@ export default function BoardPostPage({
               {nicknameMap[post.author_id] || post.profiles?.name}
             </UserPopoverMenu>
             <span className="text-[11px] text-muted-foreground">
-              {format(new Date(post.created_at), "yyyy.M.d HH:mm", { locale: ko })}
+              {formatKo(new Date(post.created_at), "yyyy.M.d HH:mm")}
             </span>
             {post.updated_at !== post.created_at && (
               <BoardPostRevisionsSheet

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { ProjectRoleAssignment } from "@/types";
 
 // ============================================
@@ -23,17 +23,7 @@ export function useRoleAssignmentBoard(groupId: string, projectId: string) {
   const [roles, setRoles] = useState<ProjectRoleAssignment[]>([]);
 
   // 마운트 시 localStorage에서 불러오기
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw) as ProjectRoleAssignment[];
-        setRoles(parsed);
-      }
-    } catch {
-      // 파싱 실패 시 무시
-    }
-  }, [storageKey]);
+
 
   /** localStorage에 저장하고 state 업데이트 */
   const persist = useCallback(

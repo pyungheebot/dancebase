@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   BookOpen,
   ChevronDown,
@@ -147,7 +148,7 @@ export function DanceClassReviewCard({ memberId }: DanceClassReviewCardProps) {
 
   const [open, setOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [form, setForm] = useState<FormState>(defaultForm);
 
   // 편집 상태
@@ -205,8 +206,7 @@ export function DanceClassReviewCard({ memberId }: DanceClassReviewCardProps) {
     }
     const finalGenre = form.genre === "__custom__" ? form.customGenre.trim() : form.genre;
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       addReview({
         className: form.className.trim(),
         instructorName: form.instructorName.trim() || null,
@@ -221,11 +221,7 @@ export function DanceClassReviewCard({ memberId }: DanceClassReviewCardProps) {
       toast.success(`'${form.className.trim()}' 수업 평가가 추가되었습니다.`);
       resetForm();
       setFormOpen(false);
-    } catch {
-      toast.error("수업 평가 추가 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   // ──────────────────────────────────────

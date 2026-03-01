@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { User, Pencil, Heart, Music, Star, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useMemberIntroCards } from "@/hooks/use-member-intro-cards";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { MemberIntroCard } from "@/types";
 
 type Props = {
@@ -258,7 +259,7 @@ export function MemberIntroCardDialog({
 
                 <p className="text-[10px] text-muted-foreground text-right">
                   마지막 수정:{" "}
-                  {new Date(card.updatedAt).toLocaleDateString("ko-KR")}
+                  {formatYearMonthDay(card.updatedAt)}
                 </p>
               </div>
             )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import NextImage from "next/image";
 import {
   Trophy,
   Star,
@@ -193,6 +194,7 @@ function HighlightItem({
               setTimeout(() => setConfirmDelete(false), 2500);
             }
           }}
+          aria-label="하이라이트 삭제"
         >
           <Trash2 className="h-3 w-3" />
         </Button>
@@ -207,15 +209,13 @@ function HighlightItem({
 
       {/* 사진 */}
       {highlight.photoUrl && (
-        <div className="rounded overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+        <div className="rounded overflow-hidden relative h-32">
+          <NextImage
             src={highlight.photoUrl}
             alt={highlight.title}
-            className="w-full h-32 object-cover"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
+            fill
+            className="object-cover"
+            unoptimized
           />
         </div>
       )}
@@ -582,7 +582,7 @@ export function MonthlyHighlightCard({ groupId }: { groupId: string }) {
             )}
           </div>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-6 w-6">
+            <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={isOpen ? "접기" : "펼치기"}>
               {isOpen ? (
                 <ChevronDown className="h-3 w-3" />
               ) : (
@@ -601,6 +601,7 @@ export function MonthlyHighlightCard({ groupId }: { groupId: string }) {
                 size="icon"
                 className="h-7 w-7"
                 onClick={handlePrev}
+                aria-label="이전 달"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -613,6 +614,7 @@ export function MonthlyHighlightCard({ groupId }: { groupId: string }) {
                 className="h-7 w-7"
                 onClick={handleNext}
                 disabled={!canGoNext}
+                aria-label="다음 달"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>

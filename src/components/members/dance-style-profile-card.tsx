@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   ChevronDown,
   ChevronUp,
@@ -164,7 +165,7 @@ function GenreDialog({ initial, existingGenres, onSave, trigger }: GenreDialogPr
   const [open, setOpen] = useState(false);
   const [genre, setGenre] = useState(initial?.genre ?? "");
   const [stars, setStars] = useState<DanceProfileSkillStar>(initial?.stars ?? 3);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
 
   function handleOpen(value: boolean) {
     if (value) {
@@ -184,16 +185,11 @@ function GenreDialog({ initial, existingGenres, onSave, trigger }: GenreDialogPr
       toast.error("이미 추가된 장르입니다.");
       return;
     }
-    setSaving(true);
-    try {
+    await executeSave(async () => {
       await onSave({ genre: trimmed, stars });
       toast.success(initial ? "장르가 수정되었습니다." : "장르가 추가되었습니다.");
       setOpen(false);
-    } catch {
-      toast.error("저장에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   return (
@@ -293,7 +289,7 @@ function InspirationDialog({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initial?.name ?? "");
   const [memo, setMemo] = useState(initial?.memo ?? "");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeInsp } = useAsyncAction();
 
   function handleOpen(value: boolean) {
     if (value) {
@@ -313,16 +309,11 @@ function InspirationDialog({
       toast.error("이미 추가된 댄서입니다.");
       return;
     }
-    setSaving(true);
-    try {
+    await executeInsp(async () => {
       await onSave({ name: trimmedName, memo: memo.trim() || undefined });
       toast.success(initial ? "댄서 정보가 수정되었습니다." : "댄서가 추가되었습니다.");
       setOpen(false);
-    } catch {
-      toast.error("저장에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   return (

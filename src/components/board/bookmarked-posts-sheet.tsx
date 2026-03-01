@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { Bookmark, BookmarkX, FolderOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -119,11 +118,7 @@ export function BookmarkedPostsSheet({ groupId }: BookmarkedPostsSheetProps) {
                 if (!post) return null;
 
                 const groupName = post.groups?.name ?? "";
-                const createdAt = format(
-                  new Date(post.created_at),
-                  "yyyy.M.d",
-                  { locale: ko }
-                );
+                const createdAt = formatKo(new Date(post.created_at), "yyyy.M.d");
 
                 return (
                   <button

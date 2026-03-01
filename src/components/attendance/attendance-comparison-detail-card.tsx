@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, startTransition } from "react";
 import {
   Card,
   CardContent,
@@ -162,7 +162,9 @@ export function AttendanceComparisonDetailCard({ ctx }: Props) {
     const validIds = stored.filter((id) =>
       ctx.members.some((m) => m.userId === id)
     );
-    setSelectedUserIds(validIds.slice(0, MAX_SELECT));
+    startTransition(() => {
+      setSelectedUserIds(validIds.slice(0, MAX_SELECT));
+    });
   }, [ctx.groupId, ctx.members]);
 
   // 선택 변경 시 localStorage 동기화

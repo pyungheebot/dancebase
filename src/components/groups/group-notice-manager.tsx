@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useGroupNotices } from "@/hooks/use-group-notices";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import { type GroupNotice, type NoticePriority } from "@/types";
 import { toast } from "sonner";
 
@@ -243,7 +244,7 @@ function NoticeItem({
       </p>
       {notice.expiresAt && (
         <p className="text-[10px] text-muted-foreground pl-5">
-          만료: {new Date(notice.expiresAt).toLocaleDateString("ko-KR")}
+          만료: {formatYearMonthDay(notice.expiresAt)}
         </p>
       )}
     </div>

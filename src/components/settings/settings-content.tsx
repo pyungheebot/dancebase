@@ -31,6 +31,8 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Save, RefreshCw, X, Check, ArrowUpRight, Plus, Share2, AlertTriangle, UserPlus, Camera, LayoutList, Trash2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { EntityContext } from "@/types/entity-context";
 import type {
   Group,
@@ -82,7 +84,7 @@ export function SettingsContent({
   const supabase = createClient();
 
   // 공통 state
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // 그룹 아바타 state
@@ -103,7 +105,7 @@ export function SettingsContent({
 
   // 프로젝트 폼 state
   const [projectForm, setProjectForm] = useState<ProjectFormValues>(DEFAULT_PROJECT_FORM_VALUES);
-  const [deleting, setDeleting] = useState(false);
+  const { pending: deleting, execute: executeDelete } = useAsyncAction();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // 그룹 탈퇴/해산 state
@@ -463,14 +465,14 @@ export function SettingsContent({
 
   const handleDelete = async () => {
     if (!ctx.projectId) return;
-    setDeleting(true);
-    const { error } = await supabase.from("projects").delete().eq("id", ctx.projectId);
-    if (error) {
-      toast.error("프로젝트 삭제에 실패했습니다");
-      setDeleting(false);
-      return;
-    }
-    router.push(`/groups/${ctx.groupId}/projects`);
+    await executeDelete(async () => {
+      const { error } = await supabase.from("projects").delete().eq("id", ctx.projectId!);
+      if (error) {
+        toast.error("프로젝트 삭제에 실패했습니다");
+        return;
+      }
+      router.push(`/groups/${ctx.groupId}/projects`);
+    });
   };
 
   // ============================================
@@ -478,63 +480,63 @@ export function SettingsContent({
   // ============================================
 
   const handleSave = async () => {
-    setSaving(true);
     setMessage(null);
 
-    if (ctx.projectId) {
-      // 프로젝트 기본 정보 저장
-      const { error } = await supabase
-        .from("projects")
-        .update({
-          name: projectForm.name.trim(),
-          description: projectForm.description.trim() || null,
-          type: projectForm.type,
-          status: projectForm.status,
-          visibility: projectForm.visibility,
-          start_date: projectForm.start_date || null,
-          end_date: projectForm.end_date || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", ctx.projectId);
+    await executeSave(async () => {
+      if (ctx.projectId) {
+        // 프로젝트 기본 정보 저장
+        const { error } = await supabase
+          .from("projects")
+          .update({
+            name: projectForm.name.trim(),
+            description: projectForm.description.trim() || null,
+            type: projectForm.type,
+            status: projectForm.status,
+            visibility: projectForm.visibility,
+            start_date: projectForm.start_date || null,
+            end_date: projectForm.end_date || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", ctx.projectId);
 
-      // 기능 토글 저장: entity_features 테이블 반영
-      const allFeatures = ["board", "schedule", "attendance", "finance"] as const;
-      const featureUpdates = allFeatures.map((f) =>
-        supabase
-          .from("entity_features")
-          .update({ enabled: projectForm.features.includes(f) })
-          .eq("entity_type", "project")
-          .eq("entity_id", ctx.projectId!)
-          .eq("feature", f)
-      );
-      const featureResults = await Promise.all(featureUpdates);
-      const featureError = featureResults.some((r) => r.error);
+        // 기능 토글 저장: entity_features 테이블 반영
+        const allFeatures = ["board", "schedule", "attendance", "finance"] as const;
+        const featureUpdates = allFeatures.map((f) =>
+          supabase
+            .from("entity_features")
+            .update({ enabled: projectForm.features.includes(f) })
+            .eq("entity_type", "project")
+            .eq("entity_id", ctx.projectId!)
+            .eq("feature", f)
+        );
+        const featureResults = await Promise.all(featureUpdates);
+        const featureError = featureResults.some((r) => r.error);
 
-      if (error || featureError) {
-        toast.error("프로젝트 저장에 실패했습니다");
+        if (error || featureError) {
+          toast.error("프로젝트 저장에 실패했습니다");
+        } else {
+          toast.success("프로젝트가 저장되었습니다");
+        }
       } else {
-        toast.success("프로젝트가 저장되었습니다");
+        const { error } = await supabase
+          .from("groups")
+          .update({
+            name: groupForm.name,
+            description: groupForm.description || null,
+            group_type: groupForm.groupType,
+            visibility: groupForm.visibility,
+            join_policy: groupForm.joinPolicy,
+            dance_genre: groupForm.danceGenre,
+            max_members: groupForm.maxMembers ? parseInt(groupForm.maxMembers, 10) : null,
+          })
+          .eq("id", ctx.groupId);
+        if (error) {
+          setMessage({ type: "error", text: "설정 저장에 실패했습니다" });
+        } else {
+          setMessage({ type: "success", text: "설정이 저장되었습니다" });
+        }
       }
-    } else {
-      const { error } = await supabase
-        .from("groups")
-        .update({
-          name: groupForm.name,
-          description: groupForm.description || null,
-          group_type: groupForm.groupType,
-          visibility: groupForm.visibility,
-          join_policy: groupForm.joinPolicy,
-          dance_genre: groupForm.danceGenre,
-          max_members: groupForm.maxMembers ? parseInt(groupForm.maxMembers, 10) : null,
-        })
-        .eq("id", ctx.groupId);
-      if (error) {
-        setMessage({ type: "error", text: "설정 저장에 실패했습니다" });
-      } else {
-        setMessage({ type: "success", text: "설정이 저장되었습니다" });
-      }
-    }
-    setSaving(false);
+    });
   };
 
   // ============================================
@@ -577,7 +579,7 @@ export function SettingsContent({
                     <div>
                       <p className="text-sm font-medium">{req.profiles.name}</p>
                       <p className="text-[11px] text-muted-foreground">
-                        {new Date(req.requested_at).toLocaleDateString("ko-KR")}
+                        {formatYearMonthDay(req.requested_at)}
                       </p>
                     </div>
                   </div>

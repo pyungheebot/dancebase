@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { exportToCsv } from "@/lib/export-csv";
+import { exportToCsv } from "@/lib/export/csv-exporter";
 import { toast } from "sonner";
 import { Download, BarChart2 } from "lucide-react";
 import type { EntityMember } from "@/types/entity-context";

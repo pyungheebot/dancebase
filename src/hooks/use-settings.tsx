@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 
 export type Theme = "light" | "dark" | "high-contrast";
 
@@ -53,25 +46,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   // 초기 로드: localStorage에서 읽기
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("groop-settings");
-      if (saved) {
-        const parsed = JSON.parse(saved) as Partial<Settings>;
-        if (parsed.theme) {
-          setThemeState(parsed.theme);
-          applyTheme(parsed.theme);
-        }
-        if (parsed.fontScale) {
-          setFontScaleState(parsed.fontScale);
-          applyFontScale(parsed.fontScale);
-        }
-      }
-    } catch {
-      // ignore
-    }
-    setMounted(true);
-  }, []);
+
 
   const persist = useCallback((updates: Partial<Settings>) => {
     try {

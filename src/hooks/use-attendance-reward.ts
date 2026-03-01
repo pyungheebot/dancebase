@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type {
   AttendanceRewardRule,
   AttendanceRewardTier,
@@ -48,10 +48,6 @@ function saveData(groupId: string, data: StorageData): void {
 export function useAttendanceReward(groupId: string) {
   const [data, setData] = useState<StorageData>({ rules: [], records: [] });
 
-  // 초기 로드
-  useEffect(() => {
-    setData(loadData(groupId));
-  }, [groupId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateData = useCallback(

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import { MemberList } from "@/components/groups/member-list";
 import { InviteModal } from "@/components/groups/invite-modal";
@@ -44,7 +45,7 @@ import { InviteGroupMembersDialog } from "@/components/members/invite-group-memb
 import { MemberAdvancedFilter } from "@/components/members/member-advanced-filter";
 import { useMemberFilter } from "@/hooks/use-member-filter";
 import { toast } from "sonner";
-import { exportToCsv } from "@/lib/export-csv";
+import { exportToCsv } from "@/lib/export/csv-exporter";
 import { getCategoryColorClasses } from "@/types";
 import { EmptyState } from "@/components/shared/empty-state";
 import { InactiveMembersSection } from "@/components/members/inactive-members-section";
@@ -760,7 +761,7 @@ function ProjectMembersContent({
 }) {
   const [addOpen, setAddOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -799,18 +800,16 @@ function ProjectMembersContent({
 
   const handleAddMember = async () => {
     if (!selectedUserId || !ctx.projectId) return;
-    setSubmitting(true);
-
-    await supabase.from("project_members").insert({
-      project_id: ctx.projectId,
-      user_id: selectedUserId,
-      role: "member",
+    await execute(async () => {
+      await supabase.from("project_members").insert({
+        project_id: ctx.projectId!,
+        user_id: selectedUserId,
+        role: "member",
+      });
+      setSelectedUserId("");
+      setAddOpen(false);
+      onUpdate();
     });
-
-    setSelectedUserId("");
-    setSubmitting(false);
-    setAddOpen(false);
-    onUpdate();
   };
 
   const handleRemoveConfirm = async () => {
@@ -1057,6 +1056,7 @@ function ProjectMembersContent({
                       size="icon"
                       className="h-6 w-6 text-muted-foreground hover:text-destructive"
                       onClick={() => setRemoveTargetId(member.userId)}
+                      aria-label="멤버 삭제"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>

@@ -94,18 +94,13 @@ function saveTxList(groupId: string, list: PointEntry[]): void {
 // 메인 훅
 // ============================================
 export function useRewardShop(groupId: string) {
-  const [shopData, setShopData] = useState<RewardShopData>({ items: [], exchanges: [] });
-  const [txList, setTxList] = useState<PointEntry[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const [shopData, setShopData] = useState<RewardShopData>(() => loadShopData(groupId));
+  const [txList, setTxList] = useState<PointEntry[]>(() => loadTxList(groupId));
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserName, setCurrentUserName] = useState<string>("");
 
-  // 마운트 시 localStorage + 현재 유저 로드
+  // 마운트 시 현재 유저 로드
   useEffect(() => {
-    setMounted(true);
-    setShopData(loadShopData(groupId));
-    setTxList(loadTxList(groupId));
-
     const supabase = createClient();
     const fetchUser = async () => {
       const { data: authData } = await supabase.auth.getUser();
@@ -290,7 +285,7 @@ export function useRewardShop(groupId: string) {
     : [];
 
   return {
-    loading: !mounted,
+    loading: false,
     currentUserId,
     currentUserName,
     // 상점 데이터

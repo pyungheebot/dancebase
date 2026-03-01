@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type {
   PracticeEntry,
@@ -200,7 +200,6 @@ function buildStat(current: number, previous: number): PracticeWeeklyDigestStat 
 
 export function usePracticeWeeklyDigest() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [digest, setDigest] = useState<PracticeWeeklyDigest | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -212,12 +211,8 @@ export function usePracticeWeeklyDigest() {
     });
   }, []);
 
-  useEffect(() => {
-    if (userId === null && !loading) {
-      setDigest(null);
-      return;
-    }
-    if (userId === null) return;
+  const digest = useMemo<PracticeWeeklyDigest | null>(() => {
+    if (userId === null) return null;
 
     const journalData = loadJournalData(userId);
     const entries = journalData.entries;
@@ -272,7 +267,7 @@ export function usePracticeWeeklyDigest() {
       streakDays
     );
 
-    setDigest({
+    return {
       weekStart: toDateStr(thisMonday),
       weekEnd: toDateStr(thisSunday),
       practiceCount: buildStat(thisPracticeCount, prevPracticeCount),
@@ -283,8 +278,8 @@ export function usePracticeWeeklyDigest() {
       summaryText,
       practicedDates,
       hasData: entries.length > 0,
-    });
-  }, [userId, loading]);
+    };
+  }, [userId]);
 
   return { digest, loading };
 }

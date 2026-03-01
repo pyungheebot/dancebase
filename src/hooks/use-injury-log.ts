@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -116,10 +116,8 @@ function calcStats(entries: DanceInjuryEntry[]): DanceInjuryStats {
 // ============================================================
 
 export function useInjuryLog(memberId: string) {
-  const [entries, setEntries] = useState<DanceInjuryEntry[]>([]);
-
   // SWR을 통해 localStorage에서 데이터 로드
-  const { data, isLoading, mutate } = useSWR(
+  const { data: entries = [], isLoading, mutate } = useSWR(
     memberId ? swrKeys.danceInjuryLog(memberId) : null,
     () => {
       const store = loadStore(memberId);
@@ -127,13 +125,6 @@ export function useInjuryLog(memberId: string) {
     },
     { revalidateOnFocus: false }
   );
-
-  // SWR 데이터가 변경될 때 로컬 상태 동기화
-  useEffect(() => {
-    if (data !== undefined) {
-      setEntries(data);
-    }
-  }, [data]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
@@ -144,7 +135,6 @@ export function useInjuryLog(memberId: string) {
         updatedAt: new Date().toISOString(),
       };
       saveStore(store);
-      setEntries(next);
       mutate(next, false);
     },
     [memberId, mutate]

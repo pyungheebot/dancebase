@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   ShieldCheck,
   ChevronDown,
@@ -541,7 +542,7 @@ function CreateCertDialog({
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState<SkillCertLevel | "">("");
   const [requirements, setRequirements] = useState<string[]>([""]);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function resetForm() {
     setSkillName("");
@@ -581,8 +582,7 @@ function CreateCertDialog({
       toast.error("레벨을 선택하세요.");
       return;
     }
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       const filteredReqs = requirements.filter((r) => r.trim() !== "");
       onSubmit({
         skillName: skillName.trim(),
@@ -592,9 +592,7 @@ function CreateCertDialog({
         requirements: filteredReqs,
       });
       resetForm();
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   return (
@@ -768,7 +766,7 @@ function AwardCertDialog({
   const [memberName, setMemberName] = useState("");
   const [certifiedBy, setCertifiedBy] = useState("");
   const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute: executeAward } = useAsyncAction();
 
   function resetForm() {
     setCertId("");
@@ -808,8 +806,7 @@ function AwardCertDialog({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    void executeAward(async () => {
       onSubmit({
         certId,
         memberName,
@@ -817,9 +814,7 @@ function AwardCertDialog({
         notes: notes.trim() || undefined,
       });
       resetForm();
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   const selectedCert = certs.find((c) => c.id === certId);

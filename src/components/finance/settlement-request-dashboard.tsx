@@ -159,6 +159,7 @@ function RequestCard({
               size="icon"
               className="h-6 w-6"
               onClick={() => setExpanded((v) => !v)}
+              aria-label={expanded ? "접기" : "펼치기"}
             >
               {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
             </Button>

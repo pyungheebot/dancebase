@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import {
   FileCheck,
@@ -329,9 +330,9 @@ function NewWaiverTab({
   const [content, setContent] = useState("");
   const [required, setRequired] = useState(true);
   const [expiresInDays, setExpiresInDays] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim()) {
       toast.error("동의서 제목을 입력해주세요.");
       return;
@@ -345,20 +346,20 @@ function NewWaiverTab({
       toast.error("유효기간은 1 이상의 숫자를 입력해주세요.");
       return;
     }
-    setSubmitting(true);
-    onSubmit({
-      title,
-      type,
-      content,
-      required,
-      expiresInDays: days,
+    await execute(async () => {
+      onSubmit({
+        title,
+        type,
+        content,
+        required,
+        expiresInDays: days,
+      });
+      setTitle("");
+      setType("safety");
+      setContent("");
+      setRequired(true);
+      setExpiresInDays("");
     });
-    setSubmitting(false);
-    setTitle("");
-    setType("safety");
-    setContent("");
-    setRequired(true);
-    setExpiresInDays("");
   };
 
   return (

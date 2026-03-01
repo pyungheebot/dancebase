@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { useMemberActivityDistribution } from "@/hooks/use-member-activity-distribution";
 import type { MemberActivityScore } from "@/types";
 
@@ -57,8 +58,7 @@ function InitialAvatar({
   return (
     <div className="h-6 w-6 shrink-0 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
       {avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+        <Image src={avatarUrl} alt={name} width={24} height={24} className="h-full w-full object-cover" unoptimized />
       ) : (
         <span className="text-[10px] font-bold text-primary">{initial}</span>
       )}

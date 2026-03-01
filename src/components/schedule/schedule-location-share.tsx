@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import NextImage from "next/image";
 import { MapPin, ExternalLink, Copy, Download, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { generateLocationCard, getMapUrls } from "@/lib/qr-generator";
+import { copyToClipboard } from "@/lib/clipboard";
 
 type MapService = "kakao" | "naver";
 
@@ -74,12 +76,7 @@ export function ScheduleLocationShare({
   };
 
   const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(kakaoUrl);
-      toast.success("카카오맵 링크를 복사했습니다");
-    } catch {
-      toast.error("링크 복사에 실패했습니다");
-    }
+    await copyToClipboard(kakaoUrl, "카카오맵 링크를 복사했습니다", "링크 복사에 실패했습니다");
   };
 
   const handleDownloadImage = () => {
@@ -144,11 +141,13 @@ export function ScheduleLocationShare({
                 <p className="text-[11px] text-muted-foreground">카드 생성 중...</p>
               </div>
             ) : cardDataUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <NextImage
                 src={cardDataUrl}
                 alt="장소 공유 카드 미리보기"
+                width={320}
+                height={140}
                 className="w-full h-auto"
+                unoptimized
               />
             ) : (
               <p className="text-[11px] text-muted-foreground py-6">미리보기 없음</p>

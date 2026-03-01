@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { BookOpen, ChevronDown, ChevronUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGroupRules } from "@/hooks/use-group-rules";
@@ -21,7 +21,7 @@ export function GroupRulesBanner({ groupId }: GroupRulesBannerProps) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const isHidden = sessionStorage.getItem(sessionKey) === "true";
-      setHidden(isHidden);
+      startTransition(() => { setHidden(isHidden); });
     }
   }, [sessionKey]);
 

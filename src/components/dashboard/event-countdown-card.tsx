@@ -25,6 +25,7 @@ import {
   getRemainingTime,
   isPastEvent,
 } from "@/hooks/use-event-countdown";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { CountdownEvent } from "@/types";
 
 // ============================================
@@ -75,7 +76,7 @@ function AddEventDialog({ onAdd, disabled }: AddEventDialogProps) {
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
   const [emoji, setEmoji] = useState(EMOJI_PRESETS[0]);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   const handleSubmit = useCallback(() => {
     if (!title.trim()) {
@@ -87,26 +88,26 @@ function AddEventDialog({ onAdd, disabled }: AddEventDialogProps) {
       return;
     }
 
-    setSaving(true);
-    const added = onAdd({
-      title: title.trim(),
-      eventDate,
-      eventTime: eventTime || undefined,
-      emoji,
-    });
+    execute(async () => {
+      const added = onAdd({
+        title: title.trim(),
+        eventDate,
+        eventTime: eventTime || undefined,
+        emoji,
+      });
 
-    if (added) {
-      toast.success("이벤트가 추가되었습니다");
-      setTitle("");
-      setEventDate("");
-      setEventTime("");
-      setEmoji(EMOJI_PRESETS[0]);
-      setOpen(false);
-    } else {
-      toast.error("이벤트는 최대 10개까지 추가할 수 있습니다");
-    }
-    setSaving(false);
-  }, [title, eventDate, eventTime, emoji, onAdd]);
+      if (added) {
+        toast.success("이벤트가 추가되었습니다");
+        setTitle("");
+        setEventDate("");
+        setEventTime("");
+        setEmoji(EMOJI_PRESETS[0]);
+        setOpen(false);
+      } else {
+        toast.error("이벤트는 최대 10개까지 추가할 수 있습니다");
+      }
+    });
+  }, [title, eventDate, eventTime, emoji, onAdd, execute]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

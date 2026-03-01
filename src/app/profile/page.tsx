@@ -25,6 +25,7 @@ import { DEFAULT_PRIVACY_SETTINGS } from "@/types";
 import { useUserProfile } from "@/hooks/use-profile";
 import { SuggestedFollows } from "@/components/profile/suggested-follows";
 import Link from "next/link";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 const PRIVACY_OPTIONS: { value: PrivacyLevel; label: string; icon: typeof Globe }[] = [
   { value: "public", label: "전체 공개", icon: Globe },
@@ -99,7 +100,7 @@ export default function ProfilePage() {
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(DEFAULT_PRIVACY_SETTINGS);
   const [teamPrivacy, setTeamPrivacy] = useState<Record<string, PrivacyLevel>>({});
   const [myTeams, setMyTeams] = useState<{ id: string; name: string }[]>([]);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
   const [message, setMessage] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -160,8 +161,9 @@ export default function ProfilePage() {
 
   const handleRemoveGenre = (genre: string) => {
     setGenres(genres.filter((g) => g !== genre));
-    const { [genre]: _, ...rest } = genreStartDates;
-    setGenreStartDates(rest);
+    const next = { ...genreStartDates };
+    delete next[genre];
+    setGenreStartDates(next);
   };
 
   const handleGenreKeyDown = (e: React.KeyboardEvent) => {
@@ -227,33 +229,32 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    setSaving(true);
     setMessage(null);
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        name,
-        dance_genre: genres,
-        bio,
-        birth_date: birthDate || null,
-        phone,
-        instagram,
-        youtube,
-        active_region: activeRegion,
-        dance_genre_start_dates: genreStartDates,
-        privacy_settings: privacySettings,
-        team_privacy: teamPrivacy,
-      })
-      .eq("id", user.id);
+    await executeSave(async () => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          name,
+          dance_genre: genres,
+          bio,
+          birth_date: birthDate || null,
+          phone,
+          instagram,
+          youtube,
+          active_region: activeRegion,
+          dance_genre_start_dates: genreStartDates,
+          privacy_settings: privacySettings,
+          team_privacy: teamPrivacy,
+        })
+        .eq("id", user.id);
 
-    if (error) {
-      setMessage("저장에 실패했습니다: " + error.message);
-    } else {
-      setMessage("프로필이 저장되었습니다");
-    }
-
-    setSaving(false);
+      if (error) {
+        setMessage("저장에 실패했습니다: " + error.message);
+      } else {
+        setMessage("프로필이 저장되었습니다");
+      }
+    });
   };
 
   if (authLoading) {
@@ -366,6 +367,7 @@ export default function ProfilePage() {
                     variant="outline"
                     size="icon"
                     onClick={handleAddGenre}
+                    aria-label="장르 추가"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>

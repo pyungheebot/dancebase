@@ -512,7 +512,7 @@ export function GroupCarPoolCard({ groupId }: { groupId: string }) {
                     ? "모집 중인 카풀이 없습니다."
                     : "등록된 카풀이 없습니다."}
                 </p>
-                <p className="text-[10px]">위의 '카풀 제안' 버튼으로 추가하세요.</p>
+                <p className="text-[10px]">위의 &apos;카풀 제안&apos; 버튼으로 추가하세요.</p>
               </div>
             ) : (
               displayList.map((item) => (

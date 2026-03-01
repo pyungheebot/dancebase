@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { InjuryRecord, BodyPart, InjurySeverity, InjuryStatus } from "@/types";
 
 // ============================================
@@ -41,18 +41,7 @@ function saveRecords(groupId: string, userId: string, records: InjuryRecord[]): 
 
 export function useHealthTracking(groupId: string, userId: string) {
   const [records, setRecords] = useState<InjuryRecord[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !userId) {
-      setLoading(false);
-      return;
-    }
-    const data = loadRecords(groupId, userId);
-    setRecords(data);
-    setLoading(false);
-  }, [groupId, userId]);
 
   // 부상 추가
   const addInjury = useCallback(
@@ -146,7 +135,7 @@ export function useHealthTracking(groupId: string, userId: string) {
 
   return {
     records,
-    loading,
+    loading: false,
     activeCount,
     recoveringCount,
     healedCount,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   DASHBOARD_CARDS,
   DEFAULT_DASHBOARD_CARDS,
@@ -61,7 +61,11 @@ export function useDashboardOrder({ groupId, entityType }: UseDashboardOrderPara
   const isGroup = entityType === "group";
   const cardMeta = isGroup ? DASHBOARD_CARDS : PROJECT_DASHBOARD_CARDS;
   const defaultCards = isGroup ? DEFAULT_DASHBOARD_CARDS : DEFAULT_PROJECT_DASHBOARD_CARDS;
-  const defaultIds = defaultCards.map((c) => c.id);
+  const defaultIds = useMemo(
+    () => defaultCards.map((c) => c.id),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- defaultCards는 상수 배열이므로 entityType 변경 시에만 재계산
+    [entityType]
+  );
 
   const [orderedIds, setOrderedIds] = useState<string[]>(() =>
     loadOrder(groupId, defaultIds)
@@ -70,8 +74,7 @@ export function useDashboardOrder({ groupId, entityType }: UseDashboardOrderPara
   // groupId가 바뀌면 재로드
   useEffect(() => {
     setOrderedIds(loadOrder(groupId, defaultIds));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId]);
+  }, [groupId, defaultIds]);
 
   // 순서 적용: orderedIds 기준으로 카드 목록 반환
   const orderedCards: DashboardOrderItem[] = orderedIds.reduce<DashboardOrderItem[]>((acc, id) => {

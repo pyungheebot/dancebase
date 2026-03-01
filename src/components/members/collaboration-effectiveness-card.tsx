@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import {
   Collapsible,
@@ -153,7 +154,7 @@ export function CollaborationEffectivenessCard({
   );
   const [comment, setComment] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   // 대상 멤버 목록 (자기 자신 제외)
   const targetMembers = members.filter((m) => m.id !== currentUser.id);
@@ -179,8 +180,7 @@ export function CollaborationEffectivenessCard({
       toast.error("모든 항목에 점수를 입력해주세요.");
       return;
     }
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       addEvaluation({
         evaluatorId: currentUser.id,
         targetId,
@@ -192,11 +192,7 @@ export function CollaborationEffectivenessCard({
       toast.success(`${selectedTarget?.name}님에 대한 평가가 저장되었습니다.`);
       resetForm();
       setActiveTab("ranking");
-    } catch {
-      toast.error("평가 저장 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   // 내가 받은 평가
@@ -605,7 +601,7 @@ export function CollaborationEffectivenessCard({
                               {/* 코멘트 */}
                               {ev.comment && (
                                 <p className="text-[11px] text-foreground leading-relaxed pl-0.5">
-                                  "{ev.comment}"
+                                  &quot;{ev.comment}&quot;
                                 </p>
                               )}
                             </li>

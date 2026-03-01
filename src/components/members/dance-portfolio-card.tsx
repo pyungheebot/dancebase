@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Trophy,
   ChevronDown,
@@ -109,7 +110,7 @@ function EntryDialog({ initial, onSave, trigger }: EntryDialogProps) {
   const [awardTitle, setAwardTitle] = useState("");
   const [awardRank, setAwardRank] = useState("");
   const [awardDate, setAwardDate] = useState("");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
 
   function resetForm() {
     setType(initial?.type ?? "performance");
@@ -168,8 +169,7 @@ function EntryDialog({ initial, onSave, trigger }: EntryDialogProps) {
       toast.error("날짜를 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await executeSave(async () => {
       await onSave({
         type,
         title: title.trim(),
@@ -183,11 +183,7 @@ function EntryDialog({ initial, onSave, trigger }: EntryDialogProps) {
       });
       toast.success(initial ? "항목이 수정되었습니다." : "항목이 추가되었습니다.");
       setOpen(false);
-    } catch {
-      toast.error("저장에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   return (

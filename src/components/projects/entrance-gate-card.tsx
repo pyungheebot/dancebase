@@ -54,6 +54,7 @@ import {
   type AddEntranceGateInput,
   type UpdateEntranceGateInput,
 } from "@/hooks/use-entrance-gate";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { EntranceGateEntry, EntranceGateStatus, EntranceGateType } from "@/types";
 
 // ============================================================
@@ -377,7 +378,7 @@ function GateFormDialog({
   title: string;
 }) {
   const [form, setForm] = useState<AddEntranceGateInput>(initialData);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   // 다이얼로그 열릴 때 폼 초기화
   const handleOpenChange = (isOpen: boolean) => {
@@ -386,10 +387,10 @@ function GateFormDialog({
   };
 
   const handleSubmit = async () => {
-    setSaving(true);
-    const ok = await onSubmit(form);
-    setSaving(false);
-    if (ok) onOpenChange(false);
+    await execute(async () => {
+      const ok = await onSubmit(form);
+      if (ok) onOpenChange(false);
+    });
   };
 
   return (

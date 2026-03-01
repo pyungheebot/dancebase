@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { PracticeTimerCategory, PracticeTimerLogEntry } from "@/types";
 
 // ============================================================
@@ -77,19 +77,13 @@ export type PracticeTimerStats = {
 // ============================================================
 
 export function usePracticeTimerLog(groupId: string) {
-  const [logs, setLogs] = useState<PracticeTimerLogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState<PracticeTimerLogEntry[]>(() => loadData(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setLogs(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: PracticeTimerLogEntry[]) => {
@@ -231,7 +225,7 @@ export function usePracticeTimerLog(groupId: string) {
 
   return {
     logs,
-    loading,
+    loading: false,
     addLog,
     deleteLog,
     getByDate,

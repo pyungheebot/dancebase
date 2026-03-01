@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import type { BoardCommentWithProfile } from "@/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -14,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { createNotification } from "@/lib/notifications";
 import { ContentReportDialog } from "@/components/board/content-report-dialog";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 interface BoardCommentSectionProps {
   postId: string;
@@ -117,7 +117,7 @@ function CommentItem({
             {displayName}
           </UserPopoverMenu>
           <span className="text-[11px] text-muted-foreground">
-            {format(new Date(comment.created_at), "M/d HH:mm", { locale: ko })}
+            {formatKo(new Date(comment.created_at), "M/d HH:mm")}
           </span>
           {isOwnComment && editingId !== comment.id && (
             <>
@@ -220,15 +220,15 @@ export function BoardCommentSection({
   groupId,
 }: BoardCommentSectionProps) {
   const [content, setContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute: executeSubmit } = useAsyncAction();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
-  const [editSaving, setEditSaving] = useState(false);
+  const { pending: editSaving, execute: executeEdit } = useAsyncAction();
   // 답글 관련 상태
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
-  const [replySubmitting, setReplySubmitting] = useState(false);
+  const { pending: replySubmitting, execute: executeReply } = useAsyncAction();
   // 신고 다이얼로그 상태
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
 
@@ -249,59 +249,49 @@ export function BoardCommentSection({
   // 댓글 제출 (parent_id 포함)
   const handleSubmit = async (parentId: string | null = null) => {
     const targetContent = parentId ? replyContent : content;
-    if (!targetContent.trim() || (parentId ? replySubmitting : submitting)) return;
+    if (!targetContent.trim()) return;
 
-    if (parentId) {
-      setReplySubmitting(true);
-    } else {
-      setSubmitting(true);
-    }
+    const execFn = parentId ? executeReply : executeSubmit;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      if (parentId) setReplySubmitting(false);
-      else setSubmitting(false);
-      return;
-    }
+    await execFn(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { error } = await supabase.from("board_comments").insert({
-      post_id: postId,
-      author_id: user.id,
-      content: targetContent.trim(),
-      parent_id: parentId ?? null,
-    });
-
-    if (error) {
-      toast.error("댓글 작성에 실패했습니다");
-      if (parentId) setReplySubmitting(false);
-      else setSubmitting(false);
-      return;
-    }
-
-    // 게시글 작성자에게 알림 (본인 댓글이면 스킵)
-    if (postAuthorId && postAuthorId !== user.id) {
-      const commenterName =
-        (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
-      await createNotification({
-        userId: postAuthorId,
-        type: "new_comment",
-        title: "새 댓글",
-        message: `${commenterName}님이 댓글을 달았습니다`,
-        link: postLink,
+      const { error } = await supabase.from("board_comments").insert({
+        post_id: postId,
+        author_id: user.id,
+        content: targetContent.trim(),
+        parent_id: parentId ?? null,
       });
-    }
 
-    if (parentId) {
-      setReplyContent("");
-      setActiveReplyId(null);
-      setReplySubmitting(false);
-    } else {
-      setContent("");
-      setSubmitting(false);
-    }
-    onUpdate();
+      if (error) {
+        toast.error("댓글 작성에 실패했습니다");
+        return;
+      }
+
+      // 게시글 작성자에게 알림 (본인 댓글이면 스킵)
+      if (postAuthorId && postAuthorId !== user.id) {
+        const commenterName =
+          (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
+        await createNotification({
+          userId: postAuthorId,
+          type: "new_comment",
+          title: "새 댓글",
+          message: `${commenterName}님이 댓글을 달았습니다`,
+          link: postLink,
+        });
+      }
+
+      if (parentId) {
+        setReplyContent("");
+        setActiveReplyId(null);
+      } else {
+        setContent("");
+      }
+      onUpdate();
+    });
   };
 
   const handleDelete = async (commentId: string) => {
@@ -327,22 +317,21 @@ export function BoardCommentSection({
   };
 
   const handleEditSave = async (commentId: string) => {
-    if (!editingContent.trim() || editSaving) return;
-    setEditSaving(true);
-    const { error } = await supabase
-      .from("board_comments")
-      .update({ content: editingContent.trim() })
-      .eq("id", commentId);
-    if (error) {
-      toast.error("댓글 수정에 실패했습니다");
-      setEditSaving(false);
-      return;
-    }
-    toast.success("댓글이 수정되었습니다");
-    setEditingId(null);
-    setEditingContent("");
-    setEditSaving(false);
-    onUpdate();
+    if (!editingContent.trim()) return;
+    await executeEdit(async () => {
+      const { error } = await supabase
+        .from("board_comments")
+        .update({ content: editingContent.trim() })
+        .eq("id", commentId);
+      if (error) {
+        toast.error("댓글 수정에 실패했습니다");
+        return;
+      }
+      toast.success("댓글이 수정되었습니다");
+      setEditingId(null);
+      setEditingContent("");
+      onUpdate();
+    });
   };
 
   const handleReplyClick = (commentId: string) => {

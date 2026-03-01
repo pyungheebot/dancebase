@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Star, Users, Award, Zap, Music } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -194,35 +195,23 @@ function MemberRoleRow({
 // 빈 상태
 // ============================================
 
-function EmptyState({ memberCount }: { memberCount: number }) {
+function RecommenderEmptyState({ memberCount }: { memberCount: number }) {
   if (memberCount === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
-        <Users className="h-10 w-10 text-muted-foreground/40" />
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">
-            멤버가 없습니다
-          </p>
-          <p className="text-xs text-muted-foreground/70 mt-1">
-            역할 추천을 위해 멤버가 필요합니다.
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        icon={Users}
+        title="멤버가 없습니다"
+        description="역할 추천을 위해 멤버가 필요합니다."
+      />
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
-      <Star className="h-10 w-10 text-muted-foreground/40" />
-      <div>
-        <p className="text-sm font-medium text-muted-foreground">
-          데이터를 불러오는 중입니다
-        </p>
-        <p className="text-xs text-muted-foreground/70 mt-1">
-          출석 및 활동 데이터를 분석하고 있습니다.
-        </p>
-      </div>
-    </div>
+    <EmptyState
+      icon={Star}
+      title="데이터를 불러오는 중입니다"
+      description="출석 및 활동 데이터를 분석하고 있습니다."
+    />
   );
 }
 
@@ -385,7 +374,7 @@ export function GenreRoleRecommender({
               ))}
             </div>
           ) : recommendations.length === 0 ? (
-            <EmptyState memberCount={members.length} />
+            <RecommenderEmptyState memberCount={members.length} />
           ) : (
             <div className="py-1">
               {recommendations.map((rec) => (

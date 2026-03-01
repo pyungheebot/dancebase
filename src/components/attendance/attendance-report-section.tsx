@@ -30,7 +30,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAttendanceReport, type ReportPeriod } from "@/hooks/use-attendance-report";
-import { exportToCsv } from "@/lib/export-csv";
+import { exportToCsv } from "@/lib/export/csv-exporter";
 import { toast } from "sonner";
 import { AttendanceExportButton } from "@/components/attendance/attendance-export-button";
 import type { EntityContext } from "@/types/entity-context";

@@ -4,11 +4,13 @@
  */
 
 /** 단일 셀 값을 CSV 안전 문자열로 변환 */
-function escapeCsvCell(value: string): string {
-  if (value.includes(",") || value.includes("\n") || value.includes('"')) {
-    return `"${value.replace(/"/g, '""')}"`;
+function escapeCsvCell(value: string | number | null | undefined): string {
+  const str = value == null ? "" : String(value);
+  // 쉼표, 줄바꿈, 큰따옴표 포함 시 큰따옴표로 감쌈
+  if (str.includes(",") || str.includes("\n") || str.includes('"')) {
+    return `"${str.replace(/"/g, '""')}"`;
   }
-  return value;
+  return str;
 }
 
 /**
@@ -42,4 +44,24 @@ export function downloadCSV(filename: string, csvContent: string): void {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * 헤더 + 데이터 행을 CSV 파일로 즉시 내보내기 (편의함수)
+ * @param filename 파일명
+ * @param headers  헤더 행
+ * @param rows     데이터 행 배열
+ */
+export function exportToCsv(
+  filename: string,
+  headers: string[],
+  rows: (string | number | null | undefined)[][]
+): void {
+  const lines: string[] = [];
+  lines.push(headers.map(escapeCsvCell).join(","));
+  for (const row of rows) {
+    lines.push(row.map(escapeCsvCell).join(","));
+  }
+  const csv = lines.join("\r\n");
+  downloadCSV(filename, csv);
 }

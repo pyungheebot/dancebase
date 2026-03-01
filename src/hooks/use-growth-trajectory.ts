@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { GrowthTrajectory, GrowthDataPoint, GrowthDimension } from "@/types";
@@ -113,7 +114,7 @@ export function useGrowthTrajectory(groupId: string) {
   const trajectories = data ?? [];
 
   /** 멤버 추가 (초기 3개월 데이터포인트 자동 생성) */
-  function addTrajectory(memberName: string, goal: number): GrowthTrajectory | null {
+  const addTrajectory = useCallback((memberName: string, goal: number): GrowthTrajectory | null => {
     if (!memberName.trim()) return null;
 
     const already = trajectories.find(
@@ -139,14 +140,14 @@ export function useGrowthTrajectory(groupId: string) {
     saveData(groupId, updated);
     mutate(updated, false);
     return newItem;
-  }
+  }, [trajectories, groupId, mutate]);
 
   /** 월별 데이터포인트 추가 */
-  function addDataPoint(
+  const addDataPoint = useCallback((
     trajectoryId: string,
     month: string,
     scores: Record<GrowthDimension, number>
-  ): boolean {
+  ): boolean => {
     const idx = trajectories.findIndex((t) => t.id === trajectoryId);
     if (idx === -1) return false;
 
@@ -173,19 +174,19 @@ export function useGrowthTrajectory(groupId: string) {
     saveData(groupId, newList);
     mutate(newList, false);
     return true;
-  }
+  }, [trajectories, groupId, mutate]);
 
   /** 성장 궤적 삭제 */
-  function deleteTrajectory(id: string): void {
+  const deleteTrajectory = useCallback((id: string): void => {
     const updated = trajectories.filter((t) => t.id !== id);
     saveData(groupId, updated);
     mutate(updated, false);
-  }
+  }, [trajectories, groupId, mutate]);
 
   /** 멤버 이름으로 궤적 조회 */
-  function getTrajectoryForMember(name: string): GrowthTrajectory | undefined {
+  const getTrajectoryForMember = useCallback((name: string): GrowthTrajectory | undefined => {
     return trajectories.find((t) => t.memberName === name);
-  }
+  }, [trajectories]);
 
   // ─── 통계 ───────────────────────────────────────────────────
 
@@ -208,19 +209,19 @@ export function useGrowthTrajectory(groupId: string) {
   })();
 
   /** 멤버별 최신 종합 점수 */
-  function getLatestComposite(t: GrowthTrajectory): number {
+  const getLatestComposite = useCallback((t: GrowthTrajectory): number => {
     if (t.dataPoints.length === 0) return 0;
     const sorted = [...t.dataPoints].sort((a, b) =>
       a.month.localeCompare(b.month)
     );
     return calcComposite(sorted[sorted.length - 1].scores);
-  }
+  }, []);
 
   /** 목표 달성률 (%) */
-  function getGoalAchievement(t: GrowthTrajectory): number {
+  const getGoalAchievement = useCallback((t: GrowthTrajectory): number => {
     if (t.goal === 0) return 0;
     return Math.min(100, Math.round((getLatestComposite(t) / t.goal) * 100));
-  }
+  }, [getLatestComposite]);
 
   return {
     trajectories,

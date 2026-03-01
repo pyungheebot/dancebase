@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useVideoTimestamps, parseTimestamp, formatTimestamp } from "@/hooks/use-video-timestamps";
 import { useAuth } from "@/hooks/use-auth";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 interface VideoTimestampSectionProps {
   videoId: string;
@@ -27,7 +28,7 @@ export function VideoTimestampSection({
 
   const [timeInput, setTimeInput] = useState("");
   const [commentInput, setCommentInput] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   // 타임스탬프 클릭 시 해당 시간부터 영상 새 탭 열기
   function handleTimestampClick(seconds: number) {
@@ -62,18 +63,18 @@ export function VideoTimestampSection({
       return;
     }
 
-    setSubmitting(true);
-    addTimestamp({
-      videoId,
-      seconds,
-      comment: commentInput.trim(),
-      authorName: profile.name,
-      authorId: user.id,
+    await execute(async () => {
+      addTimestamp({
+        videoId,
+        seconds,
+        comment: commentInput.trim(),
+        authorName: profile.name,
+        authorId: user.id,
+      });
+      setTimeInput("");
+      setCommentInput("");
+      toast.success("타임스탬프가 추가되었습니다");
     });
-    setTimeInput("");
-    setCommentInput("");
-    setSubmitting(false);
-    toast.success("타임스탬프가 추가되었습니다");
   }
 
   function handleDelete(timestampId: string) {

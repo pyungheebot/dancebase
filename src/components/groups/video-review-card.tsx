@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Video,
   ChevronDown,
@@ -46,6 +47,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useVideoReview } from "@/hooks/use-video-review";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { VideoReviewEntry, VideoReviewTimestamp, VideoReviewTimestampType } from "@/types";
 
 // ============================================================
@@ -155,7 +157,7 @@ function AddEntryDialog({ open, onClose, onSave }: AddEntryDialogProps) {
   const [description, setDescription] = useState("");
   const [overallRating, setOverallRating] = useState(0);
   const [reviewedBy, setReviewedBy] = useState("");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   function reset() {
     setTitle("");
@@ -182,25 +184,24 @@ function AddEntryDialog({ open, onClose, onSave }: AddEntryDialogProps) {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    setSaving(true);
-    try {
-      await onSave({
-        title: title.trim(),
-        videoUrl: videoUrl.trim() || undefined,
-        date,
-        duration: duration.trim() || undefined,
-        description: description.trim() || undefined,
-        overallRating: overallRating > 0 ? overallRating : undefined,
-        reviewedBy: reviewers,
-      });
-      toast.success("영상이 추가되었습니다.");
-      reset();
-      onClose();
-    } catch {
-      toast.error("영상 추가에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    await execute(async () => {
+      try {
+        await onSave({
+          title: title.trim(),
+          videoUrl: videoUrl.trim() || undefined,
+          date,
+          duration: duration.trim() || undefined,
+          description: description.trim() || undefined,
+          overallRating: overallRating > 0 ? overallRating : undefined,
+          reviewedBy: reviewers,
+        });
+        toast.success("영상이 추가되었습니다.");
+        reset();
+        onClose();
+      } catch {
+        toast.error("영상 추가에 실패했습니다.");
+      }
+    });
   }
 
   return (
@@ -340,7 +341,7 @@ function AddTimestampForm({ defaultAuthor, onAdd }: AddTimestampFormProps) {
   const [comment, setComment] = useState("");
   const [author, setAuthor] = useState(defaultAuthor);
   const [type, setType] = useState<VideoReviewTimestampType>("note");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeTimestamp } = useAsyncAction();
 
   async function handleSubmit() {
     if (!time.trim()) {
@@ -356,22 +357,21 @@ function AddTimestampForm({ defaultAuthor, onAdd }: AddTimestampFormProps) {
       return;
     }
 
-    setSaving(true);
-    try {
-      await onAdd({
-        time: time.trim(),
-        comment,
-        author: author.trim() || "익명",
-        type,
-      });
-      toast.success("타임스탬프가 추가되었습니다.");
-      setTime("");
-      setComment("");
-    } catch {
-      toast.error("타임스탬프 추가에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    await executeTimestamp(async () => {
+      try {
+        await onAdd({
+          time: time.trim(),
+          comment,
+          author: author.trim() || "익명",
+          type,
+        });
+        toast.success("타임스탬프가 추가되었습니다.");
+        setTime("");
+        setComment("");
+      } catch {
+        toast.error("타임스탬프 추가에 실패했습니다.");
+      }
+    });
   }
 
   return (
@@ -448,8 +448,9 @@ type TimestampItemProps = {
 };
 
 function TimestampItem({ timestamp, onDelete }: TimestampItemProps) {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
   async function handleDelete() {
-    if (!confirm("이 타임스탬프를 삭제하시겠습니까?")) return;
     await onDelete(timestamp.id);
     toast.success("타임스탬프가 삭제되었습니다.");
   }
@@ -483,12 +484,20 @@ function TimestampItem({ timestamp, onDelete }: TimestampItemProps) {
         </p>
       </div>
       <button
-        onClick={handleDelete}
+        onClick={() => setDeleteConfirmOpen(true)}
         className="text-muted-foreground hover:text-red-500 transition-colors shrink-0"
         title="삭제"
       >
         <Trash2 className="h-3 w-3" />
       </button>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="타임스탬프 삭제"
+        description="이 타임스탬프를 삭제하시겠습니까?"
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }
@@ -522,9 +531,9 @@ function EntryItem({
 }: EntryItemProps) {
   const [expanded, setExpanded] = useState(false);
   const [showAddTimestamp, setShowAddTimestamp] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   async function handleDelete() {
-    if (!confirm("이 영상 리뷰를 삭제하시겠습니까?")) return;
     await onDelete(entry.id);
     toast.success("영상 리뷰가 삭제되었습니다.");
   }
@@ -569,7 +578,7 @@ function EntryItem({
             <StarRating value={entry.overallRating} readonly />
           )}
           <button
-            onClick={handleDelete}
+            onClick={() => setDeleteConfirmOpen(true)}
             className="text-muted-foreground hover:text-red-500 transition-colors"
             title="삭제"
           >
@@ -680,6 +689,14 @@ function EntryItem({
           )}
         </div>
       )}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="영상 리뷰 삭제"
+        description="이 영상 리뷰를 삭제하시겠습니까?"
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }

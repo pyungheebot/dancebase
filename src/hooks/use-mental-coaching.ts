@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   MentalCoachingNote,
@@ -64,20 +64,14 @@ export type MentalCoachingStats = {
 // ============================================================
 
 export function useMentalCoaching(groupId: string) {
-  const [notes, setNotes] = useState<MentalCoachingNote[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState<MentalCoachingNote[]>(() => loadData(groupId).notes);
 
   // localStorage에서 데이터 불러오기
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setNotes(data.notes);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
@@ -232,7 +226,7 @@ export function useMentalCoaching(groupId: string) {
 
   return {
     notes,
-    loading,
+    loading: false,
     stats,
     addNote,
     updateNote,

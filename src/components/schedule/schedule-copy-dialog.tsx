@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, addDays } from "date-fns";
-import { ko } from "date-fns/locale";
+import { addDays } from "date-fns";
+import { formatShortDateTime } from "@/lib/date-utils";
 import { Copy, Clock, MapPin, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateSchedules } from "@/lib/swr/invalidate";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { Schedule } from "@/types";
 
 type SourceProject = {
@@ -55,7 +56,7 @@ export function ScheduleCopyDialog({
   const [schedulesLoading, setSchedulesLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [offsetDays, setOffsetDays] = useState<number>(0);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   // 다이얼로그가 열릴 때 같은 그룹의 프로젝트 목록 조회
   useEffect(() => {
@@ -152,8 +153,7 @@ export function ScheduleCopyDialog({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       const supabase = createClient();
 
       const schedulesToCopy = sourceSchedules.filter((s) =>
@@ -178,18 +178,17 @@ export function ScheduleCopyDialog({
 
       const { error } = await supabase.from("schedules").insert(insertRows);
 
-      if (error) throw error;
+      if (error) {
+        toast.error("일정 복사에 실패했습니다");
+        throw error;
+      }
 
       invalidateSchedules(groupId, currentProjectId);
 
       toast.success(`${selectedIds.size}개 일정을 복사했습니다`);
       onCopied();
       handleClose();
-    } catch {
-      toast.error("일정 복사에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   const handleClose = () => {
@@ -331,17 +330,11 @@ export function ScheduleCopyDialog({
                             <div className="flex flex-col gap-0.5 mt-0.5">
                               <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
                                 <Clock className="h-2.5 w-2.5 shrink-0" />
-                                {format(
-                                  new Date(schedule.starts_at),
-                                  "M/d (EEE) HH:mm",
-                                  { locale: ko }
-                                )}
+                                {formatShortDateTime(new Date(schedule.starts_at))}
                                 {copiedDate && (
                                   <span className="ml-1 text-blue-500">
                                     -{">"}
-                                    {format(copiedDate, "M/d (EEE) HH:mm", {
-                                      locale: ko,
-                                    })}
+                                    {formatShortDateTime(copiedDate)}
                                   </span>
                                 )}
                               </span>

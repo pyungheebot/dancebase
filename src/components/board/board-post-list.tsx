@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { useBoard, useBoardCategories } from "@/hooks/use-board";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +13,8 @@ import { BoardPostForm } from "./board-post-form";
 import { BoardNoticeBanner } from "./board-notice-banner";
 import { EmptyState } from "@/components/shared/empty-state";
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { invalidateBoard, invalidateBoardPost } from "@/lib/swr/invalidate";
@@ -119,17 +119,13 @@ export function BoardPostList({
 
   // 검색어 debounce
   const [searchInput, setSearchInput] = useState(search);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedSearchInput = useDebounce(searchInput);
+  useEffect(() => {
+    setSearch(debouncedSearchInput);
+  }, [debouncedSearchInput, setSearch]);
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setSearch(value);
-    }, 300);
   };
-  useEffect(() => {
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, []);
 
   // 통합 게시판 여부 (그룹 게시판에서 프로젝트 글도 보여줄 때)
   const isIntegrated = !projectId;
@@ -288,7 +284,7 @@ export function BoardPostList({
                         {nicknameMap?.[post.author_id] || post.profiles?.name}
                       </span>
                       <span className="text-muted-foreground/50 shrink-0">
-                        {format(new Date(post.created_at), "M/d", { locale: ko })}
+                        {formatKo(new Date(post.created_at), "M/d")}
                       </span>
                     </div>
                   </Link>

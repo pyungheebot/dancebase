@@ -569,6 +569,7 @@ function EntryItem({
               variant="ghost"
               size="icon"
               className="h-6 w-6 text-muted-foreground hover:text-foreground"
+              aria-label="일지 수정"
             >
               <Pencil className="h-3 w-3" />
             </Button>
@@ -579,6 +580,7 @@ function EntryItem({
           size="icon"
           className="h-6 w-6 text-muted-foreground hover:text-destructive"
           onClick={handleDelete}
+          aria-label="일지 삭제"
         >
           <Trash2 className="h-3 w-3" />
         </Button>

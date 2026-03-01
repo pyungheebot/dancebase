@@ -17,11 +17,12 @@ import {
   validateMaxLength,
   validatePositiveNumber,
 } from "@/lib/validation";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 export default function NewGroupPage() {
   const [form, setForm] = useState<GroupFormValues>(DEFAULT_GROUP_FORM_VALUES);
   const [fieldErrors, setFieldErrors] = useState<GroupFormFieldErrors>({});
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -92,9 +93,8 @@ export default function NewGroupPage() {
     if (!validateAll()) return;
 
     setError(null);
-    setLoading(true);
 
-    try {
+    await execute(async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -128,12 +128,7 @@ export default function NewGroupPage() {
       }
 
       router.push(`/groups/${groupId}`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : JSON.stringify(err);
-      setError(`오류: ${message}`);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (

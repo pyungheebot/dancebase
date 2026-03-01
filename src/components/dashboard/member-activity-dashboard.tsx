@@ -18,8 +18,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useMemberDashboardActivity } from "@/hooks/use-member-dashboard-activity";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatRelative } from "@/lib/date-utils";
 import type { MemberActivityType } from "@/types";
 
 // 활동 유형별 아이콘 및 색상
@@ -78,10 +77,7 @@ function TimelineItem({
   occurredAt: string;
 }) {
   const config = ACTIVITY_CONFIG[type];
-  const timeAgo = formatDistanceToNow(new Date(occurredAt), {
-    addSuffix: true,
-    locale: ko,
-  });
+  const timeAgo = formatRelative(new Date(occurredAt));
 
   return (
     <div className="flex items-start gap-2.5 py-2 border-b border-border/50 last:border-0">

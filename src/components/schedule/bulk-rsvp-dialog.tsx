@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatShortDateTime } from "@/lib/date-utils";
 import { CalendarCheck, Clock, MapPin, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -20,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateBulkRsvp } from "@/lib/swr/invalidate";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { Schedule, ScheduleRsvpResponse } from "@/types";
 
 type BulkRsvpDialogProps = {
@@ -49,7 +49,7 @@ export function BulkRsvpDialog({
 }: BulkRsvpDialogProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [response, setResponse] = useState<ScheduleRsvpResponse>("going");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   // 오늘 이후의 일정만 필터링, 날짜순 정렬
   const upcomingSchedules = useMemo(
@@ -99,9 +99,7 @@ export function BulkRsvpDialog({
       return;
     }
 
-    setSubmitting(true);
-
-    try {
+    await execute(async () => {
       const now = new Date().toISOString();
       const upsertRows = Array.from(selectedIds).map((scheduleId) => ({
         schedule_id: scheduleId,
@@ -114,7 +112,10 @@ export function BulkRsvpDialog({
         .from("schedule_rsvp")
         .upsert(upsertRows, { onConflict: "schedule_id,user_id" });
 
-      if (error) throw error;
+      if (error) {
+        toast.error("일괄 RSVP 응답에 실패했습니다");
+        throw error;
+      }
 
       // SWR 무효화
       invalidateBulkRsvp(groupId, Array.from(selectedIds));
@@ -127,11 +128,7 @@ export function BulkRsvpDialog({
       setSelectedIds(new Set());
       setResponse("going");
       onOpenChange(false);
-    } catch {
-      toast.error("일괄 RSVP 응답에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   const handleOpenChange = (v: boolean) => {
@@ -248,11 +245,7 @@ export function BulkRsvpDialog({
                           <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-0.5">
                             <span className="flex items-center gap-0.5">
                               <Clock className="h-2.5 w-2.5" />
-                              {format(
-                                new Date(schedule.starts_at),
-                                "M/d (EEE) HH:mm",
-                                { locale: ko }
-                              )}
+                              {formatShortDateTime(new Date(schedule.starts_at))}
                             </span>
                             {schedule.location && (
                               <span className="flex items-center gap-0.5 truncate">

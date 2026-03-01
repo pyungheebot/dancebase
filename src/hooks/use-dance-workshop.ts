@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DanceWorkshopData,
@@ -102,7 +102,7 @@ function saveData(memberId: string, data: DanceWorkshopData): void {
 // ============================================================
 
 export function useDanceWorkshop(memberId: string) {
-  const [entries, setEntries] = useState<DanceWorkshopEntry[]>([]);
+  const [entries, setEntries] = useState<DanceWorkshopEntry[]>(() => loadData(memberId).entries);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
@@ -112,12 +112,7 @@ export function useDanceWorkshop(memberId: string) {
     }
     const data = loadData(memberId);
     setEntries(data.entries);
-    setLoading(false);
   }, [memberId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 persist 헬퍼
   const persist = useCallback(

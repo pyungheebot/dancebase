@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DressRehearsalSession,
@@ -64,20 +64,14 @@ export type DressRehearsalStats = {
 // ============================================================
 
 export function useDressRehearsal(projectId: string) {
-  const [sessions, setSessions] = useState<DressRehearsalSession[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sessions, setSessions] = useState<DressRehearsalSession[]>(() => loadData(projectId).sessions);
 
   // localStorage에서 데이터 불러오기
   const reload = useCallback(() => {
     if (!projectId) return;
     const data = loadData(projectId);
     setSessions(data.sessions);
-    setLoading(false);
   }, [projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
@@ -322,7 +316,7 @@ export function useDressRehearsal(projectId: string) {
 
   return {
     sessions,
-    loading,
+    loading: false,
     stats,
     addSession,
     updateSession,

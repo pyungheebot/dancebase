@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { CarpoolRide, CarpoolRideStatus } from "@/types";
 
 // ============================================================
@@ -46,19 +46,13 @@ export type CarpoolStats = {
 // ============================================================
 
 export function useCarpoolManagement(groupId: string) {
-  const [rides, setRides] = useState<CarpoolRide[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [rides, setRides] = useState<CarpoolRide[]>(() => loadData(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setRides(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: CarpoolRide[]) => {
@@ -196,7 +190,7 @@ export function useCarpoolManagement(groupId: string) {
 
   return {
     rides,
-    loading,
+    loading: false,
     addRide,
     deleteRide,
     joinRide,

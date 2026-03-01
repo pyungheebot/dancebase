@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useScheduleFeedback } from "@/hooks/use-schedule-feedback";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 type Props = {
   scheduleId: string;
@@ -33,7 +34,7 @@ export function ScheduleFeedbackDialog({
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [loadingExisting, setLoadingExisting] = useState(false);
 
   // 다이얼로그가 열릴 때 기존 피드백 로드
@@ -69,16 +70,15 @@ export function ScheduleFeedbackDialog({
       return;
     }
 
-    setSubmitting(true);
-    try {
-      await submitFeedback(rating, comment || null);
-      toast.success(isEditMode ? "평가가 수정되었습니다" : "평가가 등록되었습니다");
-      onOpenChange(false);
-    } catch {
-      toast.error(isEditMode ? "평가 수정에 실패했습니다" : "평가 등록에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    await execute(async () => {
+      try {
+        await submitFeedback(rating, comment || null);
+        toast.success(isEditMode ? "평가가 수정되었습니다" : "평가가 등록되었습니다");
+        onOpenChange(false);
+      } catch {
+        toast.error(isEditMode ? "평가 수정에 실패했습니다" : "평가 등록에 실패했습니다");
+      }
+    });
   };
 
   const displayRating = hoveredRating || rating;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   ChevronDown,
   ChevronUp,
@@ -253,7 +254,7 @@ export function PracticeIntensityCard({
   const [durationMinutes, setDurationMinutes] = useState<string>("");
   const [selectedBodyParts, setSelectedBodyParts] = useState<string[]>([]);
   const [note, setNote] = useState("");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
 
   const {
     getRecentEntries,
@@ -304,8 +305,7 @@ export function PracticeIntensityCard({
       return;
     }
 
-    setSaving(true);
-    try {
+    await executeSave(async () => {
       addEntry({
         date,
         intensity,
@@ -316,11 +316,7 @@ export function PracticeIntensityCard({
       toast.success("연습 강도가 저장되었습니다.");
       setShowForm(false);
       resetForm();
-    } catch {
-      toast.error("저장 중 오류가 발생했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   function handleRemove(id: string) {

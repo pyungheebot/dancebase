@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, startTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { useBoardCategories } from "@/hooks/use-board";
 import { useFormDraft } from "@/hooks/use-form-draft";
 import type { BoardPost } from "@/types";
@@ -68,7 +69,7 @@ export function BoardPostForm({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("미분류");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   // 드래프트 훅 - 새 글 작성 모드에서만 활성화
   const draftKey = `draft-board-post-${groupId}${projectId ? `-${projectId}` : ""}`;
@@ -95,25 +96,29 @@ export function BoardPostForm({
 
   useEffect(() => {
     if (open && mode === "edit" && initialData) {
-      setTitle(initialData.title);
-      setContent(initialData.content);
-      setCategory(initialData.category);
-      setPublishedAt(initialData.published_at ?? null);
+      startTransition(() => {
+        setTitle(initialData.title);
+        setContent(initialData.content);
+        setCategory(initialData.category);
+        setPublishedAt(initialData.published_at ?? null);
+      });
     }
     if (open && mode === "create") {
-      setTitle("");
-      setContent("");
-      // writeCategories에 "미분류"가 있으면 기본값, 없으면 첫 번째 카테고리
       const defaultCat = writeCategories.includes("미분류")
         ? "미분류"
         : (writeCategories[0] ?? "미분류");
-      setCategory(defaultCat);
-      setPublishedAt(null);
-      setPollOptions([""]);
-      setAllowMultiple(false);
-      setPollEndsAt(null);
-      setCustomEndsAt("");
-      setPendingFiles([]);
+      startTransition(() => {
+        setTitle("");
+        setContent("");
+        // writeCategories에 "미분류"가 있으면 기본값, 없으면 첫 번째 카테고리
+        setCategory(defaultCat);
+        setPublishedAt(null);
+        setPollOptions([""]);
+        setAllowMultiple(false);
+        setPollEndsAt(null);
+        setCustomEndsAt("");
+        setPendingFiles([]);
+      });
 
       // 드래프트가 있으면 복원 여부를 묻는 토스트 표시
       if (hasDraft) {
@@ -266,160 +271,154 @@ export function BoardPostForm({
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
-    setSubmitting(true);
 
-    if (mode === "edit" && initialData) {
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
+    await execute(async () => {
+      if (mode === "edit" && initialData) {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
 
-      // 수정 전 내용을 리비전으로 저장
-      if (currentUser) {
-        await savePostRevision({
-          postId: initialData.id,
-          title: initialData.title,
-          content: initialData.content,
-          revisedBy: currentUser.id,
-        });
-        invalidatePostRevisions(initialData.id);
-      }
+        // 수정 전 내용을 리비전으로 저장
+        if (currentUser) {
+          await savePostRevision({
+            postId: initialData.id,
+            title: initialData.title,
+            content: initialData.content,
+            revisedBy: currentUser.id,
+          });
+          invalidatePostRevisions(initialData.id);
+        }
 
-      const { error } = await supabase
-        .from("board_posts")
-        .update({
-          title: title.trim(),
-          content: content.trim(),
-          category,
-          published_at: publishedAt ?? null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", initialData.id);
+        const { error } = await supabase
+          .from("board_posts")
+          .update({
+            title: title.trim(),
+            content: content.trim(),
+            category,
+            published_at: publishedAt ?? null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", initialData.id);
 
-      if (error) {
-        toast.error("글 수정에 실패했습니다");
-        setSubmitting(false);
+        if (error) {
+          toast.error("글 수정에 실패했습니다");
+          return;
+        }
+
+        // 수정 모드에서도 새 파일 업로드 가능
+        if (pendingFiles.length > 0) {
+          await uploadFiles(initialData.id);
+        }
+
+        setOpen(false);
+        onCreated();
         return;
       }
 
-      // 수정 모드에서도 새 파일 업로드 가능
-      if (pendingFiles.length > 0) {
-        await uploadFiles(initialData.id);
+      // create mode
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: post, error } = await supabase
+        .from("board_posts")
+        .insert({
+          group_id: groupId,
+          project_id: projectId || null,
+          category,
+          author_id: user.id,
+          title: title.trim(),
+          content: content.trim(),
+          published_at: publishedAt ?? null,
+        })
+        .select("id")
+        .single();
+
+      if (error || !post) {
+        toast.error("글 작성에 실패했습니다");
+        return;
       }
 
-      setSubmitting(false);
-      setOpen(false);
-      onCreated();
-      return;
-    }
+      // 투표 생성
+      if (isVote) {
+        const validOptions = pollOptions.filter((o) => o.trim());
+        if (validOptions.length >= 2) {
+          const { data: poll } = await supabase
+            .from("board_polls")
+            .insert({
+              post_id: post.id,
+              allow_multiple: allowMultiple,
+              ends_at: pollEndsAt ?? null,
+            })
+            .select("id")
+            .single();
 
-    // create mode
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setSubmitting(false);
-      return;
-    }
+          if (poll) {
+            await supabase.from("board_poll_options").insert(
+              validOptions.map((text, idx) => ({
+                poll_id: poll.id,
+                text: text.trim(),
+                sort_order: idx,
+              }))
+            );
+          }
+        }
+      }
 
-    const { data: post, error } = await supabase
-      .from("board_posts")
-      .insert({
-        group_id: groupId,
-        project_id: projectId || null,
-        category,
-        author_id: user.id,
-        title: title.trim(),
-        content: content.trim(),
-        published_at: publishedAt ?? null,
-      })
-      .select("id")
-      .single();
+      // 파일 업로드
+      await uploadFiles(post.id);
 
-    if (error || !post) {
-      toast.error("글 작성에 실패했습니다");
-      setSubmitting(false);
-      return;
-    }
+      // 공지사항 카테고리 게시글 작성 시 그룹 멤버 전체에게 알림 (즉시 발행인 경우만)
+      if (category === "공지사항" && !publishedAt) {
+        const { data: members } = await supabase
+          .from("group_members")
+          .select("user_id")
+          .eq("group_id", groupId);
 
-    // 투표 생성
-    if (isVote) {
-      const validOptions = pollOptions.filter((o) => o.trim());
-      if (validOptions.length >= 2) {
-        const { data: poll } = await supabase
-          .from("board_polls")
-          .insert({
-            post_id: post.id,
-            allow_multiple: allowMultiple,
-            ends_at: pollEndsAt ?? null,
-          })
-          .select("id")
-          .single();
+        if (members && members.length > 0) {
+          const authorName =
+            (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
+          const postPath = projectId
+            ? `/groups/${groupId}/projects/${projectId}/board/${post.id}`
+            : `/groups/${groupId}/board/${post.id}`;
 
-        if (poll) {
-          await supabase.from("board_poll_options").insert(
-            validOptions.map((text, idx) => ({
-              poll_id: poll.id,
-              text: text.trim(),
-              sort_order: idx,
-            }))
+          // 본인 제외 멤버에게 알림
+          const otherMembers = members.filter((m: { user_id: string }) => m.user_id !== user.id);
+          await Promise.all(
+            otherMembers.map((m: { user_id: string }) =>
+              createNotification({
+                userId: m.user_id,
+                type: "new_post",
+                title: "새 공지",
+                message: `${authorName}님이 공지사항을 작성했습니다: ${title.trim()}`,
+                link: postPath,
+              })
+            )
           );
         }
       }
-    }
 
-    // 파일 업로드
-    await uploadFiles(post.id);
+      // 제출 성공 후 드래프트 삭제
+      clearDraft();
 
-    // 공지사항 카테고리 게시글 작성 시 그룹 멤버 전체에게 알림 (즉시 발행인 경우만)
-    if (category === "공지사항" && !publishedAt) {
-      const { data: members } = await supabase
-        .from("group_members")
-        .select("user_id")
-        .eq("group_id", groupId);
+      setTitle("");
+      setContent("");
+      setCategory("미분류");
+      setPublishedAt(null);
+      setPollOptions([""]);
+      setAllowMultiple(false);
+      setPollEndsAt(null);
+      setCustomEndsAt("");
+      setPendingFiles([]);
+      setOpen(false);
 
-      if (members && members.length > 0) {
-        const authorName =
-          (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
-        const postPath = projectId
-          ? `/groups/${groupId}/projects/${projectId}/board/${post.id}`
-          : `/groups/${groupId}/board/${post.id}`;
-
-        // 본인 제외 멤버에게 알림
-        const otherMembers = members.filter((m: { user_id: string }) => m.user_id !== user.id);
-        await Promise.all(
-          otherMembers.map((m: { user_id: string }) =>
-            createNotification({
-              userId: m.user_id,
-              type: "new_post",
-              title: "새 공지",
-              message: `${authorName}님이 공지사항을 작성했습니다: ${title.trim()}`,
-              link: postPath,
-            })
-          )
-        );
+      if (publishedAt && new Date(publishedAt) > new Date()) {
+        toast.success(`글이 예약되었습니다. ${new Date(publishedAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })} 발행 예정`);
       }
-    }
 
-    // 제출 성공 후 드래프트 삭제
-    clearDraft();
-
-    setTitle("");
-    setContent("");
-    setCategory("미분류");
-    setPublishedAt(null);
-    setPollOptions([""]);
-    setAllowMultiple(false);
-    setPollEndsAt(null);
-    setCustomEndsAt("");
-    setPendingFiles([]);
-    setSubmitting(false);
-    setOpen(false);
-
-    if (publishedAt && new Date(publishedAt) > new Date()) {
-      toast.success(`글이 예약되었습니다. ${new Date(publishedAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })} 발행 예정`);
-    }
-
-    onCreated();
+      onCreated();
+    });
   };
 
   const dialogContent = (

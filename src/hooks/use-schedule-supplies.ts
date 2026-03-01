@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import type { ScheduleSupplyItem, ScheduleSupplyList } from "@/types";
 
 const MAX_ITEMS_PER_SCHEDULE = 20;
@@ -35,36 +35,18 @@ function saveToStorage(list: ScheduleSupplyList): void {
 
 export function useScheduleSupplies(groupId: string, scheduleId: string) {
   const [allItems, setAllItems] = useState<ScheduleSupplyItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !scheduleId) {
-      setLoading(false);
-      return;
-    }
-    const stored = loadFromStorage(groupId);
-    if (stored) {
-      setAllItems(stored.items);
-    } else {
-      setAllItems([]);
-    }
-    setLoading(false);
-  }, [groupId, scheduleId]);
 
   /** 저장 헬퍼: 전체 items 배열을 받아 storage에 저장하고 state 갱신 */
-  const persist = useCallback(
-    (nextItems: ScheduleSupplyItem[]) => {
-      const list: ScheduleSupplyList = {
-        groupId,
-        items: nextItems,
-        updatedAt: new Date().toISOString(),
-      };
-      saveToStorage(list);
-      setAllItems([...nextItems]);
-    },
-    [groupId]
-  );
+  function persist(nextItems: ScheduleSupplyItem[]) {
+    const list: ScheduleSupplyList = {
+      groupId,
+      items: nextItems,
+      updatedAt: new Date().toISOString(),
+    };
+    saveToStorage(list);
+    setAllItems([...nextItems]);
+  }
 
   /** 현재 scheduleId에 해당하는 항목만 필터링 (생성 순 정렬) */
   const items = allItems
@@ -72,49 +54,40 @@ export function useScheduleSupplies(groupId: string, scheduleId: string) {
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
   /** 준비물 추가 */
-  const addItem = useCallback(
-    (name: string, assignee?: string): boolean => {
-      const trimmedName = name.trim();
-      if (!trimmedName) return false;
+  function addItem(name: string, assignee?: string): boolean {
+    const trimmedName = name.trim();
+    if (!trimmedName) return false;
 
-      const currentCount = allItems.filter(
-        (it) => it.scheduleId === scheduleId
-      ).length;
-      if (currentCount >= MAX_ITEMS_PER_SCHEDULE) return false;
+    const currentCount = allItems.filter(
+      (it) => it.scheduleId === scheduleId
+    ).length;
+    if (currentCount >= MAX_ITEMS_PER_SCHEDULE) return false;
 
-      const newItem: ScheduleSupplyItem = {
-        id: generateId(),
-        scheduleId,
-        name: trimmedName,
-        checked: false,
-        assignee: assignee?.trim() || undefined,
-        createdAt: new Date().toISOString(),
-      };
-      persist([...allItems, newItem]);
-      return true;
-    },
-    [allItems, scheduleId, persist]
-  );
+    const newItem: ScheduleSupplyItem = {
+      id: generateId(),
+      scheduleId,
+      name: trimmedName,
+      checked: false,
+      assignee: assignee?.trim() || undefined,
+      createdAt: new Date().toISOString(),
+    };
+    persist([...allItems, newItem]);
+    return true;
+  }
 
   /** 준비물 삭제 */
-  const removeItem = useCallback(
-    (id: string): void => {
-      persist(allItems.filter((it) => it.id !== id));
-    },
-    [allItems, persist]
-  );
+  function removeItem(id: string): void {
+    persist(allItems.filter((it) => it.id !== id));
+  }
 
   /** 체크 토글 */
-  const toggleItem = useCallback(
-    (id: string): void => {
-      persist(
-        allItems.map((it) =>
-          it.id === id ? { ...it, checked: !it.checked } : it
-        )
-      );
-    },
-    [allItems, persist]
-  );
+  function toggleItem(id: string): void {
+    persist(
+      allItems.map((it) =>
+        it.id === id ? { ...it, checked: !it.checked } : it
+      )
+    );
+  }
 
   const doneCount = items.filter((it) => it.checked).length;
   const totalCount = items.length;
@@ -124,7 +97,7 @@ export function useScheduleSupplies(groupId: string, scheduleId: string) {
 
   return {
     items,
-    loading,
+    loading: false,
     addItem,
     removeItem,
     toggleItem,

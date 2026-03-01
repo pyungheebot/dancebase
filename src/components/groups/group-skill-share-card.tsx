@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import { ChevronDown, ChevronUp, Plus, Trash2, BookOpen, Users } from "lucide-react";
 
@@ -93,7 +94,7 @@ function AddSkillDialog({
   const [difficulty, setDifficulty] = useState<SkillShareDifficulty>("초급");
   const [providerName, setProviderName] = useState("");
   const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
 
   function reset() {
     setSkillName("");
@@ -112,17 +113,16 @@ function AddSkillDialog({
       toast.error("제공자명을 입력해주세요.");
       return;
     }
-    setLoading(true);
-    try {
-      await onAdd({ skillName: skillName.trim(), category, difficulty, providerName: providerName.trim(), description: description.trim() });
-      toast.success("스킬이 등록되었습니다.");
-      reset();
-      setOpen(false);
-    } catch {
-      toast.error("스킬 등록에 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
+    await execute(async () => {
+      try {
+        await onAdd({ skillName: skillName.trim(), category, difficulty, providerName: providerName.trim(), description: description.trim() });
+        toast.success("스킬이 등록되었습니다.");
+        reset();
+        setOpen(false);
+      } catch {
+        toast.error("스킬 등록에 실패했습니다.");
+      }
+    });
   }
 
   return (
@@ -217,24 +217,23 @@ function AddRequestDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [requesterName, setRequesterName] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute: executeRequest } = useAsyncAction();
 
   async function handleSubmit() {
     if (!requesterName.trim()) {
       toast.error("요청자명을 입력해주세요.");
       return;
     }
-    setLoading(true);
-    try {
-      await onAdd(skill.id, requesterName.trim());
-      toast.success("학습 요청이 접수되었습니다.");
-      setRequesterName("");
-      setOpen(false);
-    } catch {
-      toast.error("학습 요청에 실패했습니다.");
-    } finally {
-      setLoading(false);
-    }
+    await executeRequest(async () => {
+      try {
+        await onAdd(skill.id, requesterName.trim());
+        toast.success("학습 요청이 접수되었습니다.");
+        setRequesterName("");
+        setOpen(false);
+      } catch {
+        toast.error("학습 요청에 실패했습니다.");
+      }
+    });
   }
 
   return (

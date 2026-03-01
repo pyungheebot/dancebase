@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { PeerFeedback, PeerFeedbackType } from "@/types";
 
 // ============================================
@@ -45,19 +45,13 @@ function saveFeedbacks(groupId: string, feedbacks: PeerFeedback[]): void {
 // ============================================
 
 export function usePeerFeedback(groupId: string) {
-  const [feedbacks, setFeedbacks] = useState<PeerFeedback[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [feedbacks, setFeedbacks] = useState<PeerFeedback[]>(() => loadFeedbacks(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadFeedbacks(groupId);
     setFeedbacks(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   /** 피드백 전송 */
   const sendFeedback = useCallback(
@@ -133,7 +127,7 @@ export function usePeerFeedback(groupId: string) {
 
   return {
     feedbacks,
-    loading,
+    loading: false,
     sendFeedback,
     getMyFeedback,
     getSentFeedback,

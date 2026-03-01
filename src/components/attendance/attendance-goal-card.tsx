@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useAttendanceGoal } from "@/hooks/use-attendance-goals";
 import { invalidateAttendanceGoal } from "@/lib/swr/invalidate";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 type AttendanceGoalCardProps = {
   groupId: string;
@@ -97,7 +98,7 @@ export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps
   const [editMode, setEditMode] = useState(false);
   const [targetRateInput, setTargetRateInput] = useState("");
   const [periodInput, setPeriodInput] = useState<"monthly" | "quarterly">("monthly");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   const supabase = createClient();
 
@@ -115,8 +116,7 @@ export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps
       return;
     }
 
-    setSaving(true);
-    try {
+    await execute(async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -153,15 +153,12 @@ export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps
       setEditMode(false);
       invalidateAttendanceGoal(groupId);
       refetch();
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   const handleDelete = async () => {
     if (!data?.goal) return;
-    setSaving(true);
-    try {
+    await execute(async () => {
       const { error } = await supabase
         .from("attendance_goals")
         .delete()
@@ -174,9 +171,7 @@ export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps
       setEditMode(false);
       invalidateAttendanceGoal(groupId);
       refetch();
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   if (loading) {

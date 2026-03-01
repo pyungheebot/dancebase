@@ -14,7 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { toast } from "sonner";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import {
   ChevronDown,
   ChevronUp,
@@ -228,15 +228,14 @@ function StarDisplay({ value }: { value: number }) {
 export function PracticeWeeklyDigestCard() {
   const { digest, loading } = usePracticeWeeklyDigest();
   const [open, setOpen] = useState(true);
+  const { copy } = useCopyToClipboard({
+    successMessage: "요약이 클립보드에 복사되었습니다.",
+    errorMessage: "복사에 실패했습니다. 브라우저 권한을 확인해주세요.",
+  });
 
   async function handleCopy() {
     if (!digest) return;
-    try {
-      await navigator.clipboard.writeText(digest.summaryText);
-      toast.success("요약이 클립보드에 복사되었습니다.");
-    } catch {
-      toast.error("복사에 실패했습니다. 브라우저 권한을 확인해주세요.");
-    }
+    await copy(digest.summaryText);
   }
 
   // 주차 표시 (예: "2/24~3/1")

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   TrendingUp,
   TrendingDown,
@@ -108,7 +109,7 @@ function TransactionDialog({
         }
       : EMPTY_FORM
   );
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   const isEdit = !!initial;
 
@@ -137,24 +138,23 @@ function TransactionDialog({
       return;
     }
 
-    setSaving(true);
-    try {
-      await onSubmit({
-        type: form.type,
-        category: form.category,
-        description: form.description.trim(),
-        amount: parsedAmount,
-        date: form.date,
-        paidBy: form.paidBy.trim() || null,
-        receiptNote: form.receiptNote.trim() || null,
-      });
-      toast.success(isEdit ? "거래가 수정되었습니다" : "거래가 추가되었습니다");
-      onClose();
-    } catch {
-      toast.error("저장에 실패했습니다");
-    } finally {
-      setSaving(false);
-    }
+    await execute(async () => {
+      try {
+        await onSubmit({
+          type: form.type,
+          category: form.category,
+          description: form.description.trim(),
+          amount: parsedAmount,
+          date: form.date,
+          paidBy: form.paidBy.trim() || null,
+          receiptNote: form.receiptNote.trim() || null,
+        });
+        toast.success(isEdit ? "거래가 수정되었습니다" : "거래가 추가되었습니다");
+        onClose();
+      } catch {
+        toast.error("저장에 실패했습니다");
+      }
+    });
   }
 
   return (

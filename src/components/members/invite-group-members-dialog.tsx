@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,7 +35,7 @@ export function InviteGroupMembersDialog({
 }: InviteGroupMembersDialogProps) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const toggleAllRef = useRef<HTMLButtonElement>(null);
@@ -66,26 +67,25 @@ export function InviteGroupMembersDialog({
 
   const handleInvite = async () => {
     if (selected.size === 0) return;
-    setSubmitting(true);
+    await execute(async () => {
+      const supabase = createClient();
+      const rows = Array.from(selected).map((userId) => ({
+        project_id: projectId,
+        user_id: userId,
+        role: "member" as const,
+      }));
 
-    const supabase = createClient();
-    const rows = Array.from(selected).map((userId) => ({
-      project_id: projectId,
-      user_id: userId,
-      role: "member" as const,
-    }));
+      const { error } = await supabase.from("project_members").insert(rows);
 
-    const { error } = await supabase.from("project_members").insert(rows);
-
-    if (error) {
-      toast.error("멤버 초대에 실패했습니다");
-    } else {
+      if (error) {
+        toast.error("멤버 초대에 실패했습니다");
+        return;
+      }
       toast.success(`${selected.size}명의 멤버를 초대했습니다`);
       setSelected(new Set());
       setOpen(false);
       onInvited();
-    }
-    setSubmitting(false);
+    });
   };
 
   const handleOpenChange = (next: boolean) => {

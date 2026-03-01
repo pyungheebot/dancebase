@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +31,7 @@ export function DashboardSettingsDialog({ allCards, saving, onSave }: Props) {
 
   useEffect(() => {
     if (open) {
-      setCards(allCards);
+      startTransition(() => { setCards(allCards); });
     }
   }, [open, allCards]);
 

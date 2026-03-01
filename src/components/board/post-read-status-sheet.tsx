@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { Eye, EyeOff, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -127,9 +126,7 @@ export function PostReadStatusSheet({
                           <p className="text-xs font-medium truncate">{member.name}</p>
                           {member.readAt && (
                             <p className="text-[10px] text-muted-foreground">
-                              {format(new Date(member.readAt), "M/d HH:mm", {
-                                locale: ko,
-                              })}
+                              {formatKo(new Date(member.readAt), "M/d HH:mm")}
                             </p>
                           )}
                         </div>

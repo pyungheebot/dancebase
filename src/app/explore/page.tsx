@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, startTransition } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -40,9 +41,9 @@ export default function ExplorePage() {
   const [publicProjects, setPublicProjects] = useState<PublicProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery);
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
-  const [debouncedProjectSearchQuery, setDebouncedProjectSearchQuery] = useState("");
+  const debouncedProjectSearchQuery = useDebounce(projectSearchQuery);
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [joining, setJoining] = useState<string | null>(null);
   const [requestedGroups, setRequestedGroups] = useState<Set<string>>(new Set());
@@ -65,21 +66,6 @@ export default function ExplorePage() {
     fetchMyRequests();
   }, [supabase]);
 
-  // 검색어 debounce (300ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedProjectSearchQuery(projectSearchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [projectSearchQuery]);
-
   const fetchPublicGroups = useCallback(async () => {
     setLoading(true);
 
@@ -96,7 +82,7 @@ export default function ExplorePage() {
   }, [supabase, debouncedSearchQuery, selectedGenre]);
 
   useEffect(() => {
-    if (tab === "groups") fetchPublicGroups();
+    if (tab === "groups") startTransition(() => { fetchPublicGroups(); });
   }, [fetchPublicGroups, tab]);
 
   const fetchPublicProjects = useCallback(async () => {
@@ -109,7 +95,7 @@ export default function ExplorePage() {
   }, [supabase, debouncedProjectSearchQuery]);
 
   useEffect(() => {
-    if (tab === "projects") fetchPublicProjects();
+    if (tab === "projects") startTransition(() => { fetchPublicProjects(); });
   }, [fetchPublicProjects, tab]);
 
   const handleJoin = async (group: PublicGroup) => {

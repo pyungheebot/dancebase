@@ -31,6 +31,7 @@ import {
   Square,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
 // 별점 컴포넌트
@@ -427,15 +428,14 @@ function RetroRow({
   onDelete,
 }: RetroRowProps) {
   const [expanded, setExpanded] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const keepCount = retro.items.filter((i) => i.category === "keep").length;
   const problemCount = retro.items.filter((i) => i.category === "problem").length;
   const tryCount = retro.items.filter((i) => i.category === "try").length;
 
   const handleDelete = () => {
-    if (confirm(`"${retro.performanceTitle}" 회고를 삭제하시겠습니까?`)) {
-      onDelete(retro.id);
-    }
+    onDelete(retro.id);
   };
 
   return (
@@ -502,10 +502,18 @@ function RetroRow({
             onAddItem={(cat, content) => onAddItem(retro.id, cat, content)}
             onVote={(itemId) => onVote(retro.id, itemId)}
             onAddAction={(action) => onAddAction(retro.id, action)}
-            onDelete={handleDelete}
+            onDelete={() => setDeleteConfirmOpen(true)}
           />
         </div>
       )}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="회고 삭제"
+        description={`"${retro.performanceTitle}" 회고를 삭제하시겠습니까?`}
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Dialog,
   DialogContent,
@@ -41,47 +42,43 @@ export function ContentReportDialog({
 }: ContentReportDialogProps) {
   const [reason, setReason] = useState<ReportReason>("spam");
   const [description, setDescription] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const handleSubmit = async () => {
-    if (submitting) return;
-    setSubmitting(true);
+    await execute(async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      toast.error("로그인이 필요합니다");
-      setSubmitting(false);
-      return;
-    }
-
-    const { error } = await supabase.from("content_reports").insert({
-      group_id: groupId,
-      target_type: targetType,
-      target_id: targetId,
-      reporter_id: user.id,
-      reason,
-      description: description.trim() || null,
-    });
-
-    if (error) {
-      if (error.code === "23505") {
-        toast.error("이미 신고한 콘텐츠입니다");
-      } else {
-        toast.error("신고 제출에 실패했습니다");
+      if (!user) {
+        toast.error("로그인이 필요합니다");
+        return;
       }
-      setSubmitting(false);
-      return;
-    }
 
-    toast.success("신고가 접수되었습니다");
-    setReason("spam");
-    setDescription("");
-    setSubmitting(false);
-    onOpenChange(false);
+      const { error } = await supabase.from("content_reports").insert({
+        group_id: groupId,
+        target_type: targetType,
+        target_id: targetId,
+        reporter_id: user.id,
+        reason,
+        description: description.trim() || null,
+      });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("이미 신고한 콘텐츠입니다");
+        } else {
+          toast.error("신고 제출에 실패했습니다");
+        }
+        return;
+      }
+
+      toast.success("신고가 접수되었습니다");
+      setReason("spam");
+      setDescription("");
+      onOpenChange(false);
+    });
   };
 
   const handleClose = () => {

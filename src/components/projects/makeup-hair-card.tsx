@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -425,15 +425,17 @@ function DonutChart({ data, total }: DonutChartProps) {
   }
 
   // 각 세그먼트의 각도 계산 (원형 진행도 → 여러 색으로 분할)
-  let cumulative = 0;
   const segments = data
     .filter((d) => d.value > 0)
-    .map((d) => {
-      const pct = (d.value / total) * 100;
-      const start = cumulative;
-      cumulative += pct;
-      return { ...d, pct, start };
-    });
+    .reduce<{ label: string; value: number; color: string; pct: number; start: number }[]>(
+      (acc, d) => {
+        const pct = (d.value / total) * 100;
+        const start = acc.length > 0 ? acc[acc.length - 1].start + acc[acc.length - 1].pct : 0;
+        acc.push({ ...d, pct, start });
+        return acc;
+      },
+      []
+    );
 
   // conic-gradient 문자열 생성
   const gradient = segments
@@ -616,14 +618,14 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
       ? Math.round((stats.checklistDone / stats.checklistTotal) * 100)
       : 0;
 
-  // 탭 목록
-  const tabs: { key: TabType; label: string; icon: React.ReactNode }[] = [
-    { key: "plans", label: "플랜", icon: <Sparkles className="h-3 w-3" /> },
-    { key: "timeline", label: "타임라인", icon: <Clock className="h-3 w-3" /> },
-    { key: "checklist", label: "준비물", icon: <CheckSquare className="h-3 w-3" /> },
-    { key: "artists", label: "아티스트", icon: <User className="h-3 w-3" /> },
-    { key: "stats", label: "통계", icon: <BarChart2 className="h-3 w-3" /> },
-  ];
+  // 탭 목록 - useMemo로 감싸 렌더마다 새 JSX 배열 생성 방지
+  const tabs: { key: TabType; label: string; icon: React.ReactNode }[] = useMemo(() => [
+    { key: "plans" as TabType, label: "플랜", icon: <Sparkles className="h-3 w-3" /> },
+    { key: "timeline" as TabType, label: "타임라인", icon: <Clock className="h-3 w-3" /> },
+    { key: "checklist" as TabType, label: "준비물", icon: <CheckSquare className="h-3 w-3" /> },
+    { key: "artists" as TabType, label: "아티스트", icon: <User className="h-3 w-3" /> },
+    { key: "stats" as TabType, label: "통계", icon: <BarChart2 className="h-3 w-3" /> },
+  ], []);
 
   // 타임라인 정렬 (시작 시간 순)
   const sortedTimeline = [...data.timeline].sort((a, b) =>

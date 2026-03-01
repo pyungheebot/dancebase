@@ -102,9 +102,9 @@ export function FinanceTransactionForm({
       setDate(initialData.transaction_date);
     }
     if (open && !isEdit) {
+      // eslint-disable-next-line react-hooks/immutability -- reset은 useEffect 이후 선언된 const이므로 호출 위치 변경 불가
       reset();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isEdit, initialData]);
 
   const reset = () => {

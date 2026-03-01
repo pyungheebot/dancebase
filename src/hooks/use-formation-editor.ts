@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { FormationProject, FormationScene, FormationPosition } from "@/types";
 
 const MAX_SCENES = 10;
@@ -35,18 +35,7 @@ function saveProject(
 
 export function useFormationEditor(groupId: string, projectId: string) {
   const [project, setProject] = useState<FormationProject>({ scenes: [], updatedAt: "" });
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !projectId) {
-      setLoading(false);
-      return;
-    }
-    const stored = loadProject(groupId, projectId);
-    setProject(stored);
-    setLoading(false);
-  }, [groupId, projectId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateProject = useCallback(
@@ -182,7 +171,7 @@ export function useFormationEditor(groupId: string, projectId: string) {
 
   return {
     scenes: project.scenes,
-    loading,
+    loading: false,
     canAddScene: project.scenes.length < MAX_SCENES,
     addScene,
     deleteScene,

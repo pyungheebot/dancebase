@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
@@ -60,36 +60,17 @@ export type PhotoShootPlanInput = {
 // ============================================
 
 export function usePhotoShoot(projectId: string) {
-  const [data, setData] = useState<PhotoShootData | null>(null);
-  const [initialized, setInitialized] = useState(false);
-
   // SWR 캐시 관리 (fetcher는 localStorage에서 읽음)
-  const { data: swrData, mutate } = useSWR(
+  const { data, mutate } = useSWR(
     swrKeys.photoShootPlan(projectId),
     () => loadFromStorage(projectId),
     { revalidateOnFocus: false }
   );
 
-  // 마운트 시 초기화
-  useEffect(() => {
-    if (!initialized) {
-      setData(loadFromStorage(projectId));
-      setInitialized(true);
-    }
-  }, [projectId, initialized]);
-
-  // SWR 데이터가 업데이트될 때 동기화
-  useEffect(() => {
-    if (swrData) {
-      setData(swrData);
-    }
-  }, [swrData]);
-
   // 내부 저장 헬퍼
   const persist = useCallback(
     (next: PhotoShootData) => {
       saveToStorage(next);
-      setData(next);
       mutate(next, false);
     },
     [mutate]
@@ -238,7 +219,7 @@ export function usePhotoShoot(projectId: string) {
     plans: current.plans,
     photographerName: current.photographerName,
     updatedAt: current.updatedAt,
-    loading: !initialized,
+    loading: false,
     totalPlans,
     completedCount,
     typeDistribution,

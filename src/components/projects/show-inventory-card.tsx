@@ -43,6 +43,7 @@ import {
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
 // 카테고리 헬퍼
@@ -501,6 +502,7 @@ export function ShowInventoryCard({
   const [open, setOpen] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<ShowInventoryCategory | "all">("all");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const {
     items,
@@ -537,11 +539,11 @@ export function ShowInventoryCard({
     }
   };
 
-  const handleDeleteItem = (id: string) => {
-    if (confirm("이 물품을 삭제하시겠습니까?")) {
-      deleteItem(id);
-      toast.success("물품이 삭제되었습니다.");
-    }
+  const handleDeleteItem = () => {
+    if (!deleteConfirmId) return;
+    deleteItem(deleteConfirmId);
+    toast.success("물품이 삭제되었습니다.");
+    setDeleteConfirmId(null);
   };
 
   const handleTogglePacked = (id: string, packedBy: string) => {
@@ -746,7 +748,7 @@ export function ShowInventoryCard({
                             item={item}
                             memberNames={memberNames}
                             onTogglePacked={handleTogglePacked}
-                            onDelete={handleDeleteItem}
+                            onDelete={setDeleteConfirmId}
                           />
                         ))}
                       </div>
@@ -765,6 +767,14 @@ export function ShowInventoryCard({
           </div>
         </CollapsibleContent>
       </Collapsible>
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onOpenChange={(v) => !v && setDeleteConfirmId(null)}
+        title="물품 삭제"
+        description="이 물품을 삭제하시겠습니까?"
+        onConfirm={handleDeleteItem}
+        destructive
+      />
     </>
   );
 }

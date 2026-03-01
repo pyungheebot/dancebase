@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { ShowGalleryAlbum, ShowGalleryPhoto, ShowGalleryCategory } from "@/types";
 
 // ============================================================
@@ -50,19 +50,13 @@ export type ShowGalleryStats = {
 // ============================================================
 
 export function useShowGallery(groupId: string, projectId: string) {
-  const [albums, setAlbums] = useState<ShowGalleryAlbum[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [albums, setAlbums] = useState<ShowGalleryAlbum[]>(() => loadData(groupId, projectId));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
     const data = loadData(groupId, projectId);
     setAlbums(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: ShowGalleryAlbum[]) => {
@@ -240,7 +234,7 @@ export function useShowGallery(groupId: string, projectId: string) {
 
   return {
     albums,
-    loading,
+    loading: false,
     createAlbum,
     deleteAlbum,
     addPhoto,

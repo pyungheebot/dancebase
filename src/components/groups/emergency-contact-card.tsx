@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Phone,
   Plus,
@@ -38,6 +39,7 @@ import {
   useEmergencyContact,
   type AddEmergencyContactInput,
 } from "@/hooks/use-emergency-contact";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type {
   EmergencyContactEntry,
   EmergencyContactBloodType,
@@ -537,7 +539,7 @@ function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
 
           {/* 등록일 */}
           <p className="text-[10px] text-muted-foreground/60">
-            등록일: {new Date(entry.createdAt).toLocaleDateString("ko-KR")}
+            등록일: {formatYearMonthDay(entry.createdAt)}
           </p>
         </div>
       )}
@@ -560,7 +562,7 @@ export function EmergencyContactCard({ groupId }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<AddEmergencyContactInput>(DEFAULT_FORM);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [filterBlood, setFilterBlood] = useState<EmergencyContactBloodType | "all">("all");
   const [filterMedical, setFilterMedical] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -580,13 +582,13 @@ export function EmergencyContactCard({ groupId }: Props) {
 
   // ── 추가 처리 ──
   const handleAdd = async () => {
-    setSubmitting(true);
-    const ok = await addContact(form);
-    setSubmitting(false);
-    if (ok) {
-      setForm(DEFAULT_FORM);
-      setShowForm(false);
-    }
+    await execute(async () => {
+      const ok = await addContact(form);
+      if (ok) {
+        setForm(DEFAULT_FORM);
+        setShowForm(false);
+      }
+    });
   };
 
   // ── 수정 처리 ──
@@ -616,13 +618,13 @@ export function EmergencyContactCard({ groupId }: Props) {
 
   const handleUpdate = async () => {
     if (!editingId) return;
-    setSubmitting(true);
-    const ok = await updateContact(editingId, form);
-    setSubmitting(false);
-    if (ok) {
-      setEditingId(null);
-      setForm(DEFAULT_FORM);
-    }
+    await execute(async () => {
+      const ok = await updateContact(editingId, form);
+      if (ok) {
+        setEditingId(null);
+        setForm(DEFAULT_FORM);
+      }
+    });
   };
 
   const handleCancelEdit = () => {

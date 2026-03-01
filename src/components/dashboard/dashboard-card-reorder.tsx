@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import {
   Sheet,
   SheetContent,
@@ -28,7 +28,7 @@ export function DashboardCardReorder({ cards, onMoveUp, onMoveDown, onReset }: P
 
   useEffect(() => {
     if (open) {
-      setLocalCards(cards);
+      startTransition(() => { setLocalCards(cards); });
     }
   }, [open, cards]);
 

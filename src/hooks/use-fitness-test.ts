@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { FitnessTestItem, FitnessTestResult, FitnessTestCategory } from "@/types";
 
 // ============================================================
@@ -115,21 +115,15 @@ export type FitnessTestStats = {
 // ============================================================
 
 export function useFitnessTest(groupId: string) {
-  const [testItems, setTestItems] = useState<FitnessTestItem[]>([]);
+  const [testItems, setTestItems] = useState<FitnessTestItem[]>(() => loadData(groupId).testItems);
   const [results, setResults] = useState<FitnessTestResult[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setTestItems(data.testItems);
     setResults(data.results);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
@@ -334,7 +328,7 @@ export function useFitnessTest(groupId: string) {
   return {
     testItems,
     results,
-    loading,
+    loading: false,
     addTestItem,
     deleteTestItem,
     addResult,

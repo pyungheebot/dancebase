@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { RunthroughSession, RunthroughNote } from "@/types";
 
 function getStorageKey(projectId: string): string {
@@ -34,15 +34,7 @@ export function useRunthroughSession(projectId: string) {
   const [currentSession, setCurrentSession] = useState<RunthroughSession | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    const all = loadSessions(projectId);
-    // 진행 중(endedAt === null) 세션이 있으면 currentSession으로 복원
-    const ongoing = all.find((s) => s.endedAt === null) ?? null;
-    const finished = all.filter((s) => s.endedAt !== null);
-    setCurrentSession(ongoing);
-    setSessions(finished);
-  }, [projectId]);
+
 
   // 새 세션 시작
   const startSession = useCallback(

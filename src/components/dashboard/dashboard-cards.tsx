@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import {
   Calendar,
   ClipboardCheck,
@@ -48,7 +48,7 @@ export function ScheduleCard({
                 className="flex items-center gap-1.5 text-[11px] hover:bg-muted rounded px-1.5 py-1 -mx-1.5"
               >
                 <span className="text-muted-foreground w-20 shrink-0 tabular-nums">
-                  {format(new Date(s.starts_at), "M/d(EEE) HH:mm", { locale: ko })}
+                  {formatKo(new Date(s.starts_at), "M/d(EEE) HH:mm")}
                 </span>
                 <span className="truncate">{s.title}</span>
                 {s.location && (
@@ -99,7 +99,7 @@ export function AttendanceCard({
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-[11px]">
               <span className="text-muted-foreground tabular-nums">
-                {format(new Date(schedule.starts_at), "M/d(EEE) HH:mm", { locale: ko })}
+                {formatKo(new Date(schedule.starts_at), "M/d(EEE) HH:mm")}
               </span>
               <span className="truncate">{schedule.title}</span>
             </div>

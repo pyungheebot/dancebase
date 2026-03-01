@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   ChoreographyDifficultyEntry,
   DifficultyCategory,
@@ -85,22 +85,14 @@ export function useChoreographyDifficulty(
   groupId: string,
   projectId: string
 ) {
-  const [entries, setEntries] = useState<ChoreographyDifficultyEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entries, setEntries] = useState<ChoreographyDifficultyEntry[]>(() =>
+    groupId && projectId ? loadEntries(groupId, projectId) : []
+  );
 
   const reload = useCallback(() => {
-    if (!groupId || !projectId) {
-      setLoading(false);
-      return;
-    }
-    const data = loadEntries(groupId, projectId);
-    setEntries(data);
-    setLoading(false);
+    if (!groupId || !projectId) return;
+    setEntries(loadEntries(groupId, projectId));
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   /** 평가 추가 — 최대 20개 초과 시 false 반환 */
   const addEntry = useCallback(
@@ -200,7 +192,7 @@ export function useChoreographyDifficulty(
 
   return {
     entries,
-    loading,
+    loading: false,
     canAdd,
     addEntry,
     updateEntry,

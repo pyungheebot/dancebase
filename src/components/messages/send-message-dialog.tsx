@@ -69,12 +69,12 @@ export function SendMessageDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>{receiverName}님에게 쪽지 보내기</DialogTitle>
+          <DialogTitle>{receiverName}님에게 메시지 보내기</DialogTitle>
         </DialogHeader>
 
         {sent ? (
           <div className="space-y-3 text-center py-2">
-            <p className="text-sm text-muted-foreground">쪽지를 보냈습니다</p>
+            <p className="text-sm text-muted-foreground">메시지를 보냈습니다</p>
             <div className="flex gap-2 justify-center">
               <Button variant="outline" size="sm" onClick={() => handleClose(false)}>
                 닫기
@@ -87,7 +87,7 @@ export function SendMessageDialog({
         ) : (
           <div className="space-y-3">
             <Textarea
-              placeholder="쪽지 내용을 입력하세요"
+              placeholder="메시지 내용을 입력하세요"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={4}

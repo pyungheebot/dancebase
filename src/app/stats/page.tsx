@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, startTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AppLayout } from "@/components/layout/app-layout";
 import {
@@ -348,13 +348,13 @@ export default function StatsPage() {
   }, [supabase]);
 
   useEffect(() => {
-    fetchStats();
+    startTransition(() => { fetchStats(); });
   }, [fetchStats]);
 
   // 그룹 운영 현황 탭 클릭 시 최초 1회만 조회
   useEffect(() => {
     if (activeTab === "group-overview" && !overviewLoaded) {
-      fetchOverviews();
+      startTransition(() => { fetchOverviews(); });
     }
   }, [activeTab, overviewLoaded, fetchOverviews]);
 

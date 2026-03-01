@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DanceStyleAnalysisData,
@@ -193,10 +193,6 @@ export function useDanceStyleAnalysis(memberId: string) {
     makeEmpty(memberId)
   );
 
-  // 초기 로드
-  useEffect(() => {
-    setData(loadData(memberId));
-  }, [memberId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateData = useCallback(

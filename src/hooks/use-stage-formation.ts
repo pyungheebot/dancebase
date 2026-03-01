@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   StageFormationPosition,
@@ -89,18 +89,12 @@ export function useStageFormation(projectId: string) {
   const [data, setData] = useState<StageFormationData>(() =>
     loadData(projectId)
   );
-  const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
     if (!projectId) return;
     const loaded = loadData(projectId);
     setData(loaded);
-    setLoading(false);
   }, [projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (updated: StageFormationData) => {
@@ -324,7 +318,7 @@ export function useStageFormation(projectId: string) {
     stageWidth: data.stageWidth,
     stageDepth: data.stageDepth,
     notes: data.notes,
-    loading,
+    loading: false,
     stats,
     addScene,
     updateScene,

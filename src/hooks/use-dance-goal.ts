@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DanceGoal,
@@ -48,7 +48,7 @@ function saveData(memberId: string, data: DanceGoalTrackerData): void {
 // ============================================================
 
 export function useDanceGoal(memberId: string) {
-  const [goals, setGoals] = useState<DanceGoal[]>([]);
+  const [goals, setGoals] = useState<DanceGoal[]>(() => loadData(memberId).goals);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
@@ -58,12 +58,7 @@ export function useDanceGoal(memberId: string) {
     }
     const data = loadData(memberId);
     setGoals(data.goals);
-    setLoading(false);
   }, [memberId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 persist 헬퍼
   const persist = useCallback(

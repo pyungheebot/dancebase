@@ -281,6 +281,7 @@ function ChallengeDetailDialog({
                         size="icon"
                         className="h-6 w-6 text-muted-foreground hover:text-destructive"
                         onClick={() => onRemoveParticipant(challenge.id, p.id)}
+                        aria-label="참가자 제거"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -505,6 +506,7 @@ function ChallengeItem({
             size="icon"
             className="h-6 w-6 text-muted-foreground"
             onClick={() => onEdit(challenge)}
+            aria-label="챌린지 수정"
           >
             <Pencil className="h-3 w-3" />
           </Button>
@@ -521,6 +523,7 @@ function ChallengeItem({
               }
             }}
             onBlur={() => setConfirmDelete(false)}
+            aria-label="챌린지 삭제"
           >
             <Trash2 className="h-3 w-3" />
           </Button>

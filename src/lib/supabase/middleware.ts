@@ -33,8 +33,11 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const publicPaths = ["/login", "/signup"];
-  const isPublicPath = publicPaths.includes(request.nextUrl.pathname);
+  const publicPaths = ["/login", "/signup", "/reset-password", "/update-password"];
+  const publicPrefixes = ["/join"];
+  const isPublicPath =
+    publicPaths.includes(request.nextUrl.pathname) ||
+    publicPrefixes.some((prefix) => request.nextUrl.pathname.startsWith(prefix));
 
   // 루트 경로: 로그인 여부에 따라 대시보드 또는 로그인으로 리다이렉트
   if (request.nextUrl.pathname === "/") {

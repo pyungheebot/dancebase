@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
 import {
   Cake,
@@ -246,9 +247,9 @@ function AddEntryForm({
   const [giftPreference, setGiftPreference] = useState("");
   const [note, setNote] = useState("");
   const [partyPlanned, setPartyPlanned] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!name.trim()) {
       toast.error("멤버 이름을 입력해주세요.");
       return;
@@ -263,8 +264,7 @@ function AddEntryForm({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       onAdd({
         name: name.trim(),
         birthday,
@@ -278,9 +278,7 @@ function AddEntryForm({
       setGiftPreference("");
       setNote("");
       setPartyPlanned(false);
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type { OnboardingTaskItem, OnboardingTasksData } from "@/types";
 
@@ -129,12 +129,7 @@ export function useOnboardingTasks(groupId: string, userId: string) {
   const [mounted, setMounted] = useState(false);
 
   // SSR 호환: 마운트 후 localStorage 읽기
-  useEffect(() => {
-    if (!groupId || !userId) return;
-    const loaded = loadData(groupId, userId);
-    setData(loaded);
-    setMounted(true);
-  }, [groupId, userId]);
+
 
   // 과제 완료 여부 토글
   const toggleTask = useCallback(

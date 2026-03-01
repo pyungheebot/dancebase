@@ -24,7 +24,7 @@ function qualityToScore(quality: SleepTrackerQuality): number {
 function calcDurationHours(bedtime: string, wakeTime: string): number {
   const [bH, bM] = bedtime.split(":").map(Number);
   const [wH, wM] = wakeTime.split(":").map(Number);
-  let bedMinutes = bH * 60 + bM;
+  const bedMinutes = bH * 60 + bM;
   let wakeMinutes = wH * 60 + wM;
   if (wakeMinutes <= bedMinutes) {
     wakeMinutes += 24 * 60;

@@ -45,6 +45,7 @@ import {
   CheckCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
 // 카테고리 헬퍼
@@ -597,6 +598,7 @@ function SessionPanel({
   onCompleteSession,
 }: SessionPanelProps) {
   const [expanded, setExpanded] = useState(true);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const isCompleted = !!session.completedAt;
   const totalItems = session.items.length;
@@ -624,10 +626,8 @@ function SessionPanel({
   ];
 
   const handleDelete = () => {
-    if (confirm(`"${session.eventName}" 세션을 삭제하시겠습니까?`)) {
-      onDeleteSession(session.id);
-      toast.success("세션이 삭제되었습니다.");
-    }
+    onDeleteSession(session.id);
+    toast.success("세션이 삭제되었습니다.");
   };
 
   const handleComplete = () => {
@@ -695,7 +695,7 @@ function SessionPanel({
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-            onClick={handleDelete}
+            onClick={() => setDeleteConfirmOpen(true)}
             title="세션 삭제"
           >
             <Trash2 className="h-3 w-3" />
@@ -814,6 +814,15 @@ function SessionPanel({
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="세션 삭제"
+        description={`"${session.eventName}" 세션을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+        onConfirm={handleDelete}
+        destructive
+      />
     </div>
   );
 }

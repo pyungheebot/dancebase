@@ -46,6 +46,32 @@ function getActivityColor(dateStr: string | null): string {
   return "text-muted-foreground";
 }
 
+function SortButton({
+  label,
+  sortKeyValue,
+  currentSortKey,
+  onSort,
+}: {
+  label: string;
+  sortKeyValue: SortKey;
+  currentSortKey: SortKey;
+  onSort: (key: SortKey) => void;
+}) {
+  return (
+    <button
+      onClick={() => onSort(sortKeyValue)}
+      className={`flex items-center gap-0.5 text-[10px] font-medium transition-colors ${
+        currentSortKey === sortKeyValue
+          ? "text-foreground"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {label}
+      <ArrowUpDown className="h-2.5 w-2.5" />
+    </button>
+  );
+}
+
 function PerformanceSkeleton() {
   return (
     <div className="space-y-3">
@@ -97,26 +123,6 @@ export function SubgroupPerformanceSection({ groupId }: SubgroupPerformanceProps
     return sortDesc ? -diff : diff;
   });
 
-  const SortButton = ({
-    label,
-    sortKeyValue,
-  }: {
-    label: string;
-    sortKeyValue: SortKey;
-  }) => (
-    <button
-      onClick={() => handleSort(sortKeyValue)}
-      className={`flex items-center gap-0.5 text-[10px] font-medium transition-colors ${
-        sortKey === sortKeyValue
-          ? "text-foreground"
-          : "text-muted-foreground hover:text-foreground"
-      }`}
-    >
-      {label}
-      <ArrowUpDown className="h-2.5 w-2.5" />
-    </button>
-  );
-
   return (
     <Card className="mt-6">
       <CardHeader>
@@ -136,13 +142,13 @@ export function SubgroupPerformanceSection({ groupId }: SubgroupPerformanceProps
                 서브그룹
               </div>
               <div className="w-20 flex justify-end">
-                <SortButton label="멤버 수" sortKeyValue="member_count" />
+                <SortButton label="멤버 수" sortKeyValue="member_count" currentSortKey={sortKey} onSort={handleSort} />
               </div>
               <div className="w-24 flex justify-end">
-                <SortButton label="이번 달 활동" sortKeyValue="monthly_post_count" />
+                <SortButton label="이번 달 활동" sortKeyValue="monthly_post_count" currentSortKey={sortKey} onSort={handleSort} />
               </div>
               <div className="w-20 flex justify-end">
-                <SortButton label="최근 활동" sortKeyValue="last_activity_at" />
+                <SortButton label="최근 활동" sortKeyValue="last_activity_at" currentSortKey={sortKey} onSort={handleSort} />
               </div>
               <div className="w-4" />
             </div>

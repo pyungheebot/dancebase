@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useMemberIntroCard, validateIntroCard } from "@/hooks/use-member-intro-card";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { MemberIntroCardV2 } from "@/types";
 
 // ============================================
@@ -526,7 +527,7 @@ function ViewCard({ card }: { card: MemberIntroCardV2 }) {
 
       {/* 마지막 수정일 */}
       <p className="text-[10px] text-muted-foreground/60 text-right pt-1">
-        {new Date(card.updatedAt).toLocaleDateString("ko-KR")} 업데이트
+        {formatYearMonthDay(card.updatedAt)} 업데이트
       </p>
     </div>
   );

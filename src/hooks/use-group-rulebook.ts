@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
@@ -57,36 +57,17 @@ function saveToStorage(data: GroupRulebookData): void {
 // ============================================
 
 export function useGroupRulebook(groupId: string) {
-  const [data, setData] = useState<GroupRulebookData | null>(null);
-  const [initialized, setInitialized] = useState(false);
-
   // SWR을 통한 캐시 관리 (fetcher는 localStorage에서 읽음)
-  const { data: swrData, mutate } = useSWR(
+  const { data, mutate } = useSWR(
     swrKeys.groupRulebook(groupId),
     () => loadFromStorage(groupId),
     { revalidateOnFocus: false }
   );
 
-  // 마운트 시 초기화
-  useEffect(() => {
-    if (!initialized) {
-      setData(loadFromStorage(groupId));
-      setInitialized(true);
-    }
-  }, [groupId, initialized]);
-
-  // SWR 데이터가 업데이트될 때 동기화
-  useEffect(() => {
-    if (swrData) {
-      setData(swrData);
-    }
-  }, [swrData]);
-
   // 내부 저장 헬퍼
   const persist = useCallback(
     (next: GroupRulebookData) => {
       saveToStorage(next);
-      setData(next);
       mutate(next, false);
     },
     [mutate]
@@ -271,7 +252,7 @@ export function useGroupRulebook(groupId: string) {
     version: current.version,
     effectiveDate: current.effectiveDate,
     updatedAt: current.updatedAt,
-    loading: !initialized,
+    loading: false,
     totalSections,
     importantCount,
     addSection,

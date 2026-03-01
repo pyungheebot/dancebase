@@ -31,16 +31,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ChevronDown,
   ChevronUp,
@@ -58,6 +49,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { useDressRehearsal } from "@/hooks/use-dress-rehearsal";
 import type {
   DressRehearsalCategory,
@@ -124,7 +116,7 @@ function SessionFormDialog({
   const [date, setDate] = useState(editSession?.date ?? "");
   const [time, setTime] = useState(editSession?.time ?? "");
   const [venue, setVenue] = useState(editSession?.venue ?? "");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   const handleOpen = (isOpen: boolean) => {
     if (isOpen) {
@@ -134,7 +126,7 @@ function SessionFormDialog({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!date.trim()) {
       toast.error("날짜를 입력해주세요.");
       return;
@@ -143,13 +135,10 @@ function SessionFormDialog({
       toast.error("장소를 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await execute(async () => {
       onSubmit({ date, time, venue });
       onClose();
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   return (
@@ -259,7 +248,7 @@ function IssueFormDialog({
     editIssue?.severity ?? "보통"
   );
   const [assignee, setAssignee] = useState(editIssue?.assignee ?? "");
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeIssue } = useAsyncAction();
 
   const handleOpen = (isOpen: boolean) => {
     if (isOpen) {
@@ -271,7 +260,7 @@ function IssueFormDialog({
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!section.trim()) {
       toast.error("장면/섹션을 입력해주세요.");
       return;
@@ -280,8 +269,7 @@ function IssueFormDialog({
       toast.error("이슈 내용을 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await executeIssue(async () => {
       onSubmit({
         section,
         content,
@@ -290,9 +278,7 @@ function IssueFormDialog({
         assignee: assignee || undefined,
       });
       onClose();
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   return (
@@ -1049,53 +1035,24 @@ export function DressRehearsalCard({ projectId }: DressRehearsalCardProps) {
       />
 
       {/* 이슈 삭제 확인 다이얼로그 */}
-      <AlertDialog
+      <ConfirmDialog
         open={deleteIssueTarget !== null}
         onOpenChange={(v) => !v && setDeleteIssueTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">이슈 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              이 이슈를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-8 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-8 text-xs bg-red-500 hover:bg-red-600"
-              onClick={handleDeleteIssue}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="이슈 삭제"
+        description="이 이슈를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        onConfirm={handleDeleteIssue}
+        destructive
+      />
 
       {/* 회차 삭제 확인 다이얼로그 */}
-      <AlertDialog
+      <ConfirmDialog
         open={deleteSessionTarget !== null}
         onOpenChange={(v) => !v && setDeleteSessionTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">회차 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              이 리허설 회차와 포함된 모든 이슈를 삭제하시겠습니까? 이 작업은
-              되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-8 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-8 text-xs bg-red-500 hover:bg-red-600"
-              onClick={handleDeleteSession}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="회차 삭제"
+        description="이 리허설 회차와 포함된 모든 이슈를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        onConfirm={handleDeleteSession}
+        destructive
+      />
     </>
   );
 }

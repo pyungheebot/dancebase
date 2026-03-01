@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, startTransition } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -127,7 +127,7 @@ function useRoutineTimer(exercises: WarmupExercise[]) {
 
   useEffect(() => {
     clearTick();
-    setStateSync({ phase: "idle" });
+    startTransition(() => { setStateSync({ phase: "idle" }); });
   }, [exercises, clearTick, setStateSync]);
 
   useEffect(() => {
@@ -693,10 +693,10 @@ export function WarmupRoutineCard({ groupId }: WarmupRoutineCardProps) {
 
   useEffect(() => {
     if (routines.length > 0 && !activeTab) {
-      setActiveTab(routines[0].id);
+      startTransition(() => { setActiveTab(routines[0].id); });
     }
     if (activeTab && !routines.find((r) => r.id === activeTab)) {
-      setActiveTab(routines[0]?.id);
+      startTransition(() => { setActiveTab(routines[0]?.id); });
     }
   }, [routines, activeTab]);
 

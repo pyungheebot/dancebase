@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   StageMemoBoard,
   StageMemoNote,
   StageMemoZone,
-  StageMemoPriority,
 } from "@/types";
 
 // ============================================================
@@ -55,19 +54,13 @@ export type StageMemoStats = {
 // ============================================================
 
 export function useStageMemo(groupId: string, projectId: string) {
-  const [boards, setBoards] = useState<StageMemoBoard[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [boards, setBoards] = useState<StageMemoBoard[]>(() => loadData(groupId, projectId));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
     const data = loadData(groupId, projectId);
     setBoards(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: StageMemoBoard[]) => {
@@ -242,7 +235,7 @@ export function useStageMemo(groupId: string, projectId: string) {
 
   return {
     boards,
-    loading,
+    loading: false,
     addBoard,
     deleteBoard,
     addNote,

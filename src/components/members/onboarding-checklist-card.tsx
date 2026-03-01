@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -164,7 +164,7 @@ export function OnboardingChecklistCard({
 
   useEffect(() => {
     if (allDone) {
-      setOpen(false);
+      startTransition(() => { setOpen(false); });
     }
   }, [allDone]);
 

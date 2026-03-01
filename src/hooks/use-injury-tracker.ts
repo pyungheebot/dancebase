@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { InjuryTrackerEntry, InjuryBodyPart, InjuryTrackerSeverity } from "@/types";
 
 // ============================================================
@@ -48,19 +48,13 @@ export type InjuryTrackerStats = {
 // ============================================================
 
 export function useInjuryTracker(groupId: string) {
-  const [entries, setEntries] = useState<InjuryTrackerEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entries, setEntries] = useState<InjuryTrackerEntry[]>(() => loadData(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setEntries(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: InjuryTrackerEntry[]) => {
@@ -188,7 +182,7 @@ export function useInjuryTracker(groupId: string) {
 
   return {
     entries,
-    loading,
+    loading: false,
     addInjury,
     updateInjury,
     deleteInjury,

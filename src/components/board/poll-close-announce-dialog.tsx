@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Trophy, Megaphone, Copy, Bell, Check } from "lucide-react";
 import { toast } from "sonner";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import {
   Dialog,
   DialogContent,
@@ -47,7 +48,10 @@ export function PollCloseAnnounceDialog({
   const [open, setOpen] = useState(false);
   const [announced, setAnnounced] = useState(() => isAnnounced(poll.id));
   const [sending, setSending] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard({
+    successMessage: "결과 텍스트가 복사되었습니다",
+    errorMessage: "클립보드 복사에 실패했습니다",
+  });
 
   const totalVotes = options.reduce((sum, o) => sum + o.vote_count, 0);
   const sorted = [...options].sort((a, b) => b.vote_count - a.vote_count);
@@ -55,14 +59,7 @@ export function PollCloseAnnounceDialog({
   // ---- 결과 텍스트 복사 ----
   const handleCopy = async () => {
     const text = generateResultText(options, postTitle);
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      toast.success("결과 텍스트가 복사되었습니다");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("클립보드 복사에 실패했습니다");
-    }
+    await copy(text);
   };
 
   // ---- 그룹 알림 발송 ----

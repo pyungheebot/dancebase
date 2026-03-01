@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Dialog,
   DialogContent,
@@ -80,14 +81,14 @@ export function AnonymousFeedbackDialog({
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<FeedbackCategory>("praise");
   const [content, setContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const { sendFeedback, hasSentTo } = useAnonymousFeedback(groupId);
 
   const alreadySent = hasSentTo(currentUserId, targetUserId);
   const MAX_LENGTH = 300;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!content.trim()) {
       toast.error("내용을 입력해주세요");
       return;
@@ -97,18 +98,13 @@ export function AnonymousFeedbackDialog({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       sendFeedback(currentUserId, targetUserId, category, content);
       toast.success("피드백이 익명으로 전송되었습니다");
       setOpen(false);
       setContent("");
       setCategory("praise");
-    } catch {
-      toast.error("피드백 전송에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   const handleOpenChange = (next: boolean) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   PosterProject,
   PosterVersion,
@@ -55,19 +55,13 @@ export type PosterManagementStats = {
 // ============================================================
 
 export function usePosterManagement(groupId: string, projectId: string) {
-  const [projects, setProjects] = useState<PosterProject[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<PosterProject[]>(() => loadData(groupId, projectId));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
     const data = loadData(groupId, projectId);
     setProjects(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: PosterProject[]) => {
@@ -331,7 +325,7 @@ export function usePosterManagement(groupId: string, projectId: string) {
 
   return {
     projects,
-    loading,
+    loading: false,
     addProject,
     updateProject,
     deleteProject,

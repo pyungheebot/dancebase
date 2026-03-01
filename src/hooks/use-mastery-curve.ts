@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { MasteryCurveEntry, MasteryCheckpoint } from "@/types";
 
 // ============================================
@@ -108,20 +108,7 @@ export function estimateCompletionDate(
 
 export function useMasteryCurve(groupId: string, userId: string) {
   const [entries, setEntries] = useState<MasteryCurveEntry[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !userId) {
-      setLoading(false);
-      return;
-    }
-    const stored = loadEntries(groupId, userId);
-    // 생성일 내림차순 정렬
-    stored.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    setEntries(stored);
-    setLoading(false);
-  }, [groupId, userId]);
 
   // 내부 저장 + 상태 갱신
   const persist = useCallback(
@@ -252,7 +239,7 @@ export function useMasteryCurve(groupId: string, userId: string) {
 
   return {
     entries,
-    loading,
+    loading: false,
     canAdd: entries.length < MAX_ENTRIES,
     addEntry,
     deleteEntry,

@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { format, parseISO, subDays, isValid } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 
 // ─── 로컬 타입 ────────────────────────────────────────────────
 
@@ -305,7 +305,7 @@ export function AttendanceStreakCard({
                     >
                       {monthlyGrid.map(({ date, present }) => {
                         const parsed = parseISO(date);
-                        const label = format(parsed, "M/d", { locale: ko });
+                        const label = formatKo(parsed, "M/d");
                         return (
                           <div
                             key={date}

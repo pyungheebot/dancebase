@@ -38,7 +38,7 @@ export function calcCurrentStreak(records: StreakTrackRecord[]): number {
 
   const today = new Date();
   let streak = 0;
-  let cursor = new Date(today);
+  const cursor = new Date(today);
 
   for (let i = 0; i < 365; i++) {
     const dateStr = cursor.toISOString().slice(0, 10);

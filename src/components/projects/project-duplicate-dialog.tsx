@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { duplicateProject, type DuplicateOptions } from "@/lib/project-duplicate";
 import { invalidateProject } from "@/lib/swr/invalidate";
 import type { Project } from "@/types";
@@ -49,7 +50,7 @@ export function ProjectDuplicateDialog({
   const [sourceProjectId, setSourceProjectId] = useState<string>("");
   const [newName, setNewName] = useState("");
   const [options, setOptions] = useState<DuplicateOptions>(DEFAULT_OPTIONS);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [sourceMemberCount, setSourceMemberCount] = useState<number | null>(null);
 
   const toggleOption = (key: keyof DuplicateOptions) => {
@@ -94,38 +95,35 @@ export function ProjectDuplicateDialog({
       return;
     }
 
-    setSubmitting(true);
-    const supabase = createClient();
+    await execute(async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("로그인이 필요합니다.");
+        return;
+      }
 
-    if (!user) {
-      toast.error("로그인이 필요합니다.");
-      setSubmitting(false);
-      return;
-    }
+      const { newProjectId, error } = await duplicateProject(
+        supabase,
+        sourceProjectId,
+        newName,
+        user.id,
+        options
+      );
 
-    const { newProjectId, error } = await duplicateProject(
-      supabase,
-      sourceProjectId,
-      newName,
-      user.id,
-      options
-    );
+      if (error || !newProjectId) {
+        toast.error(error ?? "프로젝트 복제에 실패했습니다.");
+        return;
+      }
 
-    setSubmitting(false);
-
-    if (error || !newProjectId) {
-      toast.error(error ?? "프로젝트 복제에 실패했습니다.");
-      return;
-    }
-
-    toast.success(`"${newName}" 프로젝트가 복제되었습니다.`);
-    invalidateProject(newProjectId, groupId);
-    onDuplicated();
-    setOpen(false);
+      toast.success(`"${newName}" 프로젝트가 복제되었습니다.`);
+      invalidateProject(newProjectId, groupId);
+      onDuplicated();
+      setOpen(false);
+    });
   };
 
   const isValid = !!sourceProjectId && newName.trim().length > 0;
@@ -220,7 +218,7 @@ export function ProjectDuplicateDialog({
           {/* 안내 문구 */}
           <p className="text-[11px] text-muted-foreground leading-relaxed">
             프로젝트 기본 정보(이름, 설명, 유형, 공개 설정)와 선택한 항목이 복사됩니다.
-            복제된 프로젝트의 상태는 "신규"로 설정되며, 복제한 사용자는 리더로 추가됩니다.
+            복제된 프로젝트의 상태는 &quot;신규&quot;로 설정되며, 복제한 사용자는 리더로 추가됩니다.
           </p>
 
           <Button

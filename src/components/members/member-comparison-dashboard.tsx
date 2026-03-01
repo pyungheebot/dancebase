@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 import { useMemberComparison } from "@/hooks/use-member-comparison";
 import type { EntityMember } from "@/types/entity-context";
 import type { MemberComparisonData } from "@/types";
@@ -49,11 +50,13 @@ function MemberAvatar({
       style={{ backgroundColor: color.hex }}
     >
       {avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={avatarUrl}
           alt={name}
+          width={size === "sm" ? 24 : 20}
+          height={size === "sm" ? 24 : 20}
           className="h-full w-full object-cover"
+          unoptimized
         />
       ) : (
         <span>{name.charAt(0).toUpperCase()}</span>

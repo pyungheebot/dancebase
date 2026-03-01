@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Collapsible,
   CollapsibleContent,
@@ -292,7 +293,7 @@ export function SkillSelfEvaluationCard({
   const [draftScores, setDraftScores] = useState<Record<SkillCategory, number>>(
     defaultScores()
   );
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
 
   const { history, latest, previous, scoreChanges, loading, saveEvaluation } =
     useSkillSelfEvaluation(groupId, userId);
@@ -310,16 +311,11 @@ export function SkillSelfEvaluationCard({
   };
 
   const handleSave = () => {
-    setSaving(true);
-    try {
+    void executeSave(async () => {
       saveEvaluation(draftScores);
       toast.success("스킬 자가 평가가 저장되었습니다");
       setEvaluating(false);
-    } catch {
-      toast.error("저장에 실패했습니다");
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   const handleScoreChange = (cat: SkillCategory, value: number[]) => {

@@ -24,16 +24,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ChevronDown,
   ChevronUp,
@@ -55,6 +46,7 @@ import {
   makeDefaultSectionScores,
   POST_SHOW_SECTIONS,
 } from "@/hooks/use-post-show-report";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
   PostShowReportEntry,
   PostShowReportSection,
@@ -654,7 +646,7 @@ export function PostShowReportCard({
 
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<PostShowReportEntry | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const deleteConfirm = useDeleteConfirm<string>();
   const [isOpen, setIsOpen] = useState(true);
 
   function handleAdd(data: ReportFormData) {
@@ -705,14 +697,14 @@ export function PostShowReportCard({
   }
 
   function handleDelete() {
-    if (!deleteTarget) return;
-    const ok = deleteEntry(deleteTarget);
+    const id = deleteConfirm.confirm();
+    if (!id) return;
+    const ok = deleteEntry(id);
     if (ok) {
       toast.success("보고서가 삭제되었습니다.");
     } else {
       toast.error("삭제에 실패했습니다.");
     }
-    setDeleteTarget(null);
   }
 
   return (
@@ -835,7 +827,7 @@ export function PostShowReportCard({
                       key={entry.id}
                       entry={entry}
                       onEdit={() => setEditTarget(entry)}
-                      onDelete={() => setDeleteTarget(entry.id)}
+                      onDelete={() => deleteConfirm.request(entry.id)}
                     />
                   ))}
                 </div>
@@ -867,30 +859,14 @@ export function PostShowReportCard({
       )}
 
       {/* 삭제 확인 */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(v) => {
-          if (!v) setDeleteTarget(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">보고서 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              이 사후 분석 보고서를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-7 text-xs bg-destructive hover:bg-destructive/90"
-              onClick={handleDelete}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="보고서 삭제"
+        description="이 사후 분석 보고서를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        onConfirm={handleDelete}
+        destructive
+      />
     </>
   );
 }

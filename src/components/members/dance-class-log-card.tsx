@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   GraduationCap,
   ChevronDown,
@@ -160,7 +161,7 @@ export function DanceClassLogCard({ memberId }: DanceClassLogCardProps) {
 
   const [open, setOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [form, setForm] = useState<FormState>(defaultForm);
 
   // 편집 상태
@@ -238,8 +239,7 @@ export function DanceClassLogCard({ memberId }: DanceClassLogCardProps) {
     const finalGenre =
       form.genre === "__custom__" ? form.customGenre.trim() : form.genre;
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       addEntry({
         memberId,
         className: form.className.trim(),
@@ -258,11 +258,7 @@ export function DanceClassLogCard({ memberId }: DanceClassLogCardProps) {
       toast.success(`'${form.className.trim()}' 수업이 기록되었습니다.`);
       resetForm();
       setFormOpen(false);
-    } catch {
-      toast.error("수업 기록 추가 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   // ──────────────────────────────────────────

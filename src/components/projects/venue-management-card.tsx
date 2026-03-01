@@ -61,6 +61,7 @@ import {
   createDefaultFacilities,
   type VenueMgmtVenueInput,
 } from "@/hooks/use-venue-management";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type {
   VenueMgmtVenue,
   VenueMgmtFacility,
@@ -730,6 +731,7 @@ export function VenueManagementCard({ projectId }: VenueManagementCardProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<VenueMgmtVenue | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // 전체 통계
   const stats = useMemo(() => {
@@ -739,9 +741,10 @@ export function VenueManagementCard({ projectId }: VenueManagementCardProps) {
     return { confirmed, pending, cancelled };
   }, [venues]);
 
-  function handleDelete(id: string) {
-    if (!confirm("공연장을 삭제하시겠습니까?")) return;
-    deleteVenue(id);
+  function handleDelete() {
+    if (!deleteConfirmId) return;
+    deleteVenue(deleteConfirmId);
+    setDeleteConfirmId(null);
   }
 
   if (loading) {
@@ -830,7 +833,7 @@ export function VenueManagementCard({ projectId }: VenueManagementCardProps) {
                     key={venue.id}
                     venue={venue}
                     onEdit={(v) => setEditTarget(v)}
-                    onDelete={handleDelete}
+                    onDelete={setDeleteConfirmId}
                     onToggleFacility={toggleFacility}
                     onChangeBookingStatus={updateBookingStatus}
                   />
@@ -860,6 +863,14 @@ export function VenueManagementCard({ projectId }: VenueManagementCardProps) {
           onSubmit={(input) => updateVenue(editTarget.id, input)}
         />
       )}
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        onOpenChange={(v) => !v && setDeleteConfirmId(null)}
+        title="공연장 삭제"
+        description="공연장을 삭제하시겠습니까?"
+        onConfirm={handleDelete}
+        destructive
+      />
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DanceMilestoneData,
@@ -52,7 +52,7 @@ export function calcGoalProgress(goal: DanceMilestoneGoal): number {
 // ============================================================
 
 export function useDanceMilestone(memberId: string) {
-  const [goals, setGoals] = useState<DanceMilestoneGoal[]>([]);
+  const [goals, setGoals] = useState<DanceMilestoneGoal[]>(() => loadData(memberId).goals);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
@@ -62,12 +62,7 @@ export function useDanceMilestone(memberId: string) {
     }
     const data = loadData(memberId);
     setGoals(data.goals);
-    setLoading(false);
   }, [memberId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 persist 헬퍼
   const persist = useCallback(

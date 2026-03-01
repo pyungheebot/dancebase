@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import {
   type GroupGuidelineItem,
@@ -45,13 +45,9 @@ function saveToStorage(groupId: string, items: GroupGuidelineItem[]): void {
 
 export function useGroupGuidelines(groupId: string) {
   const [items, setItems] = useState<GroupGuidelineItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // 마운트 시 로드
-  useEffect(() => {
-    setItems(loadFromStorage(groupId));
-    setLoading(false);
-  }, [groupId]);
+
 
   // 항목 추가
   const addItem = useCallback(
@@ -164,7 +160,7 @@ export function useGroupGuidelines(groupId: string) {
 
   return {
     items: sortedItems,
-    loading,
+    loading: false,
     totalCount: items.length,
     maxReached: items.length >= GROUP_GUIDELINE_MAX,
     addItem,

@@ -32,6 +32,8 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { formatYearMonthDay } from "@/lib/date-utils";
 
 // ============================================
 // 별점 입력 컴포넌트
@@ -241,7 +243,7 @@ function AddEntryForm({ onAdd, onClose }: AddEntryFormProps) {
   const [ratings, setRatings] = useState<DifficultyRating[]>(DEFAULT_RATINGS);
   const [ratedBy, setRatedBy] = useState("");
   const [comment, setComment] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function handleScoreChange(category: DifficultyCategory, score: number) {
     setRatings((prev) =>
@@ -249,20 +251,20 @@ function AddEntryForm({ onAdd, onClose }: AddEntryFormProps) {
     );
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!songTitle.trim()) {
       toast.error("곡명을 입력하세요.");
       return;
     }
-    setSubmitting(true);
-    const ok = onAdd({ songTitle, ratings, ratedBy, comment });
-    setSubmitting(false);
-    if (ok) {
-      toast.success("난도 평가가 등록되었습니다.");
-      onClose();
-    } else {
-      toast.error("평가는 최대 20개까지 등록할 수 있습니다.");
-    }
+    await execute(async () => {
+      const ok = onAdd({ songTitle, ratings, ratedBy, comment });
+      if (ok) {
+        toast.success("난도 평가가 등록되었습니다.");
+        onClose();
+      } else {
+        toast.error("평가는 최대 20개까지 등록할 수 있습니다.");
+      }
+    });
   }
 
   return (
@@ -466,7 +468,7 @@ function EntryRow({ entry, onDelete }: EntryRowProps) {
                 </div>
               )}
               <span className="text-[10px] text-muted-foreground/60">
-                {new Date(entry.createdAt).toLocaleDateString("ko-KR")}
+                {formatYearMonthDay(entry.createdAt)}
               </span>
             </div>
           </div>

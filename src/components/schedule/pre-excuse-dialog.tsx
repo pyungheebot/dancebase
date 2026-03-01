@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { AlertCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { usePreExcuse } from "@/hooks/use-pre-excuse";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { PreExcuseReason } from "@/types";
 
 // ============================================================
@@ -62,26 +63,30 @@ export function PreExcuseDialog({
   const [reason, setReason] = useState<PreExcuseReason>("personal");
   const [memo, setMemo] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   // 다이얼로그가 열릴 때 기존 신고 로드
   useEffect(() => {
     if (!open) return;
     const existing = getMyExcuse(scheduleId, userId);
     if (existing) {
-      setReason(existing.reason);
-      setMemo(existing.memo);
-      setIsEditMode(true);
+      startTransition(() => {
+        setReason(existing.reason);
+        setMemo(existing.memo);
+        setIsEditMode(true);
+      });
     } else {
-      setReason("personal");
-      setMemo("");
-      setIsEditMode(false);
+      startTransition(() => {
+        setReason("personal");
+        setMemo("");
+        setIsEditMode(false);
+      });
     }
   }, [open, scheduleId, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 일정 시작 여부 확인
   const isScheduleStarted = scheduleStartAt
-    ? Date.now() >= new Date(scheduleStartAt).getTime()
+    ? new Date(scheduleStartAt) <= new Date()
     : false;
 
   const handleSubmit = () => {
@@ -89,16 +94,15 @@ export function PreExcuseDialog({
       toast.error("이미 시작된 일정은 사전 결석 신고를 할 수 없습니다");
       return;
     }
-    setSubmitting(true);
-    try {
-      submitExcuse({ scheduleId, userId, userName, reason, memo });
-      toast.success(isEditMode ? "사전 결석 신고가 수정되었습니다" : "사전 결석 신고가 등록되었습니다");
-      onOpenChange(false);
-    } catch {
-      toast.error(isEditMode ? "수정에 실패했습니다" : "등록에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    execute(async () => {
+      try {
+        submitExcuse({ scheduleId, userId, userName, reason, memo });
+        toast.success(isEditMode ? "사전 결석 신고가 수정되었습니다" : "사전 결석 신고가 등록되었습니다");
+        onOpenChange(false);
+      } catch {
+        toast.error(isEditMode ? "수정에 실패했습니다" : "등록에 실패했습니다");
+      }
+    });
   };
 
   return (

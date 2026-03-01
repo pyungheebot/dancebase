@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import useSWR from "swr";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 // ============================================
 // 파트 타입별 Badge 색상
@@ -125,23 +126,23 @@ function AssignDialog({
   const [partType, setPartType] = useState<SongPartType>("all");
   const [partName, setPartName] = useState("");
   const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   async function handleSubmit() {
     if (!userId || !partName.trim()) {
       toast.error("멤버와 파트명을 입력해주세요");
       return;
     }
-    setSubmitting(true);
-    const ok = await onAssign(songId, userId, partName, partType, notes || undefined);
-    if (ok) {
-      setUserId("");
-      setPartType("all");
-      setPartName("");
-      setNotes("");
-      onOpenChange(false);
-    }
-    setSubmitting(false);
+    await execute(async () => {
+      const ok = await onAssign(songId, userId, partName, partType, notes || undefined);
+      if (ok) {
+        setUserId("");
+        setPartType("all");
+        setPartName("");
+        setNotes("");
+        onOpenChange(false);
+      }
+    });
   }
 
   return (

@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Megaphone, AlertCircle, Plus, Trash2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 interface ProjectNoticeFeedProps {
   ctx: EntityContext;
@@ -178,7 +179,7 @@ function WriteForm({ onSubmit }: WriteFormProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isUrgent, setIsUrgent] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   async function handleSubmit() {
     const trimmedTitle = title.trim();
@@ -193,13 +194,13 @@ function WriteForm({ onSubmit }: WriteFormProps) {
       return;
     }
 
-    setSubmitting(true);
-    onSubmit(trimmedTitle, trimmedContent, isUrgent ? "urgent" : "normal");
-    setTitle("");
-    setContent("");
-    setIsUrgent(false);
-    setOpen(false);
-    setSubmitting(false);
+    await execute(async () => {
+      onSubmit(trimmedTitle, trimmedContent, isUrgent ? "urgent" : "normal");
+      setTitle("");
+      setContent("");
+      setIsUrgent(false);
+      setOpen(false);
+    });
   }
 
   if (!open) {

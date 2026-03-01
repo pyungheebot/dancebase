@@ -225,7 +225,7 @@ export function UserPopoverMenu({
               onClick={() => openDialog("message")}
             >
               <Mail className="h-4 w-4 text-muted-foreground" />
-              쪽지 보내기
+              메시지 보내기
             </button>
             <button
               className="flex items-center gap-2 w-full rounded px-2 py-1.5 text-sm hover:bg-muted transition-colors"

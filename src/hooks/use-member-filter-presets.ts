@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type {
   MemberFilterPreset,
   MemberFilterCondition,
@@ -191,7 +191,7 @@ export function countActiveFilters(filters: MemberFilterCondition): number {
 // ============================================
 
 export function useMemberFilterPresets(groupId: string) {
-  const defaultPresets = buildDefaultPresets();
+  const defaultPresets = useMemo(() => buildDefaultPresets(), []);
   const [userPresets, setUserPresets] = useState<MemberFilterPreset[]>([]);
 
   // 마운트 시 localStorage에서 사용자 프리셋 로드
@@ -200,7 +200,10 @@ export function useMemberFilterPresets(groupId: string) {
   }, [groupId]);
 
   // 기본 프리셋 + 사용자 프리셋 합산
-  const allPresets = [...defaultPresets, ...userPresets];
+  const allPresets = useMemo(
+    () => [...defaultPresets, ...userPresets],
+    [defaultPresets, userPresets]
+  );
 
   // 프리셋 저장 (이름 + 필터 조건)
   const savePreset = useCallback(
@@ -228,7 +231,6 @@ export function useMemberFilterPresets(groupId: string) {
       const preset = allPresets.find((p) => p.id === id);
       return preset ? preset.filters : null;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [allPresets]
   );
 
@@ -245,7 +247,6 @@ export function useMemberFilterPresets(groupId: string) {
       });
       return true;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [groupId, allPresets]
   );
 

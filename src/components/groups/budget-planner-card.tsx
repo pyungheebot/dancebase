@@ -41,6 +41,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useBudgetPlanner } from "@/hooks/use-budget-planner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { BudgetPlannerCategory, BudgetPlannerItem, BudgetPlannerPlan } from "@/types";
 
 // ============================================================
@@ -418,6 +419,8 @@ export function BudgetPlannerCard({ groupId }: { groupId: string }) {
   const [planDialogEdit, setPlanDialogEdit] = useState<BudgetPlannerPlan | null>(null);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [itemDialogEdit, setItemDialogEdit] = useState<BudgetPlannerItem | null>(null);
+  const [deletePlanConfirmId, setDeletePlanConfirmId] = useState<string | null>(null);
+  const [deleteItemConfirmId, setDeleteItemConfirmId] = useState<string | null>(null);
 
   // 선택된 계획
   const selectedPlan = useMemo(
@@ -444,11 +447,12 @@ export function BudgetPlannerCard({ groupId }: { groupId: string }) {
     toast.success("예산 계획이 수정되었습니다.");
   };
 
-  const handleDeletePlan = (planId: string) => {
-    if (!confirm("이 예산 계획을 삭제하시겠습니까?")) return;
-    deletePlan(planId);
+  const handleDeletePlan = () => {
+    if (!deletePlanConfirmId) return;
+    deletePlan(deletePlanConfirmId);
     setSelectedPlanId(null);
     toast.success("예산 계획이 삭제되었습니다.");
+    setDeletePlanConfirmId(null);
   };
 
   // ── 핸들러: 아이템 ─────────────────────────────────────────
@@ -465,11 +469,11 @@ export function BudgetPlannerCard({ groupId }: { groupId: string }) {
     toast.success("예산 항목이 수정되었습니다.");
   };
 
-  const handleDeleteItem = (itemId: string) => {
-    if (!selectedPlan) return;
-    if (!confirm("이 항목을 삭제하시겠습니까?")) return;
-    deleteItem(selectedPlan.id, itemId);
+  const handleDeleteItem = () => {
+    if (!selectedPlan || !deleteItemConfirmId) return;
+    deleteItem(selectedPlan.id, deleteItemConfirmId);
     toast.success("항목이 삭제되었습니다.");
+    setDeleteItemConfirmId(null);
   };
 
   // ── 렌더링 ─────────────────────────────────────────────────
@@ -554,7 +558,7 @@ export function BudgetPlannerCard({ groupId }: { groupId: string }) {
                       variant="ghost"
                       size="sm"
                       className="h-7 w-7 p-0 text-red-400 hover:text-red-500"
-                      onClick={() => handleDeletePlan(selectedPlan.id)}
+                      onClick={() => setDeletePlanConfirmId(selectedPlan.id)}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -789,7 +793,7 @@ export function BudgetPlannerCard({ groupId }: { groupId: string }) {
                                   variant="ghost"
                                   size="sm"
                                   className="h-5 w-5 p-0 text-red-400 hover:text-red-500"
-                                  onClick={() => handleDeleteItem(item.id)}
+                                  onClick={() => setDeleteItemConfirmId(item.id)}
                                 >
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
@@ -829,6 +833,22 @@ export function BudgetPlannerCard({ groupId }: { groupId: string }) {
         }}
         onSave={itemDialogEdit ? handleUpdateItem : handleAddItem}
         initial={itemDialogEdit ?? undefined}
+      />
+      <ConfirmDialog
+        open={deletePlanConfirmId !== null}
+        onOpenChange={(v) => !v && setDeletePlanConfirmId(null)}
+        title="예산 계획 삭제"
+        description="이 예산 계획을 삭제하시겠습니까?"
+        onConfirm={handleDeletePlan}
+        destructive
+      />
+      <ConfirmDialog
+        open={deleteItemConfirmId !== null}
+        onOpenChange={(v) => !v && setDeleteItemConfirmId(null)}
+        title="항목 삭제"
+        description="이 항목을 삭제하시겠습니까?"
+        onConfirm={handleDeleteItem}
+        destructive
       />
     </>
   );

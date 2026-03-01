@@ -23,6 +23,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import Image from "next/image";
 import { usePhotoAlbum } from "@/hooks/use-photo-album";
 import type { PhotoAlbum, PhotoAlbumItem } from "@/types";
 
@@ -264,26 +265,20 @@ function PhotoGrid({ photos, onDelete }: PhotoGridProps) {
           className="group relative rounded-lg border border-gray-100 bg-white overflow-hidden"
         >
           {photo.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={photo.imageUrl}
-              alt={photo.title}
-              className="w-full h-28 object-cover"
-              onError={(e) => {
-                const target = e.currentTarget as HTMLImageElement;
-                target.style.display = "none";
-                const placeholder = target.nextElementSibling as HTMLElement | null;
-                if (placeholder) placeholder.style.display = "flex";
-              }}
-            />
-          ) : null}
-
-          <div
-            className="w-full h-28 bg-gray-100 items-center justify-center"
-            style={{ display: photo.imageUrl ? "none" : "flex" }}
-          >
-            <ImageIcon className="h-8 w-8 text-gray-300" />
-          </div>
+            <div className="relative w-full h-28">
+              <Image
+                src={photo.imageUrl}
+                alt={photo.title}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div className="w-full h-28 bg-gray-100 flex items-center justify-center">
+              <ImageIcon className="h-8 w-8 text-gray-300" />
+            </div>
+          )}
 
           <Button
             variant="ghost"
@@ -401,14 +396,13 @@ function AlbumRow({
         <div className="flex items-center gap-2 px-3 py-2">
           <div className="shrink-0 w-10 h-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
             {album.coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={album.coverUrl}
                 alt={album.name}
+                width={40}
+                height={40}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = "none";
-                }}
+                unoptimized
               />
             ) : (
               <FolderOpen className="h-5 w-5 text-gray-300" />

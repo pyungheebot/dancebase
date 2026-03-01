@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   DanceConditionEntry,
@@ -168,10 +168,6 @@ export function useDanceCondition(memberId: string) {
     makeEmpty(memberId)
   );
 
-  // 초기 로드
-  useEffect(() => {
-    setEntry(loadData(memberId));
-  }, [memberId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateEntry = useCallback(

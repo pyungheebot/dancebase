@@ -17,8 +17,9 @@ import {
   Target,
 } from "lucide-react";
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { useWeeklyAttendanceCheckin } from "@/hooks/use-weekly-attendance-checkin";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { WeeklyCheckinRecord } from "@/types";
 
 // -------------------------------------------------------
@@ -107,9 +108,7 @@ function MiniBarChart({ history }: { history: WeeklyCheckinRecord[] }) {
             ),
             "yyyy-MM-dd"
           );
-        const label = format(new Date(record.weekStart + "T00:00:00"), "M/d", {
-          locale: ko,
-        });
+        const label = formatKo(new Date(record.weekStart + "T00:00:00"), "M/d");
 
         return (
           <div
@@ -147,7 +146,7 @@ type WeeklyCheckinCardProps = {
 
 export function WeeklyCheckinCard({ groupId, userId }: WeeklyCheckinCardProps) {
   const [open, setOpen] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   const {
     currentGoal,
@@ -162,12 +161,9 @@ export function WeeklyCheckinCard({ groupId, userId }: WeeklyCheckinCardProps) {
   } = useWeeklyAttendanceCheckin(groupId, userId);
 
   const handleSetGoal = async (goal: number) => {
-    setSaving(true);
-    try {
+    await execute(async () => {
       await setGoal(goal);
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   return (

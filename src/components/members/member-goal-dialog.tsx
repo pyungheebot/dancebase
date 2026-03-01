@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Dialog,
   DialogContent,
@@ -86,7 +87,7 @@ export function MemberGoalDialog({
   const [goalType, setGoalType] = useState<MemberGoalType>("attendance");
   const [targetValue, setTargetValue] = useState("");
   const [yearMonth, setYearMonth] = useState(currentYearMonth());
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const {
     goalsWithProgress,
@@ -117,16 +118,11 @@ export function MemberGoalDialog({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       await createGoal(goalType, value, yearMonth);
       toast.success("목표가 설정되었습니다");
       setTargetValue("");
-    } catch {
-      toast.error("목표 설정에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   const handleDelete = (goalId: string) => {
@@ -226,6 +222,7 @@ export function MemberGoalDialog({
                 onClick={handleRefresh}
                 disabled={progressLoading}
                 title="달성률 새로고침"
+                aria-label="달성률 새로고침"
               >
                 <RefreshCw
                   className={`h-3 w-3 text-muted-foreground ${progressLoading ? "animate-spin" : ""}`}
@@ -275,6 +272,7 @@ export function MemberGoalDialog({
                         size="icon"
                         className="h-5 w-5 text-muted-foreground hover:text-destructive"
                         onClick={() => handleDelete(goal.id)}
+                        aria-label="목표 삭제"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>

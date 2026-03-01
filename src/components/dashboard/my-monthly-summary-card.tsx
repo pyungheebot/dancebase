@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3, FileText, Calendar, Target } from "lucide-react";
 import { useMyMonthlySummary } from "@/hooks/use-my-monthly-summary";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatYearMonth } from "@/lib/date-utils";
 
 function MetricItem({
   icon,
@@ -55,9 +54,7 @@ function MetricSkeleton() {
 export function MyMonthlySummaryCard() {
   const { summary, loading, yearMonth } = useMyMonthlySummary();
 
-  const monthLabel = format(new Date(yearMonth + "-01"), "yyyy년 M월", {
-    locale: ko,
-  });
+  const monthLabel = formatYearMonth(new Date(yearMonth + "-01"));
 
   const hasActivity =
     summary &&

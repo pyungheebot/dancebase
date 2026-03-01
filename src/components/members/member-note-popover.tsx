@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
@@ -30,8 +31,8 @@ export function MemberNotePopover({
   const supabase = createClient();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { pending: saving, execute: executeSave } = useAsyncAction();
+  const { pending: deleting, execute: executeDelete } = useAsyncAction();
 
   const { data: note, isLoading } = useSWR<MemberNote | null>(
     swrKeys.memberNote(groupId, targetUserId),
@@ -59,60 +60,55 @@ export function MemberNotePopover({
   const handleSave = async () => {
     const trimmed = draft.trim();
     if (!trimmed) return;
-    setSaving(true);
+    await executeSave(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("인증 정보를 확인할 수 없습니다");
+        return;
+      }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("인증 정보를 확인할 수 없습니다");
-      setSaving(false);
-      return;
-    }
+      const { error } = await supabase.from("member_notes").upsert(
+        {
+          group_id: groupId,
+          target_user_id: targetUserId,
+          author_id: user.id,
+          content: trimmed,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "group_id,target_user_id,author_id" }
+      );
 
-    const { error } = await supabase.from("member_notes").upsert(
-      {
-        group_id: groupId,
-        target_user_id: targetUserId,
-        author_id: user.id,
-        content: trimmed,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "group_id,target_user_id,author_id" }
-    );
+      if (error) {
+        toast.error("메모 저장에 실패했습니다");
+        return;
+      }
 
-    setSaving(false);
-
-    if (error) {
-      toast.error("메모 저장에 실패했습니다");
-      return;
-    }
-
-    toast.success("메모가 저장되었습니다");
-    invalidateMemberNote(groupId, targetUserId);
-    setOpen(false);
+      toast.success("메모가 저장되었습니다");
+      invalidateMemberNote(groupId, targetUserId);
+      setOpen(false);
+    });
   };
 
   const handleDelete = async () => {
     if (!note) return;
-    setDeleting(true);
+    await executeDelete(async () => {
+      const { error } = await supabase
+        .from("member_notes")
+        .delete()
+        .eq("id", note.id);
 
-    const { error } = await supabase
-      .from("member_notes")
-      .delete()
-      .eq("id", note.id);
+      if (error) {
+        toast.error("메모 삭제에 실패했습니다");
+        return;
+      }
 
-    setDeleting(false);
-
-    if (error) {
-      toast.error("메모 삭제에 실패했습니다");
-      return;
-    }
-
-    toast.success("메모가 삭제되었습니다");
-    invalidateMemberNote(groupId, targetUserId);
-    setDraft("");
-    setOpen(false);
+      toast.success("메모가 삭제되었습니다");
+      invalidateMemberNote(groupId, targetUserId);
+      setDraft("");
+      setOpen(false);
+    });
   };
 
   return (

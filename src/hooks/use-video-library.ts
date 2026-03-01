@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { VideoCategory, VideoLibraryItem, VideoLibraryStore } from "@/types";
 
 const MAX_VIDEOS = 50;
@@ -53,9 +53,7 @@ export function useVideoLibrary(groupId: string, projectId: string) {
   );
 
   // groupId / projectId가 변경되면 재로드
-  useEffect(() => {
-    setStore(loadStore(groupId, projectId));
-  }, [groupId, projectId]);
+
 
   // 상태 업데이트 + localStorage 동기화
   const updateStore = useCallback(

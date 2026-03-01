@@ -2,8 +2,7 @@
 
 import { useState, useCallback } from "react";
 import useSWR from "swr";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatTime } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import type { NotificationTemplate, Schedule, SendNotificationResult } from "@/types";
@@ -75,7 +74,7 @@ export function replaceVariables(
   templateBody: string,
   schedule: Schedule
 ): string {
-  const time = format(new Date(schedule.starts_at), "HH:mm", { locale: ko });
+  const time = formatTime(new Date(schedule.starts_at));
   const location = schedule.location ?? "미정";
 
   return templateBody

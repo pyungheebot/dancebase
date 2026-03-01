@@ -58,23 +58,15 @@ export type SkillRecommendation = {
 // ============================================
 
 export function useMentorMentee(groupId: string) {
-  const [matches, setMatches] = useState<MentorMenteeMatch[]>([]);
+  const [matches, setMatches] = useState<MentorMenteeMatch[]>(() => loadMatches(groupId));
   const [skills, setSkills] = useState<MemberSkill[]>([]);
   const [skillsLoading, setSkillsLoading] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   // localStorage에서 매칭 불러오기
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadMatches(groupId);
-    setMatches(data);
-    setLoading(false);
+    setMatches(loadMatches(groupId));
   }, [groupId]);
-
-  // 초기 로드
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // Supabase에서 member_skills 조회
   const fetchSkills = useCallback(async () => {
@@ -96,9 +88,11 @@ export function useMentorMentee(groupId: string) {
     setSkills((data ?? []) as MemberSkill[]);
   }, [groupId]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     fetchSkills();
   }, [fetchSkills]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // 스킬별 추천 목록 계산
   // memberNameMap: userId → displayName
@@ -192,7 +186,7 @@ export function useMentorMentee(groupId: string) {
     matches,
     activeMatches,
     completedMatches,
-    loading,
+    loading: false,
     skills,
     skillsLoading,
     getRecommendations,

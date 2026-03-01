@@ -26,16 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -695,30 +686,14 @@ export function LiveShowFeedCard({ groupId, projectId }: LiveShowFeedCardProps) 
       )}
 
       {/* 삭제 확인 다이얼로그 */}
-      <AlertDialog
+      <ConfirmDialog
         open={deleteTargetId !== null}
         onOpenChange={(o) => { if (!o) setDeleteTargetId(null); }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>피드 삭제</AlertDialogTitle>
-            <AlertDialogDescription>
-              이 피드 항목을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteTargetId(null)}>
-              취소
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700"
-              onClick={handleDeleteConfirm}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="피드 삭제"
+        description="이 피드 항목을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다."
+        onConfirm={handleDeleteConfirm}
+        destructive
+      />
     </>
   );
 }

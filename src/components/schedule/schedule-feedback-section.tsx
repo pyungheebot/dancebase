@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useScheduleFeedbackLocal } from "@/hooks/use-schedule-feedback-local";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   SCHEDULE_FEEDBACK_MOOD_LABELS,
   SCHEDULE_FEEDBACK_MOOD_EMOJI,
@@ -124,7 +125,7 @@ export function ScheduleFeedbackSection({ groupId, scheduleId }: Props) {
   const [rating, setRating] = useState(0);
   const [mood, setMood] = useState<ScheduleFeedbackMood | null>(null);
   const [content, setContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const resetForm = useCallback(() => {
     setRating(0);
@@ -143,17 +144,16 @@ export function ScheduleFeedbackSection({ groupId, scheduleId }: Props) {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      addFeedback(rating, mood, content);
-      toast.success("후기가 등록되었습니다");
-      resetForm();
-    } catch {
-      toast.error("후기 등록에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
-  }, [rating, mood, content, addFeedback, resetForm]);
+    await execute(async () => {
+      try {
+        addFeedback(rating, mood, content);
+        toast.success("후기가 등록되었습니다");
+        resetForm();
+      } catch {
+        toast.error("후기 등록에 실패했습니다");
+      }
+    });
+  }, [rating, mood, content, addFeedback, resetForm, execute]);
 
   const handleRemove = useCallback(
     (id: string) => {

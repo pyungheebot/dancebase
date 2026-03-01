@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ export function OnboardingGuide() {
   // localStorage 읽기 (클라이언트 사이드)
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    setDismissed(stored === "true");
+    startTransition(() => { setDismissed(stored === "true"); });
   }, []);
 
   const allDone =

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type {
   AttendanceExcuseEntry,
   AttendanceExcuseItem,
@@ -111,10 +111,6 @@ export function useAttendanceExcuse(groupId: string) {
     makeEmpty(groupId)
   );
 
-  // 초기 로드
-  useEffect(() => {
-    setEntry(loadData(groupId));
-  }, [groupId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateEntry = useCallback(

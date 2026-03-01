@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { MemberIntroCardV2 } from "@/types";
 
 // ============================================
@@ -69,12 +69,6 @@ export function useMemberIntroCard(groupId: string, userId: string) {
   const [intro, setIntro] = useState<MemberIntroCardV2 | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !userId) return;
-    setIntro(loadCard(groupId, userId));
-    setLoaded(true);
-  }, [groupId, userId]);
 
   // 카드 저장
   const saveIntro = useCallback(

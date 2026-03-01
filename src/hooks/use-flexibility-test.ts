@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   FlexibilityTestItem,
@@ -137,24 +137,19 @@ export function calcProgress(
 // ============================================================
 
 export function useFlexibilityTest(memberId: string) {
-  const [items, setItems] = useState<FlexibilityTestItem[]>([]);
-  const [records, setRecords] = useState<FlexibilityTestRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<FlexibilityTestItem[]>(() =>
+    memberId ? loadData(memberId).items : []
+  );
+  const [records, setRecords] = useState<FlexibilityTestRecord[]>(() =>
+    memberId ? loadData(memberId).records : []
+  );
 
   const reload = useCallback(() => {
-    if (!memberId) {
-      setLoading(false);
-      return;
-    }
+    if (!memberId) return;
     const data = loadData(memberId);
     setItems(data.items);
     setRecords(data.records);
-    setLoading(false);
   }, [memberId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 persist 헬퍼
   const persist = useCallback(
@@ -319,7 +314,7 @@ export function useFlexibilityTest(memberId: string) {
   return {
     items,
     records: sortedRecords,
-    loading,
+    loading: false,
     latestRecord,
     overallProgress,
     initDefaultItems,

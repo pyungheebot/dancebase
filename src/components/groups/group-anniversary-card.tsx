@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import {
   PartyPopper,
   Plus,
@@ -41,6 +42,8 @@ import {
   calcYearsSince,
   calcAnniversaryDDay,
 } from "@/hooks/use-group-anniversary";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/shared/empty-state";
 import type { GroupAnniversaryItem, GroupAnniversaryType } from "@/types";
 
 // ============================================================
@@ -107,24 +110,6 @@ function getYearsLabel(date: string, isRecurring: boolean): string | null {
   const years = calcYearsSince(date);
   if (years <= 0) return null;
   return `${years}주년`;
-}
-
-// ============================================================
-// 빈 상태
-// ============================================================
-
-function EmptyState({ onAdd }: { onAdd: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-10 text-center">
-      <CalendarDays className="h-10 w-10 text-gray-300 mb-3" />
-      <p className="text-sm font-medium text-gray-500 mb-1">등록된 기념일이 없습니다</p>
-      <p className="text-xs text-gray-400 mb-4">창립일, 공연, 수상 기록을 기념일로 등록해보세요.</p>
-      <Button size="sm" className="h-7 text-xs" onClick={onAdd}>
-        <Plus className="h-3 w-3 mr-1" />
-        기념일 추가
-      </Button>
-    </div>
-  );
 }
 
 // ============================================================
@@ -502,6 +487,7 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
   const [editTarget, setEditTarget] = useState<GroupAnniversaryItem | null>(null);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
   const [formInitial, setFormInitial] = useState<FormState | undefined>(undefined);
+  const deleteConfirm = useDeleteConfirm<{ id: string; title: string }>();
 
   const upcoming = getUpcoming(30);
 
@@ -547,9 +533,10 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
     setDialogOpen(false);
   }
 
-  function handleDelete(id: string, title: string) {
-    if (!confirm(`"${title}" 기념일을 삭제하시겠습니까?`)) return;
-    deleteAnniversary(id);
+  function handleDelete() {
+    const target = deleteConfirm.confirm();
+    if (!target) return;
+    deleteAnniversary(target.id);
     toast.success("기념일이 삭제되었습니다.");
   }
 
@@ -594,7 +581,12 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
 
       {/* 기념일 목록 */}
       {sortedAnniversaries.length === 0 ? (
-        <EmptyState onAdd={openAdd} />
+        <EmptyState
+          icon={CalendarDays}
+          title="등록된 기념일이 없습니다"
+          description="창립일, 공연, 수상 기록을 기념일로 등록해보세요."
+          action={{ label: "기념일 추가", onClick: openAdd }}
+        />
       ) : (
         <div className="space-y-2">
           {sortedAnniversaries.map((item) => (
@@ -602,7 +594,7 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
               key={item.id}
               item={item}
               onEdit={() => openEdit(item)}
-              onDelete={() => handleDelete(item.id, item.title)}
+              onDelete={() => deleteConfirm.request({ id: item.id, title: item.title })}
             />
           ))}
         </div>
@@ -615,6 +607,14 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
         onSubmit={handleSubmit}
         initial={formInitial}
         mode={dialogMode}
+      />
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="기념일 삭제"
+        description={deleteConfirm.target ? `"${deleteConfirm.target.title}" 기념일을 삭제하시겠습니까?` : ""}
+        onConfirm={handleDelete}
+        destructive
       />
     </div>
   );

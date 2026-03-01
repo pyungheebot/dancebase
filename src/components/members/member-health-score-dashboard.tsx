@@ -12,6 +12,7 @@ import {
   CalendarCheck,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import {
   Sheet,
   SheetContent,
@@ -129,8 +130,7 @@ function MemberAvatar({
       className={`h-8 w-8 shrink-0 rounded-full overflow-hidden flex items-center justify-center font-bold text-xs ${config.bgColor} ${config.textColor}`}
     >
       {avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+        <Image src={avatarUrl} alt={name} width={32} height={32} className="h-full w-full object-cover" unoptimized />
       ) : (
         <span>{initial}</span>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { AnonymousFeedback, FeedbackCategory } from "@/types";
 
 // ============================================
@@ -52,18 +52,7 @@ function saveAll(groupId: string, feedbacks: AnonymousFeedback[]): void {
 
 export function useAnonymousFeedback(groupId: string) {
   const [feedbacks, setFeedbacks] = useState<AnonymousFeedback[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId) {
-      setLoading(false);
-      return;
-    }
-    const data = loadAll(groupId);
-    setFeedbacks(data);
-    setLoading(false);
-  }, [groupId]);
 
   // 피드백 작성 (익명으로 대상 멤버에게 전송)
   const sendFeedback = useCallback(
@@ -146,7 +135,7 @@ export function useAnonymousFeedback(groupId: string) {
   );
 
   return {
-    loading,
+    loading: false,
     sendFeedback,
     getReceivedFeedbacks,
     getSentFeedbacks,

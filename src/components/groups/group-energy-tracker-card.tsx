@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { ChevronDown, ChevronUp, Zap, Trash2, Plus } from "lucide-react";
 import {
   Collapsible,
@@ -209,7 +210,7 @@ export function GroupEnergyTrackerCard({
     fatigue: 30,
   });
   const [formNote, setFormNote] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const { currentEnergy, weeklyTrends, recent30, addRecord, deleteRecord, loading } =
     useGroupEnergyTracker(groupId);
@@ -218,21 +219,21 @@ export function GroupEnergyTrackerCard({
     setFormScores((prev) => ({ ...prev, [dim]: val[0] }));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!formDate) return;
-    setSubmitting(true);
-    addRecord({
-      date: formDate,
-      recordedBy: currentUserId,
-      scores: formScores,
-      note: formNote.trim(),
+    await execute(async () => {
+      addRecord({
+        date: formDate,
+        recordedBy: currentUserId,
+        scores: formScores,
+        note: formNote.trim(),
+      });
+      // 폼 초기화
+      setFormDate(todayStr());
+      setFormScores({ morale: 70, motivation: 70, fatigue: 30 });
+      setFormNote("");
+      setFormOpen(false);
     });
-    // 폼 초기화
-    setFormDate(todayStr());
-    setFormScores({ morale: 70, motivation: 70, fatigue: 30 });
-    setFormNote("");
-    setFormOpen(false);
-    setSubmitting(false);
   }
 
   // 최근 10개 기록

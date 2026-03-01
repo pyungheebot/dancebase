@@ -626,7 +626,7 @@ export function QrCheckInCard({ groupId, memberNames = [] }: Props) {
                 출석 세션이 없습니다
               </p>
               <p className="text-xs text-gray-400">
-                "새 세션" 버튼을 눌러 출석 체크인을 시작하세요.
+                &quot;새 세션&quot; 버튼을 눌러 출석 체크인을 시작하세요.
               </p>
               <Button
                 size="sm"

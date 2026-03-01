@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
@@ -198,7 +197,7 @@ export function BoardNoticeBanner({
                   {nicknameMap?.[post.author_id] || post.profiles?.name}
                 </span>
                 <span className="shrink-0 text-yellow-500/60">
-                  {format(new Date(post.created_at), "M/d", { locale: ko })}
+                  {formatKo(new Date(post.created_at), "M/d")}
                 </span>
               </div>
             </Link>

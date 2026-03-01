@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, startTransition } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useSchedules } from "@/hooks/use-schedule";
@@ -202,12 +202,12 @@ export function DashboardContent({ ctx, financeRole }: DashboardContentProps) {
   }, [schedules]);
 
   useEffect(() => {
-    fetchDashboard();
+    startTransition(() => { fetchDashboard(); });
   }, [fetchDashboard]);
 
   useEffect(() => {
     if (!schedulesLoading && schedules.length > 0) {
-      fetchNextAttendance();
+      startTransition(() => { fetchNextAttendance(); });
     }
   }, [schedulesLoading, schedules, fetchNextAttendance]);
 

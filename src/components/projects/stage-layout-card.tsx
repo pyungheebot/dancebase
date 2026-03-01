@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Card,
   CardContent,
@@ -212,7 +213,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
 
   // 저장 중 상태
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   // 선택된 플랜
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0] ?? null;
@@ -224,8 +225,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
       toast.error("플랜 이름을 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await execute(async () => {
       const newPlan = await addPlan({
         planName: planForm.planName.trim(),
         stageWidth: planForm.stageWidth ? Number(planForm.stageWidth) : undefined,
@@ -235,11 +235,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
       setPlanForm(DEFAULT_PLAN_FORM);
       setAddPlanDialogOpen(false);
       toast.success("플랜이 추가되었습니다.");
-    } catch {
-      toast.error("플랜 추가에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   // ── 플랜 삭제 핸들러 ──
@@ -263,8 +259,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
       toast.error("라벨을 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await execute(async () => {
       await addItem(effectivePlanId, {
         type: itemForm.type,
         label: itemForm.label.trim(),
@@ -278,11 +273,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
       setItemForm(DEFAULT_ITEM_FORM);
       setAddItemDialogOpen(false);
       toast.success("아이템이 추가되었습니다.");
-    } catch {
-      toast.error("아이템 추가에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   // ── 아이템 편집 다이얼로그 열기 ──
@@ -309,8 +300,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
       toast.error("라벨을 입력해주세요.");
       return;
     }
-    setSaving(true);
-    try {
+    await execute(async () => {
       await updateItem(effectivePlanId, editingItem.id, {
         type: itemForm.type,
         label: itemForm.label.trim(),
@@ -324,11 +314,7 @@ export function StageLayoutCard({ groupId, projectId }: StageLayoutCardProps) {
       setEditItemDialogOpen(false);
       setEditingItem(null);
       toast.success("아이템이 수정되었습니다.");
-    } catch {
-      toast.error("아이템 수정에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   }
 
   // ── 아이템 삭제 핸들러 ──

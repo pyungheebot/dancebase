@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ export function FinanceCategoryManager({ groupId, projectId, categories, onSucce
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newFeeRate, setNewFeeRate] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editFeeRate, setEditFeeRate] = useState("");
@@ -41,24 +42,23 @@ export function FinanceCategoryManager({ groupId, projectId, categories, onSucce
       toast.error("수수료 비율은 0~100 사이로 입력해주세요");
       return;
     }
-    setLoading(true);
+    await execute(async () => {
+      const { error } = await supabase.from("finance_categories").insert({
+        group_id: groupId,
+        project_id: projectId || null,
+        name,
+        sort_order: categories.length,
+        fee_rate: feeRate,
+      });
 
-    const { error } = await supabase.from("finance_categories").insert({
-      group_id: groupId,
-      project_id: projectId || null,
-      name,
-      sort_order: categories.length,
-      fee_rate: feeRate,
-    });
-
-    setLoading(false);
-    if (error) {
-      toast.error("카테고리 추가에 실패했습니다");
-    } else {
+      if (error) {
+        toast.error("카테고리 추가에 실패했습니다");
+        return;
+      }
       setNewName("");
       setNewFeeRate("");
       onSuccess();
-    }
+    });
   };
 
   const handleDelete = async (id: string) => {
@@ -141,6 +141,7 @@ export function FinanceCategoryManager({ groupId, projectId, categories, onSucce
                 disabled={loading || !newName.trim()}
                 size="icon"
                 className="h-8 w-8 shrink-0"
+                aria-label="카테고리 추가"
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -204,6 +205,7 @@ export function FinanceCategoryManager({ groupId, projectId, categories, onSucce
                         size="icon"
                         className="h-6 w-6 text-muted-foreground hover:text-foreground"
                         onClick={handleEditCancel}
+                        aria-label="취소"
                       >
                         <X className="h-3 w-3" />
                       </Button>
@@ -212,6 +214,7 @@ export function FinanceCategoryManager({ groupId, projectId, categories, onSucce
                         size="icon"
                         className="h-6 w-6 text-green-600 hover:text-green-700"
                         onClick={() => handleEditSave(cat.id)}
+                        aria-label="저장"
                       >
                         <Check className="h-3 w-3" />
                       </Button>
@@ -237,6 +240,7 @@ export function FinanceCategoryManager({ groupId, projectId, categories, onSucce
                         size="icon"
                         className="h-6 w-6 text-muted-foreground hover:text-foreground"
                         onClick={() => handleEditStart(cat)}
+                        aria-label="카테고리 수정"
                       >
                         <Pencil className="h-3 w-3" />
                       </Button>
@@ -245,6 +249,7 @@ export function FinanceCategoryManager({ groupId, projectId, categories, onSucce
                         size="icon"
                         className="h-6 w-6 text-muted-foreground hover:text-destructive"
                         onClick={() => handleDelete(cat.id)}
+                        aria-label="카테고리 삭제"
                       >
                         <X className="h-3 w-3" />
                       </Button>

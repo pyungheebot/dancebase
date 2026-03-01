@@ -24,6 +24,8 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateProject } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 
 const STATUS_COLORS: Record<ProjectStatus, string> = {
   "신규": "bg-blue-100 text-blue-700",
@@ -105,8 +107,8 @@ export function ProjectList({ groupId }: ProjectListProps) {
   const { projects, canManage, loading, refetch } = useProjects(groupId);
   const [statusFilter, setStatusFilter] = useState<string>("전체");
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const deleteConfirm = useDeleteConfirm<{ id: string; name: string }>();
+  const { pending: isDeleting, execute: executeDelete } = useAsyncAction();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const router = useRouter();
 
@@ -133,22 +135,22 @@ export function ProjectList({ groupId }: ProjectListProps) {
   }
 
   async function handleDelete() {
-    if (!deleteTarget) return;
-    setIsDeleting(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("projects")
-      .delete()
-      .eq("id", deleteTarget.id);
-    setIsDeleting(false);
-    setDeleteTarget(null);
-    if (error) {
-      toast.error("프로젝트 삭제에 실패했습니다.");
-      return;
-    }
-    toast.success("프로젝트가 삭제되었습니다.");
-    invalidateProject(deleteTarget.id, groupId);
-    refetch();
+    const target = deleteConfirm.confirm();
+    if (!target) return;
+    await executeDelete(async () => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", target.id);
+      if (error) {
+        toast.error("프로젝트 삭제에 실패했습니다.");
+        return;
+      }
+      toast.success("프로젝트가 삭제되었습니다.");
+      invalidateProject(target.id, groupId);
+      refetch();
+    });
   }
 
   if (loading) {
@@ -375,7 +377,7 @@ export function ProjectList({ groupId }: ProjectListProps) {
                         <DropdownMenuItem
                           className="text-xs gap-2 text-destructive focus:text-destructive"
                           onClick={() =>
-                            setDeleteTarget({ id: project.id, name: project.name })
+                            deleteConfirm.request({ id: project.id, name: project.name })
                           }
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -395,12 +397,10 @@ export function ProjectList({ groupId }: ProjectListProps) {
 
       {/* 삭제 확인 다이얼로그 */}
       <ConfirmDialog
-        open={!!deleteTarget}
-        onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
         title="프로젝트 삭제"
-        description={`"${deleteTarget?.name}" 프로젝트를 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.`}
+        description={`"${deleteConfirm.target?.name}" 프로젝트를 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.`}
         onConfirm={handleDelete}
         destructive
       />

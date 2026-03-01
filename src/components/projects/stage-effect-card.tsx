@@ -32,16 +32,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ChevronDown,
   ChevronUp,
@@ -60,6 +51,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useStageEffect } from "@/hooks/use-stage-effect";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
   StageEffectType,
   StageEffectIntensity,
@@ -847,7 +839,7 @@ export function StageEffectCard({
   // 다이얼로그 상태
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<StageEffectEntry | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<StageEffectEntry | null>(null);
+  const deleteConfirm = useDeleteConfirm<StageEffectEntry>();
 
   // 탭
   const [activeTab, setActiveTab] = useState<ViewTab>("list");
@@ -914,14 +906,14 @@ export function StageEffectCard({
 
   // 삭제 핸들러
   function handleDelete() {
-    if (!deleteTarget) return;
-    const ok = deleteEntry(deleteTarget.id);
+    const entry = deleteConfirm.confirm();
+    if (!entry) return;
+    const ok = deleteEntry(entry.id);
     if (ok) {
       toast.success("큐가 삭제되었습니다.");
     } else {
       toast.error("큐 삭제에 실패했습니다.");
     }
-    setDeleteTarget(null);
   }
 
   // 안전 확인 토글 핸들러 (safe <-> caution 토글)
@@ -1099,7 +1091,7 @@ export function StageEffectCard({
                     key={entry.id}
                     entry={entry}
                     onEdit={setEditTarget}
-                    onDelete={setDeleteTarget}
+                    onDelete={deleteConfirm.request}
                     onToggleSafety={handleToggleSafety}
                   />
                 ))}
@@ -1169,30 +1161,14 @@ export function StageEffectCard({
       )}
 
       {/* 삭제 확인 다이얼로그 */}
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">큐 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              <strong>큐 #{deleteTarget?.cueNumber}</strong> (
-              {deleteTarget ? EFFECT_TYPE_LABELS[deleteTarget.effectType] : ""}
-              )을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-7 text-xs bg-destructive hover:bg-destructive/90"
-              onClick={handleDelete}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="큐 삭제"
+        description={`큐 #${deleteConfirm.target?.cueNumber} (${deleteConfirm.target ? EFFECT_TYPE_LABELS[deleteConfirm.target.effectType] : ""})을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+        onConfirm={handleDelete}
+        destructive
+      />
     </>
   );
 }

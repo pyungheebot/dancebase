@@ -190,8 +190,7 @@ export function SocialCalendarCard({
   // 월별 게시물 맵 (날짜 -> 게시물 배열)
   const monthPosts = useMemo(
     () => getPostsByMonth(currentYear, currentMonth),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [posts, currentYear, currentMonth]
+    [getPostsByMonth, currentYear, currentMonth]
   );
 
   const postsByDate = useMemo(() => {

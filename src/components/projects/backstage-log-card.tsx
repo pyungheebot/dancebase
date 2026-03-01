@@ -27,16 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Radio,
@@ -57,6 +48,7 @@ import {
   Clock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { useBackstageLog } from "@/hooks/use-backstage-log";
 import type { BackstageLogCategory, BackstageLogSession } from "@/types";
 
@@ -152,9 +144,9 @@ function CreateSessionDialog({
   const [showDate, setShowDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!showName.trim()) {
       toast.error("공연명을 입력해주세요.");
       return;
@@ -163,15 +155,12 @@ function CreateSessionDialog({
       toast.error("공연 날짜를 선택해주세요.");
       return;
     }
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       onCreate(showName.trim(), showDate);
       setShowName("");
       setShowDate(new Date().toISOString().split("T")[0]);
       onOpenChange(false);
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
@@ -249,9 +238,9 @@ function EntryForm({
   const [senderName, setSenderName] = useState("");
   const [message, setMessage] = useState("");
   const [category, setCategory] = useState<BackstageLogCategory>("general");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!senderName.trim()) {
       toast.error("발신자 이름을 입력해주세요.");
       return;
@@ -260,14 +249,11 @@ function EntryForm({
       toast.error("메시지를 입력해주세요.");
       return;
     }
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       onAdd(sessionId, { senderName, message, category });
       setMessage("");
       toast.success("로그가 추가되었습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
@@ -610,33 +596,14 @@ function SessionCard({
       )}
 
       {/* 세션 삭제 확인 */}
-      <AlertDialog
+      <ConfirmDialog
         open={deleteSessionId === session.id}
         onOpenChange={(open) => !open && setDeleteSessionId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">세션 삭제</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              "{session.showName}" 세션과 모든 로그 항목({entries.length}건)이
-              영구 삭제됩니다. 계속하시겠습니까?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="h-7 text-xs">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="h-7 text-xs bg-red-500 hover:bg-red-600"
-              onClick={() => {
-                onDelete(session.id);
-                setDeleteSessionId(null);
-                toast.success("세션이 삭제되었습니다.");
-              }}
-            >
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="세션 삭제"
+        description={`"${session.showName}" 세션과 모든 로그 항목(${entries.length}건)이 영구 삭제됩니다. 계속하시겠습니까?`}
+        onConfirm={() => { onDelete(session.id); setDeleteSessionId(null); toast.success("세션이 삭제되었습니다."); }}
+        destructive
+      />
 
       {/* 해결 처리 다이얼로그 */}
       <Dialog
@@ -876,7 +843,7 @@ export function BackstageLogCard({ projectId }: { projectId: string }) {
             <Radio className="h-10 w-10 mb-3 opacity-20" />
             <p className="text-xs font-medium mb-1">공연 세션이 없습니다</p>
             <p className="text-[11px] text-center max-w-48">
-              "새 세션" 버튼으로 공연 백스테이지 로그 세션을 시작하세요.
+              &quot;새 세션&quot; 버튼으로 공연 백스테이지 로그 세션을 시작하세요.
             </p>
             <Button
               size="sm"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   StageTransitionItem,
@@ -62,20 +62,16 @@ export type StageTransitionStats = {
 // ============================================================
 
 export function useStageTransition(projectId: string) {
-  const [items, setItems] = useState<StageTransitionItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<StageTransitionItem[]>(() =>
+    projectId ? [...loadData(projectId).items].sort((a, b) => a.order - b.order) : []
+  );
 
   const reload = useCallback(() => {
     if (!projectId) return;
     const data = loadData(projectId);
     const sorted = [...data.items].sort((a, b) => a.order - b.order);
     setItems(sorted);
-    setLoading(false);
   }, [projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (updated: StageTransitionItem[]) => {
@@ -256,7 +252,7 @@ export function useStageTransition(projectId: string) {
 
   return {
     items,
-    loading,
+    loading: false,
     stats,
     addItem,
     updateItem,

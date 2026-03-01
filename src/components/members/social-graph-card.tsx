@@ -420,6 +420,7 @@ function RelationRow({ relation, onDelete, onStrengthChange }: RelationRowProps)
         className="h-5 w-5 text-muted-foreground hover:text-destructive shrink-0"
         onClick={onDelete}
         title="삭제"
+        aria-label="삭제"
       >
         <Trash2 className="h-3 w-3" />
       </Button>

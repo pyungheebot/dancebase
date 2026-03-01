@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { FitnessTestRecord, FitnessTestData } from "@/types";
 
@@ -151,26 +151,18 @@ function calcStats(records: FitnessTestRecord[]): MemberFitnessTestStats {
 // ============================================================
 
 export function useMemberFitnessTest(memberId: string) {
-  const [records, setRecords] = useState<FitnessTestRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [records, setRecords] = useState<FitnessTestRecord[]>(() =>
+    memberId
+      ? [...loadData(memberId).records].sort((a, b) => b.date.localeCompare(a.date))
+      : []
+  );
 
   const reload = useCallback(() => {
-    if (!memberId) {
-      setLoading(false);
-      return;
-    }
+    if (!memberId) return;
     const data = loadData(memberId);
-    // 날짜 내림차순 정렬
-    const sorted = [...data.records].sort((a, b) =>
-      b.date.localeCompare(a.date)
-    );
+    const sorted = [...data.records].sort((a, b) => b.date.localeCompare(a.date));
     setRecords(sorted);
-    setLoading(false);
   }, [memberId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 내부 persist 헬퍼
   const persist = useCallback(
@@ -243,7 +235,7 @@ export function useMemberFitnessTest(memberId: string) {
 
   return {
     records,
-    loading,
+    loading: false,
     years,
     stats,
     addRecord,

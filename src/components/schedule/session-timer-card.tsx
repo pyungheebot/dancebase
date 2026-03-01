@@ -82,31 +82,47 @@ function DonutChart({
     );
   }
 
-  // 각 구간의 호(arc) 계산
-  let cumulativeAngle = -90; // 12시 방향 시작
+  // 각 구간의 호(arc) 계산 - reduce로 불변 패턴 사용 (React Compiler 호환)
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
 
-  const arcs = segments.map((seg) => {
-    const ratio = seg.durationMinutes / totalMinutes;
-    const angle = ratio * 360;
-    const startAngle = cumulativeAngle;
-    cumulativeAngle += angle;
-    const endAngle = cumulativeAngle;
+  const { arcs } = segments.reduce<{
+    arcs: {
+      seg: SessionTimerSegment;
+      d: string;
+      strokeDasharray: string;
+      startAngle: number;
+      angle: number;
+    }[];
+    cumulativeAngle: number;
+  }>(
+    (acc, seg) => {
+      const ratio = seg.durationMinutes / totalMinutes;
+      const angle = ratio * 360;
+      const startAngle = acc.cumulativeAngle;
+      const endAngle = startAngle + angle;
 
-    const toRad = (deg: number) => (deg * Math.PI) / 180;
-    const x1 = cx + r * Math.cos(toRad(startAngle));
-    const y1 = cy + r * Math.sin(toRad(startAngle));
-    const x2 = cx + r * Math.cos(toRad(endAngle - 0.5));
-    const y2 = cy + r * Math.sin(toRad(endAngle - 0.5));
-    const largeArc = angle > 180 ? 1 : 0;
+      const x1 = cx + r * Math.cos(toRad(startAngle));
+      const y1 = cy + r * Math.sin(toRad(startAngle));
+      const x2 = cx + r * Math.cos(toRad(endAngle - 0.5));
+      const y2 = cy + r * Math.sin(toRad(endAngle - 0.5));
+      const largeArc = angle > 180 ? 1 : 0;
 
-    return {
-      seg,
-      d: `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`,
-      strokeDasharray: `${((angle - 0.5) / 360) * circumference} ${circumference}`,
-      startAngle,
-      angle,
-    };
-  });
+      return {
+        arcs: [
+          ...acc.arcs,
+          {
+            seg,
+            d: `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`,
+            strokeDasharray: `${((angle - 0.5) / 360) * circumference} ${circumference}`,
+            startAngle,
+            angle,
+          },
+        ],
+        cumulativeAngle: endAngle,
+      };
+    },
+    { arcs: [], cumulativeAngle: -90 } // 12시 방향 시작
+  );
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -122,7 +138,6 @@ function DonutChart({
 
       {/* 구간별 호 */}
       {arcs.map((arc, idx) => {
-        const toRad = (deg: number) => (deg * Math.PI) / 180;
         const isCurrentSeg = idx === currentSegmentIndex && isRunning;
         return (
           <path
@@ -217,7 +232,7 @@ type NewPresetFormProps = {
 
 function NewPresetForm({ onSave, onCancel }: NewPresetFormProps) {
   const [title, setTitle] = useState("");
-  const [segments, setSegments] = useState<SessionTimerSegment[]>([
+  const [segments, setSegments] = useState<SessionTimerSegment[]>(() => [
     { id: `ns-${Date.now()}`, label: "워밍업", durationMinutes: 15, color: "#f97316" },
   ]);
   const [newLabel, setNewLabel] = useState("");

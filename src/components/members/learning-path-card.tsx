@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useLearningPath } from "@/hooks/use-learning-path";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import {
   GraduationCap,
   ChevronDown,
@@ -148,7 +149,7 @@ function StepCard({
               </div>
               {step.status === "completed" && step.completedAt && (
                 <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {new Date(step.completedAt).toLocaleDateString("ko-KR")} 완료
+                  {formatYearMonthDay(step.completedAt)} 완료
                 </p>
               )}
             </div>

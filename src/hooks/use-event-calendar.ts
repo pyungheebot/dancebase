@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { CalendarEvent, CalendarEventType } from "@/types";
@@ -62,9 +63,9 @@ export function useEventCalendar(groupId: string) {
 
   // ── CRUD ────────────────────────────────────────────────
 
-  function addEvent(
+  const addEvent = useCallback((
     input: Omit<CalendarEvent, "id" | "createdAt">
-  ): CalendarEvent {
+  ): CalendarEvent => {
     const newEvent: CalendarEvent = {
       ...input,
       id: `ce-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -74,7 +75,7 @@ export function useEventCalendar(groupId: string) {
     saveEvents(groupId, next);
     mutate(next, false);
     return newEvent;
-  }
+  }, [allEvents, groupId, mutate]);
 
   function updateEvent(
     id: string,

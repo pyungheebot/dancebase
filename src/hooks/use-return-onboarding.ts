@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type {
   OnboardingCheckItem,
@@ -50,15 +50,7 @@ function saveStore(groupId: string, store: ReturnOnboardingStore): void {
 export function useReturnOnboarding(groupId: string) {
   const [checkItems, setCheckItems] = useState<OnboardingCheckItem[]>([]);
   const [sessions, setSessions] = useState<MemberOnboardingSession[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    const store = loadStore(groupId);
-    setCheckItems(store.checkItems);
-    setSessions(store.sessions);
-    setLoading(false);
-  }, [groupId]);
 
   // 저장 + 상태 업데이트 헬퍼
   const persist = useCallback(
@@ -249,7 +241,7 @@ export function useReturnOnboarding(groupId: string) {
   return {
     checkItems,
     sessions,
-    loading,
+    loading: false,
     addCheckItem,
     deleteCheckItem,
     startSession,

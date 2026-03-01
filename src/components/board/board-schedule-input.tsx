@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { Clock } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -31,11 +31,16 @@ export function BoardScheduleInput({ value, onChange }: BoardScheduleInputProps)
   // 외부 value가 변경될 때 내부 상태 동기화
   useEffect(() => {
     if (value === null) {
-      setEnabled(false);
-      setLocalValue("");
+      startTransition(() => {
+        setEnabled(false);
+        setLocalValue("");
+      });
     } else {
-      setEnabled(true);
-      setLocalValue(toDatetimeLocal(new Date(value)));
+      const local = toDatetimeLocal(new Date(value));
+      startTransition(() => {
+        setEnabled(true);
+        setLocalValue(local);
+      });
     }
   }, [value]);
 
@@ -76,8 +81,8 @@ export function BoardScheduleInput({ value, onChange }: BoardScheduleInputProps)
     onChange(selected.toISOString());
   };
 
-  // 현재 시간 이후만 선택 가능하도록 min 값 계산
-  const minDatetime = toDatetimeLocal(new Date(Date.now() + 60 * 1000));
+  // 현재 시간 이후만 선택 가능하도록 min 값 계산 (마운트 시 1회)
+  const [minDatetime] = useState(() => toDatetimeLocal(new Date(Date.now() + 60 * 1000)));
 
   return (
     <div className="space-y-2 rounded-lg border px-3 py-2.5">

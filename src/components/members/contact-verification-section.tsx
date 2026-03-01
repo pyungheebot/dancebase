@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { CheckCircle2, Clock, PhoneCall, RefreshCw, XCircle } from "lucide-react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import type { EntityContext } from "@/types/entity-context";
 
 type ContactVerificationSectionProps = {
@@ -109,7 +108,7 @@ export function ContactVerificationSection({ ctx }: ContactVerificationSectionPr
                 <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   마지막 요청:{" "}
-                  {format(new Date(lastRequestedAt), "yyyy년 M월 d일 HH:mm", { locale: ko })}
+                  {formatKo(new Date(lastRequestedAt), "yyyy년 M월 d일 HH:mm")}
                 </p>
               )}
 

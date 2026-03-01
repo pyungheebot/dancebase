@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { FileText, MessageSquare, Calendar } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatRelative } from "@/lib/date-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRecentActivityFeed } from "@/hooks/use-recent-activity-feed";
+import { EmptyState } from "@/components/shared/empty-state";
 import type { ActivityFeedItem, ActivityFeedItemType } from "@/types";
 
 // ─── 아이콘 매핑 ──────────────────────────────────────────────────────────────
@@ -44,10 +44,7 @@ function ActivityItem({ item }: { item: ActivityFeedItem }) {
   const Icon = ICON_MAP[item.type];
   const iconColor = ICON_COLOR_MAP[item.type];
   const href = buildHref(item);
-  const timeAgo = formatDistanceToNow(new Date(item.createdAt), {
-    addSuffix: true,
-    locale: ko,
-  });
+  const timeAgo = formatRelative(new Date(item.createdAt));
 
   return (
     <li>
@@ -88,14 +85,6 @@ function ActivityFeedSkeleton() {
   );
 }
 
-// ─── 빈 상태 ──────────────────────────────────────────────────────────────────
-
-function EmptyState() {
-  return (
-    <p className="text-xs text-muted-foreground py-2">최근 활동이 없습니다</p>
-  );
-}
-
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 type RecentActivityFeedProps = {
@@ -118,7 +107,7 @@ export function RecentActivityFeed({ groupIds, limit = 20 }: RecentActivityFeedP
         {loading ? (
           <ActivityFeedSkeleton />
         ) : items.length === 0 ? (
-          <EmptyState />
+          <EmptyState icon={FileText} title="최근 활동이 없습니다" />
         ) : (
           <ul className="space-y-0.5">
             {items.map((item) => (

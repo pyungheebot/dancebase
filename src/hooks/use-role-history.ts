@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { RoleHistoryEntry, MemberRoleType } from "@/types";
 
 // ============================================
@@ -56,20 +56,14 @@ export type RoleHistoryStats = {
 // ============================================
 
 export function useRoleHistory(groupId: string) {
-  const [entries, setEntries] = useState<RoleHistoryEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entries, setEntries] = useState<RoleHistoryEntry[]>(() => loadEntries(groupId));
 
   // localStorage에서 데이터 불러오기
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadEntries(groupId);
     setEntries(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 역할 배정
   const assignRole = useCallback(
@@ -178,7 +172,7 @@ export function useRoleHistory(groupId: string) {
 
   return {
     entries,
-    loading,
+    loading: false,
     assignRole,
     endRole,
     deleteEntry,

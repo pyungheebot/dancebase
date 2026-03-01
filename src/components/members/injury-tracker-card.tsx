@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -114,7 +115,7 @@ export function InjuryTrackerCard({
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const {
     entries,
@@ -161,8 +162,7 @@ export function InjuryTrackerCard({
       toast.error("멤버, 부위, 설명, 심각도, 부상일은 필수입니다.");
       return;
     }
-    setSubmitting(true);
-    try {
+    await execute(async () => {
       const restrictions = form.restrictions
         ? form.restrictions
             .split(",")
@@ -183,11 +183,7 @@ export function InjuryTrackerCard({
       toast.success("부상이 등록되었습니다.");
       setForm(EMPTY_FORM);
       setDialogOpen(false);
-    } catch {
-      toast.error("부상 등록에 실패했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   function handleDelete(id: string) {

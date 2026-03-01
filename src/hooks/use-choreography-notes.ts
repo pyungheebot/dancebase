@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { ChoreographyNote, ChoreographySection } from "@/types";
 
 const MAX_NOTES = 5;
@@ -36,18 +36,7 @@ function saveNotes(
 
 export function useChoreographyNotes(groupId: string, projectId: string) {
   const [notes, setNotes] = useState<ChoreographyNote[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 초기 로드
-  useEffect(() => {
-    if (!groupId || !projectId) {
-      setLoading(false);
-      return;
-    }
-    const stored = loadNotes(groupId, projectId);
-    setNotes(stored);
-    setLoading(false);
-  }, [groupId, projectId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateNotes = useCallback(
@@ -156,7 +145,7 @@ export function useChoreographyNotes(groupId: string, projectId: string) {
 
   return {
     notes,
-    loading,
+    loading: false,
     canAddNote: notes.length < MAX_NOTES,
     addNote,
     deleteNote,

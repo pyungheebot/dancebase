@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useFundraisingGoal } from "@/hooks/use-fundraising-goal";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { FundraisingGoal } from "@/types";
 
 // ── 금액 포맷 (만원 단위) ────────────────────────────────────
@@ -173,7 +174,7 @@ function GoalDetail({
                   className={`flex flex-col items-center gap-0.5`}
                   title={
                     reached
-                      ? `${mp}% - ${new Date(milestone!.reachedAt!).toLocaleDateString("ko-KR")}`
+                      ? `${mp}% - ${formatYearMonthDay(milestone!.reachedAt!)}`
                       : `${mp}% 미달성`
                   }
                 >

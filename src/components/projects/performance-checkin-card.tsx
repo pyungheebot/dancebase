@@ -31,6 +31,7 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================
 // 상태 레이블 / 색상 헬퍼
@@ -322,12 +323,11 @@ function EventPanel({
 }: EventPanelProps) {
   const [expanded, setExpanded] = useState(true);
   const [newName, setNewName] = useState("");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const handleDeleteEvent = () => {
-    if (confirm(`"${event.eventName}" 이벤트를 삭제하시겠습니까?`)) {
-      onDeleteEvent(event.id);
-      toast.success("이벤트가 삭제되었습니다.");
-    }
+    onDeleteEvent(event.id);
+    toast.success("이벤트가 삭제되었습니다.");
   };
 
   const handleAddMember = () => {
@@ -402,7 +402,7 @@ function EventPanel({
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-            onClick={handleDeleteEvent}
+            onClick={() => setDeleteConfirmOpen(true)}
             title="이벤트 삭제"
           >
             <Trash2 className="h-3 w-3" />
@@ -510,6 +510,14 @@ function EventPanel({
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={(v) => !v && setDeleteConfirmOpen(false)}
+        title="이벤트 삭제"
+        description={`"${event.eventName}" 이벤트를 삭제하시겠습니까?`}
+        onConfirm={handleDeleteEvent}
+        destructive
+      />
     </div>
   );
 }

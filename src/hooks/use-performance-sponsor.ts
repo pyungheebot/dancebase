@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { PerfSponsorEntry, PerfSponsorTier, PerfSponsorshipData } from "@/types";
 
@@ -105,21 +105,15 @@ const TIER_META: Record<
 // ============================================================
 
 export function usePerformanceSponsor(projectId: string) {
-  const [sponsors, setSponsors] = useState<PerfSponsorEntry[]>([]);
+  const [sponsors, setSponsors] = useState<PerfSponsorEntry[]>(() => loadData(projectId).sponsors);
   const [totalGoal, setTotalGoalState] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
     if (!projectId) return;
     const data = loadData(projectId);
     setSponsors(data.sponsors);
     setTotalGoalState(data.totalGoal);
-    setLoading(false);
   }, [projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (updated: {
@@ -240,7 +234,7 @@ export function usePerformanceSponsor(projectId: string) {
   return {
     sponsors,
     totalGoal,
-    loading,
+    loading: false,
     stats,
     // CRUD
     addSponsor,

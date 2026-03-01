@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type {
   ScheduleRecurrenceRule,
   RecurrenceType,
@@ -66,7 +66,7 @@ export function generateUpcomingDates(
       ? rule.endCount
       : Infinity;
 
-  let cursor = new Date(today);
+  const cursor = new Date(today);
   cursor.setDate(cursor.getDate() + 1); // 내일부터 시작
 
   // biweekly는 2주 단위이므로, 기준 주(월요일)를 추적
@@ -155,10 +155,7 @@ export function useScheduleRecurrence(
   const [rules, setRules] = useState<ScheduleRecurrenceRule[]>([]);
 
   // 마운트 시 localStorage에서 읽기
-  useEffect(() => {
-    if (!groupId) return;
-    setRules(loadRules(groupId));
-  }, [groupId]);
+
 
   const addRule = useCallback(
     (formData: RecurrenceRuleFormData): boolean => {

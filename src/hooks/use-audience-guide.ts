@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type {
   AudienceGuideEntry,
   AudienceGuideSection,
@@ -86,10 +86,6 @@ export function useAudienceGuide(groupId: string, projectId: string) {
     makeEmpty(groupId, projectId)
   );
 
-  // 초기 로드
-  useEffect(() => {
-    setEntry(loadData(groupId, projectId));
-  }, [groupId, projectId]);
 
   // 상태 업데이트 + localStorage 동기화
   const updateEntry = useCallback(

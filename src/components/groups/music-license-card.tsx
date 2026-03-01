@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import {
   Music,
   ChevronDown,
@@ -40,6 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useMusicLicense } from "@/hooks/use-music-license";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { MusicLicenseEntry, MusicLicenseType, MusicLicenseStatus } from "@/types";
 
 // ============================================================
@@ -162,7 +165,8 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<MusicLicenseEntry | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
+  const deleteConfirm = useDeleteConfirm<{ id: string; songTitle: string }>();
 
   // 만료 임박 (30일 이내)
   const expiringList = getExpiringLicenses(30);
@@ -222,8 +226,7 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
       return;
     }
 
-    setSaving(true);
-    try {
+    await execute(async () => {
       const costNum = form.cost.trim() ? Number(form.cost.replace(/[^0-9]/g, "")) : undefined;
 
       if (editTarget) {
@@ -260,17 +263,14 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
         toast.success("라이선스가 추가되었습니다.");
       }
       setDialogOpen(false);
-    } catch {
-      toast.error("처리 중 오류가 발생했습니다.");
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   // 삭제
-  const handleDelete = (id: string, songTitle: string) => {
-    if (!confirm(`"${songTitle}" 라이선스를 삭제하시겠습니까?`)) return;
-    const ok = deleteLicense(id);
+  const handleDelete = () => {
+    const target = deleteConfirm.confirm();
+    if (!target) return;
+    const ok = deleteLicense(target.id);
     if (ok) {
       toast.success("라이선스가 삭제되었습니다.");
     } else {
@@ -433,7 +433,7 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
                             <Pencil className="h-3 w-3" />
                           </button>
                           <button
-                            onClick={() => handleDelete(entry.id, entry.songTitle)}
+                            onClick={() => deleteConfirm.request({ id: entry.id, songTitle: entry.songTitle })}
                             className="p-1 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600"
                           >
                             <Trash2 className="h-3 w-3" />
@@ -659,6 +659,14 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="라이선스 삭제"
+        description={deleteConfirm.target ? `"${deleteConfirm.target.songTitle}" 라이선스를 삭제하시겠습니까?` : ""}
+        onConfirm={handleDelete}
+        destructive
+      />
     </>
   );
 }

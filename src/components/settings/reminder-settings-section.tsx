@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { Bell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useEntitySettings } from "@/hooks/use-entity-settings";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   REMINDER_SETTING_KEY,
   DEFAULT_REMINDER_SETTING,
@@ -42,13 +43,16 @@ export function ReminderSettingsSection({
 
   const [enabled, setEnabled] = useState(false);
   const [selectedOffsets, setSelectedOffsets] = useState<number[]>([60]);
-  const [saving, setSaving] = useState(false);
+  const { pending: saving, execute } = useAsyncAction();
 
   // 저장된 값으로 로컬 상태 초기화
   useEffect(() => {
     if (!loading) {
-      setEnabled(savedValue.enabled);
-      setSelectedOffsets(savedValue.offsets.length > 0 ? savedValue.offsets : [60]);
+      const offsets = savedValue.offsets.length > 0 ? savedValue.offsets : [60];
+      startTransition(() => {
+        setEnabled(savedValue.enabled);
+        setSelectedOffsets(offsets);
+      });
     }
   }, [loading, savedValue.enabled, savedValue.offsets]);
 
@@ -64,18 +68,18 @@ export function ReminderSettingsSection({
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    const { error } = await save({
-      enabled,
-      offsets: selectedOffsets,
-    });
-    setSaving(false);
+    await execute(async () => {
+      const { error } = await save({
+        enabled,
+        offsets: selectedOffsets,
+      });
 
-    if (error) {
-      toast.error("알림 설정 저장에 실패했습니다");
-    } else {
-      toast.success("알림 설정이 저장되었습니다");
-    }
+      if (error) {
+        toast.error("알림 설정 저장에 실패했습니다");
+      } else {
+        toast.success("알림 설정이 저장되었습니다");
+      }
+    });
   };
 
   if (loading) {

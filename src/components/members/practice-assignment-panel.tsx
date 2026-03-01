@@ -688,7 +688,7 @@ export function PracticeAssignmentPanel({
               </p>
               {isLeader && (
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  상단 "과제 추가" 버튼으로 과제를 생성해주세요
+                  상단 &quot;과제 추가&quot; 버튼으로 과제를 생성해주세요
                 </p>
               )}
             </div>

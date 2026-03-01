@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useScheduleCheckin } from "@/hooks/use-schedule-checkin";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 type Props = {
   scheduleId: string;
@@ -24,7 +25,7 @@ export function ScheduleCheckinSection({ scheduleId, isLeader }: Props) {
 
   // 멤버용 상태
   const [inputCode, setInputCode] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
   const [checkinResult, setCheckinResult] = useState<
     "success" | "already" | null
   >(null);
@@ -79,27 +80,26 @@ export function ScheduleCheckinSection({ scheduleId, isLeader }: Props) {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const result = await submitCheckin(inputCode);
+    await execute(async () => {
+      try {
+        const result = await submitCheckin(inputCode);
 
-      if (result === "success") {
-        setCheckinResult("success");
-        toast.success("체크인 완료!");
-        setInputCode("");
-      } else if (result === "already") {
-        setCheckinResult("already");
-        toast.info("이미 체크인되어 있습니다");
-      } else if (result === "invalid") {
-        toast.error("유효하지 않은 코드입니다");
-      } else if (result === "expired") {
-        toast.error("만료된 코드입니다. 새 코드를 요청하세요");
+        if (result === "success") {
+          setCheckinResult("success");
+          toast.success("체크인 완료!");
+          setInputCode("");
+        } else if (result === "already") {
+          setCheckinResult("already");
+          toast.info("이미 체크인되어 있습니다");
+        } else if (result === "invalid") {
+          toast.error("유효하지 않은 코드입니다");
+        } else if (result === "expired") {
+          toast.error("만료된 코드입니다. 새 코드를 요청하세요");
+        }
+      } catch {
+        toast.error("체크인에 실패했습니다");
       }
-    } catch {
-      toast.error("체크인에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   const formatCountdown = (sec: number) => {

@@ -49,6 +49,7 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 // ============================================================
 // 유형 헬퍼
@@ -780,6 +781,8 @@ export function ProgramBookEditorCard({
   const [editCastTarget, setEditCastTarget] = useState<ProgramBookCast | null>(
     null
   );
+  const [deleteItemConfirmId, setDeleteItemConfirmId] = useState<string | null>(null);
+  const [deleteCastConfirmId, setDeleteCastConfirmId] = useState<string | null>(null);
 
   const {
     data,
@@ -830,10 +833,11 @@ export function ProgramBookEditorCard({
     setEditItemTarget(null);
   };
 
-  const handleDeleteItem = (id: string) => {
-    if (!confirm("이 프로그램을 삭제하시겠습니까?")) return;
-    deleteItem(id);
+  const handleDeleteItem = () => {
+    if (!deleteItemConfirmId) return;
+    deleteItem(deleteItemConfirmId);
     toast.success("프로그램이 삭제되었습니다.");
+    setDeleteItemConfirmId(null);
   };
 
   const handleAddCast = (cast: Omit<ProgramBookCast, "id">) => {
@@ -848,10 +852,11 @@ export function ProgramBookEditorCard({
     setEditCastTarget(null);
   };
 
-  const handleDeleteCast = (id: string) => {
-    if (!confirm("이 출연진을 삭제하시겠습니까?")) return;
-    deleteCast(id);
+  const handleDeleteCast = () => {
+    if (!deleteCastConfirmId) return;
+    deleteCast(deleteCastConfirmId);
     toast.success("출연진이 삭제되었습니다.");
+    setDeleteCastConfirmId(null);
   };
 
   return (
@@ -1096,7 +1101,7 @@ export function ProgramBookEditorCard({
                         onMoveUp={() => reorderItems(item.id, "up")}
                         onMoveDown={() => reorderItems(item.id, "down")}
                         onEdit={() => setEditItemTarget(item)}
-                        onDelete={() => handleDeleteItem(item.id)}
+                        onDelete={() => setDeleteItemConfirmId(item.id)}
                       />
                     ))}
                   </div>
@@ -1130,7 +1135,7 @@ export function ProgramBookEditorCard({
                         key={c.id}
                         cast={c}
                         onEdit={() => setEditCastTarget(c)}
-                        onDelete={() => handleDeleteCast(c.id)}
+                        onDelete={() => setDeleteCastConfirmId(c.id)}
                       />
                     ))}
                   </div>
@@ -1140,6 +1145,22 @@ export function ProgramBookEditorCard({
           </div>
         </CollapsibleContent>
       </Collapsible>
+      <ConfirmDialog
+        open={deleteItemConfirmId !== null}
+        onOpenChange={(v) => !v && setDeleteItemConfirmId(null)}
+        title="프로그램 삭제"
+        description="이 프로그램을 삭제하시겠습니까?"
+        onConfirm={handleDeleteItem}
+        destructive
+      />
+      <ConfirmDialog
+        open={deleteCastConfirmId !== null}
+        onOpenChange={(v) => !v && setDeleteCastConfirmId(null)}
+        title="출연진 삭제"
+        description="이 출연진을 삭제하시겠습니까?"
+        onConfirm={handleDeleteCast}
+        destructive
+      />
     </>
   );
 }

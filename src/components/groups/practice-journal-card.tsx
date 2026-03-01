@@ -37,6 +37,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useGroupPracticeJournal } from "@/hooks/use-group-practice-journal";
+import { formatYearMonthDay } from "@/lib/date-utils";
 import type { GroupPracticeJournalEntry } from "@/types";
 
 // ============================================
@@ -174,7 +175,7 @@ function JournalEntryDetail({ entry }: { entry: GroupPracticeJournalEntry }) {
       {/* 작성자 */}
       <p className="text-[9px] text-muted-foreground text-right">
         작성: {entry.authorName} &middot;{" "}
-        {new Date(entry.createdAt).toLocaleDateString("ko-KR")}
+        {formatYearMonthDay(entry.createdAt)}
       </p>
     </div>
   );

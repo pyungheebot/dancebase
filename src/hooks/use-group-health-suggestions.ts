@@ -67,7 +67,7 @@ export function useGroupHealthSuggestions(groupId: string) {
       const scheduleIds = (scheduleRows ?? []).map((s: { id: string }) => s.id);
 
       let attendanceRate: number | null = null;
-      let activeUserIds = new Set<string>();
+      const activeUserIds = new Set<string>();
 
       if (scheduleIds.length > 0 && currentMemberCount > 0) {
         const { data: attRows, error: attErr } = await supabase

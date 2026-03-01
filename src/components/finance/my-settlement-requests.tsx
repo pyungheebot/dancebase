@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { CheckCircle2, Copy, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { copyToClipboard } from "@/lib/clipboard";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import type { SettlementMemberStatus } from "@/types";
 
@@ -67,12 +68,7 @@ function MyRequestCard({
   }
 
   async function copyAccountNumber(text: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success("계좌번호가 복사되었습니다");
-    } catch {
-      toast.error("복사에 실패했습니다");
-    }
+    await copyToClipboard(text, "계좌번호가 복사되었습니다", "복사에 실패했습니다");
   }
 
   const isActive = request.status === "active";

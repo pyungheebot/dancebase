@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Clock, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useScheduleWaitlist } from "@/hooks/use-schedule-waitlist";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import type { Schedule } from "@/types";
 
 type ScheduleWaitlistSectionProps = {
@@ -21,7 +22,7 @@ export function ScheduleWaitlistSection({
   goingCount,
 }: ScheduleWaitlistSectionProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   const { waitlist, loading, joinWaitlist, leaveWaitlist } =
     useScheduleWaitlist(schedule.max_attendees != null ? schedule.id : null);
@@ -42,27 +43,25 @@ export function ScheduleWaitlistSection({
   const isOnWaitlist = !!myWaitlistEntry;
 
   const handleJoin = async () => {
-    setSubmitting(true);
-    try {
-      await joinWaitlist();
-      toast.success("대기 명단에 등록되었습니다");
-    } catch {
-      toast.error("대기 등록에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    await execute(async () => {
+      try {
+        await joinWaitlist();
+        toast.success("대기 명단에 등록되었습니다");
+      } catch {
+        toast.error("대기 등록에 실패했습니다");
+      }
+    });
   };
 
   const handleLeave = async () => {
-    setSubmitting(true);
-    try {
-      await leaveWaitlist();
-      toast.success("대기 명단에서 취소되었습니다");
-    } catch {
-      toast.error("대기 취소에 실패했습니다");
-    } finally {
-      setSubmitting(false);
-    }
+    await execute(async () => {
+      try {
+        await leaveWaitlist();
+        toast.success("대기 명단에서 취소되었습니다");
+      } catch {
+        toast.error("대기 취소에 실패했습니다");
+      }
+    });
   };
 
   return (

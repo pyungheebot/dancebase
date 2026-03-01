@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { MusicLicenseEntry, MusicLicenseStatus } from "@/types";
 
 // ============================================================
@@ -66,19 +66,13 @@ export type MusicLicenseStats = {
 // ============================================================
 
 export function useMusicLicense(groupId: string) {
-  const [licenses, setLicenses] = useState<MusicLicenseEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [licenses, setLicenses] = useState<MusicLicenseEntry[]>(() => loadData(groupId));
 
   const reload = useCallback(() => {
     if (!groupId) return;
     const data = loadData(groupId);
     setLicenses(data);
-    setLoading(false);
   }, [groupId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: MusicLicenseEntry[]) => {
@@ -181,7 +175,7 @@ export function useMusicLicense(groupId: string) {
 
   return {
     licenses,
-    loading,
+    loading: false,
     addLicense,
     updateLicense,
     deleteLicense,

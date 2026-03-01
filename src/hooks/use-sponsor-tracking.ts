@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { SponsorTrackingEntry, SponsorTier } from "@/types";
 
 // ============================================================
@@ -58,19 +58,13 @@ export type SponsorTrackingStats = {
 // ============================================================
 
 export function useSponsorTracking(groupId: string, projectId: string) {
-  const [sponsors, setSponsors] = useState<SponsorTrackingEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sponsors, setSponsors] = useState<SponsorTrackingEntry[]>(() => loadData(groupId, projectId));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
     const data = loadData(groupId, projectId);
     setSponsors(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: SponsorTrackingEntry[]) => {
@@ -208,7 +202,7 @@ export function useSponsorTracking(groupId: string, projectId: string) {
 
   return {
     sponsors,
-    loading,
+    loading: false,
     addSponsor,
     updateSponsor,
     deleteSponsor,

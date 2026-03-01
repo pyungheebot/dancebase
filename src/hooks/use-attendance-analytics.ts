@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatYearMonth } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import type { EntityContext } from "@/types/entity-context";
@@ -169,7 +169,7 @@ export function useAttendanceAnalytics(ctx: EntityContext) {
       for (let i = 5; i >= 0; i--) {
         const d = subMonths(now, i);
         const ym = format(d, "yyyy-MM");
-        const label = format(d, "yyyy년 M월", { locale: ko });
+        const label = formatYearMonth(d);
         const schedCnt = monthlyScheduleCount.get(ym) ?? 0;
         const possible = monthlyPossibleCount.get(ym) ?? 0;
         const present = monthlyPresentCount.get(ym) ?? 0;

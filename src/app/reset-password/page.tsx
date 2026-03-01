@@ -7,31 +7,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 export default function ResetPasswordPage() {
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { pending: loading, execute } = useAsyncAction();
   const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
 
-    try {
+    await execute(async () => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
       });
-      if (error) throw error;
+      if (error) {
+        setError(error.message);
+        return;
+      }
       setSent(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "오류가 발생했습니다");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   if (sent) {

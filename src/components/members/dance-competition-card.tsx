@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import { toast } from "sonner";
 import {
   Trophy,
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -580,6 +582,7 @@ export function DanceCompetitionCard({ memberId }: DanceCompetitionCardProps) {
   const [filterYear, setFilterYear] = useState<string>("all");
   const [filterGenre, setFilterGenre] = useState<string>("all");
   const [showStats, setShowStats] = useState(false);
+  const deleteConfirm = useDeleteConfirm<DanceCompetitionRecord>();
 
   // 필터 적용
   const filteredRecords = useMemo(() => {
@@ -603,9 +606,13 @@ export function DanceCompetitionCard({ memberId }: DanceCompetitionCardProps) {
   }
 
   function handleDelete(record: DanceCompetitionRecord) {
-    if (!confirm(`"${record.competitionName}" 기록을 삭제하시겠습니까?`))
-      return;
-    deleteRecord(record.id);
+    deleteConfirm.request(record);
+  }
+
+  function confirmDelete() {
+    const target = deleteConfirm.confirm();
+    if (!target) return;
+    deleteRecord(target.id);
     toast.success("기록이 삭제되었습니다.");
   }
 
@@ -897,6 +904,15 @@ export function DanceCompetitionCard({ memberId }: DanceCompetitionCardProps) {
         initial={editTarget ? recordToForm(editTarget) : EMPTY_FORM}
         onClose={() => setShowDialog(false)}
         onSave={handleSave}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        title="기록 삭제"
+        description={`"${deleteConfirm.target?.competitionName}" 기록을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+        onConfirm={confirmDelete}
+        destructive
       />
     </>
   );

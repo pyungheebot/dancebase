@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, startTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapPin, X, Loader2 } from "lucide-react";
@@ -38,12 +38,12 @@ export function AddressSearch({ value, onSelect, onClear }: AddressSearchProps) 
   useEffect(() => {
     const check = () => typeof daum !== "undefined" && !!daum.Postcode;
     if (check()) {
-      setReady(true);
+      startTransition(() => { setReady(true); });
       return;
     }
     const interval = setInterval(() => {
       if (check()) {
-        setReady(true);
+        startTransition(() => { setReady(true); });
         clearInterval(interval);
       }
     }, 300);
@@ -91,6 +91,7 @@ export function AddressSearch({ value, onSelect, onClear }: AddressSearchProps) 
               setError(null);
               onClear();
             }}
+            aria-label="주소 초기화"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -101,6 +102,7 @@ export function AddressSearch({ value, onSelect, onClear }: AddressSearchProps) 
             size="icon"
             onClick={handleSearch}
             disabled={!ready || geocoding}
+            aria-label="주소 검색"
           >
             {geocoding ? (
               <Loader2 className="h-4 w-4 animate-spin" />

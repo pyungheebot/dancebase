@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type {
   MakeupSheetLook,
   MakeupSheetProduct,
@@ -54,19 +54,13 @@ export type MakeupSheetStats = {
 // ============================================================
 
 export function useMakeupSheet(groupId: string, projectId: string) {
-  const [looks, setLooks] = useState<MakeupSheetLook[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [looks, setLooks] = useState<MakeupSheetLook[]>(() => loadData(groupId, projectId));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
     const data = loadData(groupId, projectId);
     setLooks(data);
-    setLoading(false);
   }, [groupId, projectId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   const persist = useCallback(
     (next: MakeupSheetLook[]) => {
@@ -270,7 +264,7 @@ export function useMakeupSheet(groupId: string, projectId: string) {
 
   return {
     looks,
-    loading,
+    loading: false,
     addLook,
     updateLook,
     deleteLook,

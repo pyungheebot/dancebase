@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Select,
   SelectContent,
@@ -579,6 +580,7 @@ export function ProgramBookCard({ groupId, projectId }: ProgramBookCardProps) {
   const [addSectionDialogOpen, setAddSectionDialogOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ProgramBookSection | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const {
     book,
@@ -638,10 +640,11 @@ export function ProgramBookCard({ groupId, projectId }: ProgramBookCardProps) {
     setEditTarget(null);
   };
 
-  const handleDeleteSection = (sectionId: string) => {
-    if (!confirm("이 섹션을 삭제하시겠습니까?")) return;
-    deleteSection(sectionId);
+  const handleDeleteSection = () => {
+    if (!deleteConfirmId) return;
+    deleteSection(deleteConfirmId);
     toast.success("섹션이 삭제되었습니다.");
+    setDeleteConfirmId(null);
   };
 
   const handleMoveSection = (sectionId: string, direction: "up" | "down") => {
@@ -859,7 +862,7 @@ export function ProgramBookCard({ groupId, projectId }: ProgramBookCardProps) {
                           handleMoveSection(section.id, "down")
                         }
                         onEdit={() => setEditTarget(section)}
-                        onDelete={() => handleDeleteSection(section.id)}
+                        onDelete={() => setDeleteConfirmId(section.id)}
                       />
                     ))}
                   </div>
@@ -869,6 +872,15 @@ export function ProgramBookCard({ groupId, projectId }: ProgramBookCardProps) {
           </div>
         </CollapsibleContent>
       </Collapsible>
+
+      <ConfirmDialog
+        open={!!deleteConfirmId}
+        onOpenChange={(v) => !v && setDeleteConfirmId(null)}
+        title="섹션 삭제"
+        description="이 섹션을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        onConfirm={handleDeleteSection}
+        destructive
+      />
     </>
   );
 }

@@ -3,8 +3,7 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { formatKo } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { AppLayout } from "@/components/layout/app-layout";
 import { BoardPostContent } from "@/components/board/board-post-content";
@@ -29,6 +28,7 @@ import { ArrowLeft, Loader2, Pin, PinOff, Pencil, Trash2 } from "lucide-react";
 import { ShareButton } from "@/components/shared/share-button";
 import { toast } from "sonner";
 import { PollStatisticsCard } from "@/components/board/poll-statistics-card";
+import { useAsyncAction } from "@/hooks/use-async-action";
 
 export default function ProjectBoardPostPage({
   params,
@@ -47,8 +47,8 @@ export default function ProjectBoardPostPage({
 
   const [editOpen, setEditOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [pinning, setPinning] = useState(false);
+  const { pending: deleting, execute: executeDelete } = useAsyncAction();
+  const { pending: pinning, execute: executePin } = useAsyncAction();
 
   const canEditOrDelete =
     post && user && (post.author_id === user.id || myRole === "leader");
@@ -56,34 +56,34 @@ export default function ProjectBoardPostPage({
 
   const handleTogglePin = async () => {
     if (!post) return;
-    setPinning(true);
     const newPinned = !post.is_pinned;
-    const { error } = await supabase
-      .from("board_posts")
-      .update({ is_pinned: newPinned })
-      .eq("id", postId);
-    if (error) {
-      toast.error("고정 설정에 실패했습니다");
-    } else {
-      toast.success(newPinned ? "공지로 고정했습니다" : "고정 해제했습니다");
-      refetch();
-    }
-    setPinning(false);
+    await executePin(async () => {
+      const { error } = await supabase
+        .from("board_posts")
+        .update({ is_pinned: newPinned })
+        .eq("id", postId);
+      if (error) {
+        toast.error("고정 설정에 실패했습니다");
+      } else {
+        toast.success(newPinned ? "공지로 고정했습니다" : "고정 해제했습니다");
+        refetch();
+      }
+    });
   };
 
   const handleDelete = async () => {
-    setDeleting(true);
-    const { error } = await supabase
-      .from("board_posts")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", postId);
-    if (error) {
-      toast.error("게시글 삭제에 실패했습니다");
-      setDeleting(false);
-      return;
-    }
-    toast.success("게시글이 휴지통으로 이동했습니다");
-    router.push(`/groups/${id}/projects/${projectId}/board`);
+    await executeDelete(async () => {
+      const { error } = await supabase
+        .from("board_posts")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", postId);
+      if (error) {
+        toast.error("게시글 삭제에 실패했습니다");
+        return;
+      }
+      toast.success("게시글이 휴지통으로 이동했습니다");
+      router.push(`/groups/${id}/projects/${projectId}/board`);
+    });
   };
 
   if (loading) {
@@ -190,7 +190,7 @@ export default function ProjectBoardPostPage({
               {nicknameMap[post.author_id] || post.profiles?.name}
             </UserPopoverMenu>
             <span className="text-[11px] text-muted-foreground">
-              {format(new Date(post.created_at), "yyyy.M.d HH:mm", { locale: ko })}
+              {formatKo(new Date(post.created_at), "yyyy.M.d HH:mm")}
             </span>
             {post.updated_at !== post.created_at && (
               <BoardPostRevisionsSheet

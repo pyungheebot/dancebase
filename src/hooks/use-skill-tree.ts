@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { SkillTreeData, SkillTreeNode, SkillTreeNodeStatus } from "@/types";
 
@@ -196,7 +196,6 @@ export type SkillTreeStats = {
 
 export function useSkillTree(groupId: string, userId: string) {
   const [data, setData] = useState<SkillTreeData | null>(null);
-  const [loading, setLoading] = useState(true);
 
   // SWR 키 (타입 레퍼런스용)
   const _swrKey = swrKeys.skillTree(groupId, userId);
@@ -206,12 +205,7 @@ export function useSkillTree(groupId: string, userId: string) {
     if (!groupId || !userId) return;
     const saved = loadData(groupId, userId);
     setData(saved);
-    setLoading(false);
   }, [groupId, userId]);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
 
   // 장르 선택 → 트리 초기화
   const initTree = useCallback(
@@ -301,7 +295,7 @@ export function useSkillTree(groupId: string, userId: string) {
 
   return {
     data,
-    loading,
+    loading: false,
     stats,
     nodesByTier,
     genres: SKILL_TREE_GENRES,

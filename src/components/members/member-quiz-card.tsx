@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Collapsible,
   CollapsibleContent,
@@ -92,7 +93,7 @@ function AddQuestionDialog({
   const [correctIndex, setCorrectIndex] = useState<number>(0);
   const [aboutMember, setAboutMember] = useState("");
   const [createdBy, setCreatedBy] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const { pending: submitting, execute } = useAsyncAction();
 
   function handleOptionChange(idx: number, value: string) {
     const next = [...options];
@@ -119,8 +120,7 @@ function AddQuestionDialog({
       return;
     }
 
-    setSubmitting(true);
-    try {
+    void execute(async () => {
       onAdd({
         question: question.trim(),
         options: filledOptions,
@@ -135,11 +135,7 @@ function AddQuestionDialog({
       setCorrectIndex(0);
       setAboutMember("");
       setCreatedBy("");
-    } catch {
-      toast.error("문제 추가 중 오류가 발생했습니다.");
-    } finally {
-      setSubmitting(false);
-    }
+    });
   }
 
   return (
