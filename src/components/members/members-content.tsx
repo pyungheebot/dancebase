@@ -45,6 +45,7 @@ import { InviteGroupMembersDialog } from "@/components/members/invite-group-memb
 import { MemberAdvancedFilter } from "@/components/members/member-advanced-filter";
 import { useMemberFilter } from "@/hooks/use-member-filter";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { exportToCsv } from "@/lib/export/csv-exporter";
 import { getCategoryColorClasses } from "@/types";
 import dynamic from "next/dynamic";
@@ -329,7 +330,7 @@ function GroupMembersContent({
       m.joinedAt ? m.joinedAt.slice(0, 10) : "",
     ]);
     exportToCsv(`멤버목록_${ctx.header.name}`, headers, rows);
-    toast.success("CSV 파일이 다운로드되었습니다");
+    toast.success(TOAST.MEMBERS.CSV_DOWNLOADED);
   };
 
   // NormalizedMember → GroupMemberWithProfile 역변환
@@ -459,7 +460,7 @@ function GroupMembersContent({
       .in("id", ids);
     setBulkLoading(false);
     if (error) {
-      toast.error("역할 변경에 실패했습니다");
+      toast.error(TOAST.MEMBERS.ROLE_CHANGE_ERROR);
       return;
     }
     const roleLabel = newRole === "leader" ? "그룹장" : newRole === "sub_leader" ? "부그룹장" : "멤버";
@@ -479,7 +480,7 @@ function GroupMembersContent({
     setBulkLoading(false);
     setBulkRemoveOpen(false);
     if (error) {
-      toast.error("멤버 제거에 실패했습니다");
+      toast.error(TOAST.MEMBERS.MEMBER_REMOVE_ERROR);
       return;
     }
     toast.success(`${ids.length}명이 제거되었습니다`);
@@ -913,7 +914,7 @@ function ProjectMembersContent({
       m.joinedAt ? m.joinedAt.slice(0, 10) : "",
     ]);
     exportToCsv(`멤버목록_${ctx.header.name}`, headers, rows);
-    toast.success("CSV 파일이 다운로드되었습니다");
+    toast.success(TOAST.MEMBERS.CSV_DOWNLOADED);
   };
 
   const projectMemberIds = new Set(ctx.members.map((m) => m.userId));
@@ -941,9 +942,9 @@ function ProjectMembersContent({
       .eq("project_id", ctx.projectId)
       .eq("user_id", removeTargetId);
     if (error) {
-      toast.error("멤버 제거에 실패했습니다");
+      toast.error(TOAST.MEMBERS.MEMBER_REMOVE_ERROR);
     } else {
-      toast.success("멤버가 제거되었습니다");
+      toast.success(TOAST.MEMBERS.MEMBER_REMOVED);
       onUpdate();
     }
     setRemoveTargetId(null);

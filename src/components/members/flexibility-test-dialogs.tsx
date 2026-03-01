@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Zap, Plus, TrendingUp, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   calcProgress,
   FLEXIBILITY_UNIT_LABELS,
@@ -74,7 +75,7 @@ export function AddRecordDialog({
 
   function handleSubmit() {
     if (!date) {
-      toast.error("날짜를 입력하세요.");
+      toast.error(TOAST.MEMBERS.FLEX_DATE_REQUIRED);
       return;
     }
     const entries: FlexibilityTestEntry[] = items
@@ -291,16 +292,16 @@ export function AddItemDialog({
 
   function handleSubmit() {
     if (!name.trim()) {
-      toast.error("항목명을 입력하세요.");
+      toast.error(TOAST.MEMBERS.FLEX_ITEM_NAME_REQUIRED);
       return;
     }
     if (existingNames.includes(name.trim())) {
-      toast.error("이미 존재하는 항목명입니다.");
+      toast.error(TOAST.MEMBERS.FLEX_ITEM_DUPLICATE);
       return;
     }
     const tv = targetValue ? parseFloat(targetValue) : undefined;
     if (targetValue && (isNaN(tv!) || tv! <= 0)) {
-      toast.error("올바른 목표값을 입력하세요.");
+      toast.error(TOAST.MEMBERS.FLEX_GOAL_INVALID);
       return;
     }
     onSubmit(

@@ -31,6 +31,7 @@ import {
 } from "@/lib/attendance-report-generator";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import type { EntityMember } from "@/types/entity-context";
 import type { AttendanceStatus } from "@/types";
@@ -57,7 +58,7 @@ export function AttendanceExportButton({
 
   const handleGenerate = async () => {
     if (members.length === 0) {
-      toast.error("멤버 데이터가 없습니다");
+      toast.error(TOAST.ATTENDANCE.EXPORT_NO_MEMBER);
       return;
     }
 
@@ -85,7 +86,7 @@ export function AttendanceExportButton({
 
       const { data: scheduleRows, error: schedErr } = await schedulesQuery;
       if (schedErr) {
-        toast.error("일정 데이터를 불러오지 못했습니다");
+        toast.error(TOAST.ATTENDANCE.EXPORT_SCHEDULE_ERROR);
         return;
       }
 
@@ -109,7 +110,7 @@ export function AttendanceExportButton({
           .in("schedule_id", scheduleIds);
 
         if (attErr) {
-          toast.error("출석 데이터를 불러오지 못했습니다");
+          toast.error(TOAST.ATTENDANCE.EXPORT_ATTENDANCE_ERROR);
           return;
         }
         attendances = (attData ?? []) as typeof attendances;

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   ListMusic,
   Plus,
@@ -183,11 +184,11 @@ function SongForm({
 
   const handleSubmit = () => {
     if (!form.title.trim()) {
-      toast.error("곡명을 입력해주세요");
+      toast.error(TOAST.MEMBERS.SONG_NAME_REQUIRED);
       return;
     }
     if (!form.artist.trim()) {
-      toast.error("아티스트를 입력해주세요");
+      toast.error(TOAST.MEMBERS.ARTIST_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -530,11 +531,11 @@ export function DancePlaylistCard({ memberId }: { memberId: string }) {
 
   const handleCreatePlaylist = () => {
     if (!newName.trim()) {
-      toast.error("플레이리스트 이름을 입력해주세요");
+      toast.error(TOAST.MEMBERS.PLAYLIST_NAME_REQUIRED);
       return;
     }
     const created = createPlaylist({ name: newName, description: newDesc });
-    toast.success("플레이리스트를 만들었습니다");
+    toast.success(TOAST.MEMBERS.PLAYLIST_CREATED);
     setNewName("");
     setNewDesc("");
     setShowNewForm(false);
@@ -546,7 +547,7 @@ export function DancePlaylistCard({ memberId }: { memberId: string }) {
   const handleDeletePlaylist = (playlistId: string) => {
     const ok = deletePlaylist(playlistId);
     if (ok) {
-      toast.success("플레이리스트를 삭제했습니다");
+      toast.success(TOAST.MEMBERS.PLAYLIST_DELETED);
       if (activeTabId === playlistId) setActiveTabId(null);
     }
   };
@@ -562,9 +563,9 @@ export function DancePlaylistCard({ memberId }: { memberId: string }) {
       purpose: form.purpose,
     });
     if (result) {
-      toast.success("곡을 추가했습니다");
+      toast.success(TOAST.MEMBERS.SONG_ADDED);
     } else {
-      toast.error("곡 추가에 실패했습니다");
+      toast.error(TOAST.MEMBERS.SONG_ADD_ERROR);
     }
   };
 
@@ -583,9 +584,9 @@ export function DancePlaylistCard({ memberId }: { memberId: string }) {
       purpose: form.purpose,
     });
     if (ok) {
-      toast.success("곡을 수정했습니다");
+      toast.success(TOAST.MEMBERS.SONG_UPDATED);
     } else {
-      toast.error("곡 수정에 실패했습니다");
+      toast.error(TOAST.MEMBERS.SONG_UPDATE_ERROR);
     }
   };
 
@@ -594,9 +595,9 @@ export function DancePlaylistCard({ memberId }: { memberId: string }) {
   const handleDeleteSong = (playlistId: string, songId: string) => {
     const ok = deleteSong(playlistId, songId);
     if (ok) {
-      toast.success("곡을 삭제했습니다");
+      toast.success(TOAST.MEMBERS.SONG_DELETED);
     } else {
-      toast.error("곡 삭제에 실패했습니다");
+      toast.error(TOAST.MEMBERS.SONG_DELETE_ERROR);
     }
   };
 

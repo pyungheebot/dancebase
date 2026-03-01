@@ -35,6 +35,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { MentoringPair, MentoringStatus } from "@/types";
 
 // ============================================
@@ -156,7 +157,7 @@ export function MentoringSystemCard({
                     onCreated={(params) => {
                       createPair(params);
                       setCreateDialogOpen(false);
-                      toast.success("멘토링 매칭이 추가되었습니다");
+                      toast.success(TOAST.MEMBERS.MENTORING_PAIR_ADDED);
                     }}
                   />
                 </DialogContent>
@@ -217,15 +218,15 @@ export function MentoringSystemCard({
                     canManage={canManage}
                     onComplete={() => {
                       completePair(pair.id);
-                      toast.success("멘토링이 완료 처리되었습니다");
+                      toast.success(TOAST.MEMBERS.MENTORING_COMPLETED);
                     }}
                     onPause={() => {
                       pausePair(pair.id);
-                      toast.success("멘토링이 일시정지되었습니다");
+                      toast.success(TOAST.MEMBERS.MENTORING_PAUSED);
                     }}
                     onDelete={() => {
                       deletePair(pair.id);
-                      toast.success("멘토링 매칭이 삭제되었습니다");
+                      toast.success(TOAST.MEMBERS.MENTORING_PAIR_DELETED);
                     }}
                     onAddFeedback={(content, rating, writtenBy) => {
                       addFeedback(pair.id, {
@@ -234,7 +235,7 @@ export function MentoringSystemCard({
                         rating,
                         writtenBy,
                       });
-                      toast.success("피드백이 추가되었습니다");
+                      toast.success(TOAST.MEMBERS.MENTORING_FEEDBACK_ADDED);
                     }}
                   />
                 ))}
@@ -262,11 +263,11 @@ export function MentoringSystemCard({
                         canManage={canManage}
                         onResume={() => {
                           resumePair(pair.id);
-                          toast.success("멘토링이 재개되었습니다");
+                          toast.success(TOAST.MEMBERS.MENTORING_RESUMED);
                         }}
                         onDelete={() => {
                           deletePair(pair.id);
-                          toast.success("멘토링 매칭이 삭제되었습니다");
+                          toast.success(TOAST.MEMBERS.MENTORING_PAIR_DELETED);
                         }}
                         onAddFeedback={(content, rating, writtenBy) => {
                           addFeedback(pair.id, {
@@ -275,7 +276,7 @@ export function MentoringSystemCard({
                             rating,
                             writtenBy,
                           });
-                          toast.success("피드백이 추가되었습니다");
+                          toast.success(TOAST.MEMBERS.MENTORING_FEEDBACK_ADDED);
                         }}
                       />
                     ))}
@@ -305,7 +306,7 @@ export function MentoringSystemCard({
                         canManage={canManage}
                         onDelete={() => {
                           deletePair(pair.id);
-                          toast.success("멘토링 매칭이 삭제되었습니다");
+                          toast.success(TOAST.MEMBERS.MENTORING_PAIR_DELETED);
                         }}
                         onAddFeedback={(content, rating, writtenBy) => {
                           addFeedback(pair.id, {
@@ -314,7 +315,7 @@ export function MentoringSystemCard({
                             rating,
                             writtenBy,
                           });
-                          toast.success("피드백이 추가되었습니다");
+                          toast.success(TOAST.MEMBERS.MENTORING_FEEDBACK_ADDED);
                         }}
                       />
                     ))}
@@ -639,10 +640,10 @@ function CreatePairForm({ onCreated }: CreatePairFormProps) {
   const handleSubmit = () => {
     if (!canSubmit) {
       if (mentorName.trim() === menteeName.trim()) {
-        toast.error("멘토와 멘티 이름을 다르게 입력하세요");
+        toast.error(TOAST.MEMBERS.MENTORING_SAME_PERSON_ERROR);
         return;
       }
-      toast.error("모든 항목을 입력하세요");
+      toast.error(TOAST.MEMBERS.MENTORING_ALL_REQUIRED);
       return;
     }
     onCreated({
@@ -742,7 +743,7 @@ function FeedbackForm({ onSubmit }: FeedbackFormProps) {
 
   const handleSubmit = () => {
     if (!canSubmit) {
-      toast.error("내용과 만족도를 입력하세요");
+      toast.error(TOAST.MEMBERS.MENTORING_FEEDBACK_REQUIRED);
       return;
     }
     onSubmit(content.trim(), rating, writtenBy);

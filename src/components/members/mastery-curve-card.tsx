@@ -22,6 +22,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import {
   useMasteryCurve,
@@ -294,16 +295,16 @@ function CheckpointForm({ entryId, onAdd, onCancel }: CheckpointFormProps) {
     e.preventDefault();
     const prog = parseInt(progress, 10);
     if (!date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MASTERY_DATE_REQUIRED);
       return;
     }
     if (isNaN(prog) || prog < 0 || prog > 100) {
-      toast.error("진도는 0~100 사이 숫자를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MASTERY_PROGRESS_RANGE);
       return;
     }
     void execute(async () => {
       onAdd(entryId, { date, progress: prog, note: note.trim() });
-      toast.success("체크포인트가 추가되었습니다.");
+      toast.success(TOAST.MEMBERS.MASTERY_CHECKPOINT_ADDED);
       onCancel();
     });
   }
@@ -385,16 +386,16 @@ function AddEntryForm({ onAdd, onCancel }: AddEntryFormProps) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error("안무 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MASTERY_CHOREO_NAME_REQUIRED);
       return;
     }
     if (!targetDate) {
-      toast.error("목표 완성일을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MASTERY_TARGET_DATE_REQUIRED);
       return;
     }
     const prog = parseInt(initialProgress, 10);
     if (isNaN(prog) || prog < 0 || prog > 100) {
-      toast.error("초기 진도는 0~100 사이 숫자를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MASTERY_INIT_PROGRESS_RANGE);
       return;
     }
     void executeAdd(async () => {
@@ -403,7 +404,7 @@ function AddEntryForm({ onAdd, onCancel }: AddEntryFormProps) {
         targetDate,
         initialProgress: prog,
       });
-      toast.success("안무가 추가되었습니다.");
+      toast.success(TOAST.MEMBERS.MASTERY_CHOREO_ADDED);
       onCancel();
     });
   }
@@ -738,7 +739,7 @@ export function MasteryCurveCard({ groupId, userId }: MasteryCurveCardProps) {
 
   function handleDelete(id: string) {
     deleteEntry(id);
-    toast.success("안무가 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.MASTERY_DELETED);
   }
 
   function handleCardOpenChange(next: boolean) {

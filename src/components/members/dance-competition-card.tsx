@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Trophy,
   ChevronDown,
@@ -157,11 +158,11 @@ function RecordDialog({
 
   function handleSubmit() {
     if (!form.competitionName.trim()) {
-      toast.error("대회명을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.COMPETITION_TITLE_REQUIRED);
       return;
     }
     if (!form.date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.COMPETITION_DATE_REQUIRED);
       return;
     }
     onSave(form);
@@ -613,7 +614,7 @@ export function DanceCompetitionCard({ memberId }: DanceCompetitionCardProps) {
     const target = deleteConfirm.confirm();
     if (!target) return;
     deleteRecord(target.id);
-    toast.success("기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.COMPETITION_RECORD_DELETED);
   }
 
   function handleSave(form: FormState) {
@@ -630,7 +631,7 @@ export function DanceCompetitionCard({ memberId }: DanceCompetitionCardProps) {
         notes: form.notes.trim(),
         certificateUrl: form.certificateUrl.trim() || null,
       });
-      toast.success("기록이 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.COMPETITION_RECORD_UPDATED);
     } else {
       addRecord({
         competitionName: form.competitionName.trim(),
@@ -644,7 +645,7 @@ export function DanceCompetitionCard({ memberId }: DanceCompetitionCardProps) {
         notes: form.notes.trim(),
         certificateUrl: form.certificateUrl.trim() || null,
       });
-      toast.success("대회 기록이 추가되었습니다.");
+      toast.success(TOAST.MEMBERS.COMPETITION_ADDED);
     }
     setShowDialog(false);
   }

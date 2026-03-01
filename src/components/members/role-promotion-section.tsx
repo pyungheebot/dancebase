@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { TrendingUp, X } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { EntityMember } from "@/types/entity-context";
 import type { PromotionCandidate } from "@/hooks/use-role-promotion-candidates";
 
@@ -99,7 +100,7 @@ export function RolePromotionSection({
     setPromoting(false);
 
     if (error) {
-      toast.error("역할 승격에 실패했습니다");
+      toast.error(TOAST.MEMBERS.ROLE_PROMOTION_ERROR);
       setPromoteTarget(null);
       return;
     }

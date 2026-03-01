@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useScheduleCarpool, type CarpoolOfferWithDetails } from "@/hooks/use-schedule-carpool";
 import { useAsyncAction } from "@/hooks/use-async-action";
 
@@ -72,9 +73,9 @@ function CarpoolOfferCard({
     await execute(async () => {
       try {
         await onRequestRide(offer.id);
-        toast.success("탑승 요청을 보냈습니다");
+        toast.success(TOAST.SCHEDULE.CARPOOL_REQUEST_SENT);
       } catch {
-        toast.error("탑승 요청에 실패했습니다");
+        toast.error(TOAST.SCHEDULE.CARPOOL_REQUEST_ERROR);
       }
     });
   };
@@ -85,7 +86,7 @@ function CarpoolOfferCard({
         await onRespondToRequest(requestId, status);
         toast.success(status === "accepted" ? "탑승 요청을 수락했습니다" : "탑승 요청을 거절했습니다");
       } catch {
-        toast.error("응답 처리에 실패했습니다");
+        toast.error(TOAST.SCHEDULE.CARPOOL_RESPONSE_ERROR);
       }
     });
   };
@@ -95,9 +96,9 @@ function CarpoolOfferCard({
     await execute(async () => {
       try {
         await onCancelRequest(myRequest.id);
-        toast.success("탑승 요청을 취소했습니다");
+        toast.success(TOAST.SCHEDULE.CARPOOL_REQUEST_CANCELLED);
       } catch {
-        toast.error("요청 취소에 실패했습니다");
+        toast.error(TOAST.SCHEDULE.CARPOOL_CANCEL_ERROR);
       }
     });
   };
@@ -106,9 +107,9 @@ function CarpoolOfferCard({
     await execute(async () => {
       try {
         await onDeleteOffer(offer.id);
-        toast.success("카풀 제공을 삭제했습니다");
+        toast.success(TOAST.SCHEDULE.CARPOOL_OFFER_DELETED);
       } catch {
-        toast.error("카풀 제공 삭제에 실패했습니다");
+        toast.error(TOAST.SCHEDULE.CARPOOL_OFFER_DELETE_ERROR);
       }
     });
   };
@@ -283,21 +284,21 @@ export function ScheduleCarpoolSection({ scheduleId }: Props) {
   const handleCreateOffer = async () => {
     const seats = parseInt(totalSeats, 10);
     if (isNaN(seats) || seats < 1 || seats > 8) {
-      toast.error("좌석 수는 1~8 사이로 입력해주세요");
+      toast.error(TOAST.SCHEDULE.CARPOOL_SEAT_RANGE);
       return;
     }
 
     await executeCreate(async () => {
       try {
         await createOffer(seats, departureLocation || undefined, departureTime || undefined, notes || undefined);
-        toast.success("카풀 제공을 등록했습니다");
+        toast.success(TOAST.SCHEDULE.CARPOOL_OFFER_REGISTERED);
         setDialogOpen(false);
         setTotalSeats("3");
         setDepartureLocation("");
         setDepartureTime("");
         setNotes("");
       } catch {
-        toast.error("카풀 제공 등록에 실패했습니다");
+        toast.error(TOAST.SCHEDULE.CARPOOL_OFFER_ERROR);
       }
     });
   };

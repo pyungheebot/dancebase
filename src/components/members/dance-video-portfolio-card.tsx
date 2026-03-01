@@ -20,6 +20,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -122,11 +123,11 @@ function VideoDialog({ initial, onSave, trigger }: VideoDialogProps) {
 
   function handleSave() {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.VIDEO_PORTFOLIO_TITLE_REQUIRED);
       return;
     }
     if (!url.trim()) {
-      toast.error("영상 URL을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.VIDEO_PORTFOLIO_URL_REQUIRED);
       return;
     }
     const urlError = validateUrl(url);
@@ -151,7 +152,7 @@ function VideoDialog({ initial, onSave, trigger }: VideoDialogProps) {
         isFeatured,
         tags,
       });
-      toast.success(initial ? "영상 정보가 수정되었습니다." : "영상이 추가되었습니다.");
+      toast.success(initial ? TOAST.MEMBERS.VIDEO_PORTFOLIO_UPDATED : TOAST.MEMBERS.VIDEO_PORTFOLIO_ADDED_NEW);
       setOpen(false);
     });
   }
@@ -550,7 +551,7 @@ export function DanceVideoPortfolioCard({ memberId }: { memberId: string }) {
 
   function handleDelete(videoId: string) {
     deleteVideo(videoId);
-    toast.success("영상이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.VIDEO_PORTFOLIO_DELETED);
   }
 
   function handleTagClick(tag: string) {

@@ -29,6 +29,7 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { formatYearMonthDay } from "@/lib/date-utils";
 
@@ -94,7 +95,7 @@ function MatchingResultTab({
 
   const handleRun = async () => {
     if (members.length < 2) {
-      toast.error("매칭하려면 멤버가 2명 이상 필요합니다");
+      toast.error(TOAST.MEMBERS.PARTNER_MEMBER_MIN);
       return;
     }
     setRunning(true);
@@ -102,7 +103,7 @@ function MatchingResultTab({
     await new Promise((r) => setTimeout(r, 200));
     runMatching(label, avoidDuplicate);
     setRunning(false);
-    toast.success("짝꿍 매칭이 완료되었습니다");
+    toast.success(TOAST.MEMBERS.PARTNER_MATCHED);
   };
 
   return (
@@ -290,7 +291,7 @@ function HistoryTab({
                 onClick={(e) => {
                   e.stopPropagation();
                   deleteRecord(record.id);
-                  toast.success("이력이 삭제되었습니다");
+                  toast.success(TOAST.MEMBERS.PARTNER_HISTORY_DELETED);
                 }}
               >
                 <Trash2 className="h-3 w-3" />

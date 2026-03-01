@@ -4,6 +4,7 @@ import { useState, useEffect, startTransition } from "react";
 import { formatKo } from "@/lib/date-utils";
 import { Bell, FileText, Send, Plus, Trash2, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Dialog,
   DialogContent,
@@ -106,11 +107,11 @@ function TemplateForm({ initialTitle = "", initialBody = "", onSave, onCancel }:
 
   function handleSubmit() {
     if (!title.trim()) {
-      toast.error("템플릿 제목을 입력해주세요");
+      toast.error(TOAST.SCHEDULE.TEMPLATE_TITLE_REQUIRED);
       return;
     }
     if (!body.trim()) {
-      toast.error("템플릿 본문을 입력해주세요");
+      toast.error(TOAST.SCHEDULE.TEMPLATE_BODY_REQUIRED);
       return;
     }
     onSave(title.trim(), body.trim());
@@ -272,7 +273,7 @@ export function NotificationTemplateDialog({
     const newTpl = addTemplate(title, body);
     setTemplates((prev) => [...prev, newTpl]);
     setShowAddForm(false);
-    toast.success("템플릿이 추가되었습니다");
+    toast.success(TOAST.SCHEDULE.TEMPLATE_ADDED);
   }
 
   function handleEditSave(title: string, body: string) {
@@ -286,13 +287,13 @@ export function NotificationTemplateDialog({
       )
     );
     setEditingId(null);
-    toast.success("템플릿이 수정되었습니다");
+    toast.success(TOAST.SCHEDULE.TEMPLATE_UPDATED);
   }
 
   function handleDelete(id: string) {
     deleteTemplate(id);
     setTemplates((prev) => prev.filter((t) => t.id !== id));
-    toast.success("템플릿이 삭제되었습니다");
+    toast.success(TOAST.SCHEDULE.TEMPLATE_DELETED);
   }
 
   // ---- 발송 핸들러 ----
@@ -327,15 +328,15 @@ export function NotificationTemplateDialog({
 
   async function handleSend() {
     if (!selectedTemplateId) {
-      toast.error("템플릿을 선택해주세요");
+      toast.error(TOAST.SCHEDULE.TEMPLATE_SELECT_REQUIRED);
       return;
     }
     if (!selectedScheduleId || !selectedSchedule) {
-      toast.error("일정을 선택해주세요");
+      toast.error(TOAST.SCHEDULE.TEMPLATE_SCHEDULE_REQUIRED);
       return;
     }
     if (selectedMemberIds.size === 0) {
-      toast.error("발송 대상 멤버를 선택해주세요");
+      toast.error(TOAST.SCHEDULE.TEMPLATE_MEMBER_REQUIRED);
       return;
     }
 
@@ -349,7 +350,7 @@ export function NotificationTemplateDialog({
       toast.success(`${result.count}명에게 알림을 발송했습니다`);
       onOpenChange(false);
     } else {
-      toast.error(result.error ?? "알림 발송에 실패했습니다");
+      toast.error(result.error ?? TOAST.SCHEDULE.BROADCAST_ERROR);
     }
   }
 

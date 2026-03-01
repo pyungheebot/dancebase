@@ -140,17 +140,17 @@ function EntryForm({ initial, onSubmit, onCancel, submitLabel }: EntryFormProps)
 
   const handleSubmit = () => {
     if (!form.title.trim()) {
-      toast.error("영상 제목을 입력하세요.");
+      toast.error(TOAST.MEMBERS.VIDEO_TITLE_REQUIRED);
       return;
     }
     if (!form.url.trim()) {
-      toast.error("영상 URL을 입력하세요.");
+      toast.error(TOAST.MEMBERS.VIDEO_URL_REQUIRED);
       return;
     }
     try {
       new URL(form.url.trim());
     } catch {
-      toast.error("유효한 URL 형식이 아닙니다.");
+      toast.error(TOAST.MEMBERS.VIDEO_URL_INVALID);
       return;
     }
     onSubmit(form);
@@ -477,7 +477,7 @@ export function VideoPortfolioCard({ memberId, className }: VideoPortfolioCardPr
       thumbnailUrl: form.thumbnailUrl || undefined,
       isPublic: form.isPublic,
     });
-    toast.success("영상 포트폴리오가 추가되었습니다.");
+    toast.success(TOAST.MEMBERS.VIDEO_ADDED);
     setAddDialogOpen(false);
   };
 
@@ -499,7 +499,7 @@ export function VideoPortfolioCard({ memberId, className }: VideoPortfolioCardPr
       isPublic: form.isPublic,
     });
     if (ok) {
-      toast.success("영상 정보가 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.VIDEO_UPDATED);
     } else {
       toast.error(TOAST.UPDATE_ERROR);
     }
@@ -510,7 +510,7 @@ export function VideoPortfolioCard({ memberId, className }: VideoPortfolioCardPr
   const handleDelete = (entryId: string) => {
     const ok = deleteEntry(entryId);
     if (ok) {
-      toast.success("영상이 삭제되었습니다.");
+      toast.success(TOAST.MEMBERS.VIDEO_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

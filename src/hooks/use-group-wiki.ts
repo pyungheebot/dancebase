@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
+import { saveToStorage } from "@/lib/local-storage";
 import type { WikiDocument, WikiCategory } from "@/types";
 
 const STORAGE_PREFIX = "dancebase:group-wiki:";
@@ -13,12 +14,7 @@ function getStorageKey(groupId: string) {
 }
 
 function saveDocuments(groupId: string, docs: WikiDocument[]) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(docs));
-  } catch {
-    // localStorage 용량 초과 등의 경우 무시
-  }
+  saveToStorage(getStorageKey(groupId), docs);
 }
 
 export type WikiDocumentInput = {

@@ -47,6 +47,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import {
   useDanceCondition,
@@ -275,11 +276,11 @@ function LogFormDialog({
 
   const handleSubmit = () => {
     if (!form.date) {
-      toast.error("날짜를 선택해 주세요.");
+      toast.error(TOAST.MEMBERS.CONDITION_JOURNAL_DATE_REQUIRED);
       return;
     }
     if (form.hydrationMl < 0 || form.hydrationMl > 10000) {
-      toast.error("수분 섭취량은 0~10000ml 범위여야 합니다.");
+      toast.error(TOAST.MEMBERS.DIET_WATER_RANGE);
       return;
     }
     onSubmit(form);
@@ -591,12 +592,12 @@ export function DanceConditionCard({ memberId }: { memberId: string }) {
     // 동일 날짜 중복 체크
     const exists = logs.some((l) => l.date === form.date);
     if (exists) {
-      toast.error("해당 날짜의 기록이 이미 있습니다. 수정 버튼을 이용해 주세요.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_STREAK_DUPLICATE);
       return;
     }
     addLog(form);
     setAddDialogOpen(false);
-    toast.success("컨디션 기록이 저장되었습니다.");
+    toast.success(TOAST.MEMBERS.CONDITION_SAVED);
   };
 
   const handleEdit = (form: {
@@ -613,12 +614,12 @@ export function DanceConditionCard({ memberId }: { memberId: string }) {
     if (!editTarget) return;
     updateLog(editTarget.id, form);
     setEditTarget(null);
-    toast.success("컨디션 기록이 수정되었습니다.");
+    toast.success(TOAST.MEMBERS.CONDITION_UPDATED);
   };
 
   const handleDelete = (logId: string) => {
     deleteLog(logId);
-    toast.success("기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.CONDITION_RECORD_DELETED);
   };
 
   const TrendIcon =

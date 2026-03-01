@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { CheckCircle2, Circle, Clock, Bell, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import type { SettlementMemberStatus } from "@/types";
 
@@ -260,27 +261,27 @@ export function SettlementRequestDashboard({ groupId, nicknameMap }: Props) {
   async function handleConfirm(memberId: string) {
     const { error } = await confirmPayment(memberId);
     if (error) {
-      toast.error("납부 확인에 실패했습니다");
+      toast.error(TOAST.FINANCE.SETTLEMENT_CONFIRM_ERROR);
     } else {
-      toast.success("납부가 확인되었습니다");
+      toast.success(TOAST.FINANCE.SETTLEMENT_CONFIRMED);
     }
   }
 
   async function handleClose(requestId: string) {
     const { error } = await closeRequest(requestId);
     if (error) {
-      toast.error("정산 요청 종료에 실패했습니다");
+      toast.error(TOAST.FINANCE.SETTLEMENT_CLOSE_ERROR);
     } else {
-      toast.success("정산 요청이 종료되었습니다");
+      toast.success(TOAST.FINANCE.SETTLEMENT_CLOSED);
     }
   }
 
   async function handleReminder(requestId: string) {
     const { error } = await sendReminder(requestId);
     if (error) {
-      toast.error("리마인더 발송에 실패했습니다");
+      toast.error(TOAST.FINANCE.SETTLEMENT_REMINDER_ERROR);
     } else {
-      toast.success("리마인더가 발송되었습니다");
+      toast.success(TOAST.FINANCE.SETTLEMENT_REMINDER_SENT);
     }
   }
 

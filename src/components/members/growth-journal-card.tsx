@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useGrowthJournal } from "@/hooks/use-growth-journal";
 import type { GrowthJournalEntry, GrowthJournalMood } from "@/types";
@@ -283,15 +284,15 @@ function JournalDialog({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.memberName.trim()) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.GROWTH_JOURNAL_MEMBER_REQUIRED);
       return;
     }
     if (!form.title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.GROWTH_JOURNAL_TITLE_REQUIRED);
       return;
     }
     if (!form.content.trim()) {
-      toast.error("내용을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.GROWTH_JOURNAL_CONTENT_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -838,7 +839,7 @@ export function GrowthJournalCard({
         nextGoals: parseList(values.nextGoals),
         selfRating: values.selfRating,
       });
-      toast.success("성장 일지가 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.GROWTH_JOURNAL_SAVE_SUCCESS);
       setDialogOpen(false);
     });
   }
@@ -859,7 +860,7 @@ export function GrowthJournalCard({
         nextGoals: parseList(values.nextGoals),
         selfRating: values.selfRating,
       });
-      toast.success("일지가 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.GROWTH_JOURNAL_UPDATED);
       setDialogOpen(false);
       setEditTarget(null);
     });
@@ -868,7 +869,7 @@ export function GrowthJournalCard({
   // 일지 삭제
   function handleDelete(id: string) {
     deleteEntry(id);
-    toast.success("일지가 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.GROWTH_JOURNAL_DELETED);
   }
 
   // 수정 모드 전환

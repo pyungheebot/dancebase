@@ -21,6 +21,7 @@ import {
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useBudgetScenario } from "@/hooks/use-budget-scenario";
 import type { BudgetScenario } from "@/types";
 
@@ -81,7 +82,7 @@ function ScenarioForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!values.name.trim()) {
-      toast.error("시나리오 이름을 입력해주세요.");
+      toast.error(TOAST.FINANCE.SCENARIO_NAME_REQUIRED);
       return;
     }
     onSubmit(values);
@@ -561,7 +562,7 @@ export function BudgetScenarioCard({ groupId }: BudgetScenarioCardProps) {
       toast.error(error);
       return;
     }
-    toast.success("시나리오가 추가되었습니다.");
+    toast.success(TOAST.FINANCE.SCENARIO_ADDED);
     setShowAddForm(false);
   }
 
@@ -574,13 +575,13 @@ export function BudgetScenarioCard({ groupId }: BudgetScenarioCardProps) {
       toast.error(error);
       return;
     }
-    toast.success("시나리오가 수정되었습니다.");
+    toast.success(TOAST.FINANCE.SCENARIO_UPDATED);
     setEditingId(null);
   }
 
   function handleDelete(id: string) {
     deleteScenario(id);
-    toast.success("시나리오가 삭제되었습니다.");
+    toast.success(TOAST.FINANCE.SCENARIO_DELETED);
   }
 
   return (

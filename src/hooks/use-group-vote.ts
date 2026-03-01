@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupVoteEntry,
   GroupVoteType,
@@ -14,25 +15,13 @@ import type {
 const LS_KEY = (groupId: string) => `dancebase:group-vote:${groupId}`;
 
 function loadVotes(groupId: string): GroupVoteEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as GroupVoteEntry[];
-  } catch {
-    return [];
-  }
+  const parsed = loadFromStorage<unknown>(LS_KEY(groupId), []);
+  if (!Array.isArray(parsed)) return [];
+  return parsed as GroupVoteEntry[];
 }
 
 function saveVotes(groupId: string, votes: GroupVoteEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(votes));
-  } catch {
-    /* ignore */
-  }
+  saveToStorage(LS_KEY(groupId), votes);
 }
 
 // ─── 훅 ─────────────────────────────────────────────────────

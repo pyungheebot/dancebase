@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { CheckCircle2, Copy, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { copyToClipboard } from "@/lib/clipboard";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import type { SettlementMemberStatus } from "@/types";
@@ -222,9 +223,9 @@ export function MySettlementRequests({ groupId }: Props) {
   async function handleMarkPaid(memberId: string) {
     const { error } = await markAsPaid(memberId);
     if (error) {
-      toast.error("납부 완료 처리에 실패했습니다");
+      toast.error(TOAST.FINANCE.PAYMENT_NOTIFY_ERROR);
     } else {
-      toast.success("납부 완료를 알렸습니다. 리더 확인 후 처리됩니다.");
+      toast.success(TOAST.FINANCE.PAYMENT_NOTIFIED);
     }
   }
 

@@ -11,6 +11,7 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 import {
   Card,
@@ -159,11 +160,11 @@ export function AchievementBadgeCard({ memberId, memberName }: Props) {
   // ── 배지 추가 핸들러 ──
   async function handleAddBadge() {
     if (!newTitle.trim()) {
-      toast.error("배지 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.BADGE_NAME_REQUIRED);
       return;
     }
     if (!newEarnedAt) {
-      toast.error("획득 날짜를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.BADGE_DATE_REQUIRED);
       return;
     }
     try {
@@ -181,24 +182,24 @@ export function AchievementBadgeCard({ memberId, memberName }: Props) {
       setAddOpen(false);
       resetAddForm();
     } catch {
-      toast.error("배지 추가에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.BADGE_ADD_ERROR);
     }
   }
 
   // ── 레벨 업그레이드 핸들러 ──
   async function handleUpgradeLevel() {
     if (!upgradeTargetId) {
-      toast.error("업그레이드할 배지를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.BADGE_LEVEL_UP_SELECT);
       return;
     }
     try {
       await upgradeBadgeLevel(upgradeTargetId, newUpgradeLevel);
-      toast.success("배지 레벨이 업그레이드되었습니다.");
+      toast.success(TOAST.MEMBERS.BADGE_LEVELED_UP);
       setUpgradeOpen(false);
       setUpgradeTargetId("");
       setNewUpgradeLevel("silver");
     } catch {
-      toast.error("레벨 업그레이드에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.BADGE_LEVEL_UP_ERROR);
     }
   }
 
@@ -208,7 +209,7 @@ export function AchievementBadgeCard({ memberId, memberName }: Props) {
       await deleteBadge(badgeId);
       toast.success(`"${title}" 배지가 삭제되었습니다.`);
     } catch {
-      toast.error("배지 삭제에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.BADGE_DELETE_ERROR);
     }
   }
 

@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateGroupChallengeCard } from "@/lib/swr/invalidate";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import type {
@@ -21,25 +22,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadStore(groupId: string): DanceGroupChallengeStore {
-  if (typeof window === "undefined") {
-    return { entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return { entries: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as DanceGroupChallengeStore;
-  } catch {
-    return { entries: [], updatedAt: new Date().toISOString() };
-  }
+  return loadFromStorage<DanceGroupChallengeStore>(getStorageKey(groupId), { entries: [], updatedAt: new Date().toISOString() });
 }
 
 function saveStore(groupId: string, store: DanceGroupChallengeStore): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(store));
-  } catch {
-    // 저장 실패 무시
-  }
+  saveToStorage(getStorageKey(groupId), store);
 }
 
 function calcChallengeStatus(startDate: string, endDate: string): "upcoming" | "active" | "completed" {

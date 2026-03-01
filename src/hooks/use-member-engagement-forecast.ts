@@ -3,7 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
-import { removeFromStorage } from "@/lib/local-storage";
+import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
 import type {
   MemberEngagementForecast,
   MemberEngagementForecastResult,
@@ -21,30 +21,19 @@ type CacheEntry = {
 };
 
 function loadCache(groupId: string): MemberEngagementForecastResult | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(CACHE_KEY(groupId));
-    if (!raw) return null;
-    const entry: CacheEntry = JSON.parse(raw);
-    const isExpired = Date.now() - entry.cachedAt > CACHE_TTL_MS;
-    if (isExpired) {
-      removeFromStorage(CACHE_KEY(groupId));
-      return null;
-    }
-    return entry.data;
-  } catch {
+  const entry = loadFromStorage<CacheEntry | null>(CACHE_KEY(groupId), null);
+  if (!entry) return null;
+  const isExpired = Date.now() - entry.cachedAt > CACHE_TTL_MS;
+  if (isExpired) {
+    removeFromStorage(CACHE_KEY(groupId));
     return null;
   }
+  return entry.data;
 }
 
 function saveCache(groupId: string, data: MemberEngagementForecastResult) {
-  if (typeof window === "undefined") return;
-  try {
-    const entry: CacheEntry = { data, cachedAt: Date.now() };
-    localStorage.setItem(CACHE_KEY(groupId), JSON.stringify(entry));
-  } catch {
-    // localStorage 저장 실패 시 무시
-  }
+  const entry: CacheEntry = { data, cachedAt: Date.now() };
+  saveToStorage(CACHE_KEY(groupId), entry);
 }
 
 function buildEmptyResult(): MemberEngagementForecastResult {

@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useAttendanceHeatmap } from "@/hooks/use-attendance-heatmap";
 import type { AttendanceHeatmapData, HeatmapDayData } from "@/types";
@@ -311,7 +312,7 @@ function AddMemberDialog({
   function handleSubmit() {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_NAME_REQUIRED);
       return;
     }
     onAdd(trimmed);
@@ -378,11 +379,11 @@ function AddActivityDialog({
 
   function handleSubmit() {
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_DATE_REQUIRED);
       return;
     }
     if (!activity) {
-      toast.error("활동 종류를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_TYPE_REQUIRED);
       return;
     }
     onAdd(date, activity);
@@ -576,7 +577,7 @@ export function AttendanceHeatmapCard({ groupId }: AttendanceHeatmapCardProps) {
   function handleAddMember(name: string) {
     const ok = addMember(name);
     if (!ok) {
-      toast.error("이미 등록된 이름이거나 입력이 잘못되었습니다.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_DUPLICATE_MEMBER);
       return;
     }
     toast.success(`${name} 멤버가 추가되었습니다.`);
@@ -587,7 +588,7 @@ export function AttendanceHeatmapCard({ groupId }: AttendanceHeatmapCardProps) {
   function handleRemoveMember(name: string) {
     const ok = removeMember(name);
     if (!ok) {
-      toast.error("멤버 삭제에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_MEMBER_DELETE_ERROR);
       return;
     }
     toast.success(`${name} 멤버가 삭제되었습니다.`);
@@ -598,7 +599,7 @@ export function AttendanceHeatmapCard({ groupId }: AttendanceHeatmapCardProps) {
     if (!activityTarget) return;
     const ok = addActivity(activityTarget, date, activity);
     if (!ok) {
-      toast.error("활동 기록 저장에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_SAVE_ERROR);
       return;
     }
     toast.success(`${activityTarget}: ${activity} 활동이 기록되었습니다.`);
@@ -607,7 +608,7 @@ export function AttendanceHeatmapCard({ groupId }: AttendanceHeatmapCardProps) {
   function handleGenerateDemo(name: string) {
     const ok = generateDemoData(name);
     if (!ok) {
-      toast.error("데모 데이터 생성에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_DEMO_ERROR);
       return;
     }
     toast.success(`${name}의 데모 데이터가 생성되었습니다.`);

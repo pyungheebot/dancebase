@@ -40,6 +40,7 @@ import {
   Flame,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMemberDanceChallenge } from "@/hooks/use-member-dance-challenge";
 import type {
   DanceChallengeEntry,
@@ -164,19 +165,19 @@ function EntryDialog({ mode, initialValues, trigger, onSubmit }: EntryDialogProp
 
   const handleSubmit = () => {
     if (!form.challengeName.trim()) {
-      toast.error("챌린지명을 입력해주세요");
+      toast.error(TOAST.MEMBERS.CHALLENGE_NAME_REQUIRED);
       return;
     }
     if (!form.date) {
-      toast.error("참여 날짜를 입력해주세요");
+      toast.error(TOAST.MEMBERS.CHALLENGE_DATE_REQUIRED);
       return;
     }
     if (form.viewCount && isNaN(Number(form.viewCount))) {
-      toast.error("조회수는 숫자로 입력해주세요");
+      toast.error(TOAST.MEMBERS.CHALLENGE_VIEW_COUNT_INVALID);
       return;
     }
     if (form.likeCount && isNaN(Number(form.likeCount))) {
-      toast.error("좋아요 수는 숫자로 입력해주세요");
+      toast.error(TOAST.MEMBERS.CHALLENGE_LIKE_COUNT_INVALID);
       return;
     }
     const urlError = validateUrl(form.videoUrl);
@@ -487,7 +488,7 @@ function EntryRow({ entry, onUpdate, onDelete }: EntryRowProps) {
                   }
                   onSubmit={(values) => {
                     onUpdate(entry.id, values);
-                    toast.success("기록이 수정되었습니다");
+                    toast.success(TOAST.MEMBERS.RECORD_UPDATED);
                   }}
                 />
                 <Button
@@ -496,7 +497,7 @@ function EntryRow({ entry, onUpdate, onDelete }: EntryRowProps) {
                   className="h-6 text-[10px] px-2 text-muted-foreground hover:text-red-500"
                   onClick={() => {
                     onDelete(entry.id);
-                    toast.success("기록이 삭제되었습니다");
+                    toast.success(TOAST.MEMBERS.RECORD_DELETED_NO_DOT);
                   }}
                 >
                   <Trash2 className="h-3 w-3 mr-1" />
@@ -560,7 +561,7 @@ export function DanceChallengeCard({
       result: values.result,
       notes: values.notes || undefined,
     });
-    toast.success("챌린지 기록이 추가되었습니다");
+    toast.success(TOAST.MEMBERS.CHALLENGE_RECORD_ADDED);
   };
 
   const handleUpdate = (id: string, values: EntryFormValues) => {

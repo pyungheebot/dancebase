@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ShieldCheck, Send, MessageCirclePlus } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useAnonymousFeedback,
   CATEGORY_LABELS,
@@ -90,17 +91,17 @@ export function AnonymousFeedbackDialog({
 
   const handleSubmit = async () => {
     if (!content.trim()) {
-      toast.error("내용을 입력해주세요");
+      toast.error(TOAST.MEMBERS.ANON_CONTENT_MIN);
       return;
     }
     if (content.trim().length < 5) {
-      toast.error("최소 5자 이상 작성해주세요");
+      toast.error(TOAST.MEMBERS.ANON_CONTENT_MIN);
       return;
     }
 
     await execute(async () => {
       sendFeedback(currentUserId, targetUserId, category, content);
-      toast.success("피드백이 익명으로 전송되었습니다");
+      toast.success(TOAST.MEMBERS.ANON_SEND_SUCCESS);
       setOpen(false);
       setContent("");
       setCategory("praise");

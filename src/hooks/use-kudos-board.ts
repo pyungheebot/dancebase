@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import { KudosCategory, KudosMessage } from "@/types";
 
 const MAX_KUDOS = 100;
@@ -26,19 +27,11 @@ function getStorageKey(groupId: string) {
 }
 
 function loadKudos(groupId: string): KudosMessage[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as KudosMessage[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<KudosMessage[]>(getStorageKey(groupId), []);
 }
 
 function saveKudos(groupId: string, list: KudosMessage[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(list));
+  saveToStorage(getStorageKey(groupId), list);
 }
 
 export function useKudosBoard(groupId: string) {

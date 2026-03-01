@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Users, UserCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useWinbackCampaign } from "@/hooks/use-winback-campaign";
 import type { WinbackCandidate } from "@/types";
 
@@ -145,11 +146,11 @@ export function WinbackCampaignDialog({ groupId }: WinbackCampaignDialogProps) {
   // 발송 핸들러
   const handleSend = async () => {
     if (selectedIds.size === 0) {
-      toast.error("발송할 멤버를 선택해주세요");
+      toast.error(TOAST.MEMBERS.WINBACK_CAMPAIGN_MEMBER_REQUIRED);
       return;
     }
     if (!message.trim()) {
-      toast.error("메시지를 입력해주세요");
+      toast.error(TOAST.MEMBERS.WINBACK_CAMPAIGN_MESSAGE_REQUIRED);
       return;
     }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
-import { removeFromStorage } from "@/lib/local-storage";
+import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
 
 export interface FormDraftData {
   title: string;
@@ -72,17 +72,13 @@ export function useFormDraft({
       }
 
       debounceTimer.current = setTimeout(() => {
-        try {
-          if (data.title?.trim() || data.content?.trim()) {
-            localStorage.setItem(key, JSON.stringify(data));
-            setHasDraft(true);
-            toast("임시 저장됨", {
-              description: "작성 중인 내용이 임시 저장되었습니다.",
-              duration: 2000,
-            });
-          }
-        } catch {
-          // localStorage 쓰기 실패 시 무시
+        if (data.title?.trim() || data.content?.trim()) {
+          saveToStorage(key, data);
+          setHasDraft(true);
+          toast("임시 저장됨", {
+            description: "작성 중인 내용이 임시 저장되었습니다.",
+            duration: 2000,
+          });
         }
       }, debounceMs);
     },
@@ -92,17 +88,11 @@ export function useFormDraft({
   const restoreDraft = useCallback((): FormDraftData | null => {
     if (!enabled) return null;
 
-    try {
-      const stored = localStorage.getItem(key);
-      if (!stored) return null;
-
-      const parsed = JSON.parse(stored) as FormDraftData;
-      setIsDraftRestored(true);
-      hasUnsavedChanges.current = false;
-      return parsed;
-    } catch {
-      return null;
-    }
+    const parsed = loadFromStorage<FormDraftData | null>(key, null);
+    if (!parsed) return null;
+    setIsDraftRestored(true);
+    hasUnsavedChanges.current = false;
+    return parsed;
   }, [key, enabled]);
 
   const clearDraft = useCallback(() => {

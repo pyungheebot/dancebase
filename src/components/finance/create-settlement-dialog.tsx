@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { GroupMemberWithProfile } from "@/types";
 
 type Props = {
@@ -85,15 +86,15 @@ export function CreateSettlementDialog({
 
   async function handleSubmit() {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요");
+      toast.error(TOAST.FINANCE.SETTLEMENT_TITLE_REQUIRED);
       return;
     }
     if (parsedAmount <= 0) {
-      toast.error("금액을 입력해주세요");
+      toast.error(TOAST.FINANCE.SETTLEMENT_AMOUNT_REQUIRED);
       return;
     }
     if (selectedMembers.length === 0) {
-      toast.error("최소 1명 이상의 멤버를 선택해주세요");
+      toast.error(TOAST.FINANCE.SETTLEMENT_MEMBER_REQUIRED);
       return;
     }
 
@@ -108,9 +109,9 @@ export function CreateSettlementDialog({
       });
 
       if (error) {
-        toast.error("정산 요청 발송에 실패했습니다");
+        toast.error(TOAST.FINANCE.SETTLEMENT_SEND_ERROR);
       } else {
-        toast.success("정산 요청이 발송되었습니다");
+        toast.success(TOAST.FINANCE.SETTLEMENT_SENT);
         resetForm();
         setOpen(false);
       }

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Collapsible,
@@ -148,19 +149,19 @@ function AssignRoleDialog({
 
   const handleSubmit = () => {
     if (!memberName) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.MEMBER_SELECT_DOT);
       return;
     }
     if (!role) {
-      toast.error("역할을 선택해주세요.");
+      toast.error(TOAST.MEMBERS.ROLE_SELECT);
       return;
     }
     if (!startDate) {
-      toast.error("시작일을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.START_DATE_REQUIRED);
       return;
     }
     if (role === "other" && !customRoleTitle.trim()) {
-      toast.error("기타 역할명을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.ROLE_EXTRA_REQUIRED);
       return;
     }
 
@@ -331,7 +332,7 @@ function EndRoleDialog({
 
   const handleEnd = () => {
     if (!endDate) {
-      toast.error("종료일을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.END_DATE_REQUIRED);
       return;
     }
     endRole(entryId, endDate);

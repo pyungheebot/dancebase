@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import { type GroupNotice, type NoticePriority } from "@/types";
 
 const NOTICES_KEY_PREFIX = "dancebase:group-notices:";
@@ -21,16 +22,11 @@ function getReadStorageKey(groupId: string, userId: string) {
 }
 
 function saveNotices(groupId: string, notices: GroupNotice[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getNoticesStorageKey(groupId), JSON.stringify(notices));
+  saveToStorage(getNoticesStorageKey(groupId), notices);
 }
 
 function saveReadSet(groupId: string, userId: string, readSet: Set<string>) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(
-    getReadStorageKey(groupId, userId),
-    JSON.stringify(Array.from(readSet))
-  );
+  saveToStorage(getReadStorageKey(groupId, userId), Array.from(readSet));
 }
 
 function isExpired(notice: GroupNotice): boolean {

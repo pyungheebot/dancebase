@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { removeFromStorage } from "@/lib/local-storage";
+import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
 
 // ============================================================
 // 타입 정의
@@ -42,22 +42,14 @@ export type SlotCount = {
 const getStorageKey = (groupId: string) => `availability-poll-${groupId}`;
 
 function loadPoll(groupId: string): AvailabilityPoll | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return null;
-    return JSON.parse(raw) as AvailabilityPoll;
-  } catch {
-    return null;
-  }
+  return loadFromStorage<AvailabilityPoll | null>(getStorageKey(groupId), null);
 }
 
 function savePoll(groupId: string, poll: AvailabilityPoll | null) {
-  if (typeof window === "undefined") return;
   if (poll === null) {
     removeFromStorage(getStorageKey(groupId));
   } else {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(poll));
+    saveToStorage(getStorageKey(groupId), poll);
   }
 }
 

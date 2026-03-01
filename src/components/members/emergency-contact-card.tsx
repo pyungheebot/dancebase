@@ -40,6 +40,7 @@ import {
   FileText,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useEmergencyContact, type AddEmergencyContactInput } from "@/hooks/use-emergency-contact";
 import type {
   EmergencyContactEntry,
@@ -215,15 +216,15 @@ function ContactDialog({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.memberName) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.EMERGENCY_MEMBER_SELECT);
       return;
     }
     if (!form.contactName.trim()) {
-      toast.error("연락처 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.EMERGENCY_CONTACT_NAME_REQUIRED2);
       return;
     }
     if (!form.phone.trim()) {
-      toast.error("전화번호를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.EMERGENCY_CONTACT_PHONE_REQUIRED);
       return;
     }
     onSubmit(form);

@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Zap, AlertTriangle, Check, Send, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSmartReminder, type MemberRiskAnalysis } from "@/hooks/use-smart-reminder";
 import type { Schedule } from "@/types";
 
@@ -146,11 +147,11 @@ export function SmartReminderDialog({ schedule, groupId }: SmartReminderDialogPr
   // 발송 핸들러
   const handleSend = async () => {
     if (selectedIds.size === 0) {
-      toast.error("발송할 멤버를 선택해주세요");
+      toast.error(TOAST.SCHEDULE.SMART_REMINDER_MEMBER_REQUIRED);
       return;
     }
     if (!message.trim()) {
-      toast.error("메시지를 입력해주세요");
+      toast.error(TOAST.SCHEDULE.SMART_REMINDER_MESSAGE_REQUIRED);
       return;
     }
 

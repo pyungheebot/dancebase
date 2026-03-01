@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { DanceGenreType, GenreExplorerEntry, GenreMemberInterest } from "@/types";
 
 // ─── localStorage 키 ──────────────────────────────────────────
@@ -15,23 +16,15 @@ type GenreExplorerStore = {
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 function loadStore(groupId: string): GenreExplorerStore {
-  if (typeof window === "undefined") return { entries: [], interests: [] };
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(groupId));
-    if (!raw) return { entries: [], interests: [] };
-    const parsed = JSON.parse(raw) as Partial<GenreExplorerStore>;
-    return {
-      entries: parsed.entries ?? [],
-      interests: parsed.interests ?? [],
-    };
-  } catch {
-    return { entries: [], interests: [] };
-  }
+  const parsed = loadFromStorage<Partial<GenreExplorerStore>>(STORAGE_KEY(groupId), {});
+  return {
+    entries: parsed.entries ?? [],
+    interests: parsed.interests ?? [],
+  };
 }
 
 function saveStore(groupId: string, store: GenreExplorerStore) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY(groupId), JSON.stringify(store));
+  saveToStorage(STORAGE_KEY(groupId), store);
 }
 
 // ─── 훅 ──────────────────────────────────────────────────────

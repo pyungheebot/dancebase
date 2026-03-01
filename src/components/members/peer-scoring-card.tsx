@@ -217,15 +217,15 @@ function ScoreDialog({ open, onOpenChange, onSubmit }: ScoreDialogProps) {
 
   const handleSubmit = () => {
     if (!targetName.trim()) {
-      toast.error("평가 대상자 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.PEER_SCORE_EVALUATEE_REQUIRED);
       return;
     }
     if (!scorerName.trim()) {
-      toast.error("평가자 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.PEER_SCORE_EVALUATOR_REQUIRED);
       return;
     }
     if (!sessionDate) {
-      toast.error("세션 날짜를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.PEER_SCORE_DATE_REQUIRED);
       return;
     }
     onSubmit({
@@ -403,14 +403,14 @@ export function PeerScoringCard({ groupId }: PeerScoringCardProps) {
     if (success) {
       toast.success(`${data.targetName}님 피어 점수가 저장되었습니다.`);
     } else {
-      toast.error("일부 점수 저장에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.PEER_FEEDBACK_PARTIAL_ERROR);
     }
   };
 
   const handleDelete = (id: string) => {
     const ok = deleteScore(id);
     if (ok) {
-      toast.success("점수가 삭제되었습니다.");
+      toast.success(TOAST.MEMBERS.PEER_SCORE_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }

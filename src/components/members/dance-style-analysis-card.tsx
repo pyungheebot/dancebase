@@ -37,6 +37,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import {
   useDanceStyleAnalysis,
@@ -300,7 +301,7 @@ function TagInput({
     const trimmed = inputValue.trim();
     if (!trimmed) return;
     if (tags.includes(trimmed)) {
-      toast.error("이미 추가된 항목입니다.");
+      toast.error(TOAST.MEMBERS.STYLE_ANALYSIS_ITEM_DUPLICATE);
       return;
     }
     onAdd(trimmed);
@@ -443,7 +444,7 @@ function SnapshotDialog({
 
   function handleSubmit() {
     if (form.primaryGenres.length === 0) {
-      toast.error("주력 장르를 1개 이상 입력하세요.");
+      toast.error(TOAST.MEMBERS.STYLE_ANALYSIS_GENRE_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -912,7 +913,7 @@ export function DanceStyleAnalysisCard({ memberId }: { memberId: string }) {
       traitScores: form.traitScores,
       notes: form.notes,
     });
-    toast.success("분석 기록이 추가되었습니다.");
+    toast.success(TOAST.MEMBERS.STYLE_ANALYSIS_ADDED);
   }
 
   function handleEdit(form: SnapshotFormState) {
@@ -926,13 +927,13 @@ export function DanceStyleAnalysisCard({ memberId }: { memberId: string }) {
       traitScores: form.traitScores,
       notes: form.notes,
     });
-    toast.success("분석 기록이 수정되었습니다.");
+    toast.success(TOAST.MEMBERS.STYLE_ANALYSIS_UPDATED);
     setEditTarget(null);
   }
 
   function handleDelete(snapId: string) {
     deleteSnapshot(snapId);
-    toast.success("분석 기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.STYLE_ANALYSIS_DELETED);
   }
 
   return (

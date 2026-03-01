@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Collapsible,
   CollapsibleContent,
@@ -113,19 +114,19 @@ export function ThankYouLettersCard({
 
   function handleSend() {
     if (!fromName.trim()) {
-      toast.error("보내는 사람 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.LETTER_SENDER_REQUIRED);
       return;
     }
     if (!toName.trim()) {
-      toast.error("받는 사람을 선택해주세요.");
+      toast.error(TOAST.MEMBERS.LETTER_RECEIVER_REQUIRED);
       return;
     }
     if (!message.trim()) {
-      toast.error("감사 메시지를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.LETTER_CONTENT_REQUIRED);
       return;
     }
     if (fromName.trim() === toName.trim()) {
-      toast.error("자신에게는 편지를 보낼 수 없어요.");
+      toast.error(TOAST.MEMBERS.LETTER_SELF_SEND_ERROR);
       return;
     }
 
@@ -149,7 +150,7 @@ export function ThankYouLettersCard({
       setIsPublic(true);
       setActiveTab("public");
     } catch {
-      toast.error("편지 전송 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.LETTER_SEND_ERROR);
     } finally {
       setSending(false);
     }
@@ -157,7 +158,7 @@ export function ThankYouLettersCard({
 
   function handleDelete(id: string) {
     deleteLetter(id);
-    toast.success("편지를 삭제했습니다.");
+    toast.success(TOAST.MEMBERS.LETTER_DELETED);
   }
 
   

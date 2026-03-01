@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
+import { saveToStorage } from "@/lib/local-storage";
 import type { GroupMemoryItem, MemoryCategory } from "@/types";
 
 const STORAGE_KEY_PREFIX = "dancebase:memory-album:";
@@ -13,10 +14,7 @@ function getKey(groupId: string) {
 }
 
 function saveItems(groupId: string, items: GroupMemoryItem[]) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getKey(groupId), JSON.stringify(items));
-  } catch { /* ignore */ }
+  saveToStorage(getKey(groupId), items);
 }
 
 export function useGroupMemoryAlbum(groupId: string) {

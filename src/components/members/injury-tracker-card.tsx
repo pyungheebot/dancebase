@@ -160,7 +160,7 @@ export function InjuryTrackerCard({
       !form.severity ||
       !form.injuryDate
     ) {
-      toast.error("멤버, 부위, 설명, 심각도, 부상일은 필수입니다.");
+      toast.error(TOAST.MEMBERS.INJURY_TRACKER_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -181,7 +181,7 @@ export function InjuryTrackerCard({
         restrictions,
         form.notes || undefined
       );
-      toast.success("부상이 등록되었습니다.");
+      toast.success(TOAST.MEMBERS.INJURY_TRACKER_REGISTERED);
       setForm(EMPTY_FORM);
       setDialogOpen(false);
     });
@@ -190,7 +190,7 @@ export function InjuryTrackerCard({
   function handleDelete(id: string) {
     const ok = deleteInjury(id);
     if (ok) {
-      toast.success("부상 기록이 삭제되었습니다.");
+      toast.success(TOAST.MEMBERS.INJURY_TRACKER_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -199,18 +199,18 @@ export function InjuryTrackerCard({
   function handleMarkRecovering(id: string) {
     const ok = markRecovering(id);
     if (ok) {
-      toast.success("회복중으로 변경되었습니다.");
+      toast.success(TOAST.MEMBERS.INJURY_TRACKER_RECOVERING);
     } else {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.INJURY_TRACKER_STATUS_ERROR);
     }
   }
 
   function handleMarkRecovered(id: string) {
     const ok = markRecovered(id);
     if (ok) {
-      toast.success("완치 처리되었습니다.");
+      toast.success(TOAST.MEMBERS.INJURY_TRACKER_RECOVERED);
     } else {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.INJURY_TRACKER_STATUS_ERROR);
     }
   }
 

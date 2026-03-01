@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { format, startOfMonth, endOfMonth, parseISO, isValid } from "date-fns";
-import { removeFromStorage } from "@/lib/local-storage";
+import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
 import type {
   GoalProgressSetting,
   GoalProgressTrackerData,
@@ -19,27 +19,20 @@ function getStorageKey(groupId: string, userId: string): string {
 }
 
 function loadSetting(groupId: string, userId: string): GoalProgressSetting | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, userId));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as GoalProgressSetting;
-    // 이번 달 목표인지 확인
-    const currentMonth = format(new Date(), "yyyy-MM");
-    if (parsed.month !== currentMonth) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
+  const parsed = loadFromStorage<GoalProgressSetting | null>(getStorageKey(groupId, userId), null);
+  if (!parsed) return null;
+  // 이번 달 목표인지 확인
+  const currentMonth = format(new Date(), "yyyy-MM");
+  if (parsed.month !== currentMonth) return null;
+  return parsed;
 }
 
 function saveSetting(groupId: string, userId: string, targetRate: number): void {
-  if (typeof window === "undefined") return;
   const setting: GoalProgressSetting = {
     targetRate,
     month: format(new Date(), "yyyy-MM"),
   };
-  localStorage.setItem(getStorageKey(groupId, userId), JSON.stringify(setting));
+  saveToStorage(getStorageKey(groupId, userId), setting);
 }
 
 function computeStatus(

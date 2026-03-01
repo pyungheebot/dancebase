@@ -37,6 +37,7 @@ import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import type { Schedule, ScheduleRsvpResponse } from "@/types";
 import Link from "next/link";
@@ -78,7 +79,7 @@ function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
 
   const handleRsvp = async (response: ScheduleRsvpResponse) => {
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.SCHEDULE.LOGIN_REQUIRED);
       return;
     }
 
@@ -87,9 +88,9 @@ function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
       await execute(async () => {
         try {
           await cancelRsvp(user.id);
-          toast.success("RSVP를 취소했습니다");
+          toast.success(TOAST.SCHEDULE.RSVP_CANCELLED);
         } catch {
-          toast.error("RSVP 취소에 실패했습니다");
+          toast.error(TOAST.SCHEDULE.RSVP_CANCEL_ERROR);
         }
       });
       return;
@@ -106,7 +107,7 @@ function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
         await submitRsvp(user.id, response);
         toast.success(`"${labels[response]}"으로 응답했습니다`);
       } catch {
-        toast.error("RSVP 응답에 실패했습니다");
+        toast.error(TOAST.SCHEDULE.RSVP_ERROR);
       }
     });
   };
@@ -428,7 +429,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
           .eq("id", schedule.id);
         if (error) throw error;
 
-        toast.success("일정을 삭제했습니다");
+        toast.success(TOAST.SCHEDULE.DELETED);
       } else if (scope === "this_and_future") {
         // 이후 모든 일정 삭제 (같은 recurrence_id + starts_at >= 현재 일정 날짜)
         if (!schedule.recurrence_id) throw new Error("recurrence_id 없음");
@@ -489,7 +490,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
       setPendingDeleteSchedule(null);
       onScheduleUpdated?.();
     } catch {
-      toast.error("일정 삭제에 실패했습니다");
+      toast.error(TOAST.SCHEDULE.DELETE_ERROR);
     } finally {
       setDeleteLoading(false);
     }
@@ -517,7 +518,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
               onClick={() => {
                 const icsContent = schedulesToIcs(schedules);
                 downloadIcs(icsContent, "DanceBase_일정.ics");
-                toast.success("전체 일정을 내보냈습니다");
+                toast.success(TOAST.SCHEDULE.EXPORTED);
               }}
             >
               <Download className="h-3 w-3" />
@@ -879,7 +880,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                       onClick={() => {
                         const icsContent = scheduleToIcs(detailSchedule);
                         downloadIcs(icsContent, `${detailSchedule.title}.ics`);
-                        toast.success("캘린더 파일을 다운로드했습니다");
+                        toast.success(TOAST.SCHEDULE.ICS_DOWNLOADED);
                       }}
                     >
                       <Download className="h-3.5 w-3.5 mr-2" />

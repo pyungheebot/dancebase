@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
+import { saveToStorage } from "@/lib/local-storage";
 import type {
   GroupAnnouncementItem,
   GroupAnnouncementInput,
@@ -24,24 +25,11 @@ function saveAnnouncements(
   groupId: string,
   items: GroupAnnouncementItem[]
 ) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      getAnnouncementsKey(groupId),
-      JSON.stringify(items)
-    );
-  } catch {
-    // localStorage 용량 초과 등의 경우 무시
-  }
+  saveToStorage(getAnnouncementsKey(groupId), items);
 }
 
 function saveReadIds(groupId: string, ids: Set<string>) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getReadKey(groupId), JSON.stringify([...ids]));
-  } catch {
-    // 무시
-  }
+  saveToStorage(getReadKey(groupId), [...ids]);
 }
 
 function sortAnnouncements(

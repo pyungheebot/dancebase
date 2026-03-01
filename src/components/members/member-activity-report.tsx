@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { exportToCsv } from "@/lib/export/csv-exporter";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { Download, BarChart2 } from "lucide-react";
 import type { EntityMember } from "@/types/entity-context";
 
@@ -55,7 +56,7 @@ export function MemberActivityReport({ groupId, groupName, members }: Props) {
 
   const handleExportCsv = () => {
     if (records.length === 0) {
-      toast.error("내보낼 데이터가 없습니다");
+      toast.error(TOAST.MEMBERS.ACTIVITY_EXPORT_EMPTY);
       return;
     }
     const headers = ["순위", "이름", "게시글", "댓글", "출석", "회비", "종합점수"];
@@ -73,7 +74,7 @@ export function MemberActivityReport({ groupId, groupName, members }: Props) {
       headers,
       rows
     );
-    toast.success("CSV 파일이 다운로드되었습니다");
+    toast.success(TOAST.MEMBERS.CSV_DOWNLOADED);
   };
 
   /** 순위에 따른 배지 색상 */

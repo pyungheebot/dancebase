@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useWarmupRoutine } from "@/hooks/use-warmup-routine";
 import type { WarmupExercise, WarmupExerciseType } from "@/types";
 
@@ -392,12 +393,12 @@ function AddExerciseForm({ onAdd, onCancel }: AddExerciseFormProps) {
   const handleSubmit = () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      toast.error("동작명을 입력해주세요.");
+      toast.error(TOAST.SCHEDULE.WARMUP_MOVE_NAME_REQUIRED);
       return;
     }
     const sec = parseInt(duration, 10);
     if (isNaN(sec) || sec <= 0) {
-      toast.error("올바른 시간(초)을 입력해주세요.");
+      toast.error(TOAST.SCHEDULE.WARMUP_DURATION_REQUIRED);
       return;
     }
     onAdd(trimmedName, type, sec, undefined, description.trim() || undefined, undefined);
@@ -510,7 +511,7 @@ function RoutineTabPanel({
   ) => {
     onAddExercise(name, type, duration, repetitions, description, bodyPart);
     setShowAddForm(false);
-    toast.success("동작이 추가되었습니다.");
+    toast.success(TOAST.SCHEDULE.WARMUP_MOVE_ADDED);
   };
 
   return (
@@ -575,7 +576,7 @@ function RoutineTabPanel({
                 className="h-7 w-7 p-0 text-muted-foreground/50 hover:text-destructive shrink-0"
                 onClick={() => {
                   onRemoveExercise(ex.id);
-                  toast.success("동작이 삭제되었습니다.");
+                  toast.success(TOAST.SCHEDULE.WARMUP_MOVE_DELETED);
                 }}
               >
                 <Trash2 className="h-3 w-3" />
@@ -630,7 +631,7 @@ function AddRoutineForm({ onAdd, onCancel }: AddRoutineFormProps) {
   const handleSubmit = () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("루틴 이름을 입력해주세요.");
+      toast.error(TOAST.SCHEDULE.WARMUP_ROUTINE_NAME_REQUIRED);
       return;
     }
     onAdd(trimmed);

@@ -38,6 +38,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useDanceMilestone, calcGoalProgress } from "@/hooks/use-dance-milestone";
 import type { DanceMilestoneCategory, DanceMilestoneGoal } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -112,7 +113,7 @@ function AddGoalDialog({ onAdd }: AddGoalDialogProps) {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("목표 제목을 입력해주세요");
+      toast.error(TOAST.MEMBERS.GOAL_TITLE_REQUIRED);
       return;
     }
     onAdd({
@@ -121,7 +122,7 @@ function AddGoalDialog({ onAdd }: AddGoalDialogProps) {
       category,
       targetDate: targetDate || undefined,
     });
-    toast.success("목표가 추가되었습니다");
+    toast.success(TOAST.MEMBERS.GOAL_ADDED);
     resetForm();
     setOpen(false);
   };
@@ -236,7 +237,7 @@ function AddStepForm({ onAdd, onCancel }: AddStepFormProps) {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("단계 제목을 입력해주세요");
+      toast.error(TOAST.MEMBERS.MILESTONE_TITLE_REQUIRED);
       return;
     }
     onAdd(title.trim(), description.trim() || undefined);
@@ -450,7 +451,7 @@ function GoalCard({
                 onAdd={(title, desc) => {
                   onAddStep(goal.id, title, desc);
                   setShowAddStep(false);
-                  toast.success("단계가 추가되었습니다");
+                  toast.success(TOAST.MEMBERS.MILESTONE_ADDED);
                 }}
                 onCancel={() => setShowAddStep(false)}
               />
@@ -472,7 +473,7 @@ function GoalCard({
                 className="h-6 text-[10px] px-2 text-muted-foreground hover:text-red-500"
                 onClick={() => {
                   onDeleteGoal(goal.id);
-                  toast.success("목표가 삭제되었습니다");
+                  toast.success(TOAST.MEMBERS.GOAL_DELETED);
                 }}
               >
                 <Trash2 className="h-3 w-3 mr-1" />

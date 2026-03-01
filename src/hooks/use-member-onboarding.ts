@@ -1,6 +1,7 @@
 "use client";
 
 import {useState, useCallback} from "react";
+import { saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // 타입 정의
@@ -60,15 +61,10 @@ export function useMemberOnboarding(
         const next = prev.map((item) =>
           item.id === id ? { ...item, isDone: !item.isDone } : item,
         );
-        // localStorage 저장
-        try {
-          const doneMap = Object.fromEntries(
-            next.map((item) => [item.id, item.isDone]),
-          );
-          localStorage.setItem(getItemsKey(groupId, userId), JSON.stringify(doneMap));
-        } catch {
-          // 저장 실패 무시
-        }
+        const doneMap = Object.fromEntries(
+          next.map((item) => [item.id, item.isDone]),
+        );
+        saveToStorage(getItemsKey(groupId, userId), doneMap);
         return next;
       });
     },
@@ -78,11 +74,7 @@ export function useMemberOnboarding(
   // 온보딩 완전 숨기기
   const dismissOnboarding = useCallback(() => {
     if (!userId) return;
-    try {
-      localStorage.setItem(getDismissedKey(groupId, userId), "true");
-    } catch {
-      // 저장 실패 무시
-    }
+    saveToStorage(getDismissedKey(groupId, userId), "true");
     setIsDismissed(true);
   }, [groupId, userId]);
 

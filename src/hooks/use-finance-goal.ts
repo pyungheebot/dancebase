@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { FinanceGoal } from "@/types";
-import { removeFromStorage } from "@/lib/local-storage";
+import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY_PREFIX = "finance-goal-";
 
@@ -12,18 +12,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadGoal(groupId: string): FinanceGoal | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return null;
-    return JSON.parse(raw) as FinanceGoal;
-  } catch {
-    return null;
-  }
+  return loadFromStorage<FinanceGoal | null>(getStorageKey(groupId), null);
 }
 
 function saveGoal(groupId: string, goal: FinanceGoal): void {
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(goal));
+  saveToStorage(getStorageKey(groupId), goal);
 }
 
 function removeGoal(groupId: string): void {

@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Target, TrendingUp, Calendar, Trophy, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useFinanceGoal } from "@/hooks/use-finance-goal";
 
 type FinanceGoalCardProps = {
@@ -41,12 +42,12 @@ export function FinanceGoalCard({
   const handleCreate = () => {
     const title = formTitle.trim();
     if (!title) {
-      toast.error("목표명을 입력해주세요");
+      toast.error(TOAST.FINANCE.GOAL_NAME_REQUIRED);
       return;
     }
     const targetAmount = parseInt(formTargetAmount.replace(/,/g, ""), 10);
     if (isNaN(targetAmount) || targetAmount <= 0) {
-      toast.error("올바른 목표 금액을 입력해주세요");
+      toast.error(TOAST.FINANCE.GOAL_AMOUNT_REQUIRED);
       return;
     }
 
@@ -56,7 +57,7 @@ export function FinanceGoalCard({
       deadline: formDeadline || null,
     });
 
-    toast.success("수입 목표가 설정되었습니다");
+    toast.success(TOAST.FINANCE.GOAL_SAVED);
     setShowForm(false);
     setFormTitle("");
     setFormTargetAmount("");
@@ -65,7 +66,7 @@ export function FinanceGoalCard({
 
   const handleDelete = () => {
     deleteGoal();
-    toast.success("목표가 삭제되었습니다");
+    toast.success(TOAST.FINANCE.GOAL_DELETED);
   };
 
   const handleCancelForm = () => {

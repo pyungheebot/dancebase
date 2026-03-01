@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Clock, X, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   submitExcuse,
   getMyExcuse,
@@ -77,11 +78,11 @@ export function AttendanceExcuseDialog({
   const handleSubmit = async () => {
     const trimmed = reason.trim();
     if (!trimmed) {
-      toast.error("결석 사유를 입력해주세요");
+      toast.error(TOAST.ATTENDANCE.EXCUSE_REASON_REQUIRED);
       return;
     }
     if (trimmed.length < 5) {
-      toast.error("사유를 5자 이상 입력해주세요");
+      toast.error(TOAST.ATTENDANCE.EXCUSE_REASON_MIN);
       return;
     }
 
@@ -89,11 +90,11 @@ export function AttendanceExcuseDialog({
       const { error } = await submitExcuse(scheduleId, userId, trimmed);
 
       if (error) {
-        toast.error("면제 신청에 실패했습니다");
+        toast.error(TOAST.ATTENDANCE.EXCUSE_ERROR);
         return;
       }
 
-      toast.success("면제 신청이 제출되었습니다. 리더의 승인을 기다려주세요.");
+      toast.success(TOAST.ATTENDANCE.EXCUSE_SUBMITTED);
       onOpenChange(false);
       onSubmitted?.();
     });

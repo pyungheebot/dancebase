@@ -40,6 +40,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useEngagementCampaign,
   type CreateCampaignInput,
@@ -511,7 +512,7 @@ export function EngagementCampaignCard({ groupId }: EngagementCampaignCardProps)
         toast.error(result.message ?? "캠페인 생성에 실패했습니다.");
         return;
       }
-      toast.success("캠페인이 생성되었습니다.");
+      toast.success(TOAST.MEMBERS.CAMPAIGN_CREATED);
       setDialogOpen(false);
     },
     [createCampaign],
@@ -521,7 +522,7 @@ export function EngagementCampaignCard({ groupId }: EngagementCampaignCardProps)
   const handleComplete = useCallback(
     (id: string) => {
       completeCampaign(id);
-      toast.success("캠페인이 완료 처리되었습니다.");
+      toast.success(TOAST.MEMBERS.CAMPAIGN_COMPLETED);
     },
     [completeCampaign],
   );
@@ -530,7 +531,7 @@ export function EngagementCampaignCard({ groupId }: EngagementCampaignCardProps)
   const handleDelete = useCallback(
     (id: string) => {
       deleteCampaign(id);
-      toast.success("캠페인이 삭제되었습니다.");
+      toast.success(TOAST.MEMBERS.CAMPAIGN_DELETED);
     },
     [deleteCampaign],
   );
@@ -543,7 +544,7 @@ export function EngagementCampaignCard({ groupId }: EngagementCampaignCardProps)
         toast.error(result.message ?? "메모 추가에 실패했습니다.");
         return;
       }
-      toast.success("메모가 추가되었습니다.");
+      toast.success(TOAST.MEMBERS.CAMPAIGN_MEMO_ADDED);
     },
     [addMemo],
   );

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import type { LearningPath, LearningStep, LearningStepStatus } from "@/types";
-import { removeFromStorage } from "@/lib/local-storage";
+import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
 
 // -------------------------------------------------------
 // localStorage 키
@@ -105,28 +105,15 @@ function buildSteps(genre: string, currentLevel: string, _targetLevel: string): 
 // localStorage 저장/로드
 // -------------------------------------------------------
 function loadPath(groupId: string, userId: string): LearningPath | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, userId));
-    if (!raw) return null;
-    return JSON.parse(raw) as LearningPath;
-  } catch {
-    return null;
-  }
+  return loadFromStorage<LearningPath | null>(storageKey(groupId, userId), null);
 }
 
 function savePath(groupId: string, userId: string, path: LearningPath) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, userId), JSON.stringify(path));
-  } catch { /* ignore */ }
+  saveToStorage(storageKey(groupId, userId), path);
 }
 
 function removePath(groupId: string, userId: string) {
-  if (typeof window === "undefined") return;
-  try {
-    removeFromStorage(storageKey(groupId, userId));
-  } catch { /* ignore */ }
+  removeFromStorage(storageKey(groupId, userId));
 }
 
 // -------------------------------------------------------

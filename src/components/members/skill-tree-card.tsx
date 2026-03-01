@@ -35,6 +35,7 @@ import {
   GitBranch,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { SkillTreeNode, SkillTreeNodeStatus } from "@/types";
 
 // ============================================
@@ -281,14 +282,14 @@ export function SkillTreeCard({ groupId, userId, canEdit }: SkillTreeCardProps) 
       const node = data?.nodes.find((n) => n.id === skillId);
       toast.success(`"${node?.name ?? "스킬"}" 해금 완료!`);
     } else {
-      toast.error("스킬을 해금할 수 없습니다");
+      toast.error(TOAST.MEMBERS.SKILL_TREE_UNLOCK_ERROR);
     }
   };
 
   const handleReset = () => {
     resetTree();
     setConfirmReset(false);
-    toast.success("스킬 트리가 초기화되었습니다");
+    toast.success(TOAST.MEMBERS.SKILL_TREE_RESET);
   };
 
   const tiers = Object.keys(nodesByTier)

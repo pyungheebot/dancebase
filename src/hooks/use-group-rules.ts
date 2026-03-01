@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupRuleEntry,
   GroupRuleAcknowledgment,
@@ -21,23 +22,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadStore(groupId: string): GroupRulesStore {
-  if (typeof window === "undefined") return { rules: [], acknowledgments: [] };
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return { rules: [], acknowledgments: [] };
-    return JSON.parse(raw) as GroupRulesStore;
-  } catch {
-    return { rules: [], acknowledgments: [] };
-  }
+  return loadFromStorage<GroupRulesStore>(getStorageKey(groupId), { rules: [], acknowledgments: [] });
 }
 
 function saveStore(groupId: string, store: GroupRulesStore): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(store));
-  } catch {
-    // 저장 실패 시 무시
-  }
+  saveToStorage(getStorageKey(groupId), store);
 }
 
 // ============================================

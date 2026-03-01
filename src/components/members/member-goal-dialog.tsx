@@ -22,6 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Target, Trophy, Plus, Trash2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMemberGoals } from "@/hooks/use-member-goals";
 import { MEMBER_GOAL_TYPE_LABELS } from "@/types";
 import type { MemberGoalType } from "@/types";
@@ -101,11 +102,11 @@ export function MemberGoalDialog({
   const handleCreate = async () => {
     const value = parseInt(targetValue, 10);
     if (isNaN(value) || value <= 0) {
-      toast.error("목표치는 1 이상의 숫자를 입력해주세요");
+      toast.error(TOAST.MEMBERS.GOAL_DIALOG_VALUE_MIN);
       return;
     }
     if (!yearMonth) {
-      toast.error("월을 선택해주세요");
+      toast.error(TOAST.MEMBERS.GOAL_DIALOG_MONTH_REQUIRED);
       return;
     }
 
@@ -114,25 +115,25 @@ export function MemberGoalDialog({
       (g) => g.goalType === goalType && g.yearMonth === yearMonth
     );
     if (duplicate) {
-      toast.error("이미 같은 유형의 목표가 해당 월에 존재합니다");
+      toast.error(TOAST.MEMBERS.GOAL_DIALOG_DUPLICATE);
       return;
     }
 
     await execute(async () => {
       await createGoal(goalType, value, yearMonth);
-      toast.success("목표가 설정되었습니다");
+      toast.success(TOAST.MEMBERS.GOAL_DIALOG_SET);
       setTargetValue("");
     });
   };
 
   const handleDelete = (goalId: string) => {
     deleteGoal(goalId);
-    toast.success("목표가 삭제되었습니다");
+    toast.success(TOAST.MEMBERS.GOAL_DIALOG_DELETED);
   };
 
   const handleRefresh = async () => {
     await refreshProgress();
-    toast.success("달성률을 새로고침했습니다");
+    toast.success(TOAST.MEMBERS.ACHIEVEMENT_REFRESHED);
   };
 
   return (

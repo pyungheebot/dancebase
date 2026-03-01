@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Collapsible,
   CollapsibleContent,
@@ -250,7 +251,7 @@ export function PersonalityProfileCard({
   function handleSave() {
     saveProfile();
     setIsEditing(false);
-    toast.success("프로필이 저장되었습니다.");
+    toast.success(TOAST.MEMBERS.PERSONALITY_PROFILE_SAVED);
   }
 
   function handleCancel() {

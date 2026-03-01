@@ -596,7 +596,7 @@ export function MentalWellnessCard({ memberId }: MentalWellnessCardProps) {
   // 저장
   const handleSave = useCallback(() => {
     if (!form.date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MENTAL_DATE_INPUT_REQUIRED);
       return;
     }
 
@@ -615,14 +615,14 @@ export function MentalWellnessCard({ memberId }: MentalWellnessCardProps) {
     if (editingId) {
       const ok = updateEntry(editingId, entryData);
       if (ok) {
-        toast.success("심리 상태 기록이 수정되었습니다.");
+        toast.success(TOAST.MEMBERS.MENTAL_UPDATED);
         closeDialog();
       } else {
         toast.error(TOAST.UPDATE_ERROR);
       }
     } else {
       addEntry(entryData);
-      toast.success("오늘의 심리 상태가 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.MENTAL_SAVED);
       closeDialog();
     }
   }, [form, editingId, addEntry, updateEntry, closeDialog]);
@@ -632,7 +632,7 @@ export function MentalWellnessCard({ memberId }: MentalWellnessCardProps) {
     (id: string) => {
       const ok = deleteEntry(id);
       if (ok) {
-        toast.success("기록이 삭제되었습니다.");
+        toast.success(TOAST.MEMBERS.MENTAL_RECORD_DELETED);
       } else {
         toast.error(TOAST.DELETE_ERROR);
       }

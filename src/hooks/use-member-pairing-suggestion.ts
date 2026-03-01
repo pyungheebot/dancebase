@@ -5,6 +5,7 @@ import { useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateMemberPairingSuggestion } from "@/lib/swr/invalidate";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { MemberPairingSuggestion } from "@/types";
 
 // ============================================
@@ -19,22 +20,11 @@ const TOP_PAIRS = 5;
 // ============================================
 
 function loadCache(groupId: string): MemberPairingSuggestion[] | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(`${CACHE_KEY_PREFIX}${groupId}`);
-    if (!raw) return null;
-    return JSON.parse(raw) as MemberPairingSuggestion[];
-  } catch {
-    return null;
-  }
+  return loadFromStorage<MemberPairingSuggestion[] | null>(`${CACHE_KEY_PREFIX}${groupId}`, null);
 }
 
 function saveCache(groupId: string, suggestions: MemberPairingSuggestion[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(
-    `${CACHE_KEY_PREFIX}${groupId}`,
-    JSON.stringify(suggestions)
-  );
+  saveToStorage(`${CACHE_KEY_PREFIX}${groupId}`, suggestions);
 }
 
 // ============================================

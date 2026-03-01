@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type { InjuryRecord, BodyPart, InjurySeverity, InjuryStatus } from "@/types";
 
 // ============================================
@@ -16,12 +17,7 @@ function storageKey(groupId: string, userId: string): string {
 // ============================================
 
 function saveRecords(groupId: string, userId: string, records: InjuryRecord[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, userId), JSON.stringify(records));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId, userId), records);
 }
 
 // ============================================

@@ -12,6 +12,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useScheduleFeedback } from "@/hooks/use-schedule-feedback";
 import { useAsyncAction } from "@/hooks/use-async-action";
 
@@ -66,7 +67,7 @@ export function ScheduleFeedbackDialog({
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      toast.error("별점을 선택해주세요");
+      toast.error(TOAST.SCHEDULE.FEEDBACK_RATING_REQUIRED);
       return;
     }
 

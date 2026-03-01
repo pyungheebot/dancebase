@@ -184,14 +184,14 @@ export function EventSponsorshipCard({ groupId }: Props) {
   function handleAddSponsor() {
     const name = form.name.trim();
     if (!name) {
-      toast.error("스폰서 이름을 입력해주세요");
+      toast.error(TOAST.FINANCE.SPONSOR_NAME_REQUIRED);
       return;
     }
     const supportAmount = form.supportAmount
       ? parseInt(form.supportAmount.replace(/,/g, ""), 10)
       : 0;
     if (form.supportAmount && (isNaN(supportAmount) || supportAmount < 0)) {
-      toast.error("올바른 지원 금액을 입력해주세요");
+      toast.error(TOAST.FINANCE.SPONSOR_AMOUNT_REQUIRED);
       return;
     }
 
@@ -208,10 +208,10 @@ export function EventSponsorshipCard({ groupId }: Props) {
     });
 
     if (ok) {
-      toast.success("스폰서가 추가되었습니다");
+      toast.success(TOAST.FINANCE.SPONSOR_ADDED);
       handleCloseDialog();
     } else {
-      toast.error("스폰서 추가에 실패했습니다");
+      toast.error(TOAST.FINANCE.SPONSOR_ADD_ERROR);
     }
   }
 
@@ -221,7 +221,7 @@ export function EventSponsorshipCard({ groupId }: Props) {
     if (ok) {
       toast.success(`상태가 "${STATUS_LABELS[status]}"(으)로 변경되었습니다`);
     } else {
-      toast.error("상태 변경에 실패했습니다");
+      toast.error(TOAST.FINANCE.SPONSOR_STATUS_ERROR);
     }
   }
 

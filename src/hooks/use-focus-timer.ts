@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { FocusTimerConfig, FocusTimerPhase, FocusTimerSession } from "@/types";
 
 // ============================================
@@ -27,41 +28,19 @@ const SESSIONS_LS_KEY = (groupId: string) =>
 // ============================================
 
 function loadConfig(groupId: string): FocusTimerConfig {
-  if (typeof window === "undefined") return DEFAULT_CONFIG;
-  try {
-    const raw = localStorage.getItem(CONFIG_LS_KEY(groupId));
-    return raw ? (JSON.parse(raw) as FocusTimerConfig) : DEFAULT_CONFIG;
-  } catch {
-    return DEFAULT_CONFIG;
-  }
+  return loadFromStorage<FocusTimerConfig>(CONFIG_LS_KEY(groupId), DEFAULT_CONFIG);
 }
 
 function saveConfig(groupId: string, config: FocusTimerConfig): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(CONFIG_LS_KEY(groupId), JSON.stringify(config));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
+  saveToStorage(CONFIG_LS_KEY(groupId), config);
 }
 
 function loadSessions(groupId: string): FocusTimerSession[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(SESSIONS_LS_KEY(groupId));
-    return raw ? (JSON.parse(raw) as FocusTimerSession[]) : [];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<FocusTimerSession[]>(SESSIONS_LS_KEY(groupId), []);
 }
 
 function saveSessions(groupId: string, sessions: FocusTimerSession[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(SESSIONS_LS_KEY(groupId), JSON.stringify(sessions));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
+  saveToStorage(SESSIONS_LS_KEY(groupId), sessions);
 }
 
 // ============================================

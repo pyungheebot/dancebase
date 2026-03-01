@@ -43,6 +43,7 @@ import { PracticeTimer } from "@/components/schedule/practice-timer";
 import { exportToCsv } from "@/lib/export/csv-exporter";
 import { Loader2, MapPin, Clock, Pencil, Users, CalendarDays, Download, BarChart3, CheckCheck, XCircle, RotateCcw, FileBarChart2, GitCompareArrows, Star } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useProjectSongs } from "@/hooks/use-project-songs";
 import type { EntityContext } from "@/types/entity-context";
@@ -234,7 +235,7 @@ export function AttendanceContent({
 
       const { data: scheduleRows, error: schedErr } = await schedulesQuery;
       if (schedErr) {
-        toast.error("일정 데이터를 불러오지 못했습니다");
+        toast.error(TOAST.ATTENDANCE.SCHEDULE_LOAD_ERROR);
         return;
       }
 
@@ -249,7 +250,7 @@ export function AttendanceContent({
           .select("user_id, status")
           .in("schedule_id", scheduleIds);
         if (attErr) {
-          toast.error("출석 데이터를 불러오지 못했습니다");
+          toast.error(TOAST.ATTENDANCE.DATA_LOAD_ERROR);
           return;
         }
         attendanceRows = (attData ?? []) as { user_id: string; status: AttendanceStatus }[];
@@ -302,7 +303,7 @@ export function AttendanceContent({
           .delete()
           .eq("schedule_id", selectedScheduleId)
           .in("user_id", userIds);
-        if (error) { toast.error("일괄 처리에 실패했습니다"); return; }
+        if (error) { toast.error(TOAST.ATTENDANCE.BATCH_ERROR); return; }
       } else {
         const now = new Date().toISOString();
         const upsertData = userIds.map((userId) => ({
@@ -314,7 +315,7 @@ export function AttendanceContent({
         const { error } = await supabase
           .from("attendance")
           .upsert(upsertData, { onConflict: "schedule_id,user_id" });
-        if (error) { toast.error("일괄 처리에 실패했습니다"); return; }
+        if (error) { toast.error(TOAST.ATTENDANCE.BATCH_ERROR); return; }
       }
 
       toast.success(

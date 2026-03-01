@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BellRing, Clock, MessageSquarePlus, UserX } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { createNotification } from "@/lib/notifications";
 import { useMemberEngagement } from "@/hooks/use-member-engagement";
 import { WinBackMessageDialog } from "@/components/members/win-back-message-dialog";
@@ -96,7 +97,7 @@ export function InactiveMembersSection({ ctx }: InactiveMembersSectionProps) {
       setSentIds((prev) => new Set(prev).add(userId));
       toast.success(`${name}님에게 활동 독려 알림을 발송했습니다`);
     } catch {
-      toast.error("알림 발송에 실패했습니다");
+      toast.error(TOAST.MEMBERS.INACTIVE_ALERT_ERROR);
     } finally {
       setSendingIds((prev) => {
         const next = new Set(prev);

@@ -38,6 +38,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePerformanceRevenue } from "@/hooks/use-performance-revenue";
 import type { RevenueSplitMethod, RevenueParticipant } from "@/types";
 
@@ -209,17 +210,17 @@ function AddRevenueForm({
   function handleAddParticipant() {
     const name = form.newMemberName.trim();
     if (!name) {
-      toast.error("멤버 이름을 입력해주세요");
+      toast.error(TOAST.FINANCE.REVENUE_MEMBER_NAME_REQUIRED);
       return;
     }
     const weight = parseFloat(form.newMemberWeight) || 1;
     if (weight <= 0) {
-      toast.error("가중치는 0보다 커야 합니다");
+      toast.error(TOAST.FINANCE.REVENUE_WEIGHT_REQUIRED);
       return;
     }
     const alreadyExists = form.participants.some((p) => p.memberName === name);
     if (alreadyExists) {
-      toast.error("이미 추가된 멤버입니다");
+      toast.error(TOAST.FINANCE.REVENUE_MEMBER_DUPLICATE);
       return;
     }
     setForm((prev) => ({
@@ -247,20 +248,20 @@ function AddRevenueForm({
 
   function handleSubmit() {
     if (!form.eventName.trim()) {
-      toast.error("이벤트명을 입력해주세요");
+      toast.error(TOAST.FINANCE.REVENUE_EVENT_NAME_REQUIRED);
       return;
     }
     if (!form.eventDate) {
-      toast.error("날짜를 선택해주세요");
+      toast.error(TOAST.FINANCE.REVENUE_DATE_REQUIRED);
       return;
     }
     const totalAmount = parseFloat(form.totalAmount);
     if (!totalAmount || totalAmount <= 0) {
-      toast.error("총 수익 금액을 올바르게 입력해주세요");
+      toast.error(TOAST.FINANCE.REVENUE_AMOUNT_REQUIRED);
       return;
     }
     if (form.participants.length === 0) {
-      toast.error("참여자를 1명 이상 추가해주세요");
+      toast.error(TOAST.FINANCE.REVENUE_PARTICIPANT_REQUIRED);
       return;
     }
     onSave({
@@ -621,12 +622,12 @@ export function PerformanceRevenueCard({ groupId }: PerformanceRevenueCardProps)
   }) {
     addEntry(params);
     setShowAddForm(false);
-    toast.success("수익이 등록되었습니다");
+    toast.success(TOAST.FINANCE.REVENUE_REGISTERED);
   }
 
   function handleRemoveEntry(entryId: string) {
     removeEntry(entryId);
-    toast.success("수익 항목이 삭제되었습니다");
+    toast.success(TOAST.FINANCE.REVENUE_DELETED);
   }
 
   return (

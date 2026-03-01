@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { EntityMember } from "@/types/entity-context";
 
 interface InviteGroupMembersDialogProps {
@@ -78,7 +79,7 @@ export function InviteGroupMembersDialog({
       const { error } = await supabase.from("project_members").insert(rows);
 
       if (error) {
-        toast.error("멤버 초대에 실패했습니다");
+        toast.error(TOAST.MEMBERS.INVITE_SEND_ERROR);
         return;
       }
       toast.success(`${selected.size}명의 멤버를 초대했습니다`);

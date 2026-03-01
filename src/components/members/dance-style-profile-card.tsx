@@ -179,16 +179,16 @@ function GenreDialog({ initial, existingGenres, onSave, trigger }: GenreDialogPr
   async function handleSave() {
     const trimmed = genre.trim();
     if (!trimmed) {
-      toast.error("장르 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.STYLE_PROFILE_GENRE_REQUIRED);
       return;
     }
     if (!initial && existingGenres.includes(trimmed)) {
-      toast.error("이미 추가된 장르입니다.");
+      toast.error(TOAST.MEMBERS.STYLE_PROFILE_GENRE_DUPLICATE);
       return;
     }
     await executeSave(async () => {
       await onSave({ genre: trimmed, stars });
-      toast.success(initial ? "장르가 수정되었습니다." : "장르가 추가되었습니다.");
+      toast.success(initial ? TOAST.MEMBERS.STYLE_PROFILE_GENRE_UPDATED : TOAST.MEMBERS.STYLE_PROFILE_GENRE_ADDED);
       setOpen(false);
     });
   }
@@ -303,16 +303,16 @@ function InspirationDialog({
   async function handleSave() {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      toast.error("댄서 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.STYLE_PROFILE_DANCER_REQUIRED);
       return;
     }
     if (!initial && existingNames.includes(trimmedName)) {
-      toast.error("이미 추가된 댄서입니다.");
+      toast.error(TOAST.MEMBERS.STYLE_PROFILE_DANCER_DUPLICATE);
       return;
     }
     await executeInsp(async () => {
       await onSave({ name: trimmedName, memo: memo.trim() || undefined });
-      toast.success(initial ? "댄서 정보가 수정되었습니다." : "댄서가 추가되었습니다.");
+      toast.success(initial ? TOAST.MEMBERS.STYLE_PROFILE_DANCER_UPDATED : TOAST.MEMBERS.STYLE_PROFILE_DANCER_ADDED);
       setOpen(false);
     });
   }
@@ -461,7 +461,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
   async function saveBio() {
     try {
       await setBio(bioDraft);
-      toast.success("자기소개가 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.PERSONALITY_SAVED);
       setBioEditing(false);
     } catch {
       toast.error(TOAST.SAVE_ERROR);
@@ -477,7 +477,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
   async function saveBpm() {
     try {
       await setBpmRange({ min: bpmDraft[0], max: bpmDraft[1] });
-      toast.success("BPM 범위가 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.FLEXIBILITY_BPM_SAVED);
       setBpmEditing(false);
     } catch {
       toast.error(TOAST.SAVE_ERROR);
@@ -488,7 +488,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
   async function handlePositionChange(pos: string) {
     try {
       await setPosition(pos === "none" ? null : (pos as DanceProfilePosition));
-      toast.success("포지션이 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.PERSONALITY_POSITION_SAVED);
     } catch {
       toast.error(TOAST.SAVE_ERROR);
     }
@@ -634,7 +634,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
                             existingGenres={[]}
                             onSave={async (updated) => {
                               await updateGenre(entry.genre, updated);
-                              toast.success("장르가 수정되었습니다.");
+                              toast.success(TOAST.MEMBERS.STYLE_PROFILE_GENRE_UPDATED);
                             }}
                             trigger={
                               <button
@@ -804,7 +804,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
                           existingNames={[]}
                           onSave={async (updated) => {
                             await updateInspiration(item.name, updated);
-                            toast.success("댄서 정보가 수정되었습니다.");
+                            toast.success(TOAST.MEMBERS.STYLE_PROFILE_DANCER_UPDATED);
                           }}
                           trigger={
                             <button

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Award, ChevronDown, ChevronUp, Plus, Trash2, Trophy } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 import {
   Card,
@@ -105,15 +106,15 @@ export function MemberBadgeCard({ groupId, memberNames }: Props) {
 
   function handleCreateBadge() {
     if (!newName.trim()) {
-      toast.error("뱃지 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MEMBER_BADGE_NAME_REQUIRED);
       return;
     }
     if (!newEmoji.trim()) {
-      toast.error("이모지를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MEMBER_BADGE_EMOJI_REQUIRED);
       return;
     }
     if (!newCategory.trim()) {
-      toast.error("카테고리를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MEMBER_BADGE_CATEGORY_REQUIRED);
       return;
     }
     createBadge(newName.trim(), newDesc.trim(), newEmoji.trim(), newRarity, newCategory.trim());
@@ -124,15 +125,15 @@ export function MemberBadgeCard({ groupId, memberNames }: Props) {
 
   function handleAwardBadge() {
     if (!awardBadgeId) {
-      toast.error("수여할 뱃지를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.MEMBER_BADGE_SELECT_REQUIRED);
       return;
     }
     if (!awardMember) {
-      toast.error("수여받을 멤버를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.MEMBER_BADGE_RECEIVER_REQUIRED);
       return;
     }
     if (!awardedBy.trim()) {
-      toast.error("수여자 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MEMBER_BADGE_GIVER_REQUIRED);
       return;
     }
     const badge = badges.find((b) => b.id === awardBadgeId);

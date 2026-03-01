@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { Send, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { sendWinBackMessages, type WinBackRecipient } from "@/lib/win-back-message";
@@ -98,11 +99,11 @@ export function WinBackMessageDialog({
 
   const handleSend = async () => {
     if (!activeContent.trim()) {
-      toast.error("메시지를 입력해주세요");
+      toast.error(TOAST.MEMBERS.WINBACK_MESSAGE_REQUIRED);
       return;
     }
     if (recipients.length === 0) {
-      toast.error("수신자를 선택해주세요");
+      toast.error(TOAST.MEMBERS.WINBACK_MESSAGE_RECEIVER_REQUIRED);
       return;
     }
 
@@ -110,7 +111,7 @@ export function WinBackMessageDialog({
     try {
       const supabase = createClient();
       if (!user) {
-        toast.error("로그인이 필요합니다");
+        toast.error(TOAST.MEMBERS.WINBACK_MESSAGE_LOGIN_REQUIRED);
         return;
       }
 
@@ -128,12 +129,12 @@ export function WinBackMessageDialog({
           `${successCount}명 발송 완료, ${failCount}명 발송 실패`
         );
       } else {
-        toast.error("메시지 발송에 실패했습니다");
+        toast.error(TOAST.MEMBERS.WINBACK_SEND_ERROR2);
       }
 
       onOpenChange(false);
     } catch {
-      toast.error("메시지 발송 중 오류가 발생했습니다");
+      toast.error(TOAST.MEMBERS.WINBACK_SEND_ERROR);
     } finally {
       setSending(false);
     }

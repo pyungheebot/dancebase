@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type { FormationProject, FormationScene, FormationPosition } from "@/types";
 
 const MAX_SCENES = 10;
@@ -14,12 +15,7 @@ function saveProject(
   projectId: string,
   project: FormationProject
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(project));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId, projectId), project);
 }
 
 export function useFormationEditor(groupId: string, projectId: string) {

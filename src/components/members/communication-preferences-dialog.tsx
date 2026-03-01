@@ -13,6 +13,7 @@ import {
   Coffee,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Dialog,
   DialogContent,
@@ -147,11 +148,11 @@ export function CommunicationPreferencesDialog({
   function handleSaveQuietHours() {
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
     if (!timeRegex.test(quietStart)) {
-      toast.error("조용한 시간 시작을 HH:MM 형식으로 입력해 주세요.");
+      toast.error(TOAST.MEMBERS.COMM_QUIET_START_FORMAT);
       return;
     }
     if (!timeRegex.test(quietEnd)) {
-      toast.error("조용한 시간 종료를 HH:MM 형식으로 입력해 주세요.");
+      toast.error(TOAST.MEMBERS.COMM_QUIET_END_FORMAT);
       return;
     }
     const ok = updatePreferences({
@@ -159,7 +160,7 @@ export function CommunicationPreferencesDialog({
       quietHoursEnd: quietEnd,
     });
     if (ok) {
-      toast.success("조용한 시간대가 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.COMM_QUIET_SAVED);
     }
   }
 

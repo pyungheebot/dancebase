@@ -19,6 +19,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useBudgetSpendingTracker } from "@/hooks/use-budget-spending-tracker";
 import type { BudgetAlertLevel } from "@/types";
 
@@ -159,18 +160,18 @@ export function BudgetSpendingTrackerCard({ groupId }: Props) {
   const handleSetBudget = () => {
     const val = parseInt(budgetInput.replace(/,/g, ""), 10);
     if (isNaN(val) || val <= 0) {
-      toast.error("올바른 예산 금액을 입력해주세요");
+      toast.error(TOAST.FINANCE.MONTHLY_BUDGET_REQUIRED);
       return;
     }
     setBudget(val);
     setBudgetInput("");
-    toast.success("월 예산이 설정되었습니다");
+    toast.success(TOAST.FINANCE.MONTHLY_BUDGET_SAVED);
   };
 
   // 예산 삭제
   const handleClearBudget = () => {
     clearBudget();
-    toast.success("예산 목표가 삭제되었습니다");
+    toast.success(TOAST.FINANCE.MONTHLY_BUDGET_DELETED);
   };
 
   // 막대 차트 최대값 계산

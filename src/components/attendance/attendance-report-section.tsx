@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { useAttendanceReport, type ReportPeriod } from "@/hooks/use-attendance-report";
 import { exportToCsv } from "@/lib/export/csv-exporter";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { AttendanceExportButton } from "@/components/attendance/attendance-export-button";
 import type { EntityContext } from "@/types/entity-context";
 
@@ -98,7 +99,7 @@ export function AttendanceReportSection({ ctx }: Props) {
   // CSV 내보내기
   const handleExportCsv = () => {
     if (!report) {
-      toast.error("내보낼 데이터가 없습니다");
+      toast.error(TOAST.ATTENDANCE.EXPORT_NO_DATA);
       return;
     }
 
@@ -126,7 +127,7 @@ export function AttendanceReportSection({ ctx }: Props) {
     ]);
 
     exportToCsv(filename, headers, rows);
-    toast.success("CSV 파일이 다운로드되었습니다");
+    toast.success(TOAST.ATTENDANCE.CSV_DOWNLOADED);
   };
 
   return (

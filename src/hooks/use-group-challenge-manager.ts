@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { GroupChallengeItem, GroupChallengeStatus, GroupChallengeType } from "@/types";
 
 const STORAGE_KEY_PREFIX = "dancebase:challenge-manager:";
@@ -20,22 +21,12 @@ function calcStatus(startDate: string, endDate: string): GroupChallengeStatus {
 }
 
 function loadChallenges(groupId: string): GroupChallengeItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getKey(groupId));
-    if (!raw) return [];
-    const items = JSON.parse(raw) as GroupChallengeItem[];
-    return items.map((c) => ({ ...c, status: calcStatus(c.startDate, c.endDate) }));
-  } catch {
-    return [];
-  }
+  const items = loadFromStorage<GroupChallengeItem[]>(getKey(groupId), []);
+  return items.map((c) => ({ ...c, status: calcStatus(c.startDate, c.endDate) }));
 }
 
 function saveChallenges(groupId: string, items: GroupChallengeItem[]) {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getKey(groupId), JSON.stringify(items));
-  } catch { /* ignore */ }
+  saveToStorage(getKey(groupId), items);
 }
 
 export function useGroupChallengeManager(groupId: string) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import { createClient } from "@/lib/supabase/client";
 import { invalidateFinance } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
@@ -32,19 +33,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadTemplates(groupId: string): ExpenseTemplate[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ExpenseTemplate[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<ExpenseTemplate[]>(getStorageKey(groupId), []);
 }
 
 function saveTemplates(groupId: string, templates: ExpenseTemplate[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(templates));
+  saveToStorage(getStorageKey(groupId), templates);
 }
 
 function generateId(): string {

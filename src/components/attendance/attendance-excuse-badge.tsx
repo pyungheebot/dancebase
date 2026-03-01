@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/popover";
 import { ShieldCheck, Clock, X, Check } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { reviewExcuse } from "@/hooks/use-attendance-excuses";
 import type { ExcuseStatus } from "@/types";
 
@@ -65,7 +66,7 @@ export function AttendanceExcuseBadge({
     setReviewing(false);
 
     if (error) {
-      toast.error("처리에 실패했습니다");
+      toast.error(TOAST.ATTENDANCE.EXCUSE_BADGE_ERROR);
       return;
     }
 

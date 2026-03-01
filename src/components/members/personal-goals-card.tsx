@@ -32,6 +32,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePersonalGoals } from "@/hooks/use-personal-goals";
 import type { PersonalGoalItem, PersonalGoalStatus } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -111,11 +112,11 @@ function AddGoalDialog({ canAddMore, maxGoals, onAdd }: AddGoalDialogProps) {
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("목표 제목을 입력해주세요");
+      toast.error(TOAST.MEMBERS.GOAL_TITLE_REQUIRED);
       return;
     }
     if (!targetDate) {
-      toast.error("목표 날짜를 선택해주세요");
+      toast.error(TOAST.MEMBERS.GOAL_DATE_REQUIRED);
       return;
     }
     void execute(async () => {
@@ -268,7 +269,7 @@ function GoalItem({ goal, onUpdateProgress, onAbandon, onDelete }: GoalItemProps
     (e: React.MouseEvent) => {
       e.stopPropagation();
       onAbandon(goal.id);
-      toast.success("목표를 포기 처리했습니다");
+      toast.success(TOAST.MEMBERS.GOAL_ABANDONED);
     },
     [goal.id, onAbandon]
   );
@@ -277,7 +278,7 @@ function GoalItem({ goal, onUpdateProgress, onAbandon, onDelete }: GoalItemProps
     (e: React.MouseEvent) => {
       e.stopPropagation();
       onDelete(goal.id);
-      toast.success("목표가 삭제되었습니다");
+      toast.success(TOAST.MEMBERS.GOAL_DELETED);
     },
     [goal.id, onDelete]
   );
@@ -489,7 +490,7 @@ export function PersonalGoalsCard({ groupId, userId }: PersonalGoalsCardProps) {
     (params: { title: string; description: string; targetDate: string }) => {
       const result = addGoal(params);
       if (result.success) {
-        toast.success("목표가 추가되었습니다");
+        toast.success(TOAST.MEMBERS.GOAL_ADDED);
       } else {
         toast.error(result.message ?? "목표 추가에 실패했습니다");
       }
@@ -501,7 +502,7 @@ export function PersonalGoalsCard({ groupId, userId }: PersonalGoalsCardProps) {
     (id: string, progress: number) => {
       updateProgress(id, progress);
       if (progress === 100) {
-        toast.success("목표를 완료했습니다! 수고하셨어요.");
+        toast.success(TOAST.MEMBERS.GOAL_COMPLETED);
       }
     },
     [updateProgress]

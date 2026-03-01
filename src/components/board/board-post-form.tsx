@@ -33,6 +33,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Paperclip, X, FileText, Clock } from "lucide-react";
 import NextImage from "next/image";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { BoardScheduleInput } from "./board-schedule-input";
 
 interface BoardPostFormProps {
@@ -135,7 +136,7 @@ export function BoardPostForm({
               if (draft) {
                 setTitle(draft.title ?? "");
                 setContent(draft.content ?? "");
-                toast.success("이전 작성 내용을 복원했습니다.");
+                toast.success(TOAST.BOARD.DRAFT_RESTORED);
               }
             },
           },
@@ -297,7 +298,7 @@ export function BoardPostForm({
           .eq("id", initialData.id);
 
         if (error) {
-          toast.error("글 수정에 실패했습니다");
+          toast.error(TOAST.BOARD.POST_UPDATE_ERROR);
           return;
         }
 
@@ -329,7 +330,7 @@ export function BoardPostForm({
         .single();
 
       if (error || !post) {
-        toast.error("글 작성에 실패했습니다");
+        toast.error(TOAST.BOARD.POST_CREATE_ERROR);
         return;
       }
 

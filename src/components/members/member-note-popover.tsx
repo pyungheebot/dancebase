@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { StickyNote } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { MemberNote } from "@/types";
 
 type MemberNotePopoverProps = {
@@ -64,7 +65,7 @@ export function MemberNotePopover({
     if (!trimmed) return;
     await executeSave(async () => {
       if (!user) {
-        toast.error("인증 정보를 확인할 수 없습니다");
+        toast.error(TOAST.MEMBERS.NOTE_AUTH_REQUIRED);
         return;
       }
 
@@ -80,11 +81,11 @@ export function MemberNotePopover({
       );
 
       if (error) {
-        toast.error("메모 저장에 실패했습니다");
+        toast.error(TOAST.MEMBERS.NOTE_SAVE_ERROR);
         return;
       }
 
-      toast.success("메모가 저장되었습니다");
+      toast.success(TOAST.MEMBERS.NOTE_SAVED);
       invalidateMemberNote(groupId, targetUserId);
       setOpen(false);
     });
@@ -99,11 +100,11 @@ export function MemberNotePopover({
         .eq("id", note.id);
 
       if (error) {
-        toast.error("메모 삭제에 실패했습니다");
+        toast.error(TOAST.MEMBERS.NOTE_DELETE_ERROR);
         return;
       }
 
-      toast.success("메모가 삭제되었습니다");
+      toast.success(TOAST.MEMBERS.NOTE_DELETED);
       invalidateMemberNote(groupId, targetUserId);
       setDraft("");
       setOpen(false);

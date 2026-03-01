@@ -14,6 +14,7 @@ import {
   Coffee,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -131,13 +132,13 @@ export function SleepTrackerCard({ memberId }: { memberId: string }) {
 
   function handleSubmit() {
     if (!form.date || !form.bedtime || !form.wakeTime) {
-      toast.error("날짜, 취침 시간, 기상 시간을 모두 입력해주세요.");
+      toast.error(TOAST.MEMBERS.SLEEP_DATE_REQUIRED);
       return;
     }
     const napMinutes =
       form.hadNap && form.napMinutes ? parseInt(form.napMinutes, 10) : undefined;
     if (form.hadNap && form.napMinutes && isNaN(napMinutes!)) {
-      toast.error("낮잠 시간은 숫자로 입력해주세요.");
+      toast.error(TOAST.MEMBERS.SLEEP_NAP_INVALID);
       return;
     }
     addEntry({
@@ -149,14 +150,14 @@ export function SleepTrackerCard({ memberId }: { memberId: string }) {
       napMinutes,
       notes: form.notes || undefined,
     });
-    toast.success("수면 기록이 추가되었습니다.");
+    toast.success(TOAST.MEMBERS.SLEEP_ADDED);
     setForm(DEFAULT_FORM);
     setShowForm(false);
   }
 
   function handleDelete(id: string) {
     deleteEntry(id);
-    toast.success("수면 기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.SLEEP_DELETED);
   }
 
   const recentEntries = entries.slice(0, 5);

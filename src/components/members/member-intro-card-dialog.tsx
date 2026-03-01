@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {User, Pencil, Music, Star, MessageCircle} from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMemberIntroCards } from "@/hooks/use-member-intro-cards";
 import { formatYearMonthDay } from "@/lib/date-utils";
 import type { MemberIntroCard } from "@/types";
@@ -63,7 +64,7 @@ export function MemberIntroCardDialog({
 
   const handleSave = () => {
     if (!joinReason.trim() && !mainPart.trim() && !favoriteGenre.trim() && !oneWord.trim()) {
-      toast.error("최소 한 가지 항목을 입력해주세요");
+      toast.error(TOAST.MEMBERS.INTRO_CARD_DIALOG_MIN_REQUIRED);
       return;
     }
     const newCard: MemberIntroCard = {
@@ -76,7 +77,7 @@ export function MemberIntroCardDialog({
       updatedAt: new Date().toISOString(),
     };
     saveCard(newCard);
-    toast.success("자기소개 카드가 저장되었습니다");
+    toast.success(TOAST.MEMBERS.INTRO_CARD_DIALOG_SAVED);
     setEditMode(false);
   };
 

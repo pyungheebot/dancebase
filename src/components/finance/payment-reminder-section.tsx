@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Bell, BellRing, CheckCheck, AlertTriangle, Users } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { createNotification } from "@/lib/notifications";
 import { useUnpaidMembers } from "@/hooks/use-unpaid-members";
 
@@ -83,7 +84,7 @@ export function PaymentReminderSection({ groupId, projectId, groupName }: Props)
 
   const handleSendReminders = async () => {
     if (selectedIds.size === 0) {
-      toast.error("알림을 보낼 멤버를 선택해주세요");
+      toast.error(TOAST.FINANCE.REMINDER_MEMBER_SELECT);
       return;
     }
 
@@ -128,7 +129,7 @@ export function PaymentReminderSection({ groupId, projectId, groupName }: Props)
     } else if (successCount > 0) {
       toast.success(`${successCount}명 발송 완료 (${failCount}명 실패)`);
     } else {
-      toast.error("알림 발송에 실패했습니다");
+      toast.error(TOAST.FINANCE.REMINDER_SEND_ERROR);
     }
   };
 

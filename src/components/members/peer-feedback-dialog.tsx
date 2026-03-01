@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MessageCircle, ThumbsUp, TrendingUp, Send } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePeerFeedback, TYPE_LABELS } from "@/hooks/use-peer-feedback";
 import type { PeerFeedbackType } from "@/types";
 
@@ -54,12 +55,12 @@ export function PeerFeedbackSendDialog({
 
   const handleSubmit = async () => {
     if (!content.trim()) {
-      toast.error("내용을 입력해주세요");
+      toast.error(TOAST.MEMBERS.PEER_FEEDBACK_CONTENT_REQUIRED2);
       return;
     }
     await execute(async () => {
       sendFeedback(currentUserId, receiverId, receiverName, type, content.trim());
-      toast.success("피드백이 익명으로 전송되었습니다");
+      toast.success(TOAST.MEMBERS.PEER_FEEDBACK_SENT);
       setOpen(false);
       setContent("");
       setType("strength");

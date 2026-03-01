@@ -13,6 +13,7 @@ import {
 import { useMoodCheckin } from "@/hooks/use-mood-checkin";
 import { MoodType, MoodEntry } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { formatMonthDay } from "@/lib/date-utils";
 
@@ -188,12 +189,12 @@ export function MoodCheckinCard({ groupId, userId }: MoodCheckinCardProps) {
 
   async function handleSave() {
     if (!selectedMood) {
-      toast.error("기분을 선택해주세요.");
+      toast.error(TOAST.MEMBERS.MOOD_CHECKIN_SELECT);
       return;
     }
     await executeSave(async () => {
       checkIn(selectedMood, note);
-      toast.success("기분이 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.MOOD_SAVED);
       setOpen(false);
       setSelectedMood(null);
       setNote("");

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Clock, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useScheduleDday } from "@/hooks/use-schedule-dday";
 import type { DdayChecklistItem } from "@/types";
 
@@ -124,12 +125,12 @@ export function ScheduleDdayTimeline({
   const handleAdd = () => {
     const trimmed = newTitle.trim();
     if (!trimmed) {
-      toast.error("항목 제목을 입력해주세요");
+      toast.error(TOAST.SCHEDULE.DDAY_TITLE_REQUIRED);
       return;
     }
     addItem(Number(newDaysBefore), trimmed);
     setNewTitle("");
-    toast.success("항목을 추가했습니다");
+    toast.success(TOAST.SCHEDULE.DDAY_ITEM_ADDED);
   };
 
   const handleToggle = (id: string) => {

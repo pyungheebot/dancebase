@@ -10,6 +10,7 @@ import {
   Plus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,7 +104,7 @@ function AddTemplateDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.SCHEDULE.TEMPLATE_TITLE_REQUIRED_DOT);
       return;
     }
 
@@ -123,11 +124,11 @@ function AddTemplateDialog({
     );
 
     if (!success) {
-      toast.error("템플릿은 최대 20개까지 저장할 수 있습니다.");
+      toast.error(TOAST.SCHEDULE.TEMPLATE_MAX);
       return;
     }
 
-    toast.success("템플릿이 저장되었습니다.");
+    toast.success(TOAST.SCHEDULE.TEMPLATE_SAVED);
     resetForm();
     setOpen(false);
     onAdded();
@@ -410,22 +411,22 @@ export function ScheduleTemplateManager({
   const handleApply = (formData: ScheduleTemplateFormData) => {
     onApplyTemplate(formData);
     setOpen(false);
-    toast.success("템플릿이 적용되었습니다.");
+    toast.success(TOAST.SCHEDULE.TEMPLATE_APPLIED);
   };
 
   const handleDelete = (id: string) => {
     deleteTemplate(id);
-    toast.success("템플릿이 삭제되었습니다.");
+    toast.success(TOAST.SCHEDULE.TEMPLATE_DELETED);
   };
 
   const handleSaveCurrent = () => {
     if (!currentSchedule) return;
     const success = saveFromSchedule(currentSchedule);
     if (!success) {
-      toast.error("템플릿은 최대 20개까지 저장할 수 있습니다.");
+      toast.error(TOAST.SCHEDULE.TEMPLATE_MAX);
       return;
     }
-    toast.success("현재 일정이 템플릿으로 저장되었습니다.");
+    toast.success(TOAST.SCHEDULE.TEMPLATE_SAVED_FROM_CURRENT);
   };
 
   return (

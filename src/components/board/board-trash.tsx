@@ -17,6 +17,7 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -49,9 +50,9 @@ export function BoardTrash({ groupId, nicknameMap = {} }: BoardTrashProps) {
         .eq("id", target);
 
       if (error) {
-        toast.error("복구에 실패했습니다");
+        toast.error(TOAST.BOARD.TRASH_RESTORE_ERROR);
       } else {
-        toast.success("게시글이 복구되었습니다");
+        toast.success(TOAST.BOARD.TRASH_RESTORED);
         invalidateBoard(groupId);
         invalidateBoardTrash(groupId);
         refetch();
@@ -70,9 +71,9 @@ export function BoardTrash({ groupId, nicknameMap = {} }: BoardTrashProps) {
         .eq("id", target);
 
       if (error) {
-        toast.error("영구 삭제에 실패했습니다");
+        toast.error(TOAST.BOARD.TRASH_PERM_DELETE_ERROR);
       } else {
-        toast.success("게시글이 영구 삭제되었습니다");
+        toast.success(TOAST.BOARD.TRASH_PERM_DELETED);
         invalidateBoardTrash(groupId);
         refetch();
       }

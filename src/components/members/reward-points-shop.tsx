@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Sheet,
   SheetContent,
@@ -83,16 +84,16 @@ function RewardItemDialog({
 
   const handleSave = () => {
     if (!name.trim()) {
-      toast.error("보상 이름을 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_SHOP_NAME_REQUIRED);
       return;
     }
     const costNum = Number(cost);
     if (!costNum || costNum < 1) {
-      toast.error("포인트 비용은 1 이상이어야 합니다");
+      toast.error(TOAST.MEMBERS.REWARD_SHOP_POINT_COST_MIN);
       return;
     }
     if (!emoji.trim()) {
-      toast.error("이모지를 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_SHOP_EMOJI_REQUIRED);
       return;
     }
 
@@ -105,7 +106,7 @@ function RewardItemDialog({
         emoji: emoji.trim(),
         isActive,
       });
-      toast.success("보상이 수정되었습니다");
+      toast.success(TOAST.MEMBERS.REWARD_SHOP_UPDATED);
     } else {
       createItem({
         name: name.trim(),
@@ -115,7 +116,7 @@ function RewardItemDialog({
         emoji: emoji.trim(),
         isActive,
       });
-      toast.success("보상이 추가되었습니다");
+      toast.success(TOAST.MEMBERS.REWARD_SHOP_ADDED);
     }
 
     onSave();
@@ -229,16 +230,16 @@ function ManualPointDialog({
 
   const handleSubmit = () => {
     if (!selectedUserId) {
-      toast.error("멤버를 선택해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_SHOP_MEMBER_REQUIRED);
       return;
     }
     const amountNum = Number(amount);
     if (!amountNum || amountNum < 1) {
-      toast.error("포인트는 1 이상이어야 합니다");
+      toast.error(TOAST.MEMBERS.REWARD_SHOP_POINT_MIN);
       return;
     }
     if (!reason.trim()) {
-      toast.error("사유를 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_SHOP_REASON_REQUIRED);
       return;
     }
 
@@ -384,7 +385,7 @@ export function RewardPointsShop({
 
   const handleDelete = (itemId: string) => {
     deleteItem(itemId);
-    toast.success("보상이 삭제되었습니다");
+    toast.success(TOAST.MEMBERS.REWARD_SHOP_DELETED);
     refresh();
   };
 

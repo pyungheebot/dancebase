@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MeetingMinute,
   MeetingMinutesEntry,
@@ -65,23 +66,11 @@ function storageKey(groupId: string): string {
 }
 
 function loadEntries(groupId: string): MeetingMinutesEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MeetingMinutesEntry[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<MeetingMinutesEntry[]>(storageKey(groupId), []);
 }
 
 function saveEntries(groupId: string, entries: MeetingMinutesEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(entries));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
+  saveToStorage(storageKey(groupId), entries);
 }
 
 // ============================================

@@ -25,6 +25,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import {
   usePracticeJournalEntry,
@@ -210,11 +211,11 @@ function JournalForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.PRACTICE_JOURNAL_TITLE_REQUIRED);
       return;
     }
     if (!form.learned.trim() && !form.improvement.trim() && !form.feeling.trim()) {
-      toast.error("배운 점, 개선할 점, 느낀 점 중 하나 이상 작성해주세요.");
+      toast.error(TOAST.MEMBERS.PRACTICE_JOURNAL_CONTENT_REQUIRED2);
       return;
     }
     onSubmit(form);
@@ -539,7 +540,7 @@ export function PracticeJournalCard({
   async function handleAdd(values: FormValues) {
     await execute(async () => {
       addEntry(values);
-      toast.success("일지가 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.PRACTICE_JOURNAL_SAVED);
       setMode("list");
     });
   }
@@ -549,7 +550,7 @@ export function PracticeJournalCard({
     if (!editTarget) return;
     await execute(async () => {
       updateEntry(editTarget.id, values);
-      toast.success("일지가 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.PRACTICE_JOURNAL_UPDATED);
       setMode("list");
       setEditTarget(null);
     });
@@ -558,7 +559,7 @@ export function PracticeJournalCard({
   // 일지 삭제
   function handleDelete(id: string) {
     deleteEntry(id);
-    toast.success("일지가 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.PRACTICE_JOURNAL_DELETED);
   }
 
   // 수정 모드 전환

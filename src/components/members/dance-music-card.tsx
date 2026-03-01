@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Music2,
   Plus,
@@ -244,11 +245,11 @@ function TrackAddForm({
 
   const handleSubmit = () => {
     if (!form.title.trim()) {
-      toast.error("곡명을 입력해주세요");
+      toast.error(TOAST.MEMBERS.SONG_NAME_REQUIRED);
       return;
     }
     if (!form.artist.trim()) {
-      toast.error("아티스트를 입력해주세요");
+      toast.error(TOAST.MEMBERS.ARTIST_REQUIRED);
       return;
     }
     const urlError = validateUrl(form.url);
@@ -583,11 +584,11 @@ export function DanceMusicCard({ memberId }: DanceMusicCardProps) {
 
   const handleCreatePlaylist = () => {
     if (!newPlaylistName.trim()) {
-      toast.error("플레이리스트 이름을 입력해주세요");
+      toast.error(TOAST.MEMBERS.PLAYLIST_NAME_REQUIRED);
       return;
     }
     createPlaylist({ name: newPlaylistName, description: newPlaylistDesc });
-    toast.success("플레이리스트를 만들었습니다");
+    toast.success(TOAST.MEMBERS.PLAYLIST_CREATED);
     setNewPlaylistName("");
     setNewPlaylistDesc("");
     setShowNewPlaylistForm(false);
@@ -599,7 +600,7 @@ export function DanceMusicCard({ memberId }: DanceMusicCardProps) {
 
   const handleDeletePlaylist = (playlistId: string) => {
     deletePlaylist(playlistId);
-    toast.success("플레이리스트를 삭제했습니다");
+    toast.success(TOAST.MEMBERS.PLAYLIST_DELETED);
   };
 
   // ────────────────────────────────────────────
@@ -618,9 +619,9 @@ export function DanceMusicCard({ memberId }: DanceMusicCardProps) {
       notes: form.notes,
     });
     if (result) {
-      toast.success("트랙을 추가했습니다");
+      toast.success(TOAST.MEMBERS.DANCE_MUSIC_TRACK_ADDED);
     } else {
-      toast.error("트랙 추가에 실패했습니다");
+      toast.error(TOAST.MEMBERS.DANCE_MUSIC_TRACK_ADD_ERROR);
     }
   };
 

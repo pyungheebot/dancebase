@@ -29,6 +29,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useFundraisingGoal } from "@/hooks/use-fundraising-goal";
 import { formatYearMonthDay } from "@/lib/date-utils";
 import type { FundraisingGoal } from "@/types";
@@ -531,7 +532,7 @@ export function FundraisingGoalCard({ groupId }: Props) {
   function handleAddGoal() {
     const targetAmount = parseInt(form.targetAmount.replace(/,/g, ""), 10);
     if (isNaN(targetAmount) || targetAmount <= 0) {
-      toast.error("올바른 목표 금액을 입력해주세요.");
+      toast.error(TOAST.FINANCE.FUNDRAISING_AMOUNT_REQUIRED);
       return;
     }
     const ok = addGoal({
@@ -558,7 +559,7 @@ export function FundraisingGoalCard({ groupId }: Props) {
   function handleAddContribution(goalId: string, contribForm: AddContribForm) {
     const amount = parseInt(contribForm.amount.replace(/,/g, ""), 10);
     if (isNaN(amount) || amount <= 0) {
-      toast.error("올바른 기부 금액을 입력해주세요.");
+      toast.error(TOAST.FINANCE.FUNDRAISING_DONATION_AMOUNT_REQUIRED);
       return;
     }
     addContribution(goalId, {

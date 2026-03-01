@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { MemberIntroCardV2 } from "@/types";
-import { removeFromStorage } from "@/lib/local-storage";
+import { saveToStorage, removeFromStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키
@@ -17,21 +17,11 @@ function storageKey(groupId: string, userId: string): string {
 // ============================================
 
 function persistCard(groupId: string, userId: string, card: MemberIntroCardV2): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, userId), JSON.stringify(card));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId, userId), card);
 }
 
 function removeCard(groupId: string, userId: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    removeFromStorage(storageKey(groupId, userId));
-  } catch {
-    // 무시
-  }
+  removeFromStorage(storageKey(groupId, userId));
 }
 
 // ============================================

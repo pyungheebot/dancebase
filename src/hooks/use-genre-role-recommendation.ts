@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceRole,
   RoleRecommendation,
@@ -21,24 +22,11 @@ function storageKey(groupId: string): string {
 }
 
 function loadState(groupId: string): RoleRecommendationState {
-  if (typeof window === "undefined")
-    return { assignments: {}, savedAt: null };
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return { assignments: {}, savedAt: null };
-    return JSON.parse(raw) as RoleRecommendationState;
-  } catch {
-    return { assignments: {}, savedAt: null };
-  }
+  return loadFromStorage<RoleRecommendationState>(storageKey(groupId), { assignments: {}, savedAt: null });
 }
 
 function saveState(groupId: string, state: RoleRecommendationState): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(state));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId), state);
 }
 
 // ============================================

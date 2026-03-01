@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { MemberGoal, MemberGoalType } from "@/types";
 
 // ============================================
@@ -110,25 +111,13 @@ export function useMemberGoals(groupId: string, userId: string) {
 
   // localStorage에서 목표 불러오기
   const loadGoals = useCallback((): MemberGoal[] => {
-    if (typeof window === "undefined") return [];
-    try {
-      const raw = localStorage.getItem(storageKey(groupId, userId));
-      if (!raw) return [];
-      return JSON.parse(raw) as MemberGoal[];
-    } catch {
-      return [];
-    }
+    return loadFromStorage<MemberGoal[]>(storageKey(groupId, userId), []);
   }, [groupId, userId]);
 
   // localStorage에 목표 저장
   const saveGoals = useCallback(
     (newGoals: MemberGoal[]) => {
-      if (typeof window === "undefined") return;
-      try {
-        localStorage.setItem(storageKey(groupId, userId), JSON.stringify(newGoals));
-      } catch {
-        // 무시
-      }
+      saveToStorage(storageKey(groupId, userId), newGoals);
     },
     [groupId, userId]
   );

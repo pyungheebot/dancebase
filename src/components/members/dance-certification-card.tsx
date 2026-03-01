@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Award,
@@ -129,7 +130,7 @@ export function DanceCertificationCard({ memberId }: { memberId: string }) {
     if (ok) {
       toast.success(`"${item.name}" 항목이 삭제되었습니다.`);
     } else {
-      toast.error("삭제 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.DANCE_CERT_DELETE_ERROR);
     }
   }
 
@@ -341,7 +342,7 @@ export function DanceCertificationCard({ memberId }: { memberId: string }) {
             if (ok) {
               toast.success(`"${params.name}" 항목이 수정되었습니다.`);
             } else {
-              toast.error("수정 중 오류가 발생했습니다.");
+              toast.error(TOAST.MEMBERS.DANCE_CERT_UPDATE_ERROR);
               return;
             }
           } else {
@@ -349,7 +350,7 @@ export function DanceCertificationCard({ memberId }: { memberId: string }) {
             if (ok) {
               toast.success(`"${params.name}" 항목이 추가되었습니다.`);
             } else {
-              toast.error("추가 중 오류가 발생했습니다.");
+              toast.error(TOAST.MEMBERS.DANCE_CERT_ADD_ERROR);
               return;
             }
           }
@@ -499,19 +500,19 @@ function CertFormDialog({
 
   function handleSubmit() {
     if (!form.name.trim()) {
-      toast.error("이름을 입력하세요.");
+      toast.error(TOAST.MEMBERS.DANCE_CERT_NAME_REQUIRED);
       return;
     }
     if (!form.issuer.trim()) {
-      toast.error("발급기관을 입력하세요.");
+      toast.error(TOAST.MEMBERS.DANCE_CERT_ISSUER_REQUIRED);
       return;
     }
     if (!form.acquiredAt) {
-      toast.error("취득일을 입력하세요.");
+      toast.error(TOAST.MEMBERS.DANCE_CERT_DATE_REQUIRED);
       return;
     }
     if (form.expiresAt && form.expiresAt < form.acquiredAt) {
-      toast.error("만료일은 취득일 이후여야 합니다.");
+      toast.error(TOAST.MEMBERS.DANCE_CERT_EXPIRY_AFTER_DATE);
       return;
     }
     void execute(async () => {

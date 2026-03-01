@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useGrowthTrajectory } from "@/hooks/use-growth-trajectory";
 import type { GrowthTrajectory, GrowthDimension, GrowthDataPoint } from "@/types";
@@ -249,7 +250,7 @@ function DataPointForm({ trajectoryId, onAdd, onCancel }: DataPointFormProps) {
     e.preventDefault();
 
     if (!month) {
-      toast.error("월을 선택해주세요.");
+      toast.error(TOAST.MEMBERS.GROWTH_MONTH_REQUIRED);
       return;
     }
 
@@ -269,7 +270,7 @@ function DataPointForm({ trajectoryId, onAdd, onCancel }: DataPointFormProps) {
 
     void execute(async () => {
       onAdd(trajectoryId, month, parsed);
-      toast.success("데이터가 추가되었습니다.");
+      toast.success(TOAST.MEMBERS.GROWTH_DATA_ADDED);
       onCancel();
     });
   }
@@ -355,13 +356,13 @@ function AddMemberDialog({ onAdd }: AddMemberDialogProps) {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.GROWTH_MEMBER_REQUIRED);
       return;
     }
 
     const goalNum = parseInt(goal, 10);
     if (isNaN(goalNum) || goalNum < 1 || goalNum > 100) {
-      toast.error("목표 점수는 1~100 사이로 입력해주세요.");
+      toast.error(TOAST.MEMBERS.GROWTH_SCORE_RANGE);
       return;
     }
 
@@ -650,7 +651,7 @@ export function GrowthTrajectoryCard({ groupId }: GrowthTrajectoryCardProps) {
   function handleAddMember(name: string, goal: number) {
     const result = addTrajectory(name, goal);
     if (!result) {
-      toast.error("이미 등록된 멤버이거나 이름이 올바르지 않습니다.");
+      toast.error(TOAST.MEMBERS.GROWTH_DUPLICATE_MEMBER);
       return;
     }
     toast.success(`${name} 멤버가 추가되었습니다.`);
@@ -658,7 +659,7 @@ export function GrowthTrajectoryCard({ groupId }: GrowthTrajectoryCardProps) {
 
   function handleDelete(id: string) {
     deleteTrajectory(id);
-    toast.success("멤버 궤적이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.GROWTH_TRAJECTORY_DELETED);
   }
 
   function handleAddDataPoint(
@@ -668,7 +669,7 @@ export function GrowthTrajectoryCard({ groupId }: GrowthTrajectoryCardProps) {
   ) {
     const ok = addDataPoint(id, month, scores);
     if (!ok) {
-      toast.error("데이터 추가에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.GROWTH_DATA_ADD_ERROR);
     }
   }
 

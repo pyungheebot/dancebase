@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Collapsible,
@@ -103,20 +104,20 @@ function AddQuestionDialog({
 
   function handleSubmit() {
     if (!question.trim()) {
-      toast.error("질문을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.QUIZ_QUESTION_REQUIRED);
       return;
     }
     const filledOptions = options.map((o) => o.trim());
     if (filledOptions.some((o) => !o)) {
-      toast.error("4개 선택지를 모두 입력해주세요.");
+      toast.error(TOAST.MEMBERS.QUIZ_CHOICES_REQUIRED);
       return;
     }
     if (!aboutMember) {
-      toast.error("대상 멤버를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.QUIZ_MEMBER_REQUIRED);
       return;
     }
     if (!createdBy.trim()) {
-      toast.error("출제자 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.QUIZ_AUTHOR_REQUIRED);
       return;
     }
 
@@ -128,7 +129,7 @@ function AddQuestionDialog({
         aboutMember,
         createdBy: createdBy.trim(),
       });
-      toast.success("문제가 추가되었습니다.");
+      toast.success(TOAST.MEMBERS.QUIZ_ADDED);
       setOpen(false);
       setQuestion("");
       setOptions(["", "", "", ""]);
@@ -284,11 +285,11 @@ function QuizPlayArea({
 
   function handleStart() {
     if (!playerName.trim()) {
-      toast.error("참여자 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.QUIZ_PARTICIPANT_REQUIRED);
       return;
     }
     if (questions.length === 0) {
-      toast.error("문제가 없습니다. 먼저 문제를 추가해주세요.");
+      toast.error(TOAST.MEMBERS.QUIZ_NO_QUESTIONS);
       return;
     }
     const shuffled = shuffleArray(questions).slice(0, QUIZ_COUNT);
@@ -307,7 +308,7 @@ function QuizPlayArea({
 
   function handleNext() {
     if (selected === null) {
-      toast.error("선택지를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.QUIZ_CHOICE_REQUIRED);
       return;
     }
 
@@ -550,7 +551,7 @@ export function MemberQuizCard({
 
   function handleDelete(id: string) {
     deleteQuestion(id);
-    toast.success("문제가 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.QUIZ_DELETED);
   }
 
   return (

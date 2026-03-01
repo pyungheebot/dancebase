@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   GraduationCap,
@@ -317,10 +318,10 @@ export function DanceClassLogCard({ memberId }: DanceClassLogCardProps) {
         selfRating: editForm.selfRating,
         notes: editForm.notes.trim() || undefined,
       });
-      toast.success("수업 기록이 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.CLASS_LOG_UPDATED);
       cancelEdit();
     } catch {
-      toast.error("수업 기록 수정 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.CLASS_LOG_EDIT_ERROR);
     }
   }
 
@@ -333,7 +334,7 @@ export function DanceClassLogCard({ memberId }: DanceClassLogCardProps) {
       deleteEntry(entryId);
       toast.success(`'${name}' 수업 기록이 삭제되었습니다.`);
     } catch {
-      toast.error("수업 기록 삭제 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.CLASS_LOG_DELETE_ERROR);
     }
   }
 

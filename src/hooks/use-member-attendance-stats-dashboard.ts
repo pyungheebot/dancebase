@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MemberAttendStatRecord,
   MemberAttendStatStatus,
@@ -18,23 +19,11 @@ const LS_KEY = (groupId: string) =>
   `dancebase:member-attendance-stats:${groupId}`;
 
 function loadRecords(groupId: string): MemberAttendStatRecord[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MemberAttendStatRecord[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<MemberAttendStatRecord[]>(LS_KEY(groupId), []);
 }
 
 function saveRecords(groupId: string, records: MemberAttendStatRecord[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(records));
-  } catch {
-    /* ignore */
-  }
+  saveToStorage(LS_KEY(groupId), records);
 }
 
 // ─── 유틸 ────────────────────────────────────────────────────

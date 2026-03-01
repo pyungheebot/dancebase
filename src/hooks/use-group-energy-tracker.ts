@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateGroupEnergyTracker } from "@/lib/swr/invalidate";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { EnergyRecord, EnergyDimension } from "@/types";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
@@ -14,26 +15,16 @@ function storageKey(groupId: string): string {
 }
 
 function loadRecords(groupId: string): EnergyRecord[] {
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as EnergyRecord[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<EnergyRecord[]>(storageKey(groupId), []);
 }
 
 function saveRecords(groupId: string, records: EnergyRecord[]): void {
-  try {
-    // 최신순 정렬 후 최대 100개 유지
-    const sorted = [...records].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    const trimmed = sorted.slice(0, MAX_RECORDS);
-    localStorage.setItem(storageKey(groupId), JSON.stringify(trimmed));
-  } catch {
-    // localStorage 쓰기 실패는 무시
-  }
+  // 최신순 정렬 후 최대 100개 유지
+  const sorted = [...records].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+  const trimmed = sorted.slice(0, MAX_RECORDS);
+  saveToStorage(storageKey(groupId), trimmed);
 }
 
 // -------------------------------------------------------

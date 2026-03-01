@@ -18,6 +18,7 @@ import {
   Minus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useSkillSelfEvaluation,
   defaultScores,
@@ -313,7 +314,7 @@ export function SkillSelfEvaluationCard({
   const handleSave = () => {
     void executeSave(async () => {
       saveEvaluation(draftScores);
-      toast.success("스킬 자가 평가가 저장되었습니다");
+      toast.success(TOAST.MEMBERS.SKILL_EVAL_SAVED);
       setEvaluating(false);
     });
   };

@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   InspirationBoardItem,
   InspirationCategory,
@@ -13,18 +14,11 @@ function getStorageKey(memberId: string) {
 }
 
 function loadItems(memberId: string): InspirationBoardItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    return raw ? (JSON.parse(raw) as InspirationBoardItem[]) : [];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<InspirationBoardItem[]>(getStorageKey(memberId), []);
 }
 
 function saveItems(memberId: string, items: InspirationBoardItem[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(memberId), JSON.stringify(items));
+  saveToStorage(getStorageKey(memberId), items);
 }
 
 export function useInspirationBoard(memberId: string) {

@@ -163,11 +163,11 @@ function EntryDialog({ initial, onSave, trigger }: EntryDialogProps) {
 
   async function handleSave() {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.PORTFOLIO_TITLE_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.PORTFOLIO_DATE_REQUIRED);
       return;
     }
     await executeSave(async () => {
@@ -182,7 +182,7 @@ function EntryDialog({ initial, onSave, trigger }: EntryDialogProps) {
         highlights,
         awards,
       });
-      toast.success(initial ? "항목이 수정되었습니다." : "항목이 추가되었습니다.");
+      toast.success(initial ? TOAST.ITEM_UPDATED : TOAST.ITEM_ADDED);
       setOpen(false);
     });
   }
@@ -442,7 +442,7 @@ export function DancePortfolioCard({ memberId }: { memberId: string }) {
   async function handleDelete(id: string) {
     try {
       await deleteEntry(id);
-      toast.success("항목이 삭제되었습니다.");
+      toast.success(TOAST.MEMBERS.PORTFOLIO_ITEM_DELETED);
     } catch {
       toast.error(TOAST.DELETE_ERROR);
     }

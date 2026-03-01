@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Tags, Plus, Trash2, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Sheet,
   SheetContent,
@@ -67,7 +68,7 @@ function AddBadgeDialog({
 
   function handleSubmit() {
     if (!name.trim()) {
-      toast.error("배지 이름을 입력해 주세요.");
+      toast.error(TOAST.MEMBERS.ROLE_BADGE_NAME_REQUIRED);
       return;
     }
     onAdd({ name: name.trim(), icon: icon.trim() || "🏷️", color, description: description.trim() });
@@ -375,7 +376,7 @@ export function MemberRoleBadgesManager({ groupId }: Props) {
     if (!target) return;
     const ok = deleteBadge(badgeId);
     if (!ok) {
-      toast.error("기본 배지는 삭제할 수 없습니다.");
+      toast.error(TOAST.MEMBERS.ROLE_BADGE_DEFAULT_DELETE_ERROR);
       return;
     }
     toast.success(`"${target.name}" 배지가 삭제되었습니다.`);

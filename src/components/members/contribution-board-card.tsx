@@ -42,6 +42,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useContributionBoard } from "@/hooks/use-contribution-board";
 import type { ContributionType } from "@/types";
 
@@ -129,19 +130,19 @@ function AddRecordDialog({ open, onOpenChange, onSubmit }: AddRecordDialogProps)
 
   function handleSubmit() {
     if (!memberName.trim()) {
-      toast.error("멤버 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.CONTRIBUTION_MEMBER_REQUIRED);
       return;
     }
     if (!awardedBy.trim()) {
-      toast.error("부여자 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.CONTRIBUTION_GIVER_REQUIRED);
       return;
     }
     if (!description.trim()) {
-      toast.error("활동 내용을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.CONTRIBUTION_CONTENT_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.CONTRIBUTION_DATE_REQUIRED);
       return;
     }
     onSubmit({ memberName, type, description, points, date, awardedBy });

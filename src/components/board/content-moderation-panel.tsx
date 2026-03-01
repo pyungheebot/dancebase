@@ -81,12 +81,12 @@ export function ContentModerationPanel({ groupId }: ContentModerationPanelProps)
 
     const statusError = await updateReportStatus(reportId, "reviewed");
     if (statusError) {
-      toast.error("신고 상태 업데이트에 실패했습니다");
+      toast.error(TOAST.BOARD.MODERATION_STATUS_ERROR);
       setProcessingId(null);
       return;
     }
 
-    toast.success("댓글이 숨김 처리되었습니다");
+    toast.success(TOAST.BOARD.MODERATION_HIDE_SUCCESS);
     invalidateContentReports(groupId);
     refetch();
     setProcessingId(null);
@@ -124,7 +124,7 @@ export function ContentModerationPanel({ groupId }: ContentModerationPanelProps)
 
     const statusError = await updateReportStatus(reportId, "reviewed");
     if (statusError) {
-      toast.error("신고 상태 업데이트에 실패했습니다");
+      toast.error(TOAST.BOARD.MODERATION_STATUS_ERROR);
       setProcessingId(null);
       return;
     }
@@ -144,12 +144,12 @@ export function ContentModerationPanel({ groupId }: ContentModerationPanelProps)
 
     const statusError = await updateReportStatus(reportId, "dismissed");
     if (statusError) {
-      toast.error("처리에 실패했습니다");
+      toast.error(TOAST.BOARD.MODERATION_PROCESS_ERROR);
       setProcessingId(null);
       return;
     }
 
-    toast.success("신고가 무시 처리되었습니다");
+    toast.success(TOAST.BOARD.MODERATION_IGNORE_SUCCESS);
     invalidateContentReports(groupId);
     refetch();
     setProcessingId(null);

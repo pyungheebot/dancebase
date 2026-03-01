@@ -147,7 +147,7 @@ export function DanceMoodBoardCard({ memberId }: { memberId: string }) {
 
   async function handleSave() {
     if (!form.title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.MOOD_BOARD_TITLE_REQUIRED);
       return;
     }
     await executeSave(async () => {
@@ -159,7 +159,7 @@ export function DanceMoodBoardCard({ memberId }: { memberId: string }) {
           color: form.color,
           tags: form.tags,
         });
-        toast.success("항목이 수정되었습니다.");
+        toast.success(TOAST.MEMBERS.MOOD_BOARD_ITEM_UPDATED);
       } else {
         await addItem({
           title: form.title.trim(),
@@ -168,7 +168,7 @@ export function DanceMoodBoardCard({ memberId }: { memberId: string }) {
           color: form.color,
           tags: form.tags,
         });
-        toast.success("항목이 추가되었습니다.");
+        toast.success(TOAST.MEMBERS.MOOD_BOARD_ITEM_SAVED);
       }
       setDialogOpen(false);
     });
@@ -177,7 +177,7 @@ export function DanceMoodBoardCard({ memberId }: { memberId: string }) {
   async function handleDelete(id: string) {
     try {
       await removeItem(id);
-      toast.success("항목이 삭제되었습니다.");
+      toast.success(TOAST.MEMBERS.MOOD_BOARD_ITEM_DELETED);
     } catch {
       toast.error(TOAST.DELETE_ERROR);
     }

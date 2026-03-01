@@ -48,6 +48,7 @@ import {
   CheckSquare,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useDanceGoal } from "@/hooks/use-dance-goal";
 import type {
   DanceGoal,
@@ -168,7 +169,7 @@ function GoalFormDialog({
 
   const handleSubmit = () => {
     if (!form.title.trim()) {
-      toast.error("목표 제목을 입력하세요.");
+      toast.error(TOAST.MEMBERS.DANCE_GOAL_TITLE_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -320,7 +321,7 @@ function GoalItem({
     if (!milestoneInput.trim()) return;
     onAddMilestone(milestoneInput.trim());
     setMilestoneInput("");
-    toast.success("마일스톤이 추가되었습니다.");
+    toast.success(TOAST.MEMBERS.MILESTONE_ADDED_DOT);
   };
 
   const handleProgressBlur = () => {
@@ -352,7 +353,7 @@ function GoalItem({
             priority: data.priority,
             targetDate: data.targetDate || null,
           });
-          toast.success("목표가 수정되었습니다.");
+          toast.success(TOAST.MEMBERS.GOAL_UPDATED_DOT);
         }}
         mode="edit"
       />
@@ -433,7 +434,7 @@ function GoalItem({
                     className="text-xs gap-2"
                     onClick={() => {
                       onChangeStatus("active");
-                      toast.success("목표를 진행 중으로 변경했습니다.");
+                      toast.success(TOAST.MEMBERS.GOAL_IN_PROGRESS);
                     }}
                   >
                     <PlayCircle className="h-3 w-3" />
@@ -445,7 +446,7 @@ function GoalItem({
                     className="text-xs gap-2"
                     onClick={() => {
                       onChangeStatus("paused");
-                      toast.success("목표를 일시중지했습니다.");
+                      toast.success(TOAST.MEMBERS.GOAL_PAUSED);
                     }}
                   >
                     <PauseCircle className="h-3 w-3" />
@@ -457,7 +458,7 @@ function GoalItem({
                     className="text-xs gap-2"
                     onClick={() => {
                       onChangeStatus("completed");
-                      toast.success("목표를 완료로 표시했습니다.");
+                      toast.success(TOAST.MEMBERS.GOAL_MARKED_DONE);
                     }}
                   >
                     <CheckSquare className="h-3 w-3" />
@@ -468,7 +469,7 @@ function GoalItem({
                   className="text-xs gap-2 text-red-600 focus:text-red-600"
                   onClick={() => {
                     onDelete();
-                    toast.success("목표가 삭제되었습니다.");
+                    toast.success(TOAST.MEMBERS.GOAL_DELETED_DOT);
                   }}
                 >
                   <Trash2 className="h-3 w-3" />
@@ -588,7 +589,7 @@ function GoalItem({
                       <button
                         onClick={() => {
                           onRemoveMilestone(m.id);
-                          toast.success("마일스톤이 제거되었습니다.");
+                          toast.success(TOAST.MEMBERS.MILESTONE_REMOVED_DOT);
                         }}
                         className="h-4 w-4 text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                       >
@@ -803,7 +804,7 @@ export function DanceGoalCard({ memberId }: { memberId: string }) {
             priority: data.priority,
             targetDate: data.targetDate || null,
           });
-          toast.success("목표가 추가되었습니다.");
+          toast.success(TOAST.MEMBERS.GOAL_ADDED_DOT);
         }}
         mode="create"
       />

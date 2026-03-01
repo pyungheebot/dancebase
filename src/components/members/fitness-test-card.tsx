@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Activity,
@@ -541,15 +542,15 @@ function AddItemForm({ onAdd }: AddItemFormProps) {
 
   function handleAdd() {
     if (!name.trim()) {
-      toast.error("항목명을 입력하세요.");
+      toast.error(TOAST.MEMBERS.FITNESS_ITEM_NAME_REQUIRED);
       return;
     }
     if (!category) {
-      toast.error("카테고리를 선택하세요.");
+      toast.error(TOAST.MEMBERS.FITNESS_CATEGORY_REQUIRED);
       return;
     }
     if (!unit.trim()) {
-      toast.error("단위를 입력하세요.");
+      toast.error(TOAST.MEMBERS.FITNESS_UNIT_REQUIRED);
       return;
     }
     onAdd(name.trim(), category, unit.trim(), higherIsBetter);
@@ -688,11 +689,11 @@ function RecordResultDialog({
 
   function handleSubmit() {
     if (!memberName) {
-      toast.error("멤버를 선택하세요.");
+      toast.error(TOAST.MEMBERS.FITNESS_MEMBER_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 입력하세요.");
+      toast.error(TOAST.MEMBERS.FITNESS_DATE_REQUIRED);
       return;
     }
 
@@ -705,7 +706,7 @@ function RecordResultDialog({
       .filter((it) => !isNaN(it.value));
 
     if (recordedItems.length === 0) {
-      toast.error("최소 하나 이상의 항목에 수치를 입력하세요.");
+      toast.error(TOAST.MEMBERS.FITNESS_MIN_VALUE_REQUIRED);
       return;
     }
 

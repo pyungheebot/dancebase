@@ -397,7 +397,7 @@ export function BodyTrackerCard({ memberId }: BodyTrackerCardProps) {
   // 저장
   const handleSave = useCallback(() => {
     if (!form.date) {
-      toast.error("날짜를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.BODY_DATE_REQUIRED);
       return;
     }
 
@@ -409,7 +409,7 @@ export function BodyTrackerCard({ memberId }: BodyTrackerCardProps) {
       form.waist !== "";
 
     if (!hasAnyValue) {
-      toast.error("체중, 체지방률 등 측정값을 하나 이상 입력해주세요.");
+      toast.error(TOAST.MEMBERS.BODY_VALUE_REQUIRED);
       return;
     }
 
@@ -429,14 +429,14 @@ export function BodyTrackerCard({ memberId }: BodyTrackerCardProps) {
     if (editingId) {
       const ok = updateEntry(editingId, entryData);
       if (ok) {
-        toast.success("체형 기록이 수정되었습니다.");
+        toast.success(TOAST.MEMBERS.BODY_UPDATED);
         closeDialog();
       } else {
         toast.error(TOAST.UPDATE_ERROR);
       }
     } else {
       addEntry(entryData);
-      toast.success("체형 기록이 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.BODY_SAVED);
       closeDialog();
     }
   }, [form, editingId, addEntry, updateEntry, closeDialog]);
@@ -446,7 +446,7 @@ export function BodyTrackerCard({ memberId }: BodyTrackerCardProps) {
     (id: string) => {
       const ok = deleteEntry(id);
       if (ok) {
-        toast.success("기록이 삭제되었습니다.");
+        toast.success(TOAST.MEMBERS.RECORD_DELETED);
       } else {
         toast.error(TOAST.DELETE_ERROR);
       }

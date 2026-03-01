@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceInjuryEntry,
   DanceInjuryBodyPart,
@@ -21,30 +22,11 @@ function storageKey(memberId: string): string {
 }
 
 function loadStore(memberId: string): DanceInjuryLogStore {
-  if (typeof window === "undefined") {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw) {
-      return { memberId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as DanceInjuryLogStore;
-  } catch {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
+  return loadFromStorage<DanceInjuryLogStore>(storageKey(memberId), { memberId, entries: [], updatedAt: new Date().toISOString() });
 }
 
 function saveStore(store: DanceInjuryLogStore): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(store.memberId),
-      JSON.stringify({ ...store, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // 저장 오류 무시
-  }
+  saveToStorage(storageKey(store.memberId), { ...store, updatedAt: new Date().toISOString() });
 }
 
 // ============================================================

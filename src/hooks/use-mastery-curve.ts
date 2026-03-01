@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type { MasteryCurveEntry, MasteryCheckpoint } from "@/types";
 
 // ============================================
@@ -38,12 +39,7 @@ function saveEntries(
   userId: string,
   entries: MasteryCurveEntry[]
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, userId), JSON.stringify(entries));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId, userId), entries);
 }
 
 // ============================================

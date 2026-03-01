@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Collapsible,
   CollapsibleContent,
@@ -117,19 +118,19 @@ function ApplyDialog({ memberNames, onApply }: ApplyDialogProps) {
 
   function handleSubmit() {
     if (!memberName) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.LEAVE_MEMBER_REQUIRED);
       return;
     }
     if (!reason) {
-      toast.error("휴가 사유를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.LEAVE_REASON_REQUIRED);
       return;
     }
     if (!startDate || !endDate) {
-      toast.error("시작일과 종료일을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.LEAVE_DATE_REQUIRED);
       return;
     }
     if (startDate > endDate) {
-      toast.error("시작일이 종료일보다 늦을 수 없습니다.");
+      toast.error(TOAST.MEMBERS.LEAVE_DATE_ORDER);
       return;
     }
 
@@ -285,7 +286,7 @@ function LeaveRow({
 
   function handleDelete() {
     onDelete(entry.id);
-    toast.success("휴가 기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.LEAVE_DELETED);
   }
 
   return (

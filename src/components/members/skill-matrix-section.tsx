@@ -19,6 +19,7 @@ import {
 
 import { Plus, Trash2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { EntityMember } from "@/types/entity-context";
 
 
@@ -105,11 +106,11 @@ export function SkillMatrixSection({
   const handleSave = async () => {
     const skillName = skillNameInput.trim();
     if (!skillName) {
-      toast.error("스킬 이름을 입력하세요");
+      toast.error(TOAST.MEMBERS.SKILL_MATRIX_SECTION_SKILL_REQUIRED);
       return;
     }
     if (allSkillNames.includes(skillName)) {
-      toast.error("이미 존재하는 스킬입니다");
+      toast.error(TOAST.MEMBERS.SKILL_MATRIX_SECTION_SKILL_DUPLICATE);
       return;
     }
 
@@ -130,7 +131,7 @@ export function SkillMatrixSection({
         .upsert(rows, { onConflict: "group_id,user_id,skill_name" });
 
       if (error) {
-        toast.error("스킬 저장에 실패했습니다");
+        toast.error(TOAST.MEMBERS.SKILL_MATRIX_SECTION_SAVE_ERROR);
         return;
       }
 
@@ -160,7 +161,7 @@ export function SkillMatrixSection({
     );
 
     if (error) {
-      toast.error("레벨 변경에 실패했습니다");
+      toast.error(TOAST.MEMBERS.SKILL_MATRIX_SECTION_LEVEL_ERROR);
       return;
     }
 
@@ -180,7 +181,7 @@ export function SkillMatrixSection({
       deleteConfirm.cancel();
 
       if (error) {
-        toast.error("스킬 삭제에 실패했습니다");
+        toast.error(TOAST.MEMBERS.SKILL_MATRIX_SECTION_DELETE_ERROR);
         return;
       }
 

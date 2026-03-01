@@ -20,6 +20,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import {
   usePracticeIntensity,
@@ -288,16 +289,16 @@ export function PracticeIntensityCard({
 
   async function handleSave() {
     if (!intensity) {
-      toast.error("강도를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.INTENSITY_REQUIRED);
       return;
     }
     const duration = parseInt(durationMinutes, 10);
     if (!durationMinutes || isNaN(duration) || duration <= 0) {
-      toast.error("연습 시간을 올바르게 입력해주세요.");
+      toast.error(TOAST.MEMBERS.PRACTICE_TIME_INVALID);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.DATE_SELECT_DOT);
       return;
     }
 
@@ -309,7 +310,7 @@ export function PracticeIntensityCard({
         bodyParts: selectedBodyParts,
         note: note.trim(),
       });
-      toast.success("연습 강도가 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.INTENSITY_SAVED);
       setShowForm(false);
       resetForm();
     });
@@ -317,7 +318,7 @@ export function PracticeIntensityCard({
 
   function handleRemove(id: string) {
     removeEntry(id);
-    toast.success("기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.RECORD_DELETED);
   }
 
   return (

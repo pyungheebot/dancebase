@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   BookOpen,
@@ -270,10 +271,10 @@ export function DanceClassReviewCard({ memberId }: DanceClassReviewCardProps) {
         wouldRepeat: editForm.wouldRepeat,
         cost: editForm.cost !== "" ? Number(editForm.cost) : null,
       });
-      toast.success("수업 평가가 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.CLASS_REVIEW_UPDATED);
       cancelEdit();
     } catch {
-      toast.error("수업 평가 수정 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.CLASS_REVIEW_EDIT_ERROR);
     }
   }
 
@@ -286,7 +287,7 @@ export function DanceClassReviewCard({ memberId }: DanceClassReviewCardProps) {
       deleteReview(reviewId);
       toast.success(`'${name}' 평가가 삭제되었습니다.`);
     } catch {
-      toast.error("수업 평가 삭제 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.CLASS_REVIEW_DELETE_ERROR);
     }
   }
 

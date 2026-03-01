@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { WishlistItem, WishCategory, WishPriority } from "@/types";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
@@ -9,23 +10,11 @@ import type { WishlistItem, WishCategory, WishPriority } from "@/types";
 const LS_KEY = (groupId: string) => `dancebase:wishlist:${groupId}`;
 
 function loadItems(groupId: string): WishlistItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as WishlistItem[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<WishlistItem[]>(LS_KEY(groupId), []);
 }
 
 function saveItems(groupId: string, items: WishlistItem[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(items));
-  } catch {
-    /* ignore */
-  }
+  saveToStorage(LS_KEY(groupId), items);
 }
 
 // ─── 훅 ─────────────────────────────────────────────────────

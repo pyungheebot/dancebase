@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useDanceStyleCompatibility,
   defaultDanceStyleScores,
@@ -343,7 +344,7 @@ export function DanceStyleCompatibilityCard({
   function handleSave() {
     void executeSave(async () => {
       saveMyProfile(userId, userName, draftScores, draftStyle.trim());
-      toast.success("댄스 스타일 프로필이 저장되었습니다");
+      toast.success(TOAST.MEMBERS.DANCE_STYLE_SAVED);
       setEditing(false);
     });
   }

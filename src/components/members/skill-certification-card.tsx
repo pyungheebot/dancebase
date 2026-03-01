@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   ShieldCheck,
@@ -571,15 +572,15 @@ function CreateCertDialog({
 
   function handleSubmit() {
     if (!skillName.trim()) {
-      toast.error("스킬명을 입력하세요.");
+      toast.error(TOAST.MEMBERS.SKILL_NAME_REQUIRED);
       return;
     }
     if (!category.trim()) {
-      toast.error("카테고리를 입력하세요.");
+      toast.error(TOAST.MEMBERS.SKILL_CATEGORY_REQUIRED);
       return;
     }
     if (!level) {
-      toast.error("레벨을 선택하세요.");
+      toast.error(TOAST.MEMBERS.SKILL_LEVEL_REQUIRED);
       return;
     }
     void execute(async () => {
@@ -790,19 +791,19 @@ function AwardCertDialog({
 
   function handleSubmit() {
     if (!certId) {
-      toast.error("인증을 선택하세요.");
+      toast.error(TOAST.MEMBERS.CERT_SELECT_REQUIRED);
       return;
     }
     if (!memberName) {
-      toast.error("멤버를 선택하세요.");
+      toast.error(TOAST.MEMBERS.MEMBER_SELECT_DOT);
       return;
     }
     if (!certifiedBy.trim()) {
-      toast.error("인증자를 입력하세요.");
+      toast.error(TOAST.MEMBERS.CERT_CERTIFIER_REQUIRED);
       return;
     }
     if (alreadyAwarded) {
-      toast.error("이미 해당 멤버에게 수여된 인증입니다.");
+      toast.error(TOAST.MEMBERS.CERT_DUPLICATE);
       return;
     }
 

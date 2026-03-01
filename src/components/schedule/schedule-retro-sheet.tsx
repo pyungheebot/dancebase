@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { ClipboardList, Smile, Wrench, Target, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useScheduleRetro } from "@/hooks/use-schedule-retro";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { formatFullDate } from "@/lib/date-utils";
@@ -62,29 +63,29 @@ export function ScheduleRetroSheet({
 
   const handleSave = async () => {
     if (!good.trim() && !improve.trim() && !nextGoal.trim()) {
-      toast.error("최소 한 가지 항목을 입력해주세요");
+      toast.error(TOAST.SCHEDULE.RETRO_CONTENT_REQUIRED);
       return;
     }
 
     await execute(async () => {
       if (!user) {
-        toast.error("로그인이 필요합니다");
+        toast.error(TOAST.SCHEDULE.RETRO_LOGIN_REQUIRED);
         return;
       }
 
       try {
         save({ good, improve, nextGoal }, user.id);
-        toast.success("회고록을 저장했습니다");
+        toast.success(TOAST.SCHEDULE.RETRO_SAVED);
         setEditMode(false);
       } catch {
-        toast.error("회고록 저장에 실패했습니다");
+        toast.error(TOAST.SCHEDULE.RETRO_SAVE_ERROR);
       }
     });
   };
 
   const handleDelete = () => {
     remove();
-    toast.success("회고록을 삭제했습니다");
+    toast.success(TOAST.SCHEDULE.RETRO_DELETED);
     setEditMode(false);
     setGood("");
     setImprove("");

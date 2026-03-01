@@ -5,6 +5,7 @@ import { differenceInDays } from "date-fns";
 import { formatKo } from "@/lib/date-utils";
 import { Bell, Send, Users, AlertCircle, Check } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Dialog,
   DialogContent,
@@ -87,7 +88,7 @@ export function ScheduleBroadcastDialog({
 
   async function handleSend() {
     if (targetMembers.length === 0) {
-      toast.error("발송 대상 멤버가 없습니다");
+      toast.error(TOAST.SCHEDULE.BROADCAST_NO_MEMBER);
       return;
     }
 
@@ -101,7 +102,7 @@ export function ScheduleBroadcastDialog({
       toast.success(`${result.count}명에게 알림을 발송했습니다`);
       setOpen(false);
     } else {
-      toast.error("알림 발송에 실패했습니다");
+      toast.error(TOAST.SCHEDULE.BROADCAST_ERROR);
     }
   }
 

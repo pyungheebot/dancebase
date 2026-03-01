@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, ChevronDown, ChevronUp, CheckCircle2, Circle } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { SplitPresetManager } from "@/components/finance/split-preset-manager";
 import type { GroupMemberWithProfile } from "@/types";
 
@@ -91,15 +92,15 @@ function CreateSplitDialog({
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      toast.error("제목을 입력해주세요");
+      toast.error(TOAST.FINANCE.SPLIT_TITLE_REQUIRED);
       return;
     }
     if (parsedAmount <= 0) {
-      toast.error("총액을 입력해주세요");
+      toast.error(TOAST.FINANCE.SPLIT_AMOUNT_REQUIRED);
       return;
     }
     if (selectedMembers.length === 0) {
-      toast.error("참여 멤버를 한 명 이상 선택해주세요");
+      toast.error(TOAST.FINANCE.SPLIT_MEMBER_REQUIRED);
       return;
     }
 
@@ -121,7 +122,7 @@ function CreateSplitDialog({
         .single();
 
       if (splitError || !split) {
-        toast.error("분할 정산 생성에 실패했습니다");
+        toast.error(TOAST.FINANCE.SPLIT_CREATE_ERROR);
         return;
       }
 
@@ -138,13 +139,13 @@ function CreateSplitDialog({
         .insert(memberRows);
 
       if (membersError) {
-        toast.error("참여 멤버 등록에 실패했습니다");
+        toast.error(TOAST.FINANCE.SPLIT_MEMBER_ADD_ERROR);
         // 생성된 split 롤백
         await supabase.from("finance_splits").delete().eq("id", split.id);
         return;
       }
 
-      toast.success("분할 정산이 생성되었습니다");
+      toast.success(TOAST.FINANCE.SPLIT_CREATED);
       invalidateFinanceSplits(groupId, projectId);
       onSuccess();
       onOpenChange(false);
@@ -336,7 +337,7 @@ function SplitDetailRow({
         .eq("id", memberId);
 
       if (error) {
-        toast.error("정산 상태 변경에 실패했습니다");
+        toast.error(TOAST.FINANCE.SETTLEMENT_STATUS_ERROR);
       } else {
         toast.success(!current ? "정산 완료로 변경되었습니다" : "미정산으로 변경되었습니다");
         invalidateFinanceSplitMembers(split.id);

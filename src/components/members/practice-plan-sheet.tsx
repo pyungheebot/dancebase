@@ -24,6 +24,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePracticePlan } from "@/hooks/use-practice-plan";
 import { formatYearMonthDay } from "@/lib/date-utils";
 
@@ -85,7 +86,7 @@ export function PracticePlanSheet({
     setOpen(value);
     if (value && !analysis) {
       analyze().catch(() => {
-        toast.error("분석 중 오류가 발생했습니다");
+        toast.error(TOAST.MEMBERS.PRACTICE_PLAN_ANALYZE_ERROR);
       });
     }
   };
@@ -100,13 +101,13 @@ export function PracticePlanSheet({
   // 저장
   const handleSave = () => {
     if (!editContent.trim()) {
-      toast.error("플랜 내용을 입력해주세요");
+      toast.error(TOAST.MEMBERS.PRACTICE_PLAN_CONTENT_REQUIRED);
       return;
     }
     const focusAreas = analysis?.suggestedFocusAreas ?? plan?.focusAreas ?? [];
     savePlanData(editContent.trim(), focusAreas, currentUserId);
     setEditing(false);
-    toast.success("연습 플랜이 저장되었습니다");
+    toast.success(TOAST.MEMBERS.PRACTICE_PLAN_SAVED);
   };
 
   // 취소
@@ -119,23 +120,23 @@ export function PracticePlanSheet({
   const handleDelete = () => {
     deletePlan();
     setEditing(false);
-    toast.success("연습 플랜이 삭제되었습니다");
+    toast.success(TOAST.MEMBERS.PRACTICE_PLAN_DELETED);
   };
 
   // 재분석
   const handleReanalyze = async () => {
     try {
       await analyze();
-      toast.success("분석을 완료했습니다");
+      toast.success(TOAST.MEMBERS.PRACTICE_PLAN_ANALYZE_SUCCESS);
     } catch {
-      toast.error("분석 중 오류가 발생했습니다");
+      toast.error(TOAST.MEMBERS.PRACTICE_PLAN_ANALYZE_ERROR);
     }
   };
 
   // DM으로 플랜 발송
   const handleSendDm = () => {
     if (!plan?.content && !analysis?.suggestedContent) {
-      toast.error("먼저 플랜을 저장해주세요");
+      toast.error(TOAST.MEMBERS.PRACTICE_PLAN_FIRST_REQUIRED);
       return;
     }
     setSendDmOpen(true);

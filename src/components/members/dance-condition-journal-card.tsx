@@ -34,6 +34,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useDanceConditionLog,
   MOOD_LABELS,
@@ -327,7 +328,7 @@ function EntryFormDialog({
 
   const handleSubmit = () => {
     if (!form.date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.CONDITION_DATE_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -483,12 +484,12 @@ function EntryItem({
         data.practiceMinutes !== "" ? Number(data.practiceMinutes) : null,
       notes: data.notes,
     });
-    toast.success("기록이 수정되었습니다.");
+    toast.success(TOAST.MEMBERS.CONDITION_JOURNAL_RECORD_UPDATED);
   };
 
   const handleDelete = () => {
     onDelete(entry.id);
-    toast.success("기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.CONDITION_JOURNAL_RECORD_DELETED);
   };
 
   return (
@@ -616,7 +617,7 @@ export function DanceConditionJournalCard({ memberId }: { memberId: string }) {
         data.practiceMinutes !== "" ? Number(data.practiceMinutes) : null,
       notes: data.notes,
     });
-    toast.success("컨디션 기록이 추가되었습니다.");
+    toast.success(TOAST.MEMBERS.CONDITION_JOURNAL_RECORD_ADDED);
   };
 
   return (

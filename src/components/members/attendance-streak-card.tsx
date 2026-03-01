@@ -31,6 +31,7 @@ import { Progress } from "@/components/ui/progress";
 import { useAttendanceStreak } from "@/hooks/use-attendance-streak";
 import type { MemberStreak } from "@/types";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 
 // ─── 날짜 헬퍼 ────────────────────────────────────────────────
@@ -87,7 +88,7 @@ function AddMemberDialog({
   function handleSubmit() {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_NAME_REQUIRED);
       return;
     }
     onAdd(trimmed);
@@ -161,7 +162,7 @@ function RecordAttendanceDialog({
 
   function handleSubmit() {
     if (!date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_DATE_REQUIRED);
       return;
     }
     onRecord(member!.id, date, attended);
@@ -484,7 +485,7 @@ export function AttendanceStreakCard({ groupId }: AttendanceStreakCardProps) {
   function handleAddMember(name: string) {
     const ok = addMember(name);
     if (!ok) {
-      toast.error("이미 등록된 이름이거나 입력이 잘못되었습니다.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_DUPLICATE_MEMBER);
       return;
     }
     toast.success(`${name} 멤버가 추가되었습니다.`);
@@ -495,7 +496,7 @@ export function AttendanceStreakCard({ groupId }: AttendanceStreakCardProps) {
     const target = members.find((m) => m.id === memberId);
     const ok = deleteMember(memberId);
     if (!ok) {
-      toast.error("멤버 삭제에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_MEMBER_DELETE_ERROR);
       return;
     }
     toast.success(`${target?.memberName ?? ""} 멤버가 삭제되었습니다.`);
@@ -508,14 +509,14 @@ export function AttendanceStreakCard({ groupId }: AttendanceStreakCardProps) {
   ) {
     const ok = recordAttendance(memberId, date, attended);
     if (!ok) {
-      toast.error("기록 저장에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_STREAK_SAVE_ERROR);
     }
   }
 
   function handleDeleteRecord(memberId: string, date: string) {
     const ok = deleteRecord(memberId, date);
     if (!ok) {
-      toast.error("기록 삭제에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.ATTENDANCE_STREAK_DELETE_ERROR);
     }
   }
 

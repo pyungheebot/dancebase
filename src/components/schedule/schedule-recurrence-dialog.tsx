@@ -11,6 +11,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -175,19 +176,19 @@ function RecurrenceForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) {
-      toast.error("제목을 입력해주세요.");
+      toast.error(TOAST.TITLE_REQUIRED_DOT);
       return;
     }
     if (form.daysOfWeek.length === 0) {
-      toast.error("반복 요일을 하나 이상 선택해주세요.");
+      toast.error(TOAST.SCHEDULE.RECURRENCE_DAY_REQUIRED);
       return;
     }
     if (form.endType === "by_date" && !form.endDate) {
-      toast.error("종료 날짜를 입력해주세요.");
+      toast.error(TOAST.SCHEDULE.RECURRENCE_END_DATE_REQUIRED);
       return;
     }
     if (form.endType === "by_count" && (!form.endCount || form.endCount < 1)) {
-      toast.error("종료 횟수를 1 이상으로 입력해주세요.");
+      toast.error(TOAST.SCHEDULE.RECURRENCE_COUNT_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -395,10 +396,10 @@ function AddRuleDialog({ maxReached, onAdd }: AddRuleDialogProps) {
   const handleSubmit = (data: FormState) => {
     const success = onAdd(data);
     if (!success) {
-      toast.error("반복 규칙은 최대 10개까지 저장할 수 있습니다.");
+      toast.error(TOAST.SCHEDULE.RECURRENCE_MAX);
       return;
     }
-    toast.success("반복 규칙이 저장되었습니다.");
+    toast.success(TOAST.SCHEDULE.RECURRENCE_SAVED);
     setOpen(false);
   };
 

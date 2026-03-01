@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { generateLocationCard, getMapUrls } from "@/lib/qr-generator";
 import { copyToClipboard } from "@/lib/clipboard";
 
@@ -58,7 +59,7 @@ export function ScheduleLocationShare({
       );
       setCardDataUrl(dataUrl);
     } catch {
-      toast.error("카드 이미지 생성에 실패했습니다");
+      toast.error(TOAST.SCHEDULE.LOCATION_IMAGE_ERROR);
     } finally {
       setGenerating(false);
     }
@@ -85,7 +86,7 @@ export function ScheduleLocationShare({
     link.href = cardDataUrl;
     link.download = `${scheduleTitle}_장소공유.png`;
     link.click();
-    toast.success("이미지를 저장했습니다");
+    toast.success(TOAST.SCHEDULE.LOCATION_IMAGE_SAVED);
   };
 
   return (

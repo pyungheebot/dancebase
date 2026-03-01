@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   ChevronDown,
   ChevronUp,
@@ -121,11 +122,11 @@ function EntryFormDialog({
 
   function handleSubmit() {
     if (!form.menuName.trim()) {
-      toast.error("메뉴명을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.NUTRITION_MENU_REQUIRED);
       return;
     }
     if (!form.date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.NUTRITION_DATE_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -280,11 +281,11 @@ function GoalDialog({
     const c = parseInt(cal);
     const w = parseInt(water);
     if (!c || c <= 0) {
-      toast.error("목표 칼로리를 올바르게 입력해주세요.");
+      toast.error(TOAST.MEMBERS.NUTRITION_CALORIE_INVALID);
       return;
     }
     if (!w || w <= 0) {
-      toast.error("목표 수분을 올바르게 입력해주세요.");
+      toast.error(TOAST.MEMBERS.NUTRITION_WATER_INVALID);
       return;
     }
     onSubmit(c, w);
@@ -467,7 +468,7 @@ export function DanceNutritionCard({ memberId }: { memberId: string }) {
       memo: form.memo.trim(),
     });
     setAddDialogOpen(false);
-    toast.success("식단이 기록되었습니다.");
+    toast.success(TOAST.MEMBERS.NUTRITION_LOGGED);
   }
 
   function handleEditSubmit(form: EntryFormData) {
@@ -483,19 +484,19 @@ export function DanceNutritionCard({ memberId }: { memberId: string }) {
       memo: form.memo.trim(),
     });
     setEditTarget(null);
-    toast.success("식단이 수정되었습니다.");
+    toast.success(TOAST.MEMBERS.NUTRITION_UPDATED);
   }
 
   function handleDelete(id: string) {
     deleteEntry(id);
     setDeleteTargetId(null);
-    toast.success("식단 기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.NUTRITION_DELETED);
   }
 
   function handleGoalSubmit(cal: number, water: number) {
     updateGoal({ targetCalories: cal, targetWater: water });
     setGoalDialogOpen(false);
-    toast.success("목표가 저장되었습니다.");
+    toast.success(TOAST.MEMBERS.NUTRITION_GOAL_SAVED);
   }
 
   function entryToForm(entry: DanceNutritionEntry): EntryFormData {

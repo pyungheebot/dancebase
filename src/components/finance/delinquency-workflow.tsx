@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Bell, BellRing, AlertTriangle, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { format, differenceInMonths, parseISO } from "date-fns";
 import { createNotification } from "@/lib/notifications";
 import type { FinanceTransactionWithDetails } from "@/types";
@@ -188,7 +189,7 @@ export function DelinquencyWorkflow({
 
   const handleSendNotifications = async () => {
     if (selectedIds.size === 0) {
-      toast.error("알림을 보낼 멤버를 선택해주세요");
+      toast.error(TOAST.FINANCE.DELINQUENCY_MEMBER_SELECT);
       return;
     }
 
@@ -233,7 +234,7 @@ export function DelinquencyWorkflow({
         `${successCount}명 발송 완료 (${failCount}명 실패)`
       );
     } else {
-      toast.error("알림 발송에 실패했습니다");
+      toast.error(TOAST.FINANCE.DELINQUENCY_SEND_ERROR);
     }
   };
 

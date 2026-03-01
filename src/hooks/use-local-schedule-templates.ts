@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { ScheduleTemplateItem, ScheduleTemplateFormData } from "@/types";
 
 const MAX_TEMPLATES = 20;
@@ -10,19 +11,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadTemplates(groupId: string): ScheduleTemplateItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ScheduleTemplateItem[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<ScheduleTemplateItem[]>(getStorageKey(groupId), []);
 }
 
 function saveTemplates(groupId: string, templates: ScheduleTemplateItem[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(templates));
+  saveToStorage(getStorageKey(groupId), templates);
 }
 
 export function useLocalScheduleTemplates(groupId: string) {

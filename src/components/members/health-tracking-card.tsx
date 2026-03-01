@@ -38,6 +38,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useHealthTracking } from "@/hooks/use-health-tracking";
 import type { BodyPart, InjurySeverity, InjuryStatus, InjuryRecord } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -136,11 +137,11 @@ function AddInjuryDialog({ open, onClose, onSubmit }: AddInjuryDialogProps) {
 
   function handleSubmit() {
     if (!description.trim()) {
-      toast.error("부상 설명을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.HEALTH_INJURY_DESC_REQUIRED);
       return;
     }
     if (!occurredAt) {
-      toast.error("발생일을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.HEALTH_INJURY_DATE_REQUIRED);
       return;
     }
     onSubmit({ bodyPart, severity, description: description.trim(), occurredAt, note: note.trim() });
@@ -420,7 +421,7 @@ export function HealthTrackingCard({ groupId, userId }: HealthTrackingCardProps)
     note: string;
   }) {
     addInjury(data);
-    toast.success("부상이 기록되었습니다.");
+    toast.success(TOAST.MEMBERS.HEALTH_INJURY_RECORDED);
   }
 
   function handleStatusChange(id: string, status: InjuryStatus) {
@@ -431,12 +432,12 @@ export function HealthTrackingCard({ groupId, userId }: HealthTrackingCardProps)
 
   function handleDelete(id: string) {
     deleteInjury(id);
-    toast.success("기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.HEALTH_RECORD_DELETED);
   }
 
   function handleSaveNote(id: string, note: string) {
     updateNote(id, note);
-    toast.success("메모가 저장되었습니다.");
+    toast.success(TOAST.MEMBERS.HEALTH_MEMO_SAVED);
   }
 
   // 필터 적용

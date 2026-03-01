@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 interface BookmarkedPostsSheetProps {
   /** 특정 그룹 내 북마크만 표시 (미지정 시 전체) */
@@ -46,11 +47,11 @@ export function BookmarkedPostsSheet({ groupId }: BookmarkedPostsSheetProps) {
       .eq("id", bookmarkId);
 
     if (error) {
-      toast.error("북마크 해제에 실패했습니다");
+      toast.error(TOAST.BOARD.BOOKMARK_REMOVE_ERROR);
       return;
     }
 
-    toast.success("북마크를 해제했습니다");
+    toast.success(TOAST.BOARD.BOOKMARK_REMOVED);
     refetch();
     invalidatePostBookmarks(postId, groupId);
   };

@@ -23,6 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Bell, BellRing, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useEntitySettings } from "@/hooks/use-entity-settings";
 import { createNotification } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/client";
@@ -119,9 +120,9 @@ export function FinanceReminderSettings({
     await executeSave(async () => {
       const { error } = await saveReminder({ enabled, interval, message });
       if (error) {
-        toast.error("알림 설정 저장에 실패했습니다");
+        toast.error(TOAST.FINANCE.REMINDER_SAVE_ERROR);
       } else {
-        toast.success("알림 설정이 저장되었습니다");
+        toast.success(TOAST.FINANCE.REMINDER_SAVED);
       }
     });
   };
@@ -140,7 +141,7 @@ export function FinanceReminderSettings({
         .not("paid_by", "is", null);
 
       if (txnError) {
-        toast.error("미납 멤버 조회에 실패했습니다");
+        toast.error(TOAST.FINANCE.REMINDER_UNPAID_ERROR);
         return;
       }
 
@@ -153,7 +154,7 @@ export function FinanceReminderSettings({
       });
 
       if (paidMap.size === 0) {
-        toast.error("납부 데이터가 없어 발송할 대상이 없습니다");
+        toast.error(TOAST.FINANCE.REMINDER_NO_DATA);
         return;
       }
 
@@ -164,7 +165,7 @@ export function FinanceReminderSettings({
         .eq("group_id", groupId);
 
       if (memberError) {
-        toast.error("멤버 목록 조회에 실패했습니다");
+        toast.error(TOAST.FINANCE.REMINDER_MEMBER_ERROR);
         return;
       }
 
@@ -175,7 +176,7 @@ export function FinanceReminderSettings({
       );
 
       if (unpaidMembers.length === 0) {
-        toast.success("미납 멤버가 없습니다");
+        toast.success(TOAST.FINANCE.REMINDER_NO_UNPAID);
         return;
       }
 
@@ -218,7 +219,7 @@ export function FinanceReminderSettings({
       } else if (successCount > 0) {
         toast.success(`${successCount}명 발송 완료 (${failCount}명 실패)`);
       } else {
-        toast.error("알림 발송에 실패했습니다");
+        toast.error(TOAST.FINANCE.REMINDER_SEND_ERROR);
       }
     });
   };

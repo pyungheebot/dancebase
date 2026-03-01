@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { SkillMatrixLevel } from "@/types";
 
 // ============================================
@@ -130,12 +131,12 @@ export function SkillMatrixCard({ groupId }: SkillMatrixCardProps) {
   function handleAddSkill() {
     const name = skillInput.trim();
     if (!name) {
-      toast.error("스킬 이름을 입력하세요");
+      toast.error(TOAST.MEMBERS.SKILL_MATRIX_CARD_SKILL_REQUIRED);
       return;
     }
     const ok = addSkill(name);
     if (!ok) {
-      toast.error("이미 존재하는 스킬입니다");
+      toast.error(TOAST.MEMBERS.SKILL_MATRIX_CARD_SKILL_DUPLICATE);
       return;
     }
     toast.success(`'${name}' 스킬이 추가되었습니다`);
@@ -151,12 +152,12 @@ export function SkillMatrixCard({ groupId }: SkillMatrixCardProps) {
   function handleAddMember() {
     const name = memberInput.trim();
     if (!name) {
-      toast.error("멤버 이름을 입력하세요");
+      toast.error(TOAST.MEMBERS.SKILL_MATRIX_CARD_MEMBER_REQUIRED);
       return;
     }
     const ok = addMember(name);
     if (!ok) {
-      toast.error("이미 존재하는 멤버입니다");
+      toast.error(TOAST.MEMBERS.SKILL_MATRIX_CARD_MEMBER_DUPLICATE);
       return;
     }
     toast.success(`'${name}' 멤버가 추가되었습니다`);

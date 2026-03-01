@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useIsBookmarked } from "@/hooks/use-post-bookmarks";
 import { invalidatePostBookmarks } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 
 interface BoardBookmarkButtonProps {
@@ -32,7 +33,7 @@ export function BoardBookmarkButton({
     e.stopPropagation();
 
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.BOARD.BOOKMARK_LOGIN_REQUIRED);
       return;
     }
     if (toggling) return;
@@ -53,13 +54,13 @@ export function BoardBookmarkButton({
           .delete()
           .eq("id", bookmarkId);
         if (error) throw error;
-        toast.success("북마크를 해제했습니다");
+        toast.success(TOAST.BOARD.BOOKMARK_REMOVED);
       } else {
         const { error } = await supabase
           .from("post_bookmarks")
           .insert({ post_id: postId, user_id: user.id });
         if (error) throw error;
-        toast.success("북마크에 추가했습니다");
+        toast.success(TOAST.BOARD.BOOKMARK_ADDED);
       }
       // 서버 상태 재검증
       mutate();
@@ -67,7 +68,7 @@ export function BoardBookmarkButton({
     } catch {
       // 롤백
       mutate();
-      toast.error("북마크 처리에 실패했습니다");
+      toast.error(TOAST.BOARD.BOOKMARK_ERROR);
     } finally {
       setToggling(false);
     }

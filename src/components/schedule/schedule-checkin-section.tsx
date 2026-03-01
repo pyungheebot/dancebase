@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useScheduleCheckin } from "@/hooks/use-schedule-checkin";
 import { useAsyncAction } from "@/hooks/use-async-action";
 
@@ -66,9 +67,9 @@ export function ScheduleCheckinSection({ scheduleId, isLeader }: Props) {
     setGenerating(true);
     try {
       await generateCheckinCode();
-      toast.success("체크인 코드가 생성되었습니다 (15분 유효)");
+      toast.success(TOAST.SCHEDULE.CHECKIN_CODE_CREATED);
     } catch {
-      toast.error("코드 생성에 실패했습니다");
+      toast.error(TOAST.SCHEDULE.CHECKIN_CODE_CREATE_ERROR);
     } finally {
       setGenerating(false);
     }
@@ -76,7 +77,7 @@ export function ScheduleCheckinSection({ scheduleId, isLeader }: Props) {
 
   const handleSubmit = async () => {
     if (inputCode.trim().length !== 6) {
-      toast.error("6자리 코드를 입력해주세요");
+      toast.error(TOAST.SCHEDULE.CHECKIN_CODE_REQUIRED);
       return;
     }
 
@@ -86,18 +87,18 @@ export function ScheduleCheckinSection({ scheduleId, isLeader }: Props) {
 
         if (result === "success") {
           setCheckinResult("success");
-          toast.success("체크인 완료!");
+          toast.success(TOAST.SCHEDULE.CHECKIN_DONE);
           setInputCode("");
         } else if (result === "already") {
           setCheckinResult("already");
-          toast.info("이미 체크인되어 있습니다");
+          toast.info(TOAST.SCHEDULE.CHECKIN_ALREADY);
         } else if (result === "invalid") {
-          toast.error("유효하지 않은 코드입니다");
+          toast.error(TOAST.SCHEDULE.CHECKIN_INVALID_CODE);
         } else if (result === "expired") {
-          toast.error("만료된 코드입니다. 새 코드를 요청하세요");
+          toast.error(TOAST.SCHEDULE.CHECKIN_EXPIRED_CODE);
         }
       } catch {
-        toast.error("체크인에 실패했습니다");
+        toast.error(TOAST.SCHEDULE.CHECKIN_ERROR);
       }
     });
   };

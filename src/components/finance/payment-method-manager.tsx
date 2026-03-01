@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Loader2, Landmark, Smartphone } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { GroupPaymentMethod, PaymentMethodType } from "@/types";
 
 type Props = {
@@ -199,7 +200,7 @@ export function PaymentMethodManager({ groupId }: Props) {
 
   async function handleAdd() {
     if (!form.label.trim()) {
-      toast.error("표시 이름을 입력해주세요");
+      toast.error(TOAST.FINANCE.PAYMENT_METHOD_NAME_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -213,9 +214,9 @@ export function PaymentMethodManager({ groupId }: Props) {
         kakao_link: form.kakao_link.trim() || undefined,
       });
       if (error) {
-        toast.error("정산 수단 추가에 실패했습니다");
+        toast.error(TOAST.FINANCE.PAYMENT_METHOD_ADD_ERROR);
       } else {
-        toast.success("정산 수단이 추가되었습니다");
+        toast.success(TOAST.FINANCE.PAYMENT_METHOD_ADDED);
         setAddOpen(false);
       }
     });
@@ -224,7 +225,7 @@ export function PaymentMethodManager({ groupId }: Props) {
   async function handleEdit() {
     if (!editTarget) return;
     if (!form.label.trim()) {
-      toast.error("표시 이름을 입력해주세요");
+      toast.error(TOAST.FINANCE.PAYMENT_METHOD_NAME_REQUIRED);
       return;
     }
     await execute(async () => {
@@ -237,9 +238,9 @@ export function PaymentMethodManager({ groupId }: Props) {
         kakao_link: form.kakao_link.trim() || undefined,
       });
       if (error) {
-        toast.error("정산 수단 수정에 실패했습니다");
+        toast.error(TOAST.FINANCE.PAYMENT_METHOD_UPDATE_ERROR);
       } else {
-        toast.success("정산 수단이 수정되었습니다");
+        toast.success(TOAST.FINANCE.PAYMENT_METHOD_UPDATED);
         setEditTarget(null);
       }
     });
@@ -248,9 +249,9 @@ export function PaymentMethodManager({ groupId }: Props) {
   async function handleDelete(method: GroupPaymentMethod) {
     const { error } = await deletePaymentMethod(method.id);
     if (error) {
-      toast.error("정산 수단 삭제에 실패했습니다");
+      toast.error(TOAST.FINANCE.PAYMENT_METHOD_DELETE_ERROR);
     } else {
-      toast.success("정산 수단이 삭제되었습니다");
+      toast.success(TOAST.FINANCE.PAYMENT_METHOD_DELETED);
     }
   }
 

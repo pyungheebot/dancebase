@@ -38,6 +38,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMemberGoal } from "@/hooks/use-member-goal";
 import type {
   MemberGoalEntry,
@@ -140,7 +141,7 @@ function AddGoalDialog({ memberNames, onAdd }: AddGoalDialogProps) {
     const trimmed = milestoneInput.trim();
     if (!trimmed) return;
     if (milestones.length >= 10) {
-      toast.error("마일스톤은 최대 10개까지 추가할 수 있습니다");
+      toast.error(TOAST.MEMBERS.GOAL_MILESTONE_MAX);
       return;
     }
     setMilestones((prev) => [...prev, trimmed]);
@@ -153,15 +154,15 @@ function AddGoalDialog({ memberNames, onAdd }: AddGoalDialogProps) {
 
   const handleSubmit = () => {
     if (!memberName) {
-      toast.error("멤버를 선택해주세요");
+      toast.error(TOAST.MEMBERS.GOAL_MEMBER_REQUIRED);
       return;
     }
     if (!title.trim()) {
-      toast.error("목표 제목을 입력해주세요");
+      toast.error(TOAST.MEMBERS.GOAL_TITLE_REQUIRED);
       return;
     }
     if (!targetDate) {
-      toast.error("목표 날짜를 선택해주세요");
+      toast.error(TOAST.MEMBERS.GOAL_DATE_REQUIRED);
       return;
     }
     void execute(async () => {
@@ -419,7 +420,7 @@ function GoalItemCard({
     const clamped = Math.min(100, Math.max(0, v));
     setProgressInput(String(clamped));
     onUpdateProgress(goal.id, clamped);
-    if (clamped === 100) toast.success("목표를 완료했습니다!");
+    if (clamped === 100) toast.success(TOAST.MEMBERS.GOAL_FINISHED);
   }, [progressInput, goal.id, onUpdateProgress]);
 
   return (
@@ -582,7 +583,7 @@ function GoalItemCard({
                   onClick={() => {
                     setProgressInput(String(v));
                     onUpdateProgress(goal.id, v);
-                    if (v === 100) toast.success("목표를 완료했습니다!");
+                    if (v === 100) toast.success(TOAST.MEMBERS.GOAL_FINISHED);
                   }}
                   className={`flex-1 text-[10px] py-0.5 rounded border transition-colors ${
                     goal.progress === v
@@ -638,7 +639,7 @@ function GoalItemCard({
                 className="h-6 text-[10px] px-2 text-green-700 border-green-300 hover:bg-green-50"
                 onClick={() => {
                   onComplete(goal.id);
-                  toast.success("목표를 완료 처리했습니다");
+                  toast.success(TOAST.MEMBERS.GOAL_FINISHED_PROCESS);
                 }}
               >
                 <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
@@ -650,7 +651,7 @@ function GoalItemCard({
                 className="h-6 text-[10px] px-2 text-orange-600 border-orange-200 hover:bg-orange-50"
                 onClick={() => {
                   onAbandon(goal.id);
-                  toast.success("목표를 포기 처리했습니다");
+                  toast.success(TOAST.MEMBERS.GOAL_ABANDONED);
                 }}
               >
                 <XCircle className="h-2.5 w-2.5 mr-0.5" />
@@ -663,7 +664,7 @@ function GoalItemCard({
               className="h-6 text-[10px] px-2 text-muted-foreground hover:text-destructive"
               onClick={() => {
                 onDelete(goal.id);
-                toast.success("목표가 삭제되었습니다");
+                toast.success(TOAST.MEMBERS.GOAL_DELETED);
               }}
             >
               <Trash2 className="h-2.5 w-2.5 mr-0.5" />
@@ -682,7 +683,7 @@ function GoalItemCard({
             className="h-6 text-[10px] px-2 text-muted-foreground hover:text-destructive"
             onClick={() => {
               onDelete(goal.id);
-              toast.success("목표가 삭제되었습니다");
+              toast.success(TOAST.MEMBERS.GOAL_DIALOG_DELETED);
             }}
           >
             <Trash2 className="h-2.5 w-2.5 mr-0.5" />
@@ -770,7 +771,7 @@ export function MemberGoalCard({ groupId, memberNames }: MemberGoalCardProps) {
   const handleAddGoal = useCallback(
     (params: Parameters<typeof addGoal>[0]) => {
       addGoal(params);
-      toast.success("목표가 추가되었습니다");
+      toast.success(TOAST.MEMBERS.GOAL_ADDED);
     },
     [addGoal]
   );

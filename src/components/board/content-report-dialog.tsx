@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Dialog,
@@ -50,7 +51,7 @@ export function ContentReportDialog({
     await execute(async () => {
       const supabase = createClient();
       if (!user) {
-        toast.error("로그인이 필요합니다");
+        toast.error(TOAST.BOARD.REPORT_LOGIN_REQUIRED);
         return;
       }
 
@@ -65,14 +66,14 @@ export function ContentReportDialog({
 
       if (error) {
         if (error.code === "23505") {
-          toast.error("이미 신고한 콘텐츠입니다");
+          toast.error(TOAST.BOARD.REPORT_DUPLICATE);
         } else {
-          toast.error("신고 제출에 실패했습니다");
+          toast.error(TOAST.BOARD.REPORT_ERROR);
         }
         return;
       }
 
-      toast.success("신고가 접수되었습니다");
+      toast.success(TOAST.BOARD.REPORT_SUBMITTED);
       setReason("spam");
       setDescription("");
       onOpenChange(false);

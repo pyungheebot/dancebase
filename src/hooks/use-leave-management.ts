@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MemberLeaveEntry,
   MemberLeaveReason,
@@ -19,23 +20,11 @@ const LS_KEY = (groupId: string) => `dancebase:leave:${groupId}`;
 // ============================================
 
 function loadEntries(groupId: string): MemberLeaveEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MemberLeaveEntry[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<MemberLeaveEntry[]>(LS_KEY(groupId), []);
 }
 
 function saveEntries(groupId: string, entries: MemberLeaveEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(entries));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
+  saveToStorage(LS_KEY(groupId), entries);
 }
 
 // ============================================

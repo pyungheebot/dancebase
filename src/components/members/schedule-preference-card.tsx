@@ -31,6 +31,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useSchedulePreference } from "@/hooks/use-schedule-preference";
 import type { WeekDayIndex, TimeSlotEntry, TimeSlotPreference } from "@/types";
@@ -180,7 +181,7 @@ export function SchedulePreferenceCard({
   // 현재 editMap을 TimeSlotEntry[] 형태로 변환하여 저장
   const handleSave = () => {
     if (!selectedMember) {
-      toast.error("멤버를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.SCHEDULE_PREF_MEMBER_REQUIRED);
       return;
     }
 

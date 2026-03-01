@@ -12,6 +12,7 @@ import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { Trash2, Pencil, Check, X, CornerDownRight, Flag } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { createNotification } from "@/lib/notifications";
 import { ContentReportDialog } from "@/components/board/content-report-dialog";
 import { useAsyncAction } from "@/hooks/use-async-action";
@@ -257,7 +258,7 @@ export function BoardCommentSection({
       });
 
       if (error) {
-        toast.error("댓글 작성에 실패했습니다");
+        toast.error(TOAST.BOARD.COMMENT_CREATE_ERROR);
         return;
       }
 
@@ -290,7 +291,7 @@ export function BoardCommentSection({
       .delete()
       .eq("id", commentId);
     if (error) {
-      toast.error("댓글 삭제에 실패했습니다");
+      toast.error(TOAST.BOARD.COMMENT_DELETE_ERROR);
       return;
     }
     onUpdate();
@@ -314,10 +315,10 @@ export function BoardCommentSection({
         .update({ content: editingContent.trim() })
         .eq("id", commentId);
       if (error) {
-        toast.error("댓글 수정에 실패했습니다");
+        toast.error(TOAST.BOARD.COMMENT_UPDATE_ERROR);
         return;
       }
-      toast.success("댓글이 수정되었습니다");
+      toast.success(TOAST.BOARD.COMMENT_UPDATED);
       setEditingId(null);
       setEditingContent("");
       onUpdate();

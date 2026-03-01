@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Zap,
   ChevronDown,
@@ -81,24 +82,24 @@ export function FlexibilityTestCard({
 
   function handleInit() {
     initDefaultItems();
-    toast.success("기본 유연성 테스트 항목이 추가되었습니다.");
+    toast.success(TOAST.MEMBERS.FLEX_CARD_DEFAULT_ADDED);
   }
 
   function handleSaveTarget(itemId: string) {
     const val = parseFloat(targetInput);
     if (isNaN(val) || val <= 0) {
-      toast.error("올바른 목표값을 입력하세요.");
+      toast.error(TOAST.MEMBERS.FLEX_CARD_GOAL_INVALID);
       return;
     }
     updateItemTarget(itemId, val);
-    toast.success("목표값이 설정되었습니다.");
+    toast.success(TOAST.MEMBERS.FLEX_CARD_GOAL_SET);
     setTargetEditId(null);
     setTargetInput("");
   }
 
   function handleClearTarget(itemId: string) {
     updateItemTarget(itemId, undefined);
-    toast.success("목표값이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.FLEX_CARD_GOAL_DELETED);
   }
 
   function handleDeleteItem(itemId: string, itemName: string) {
@@ -108,7 +109,7 @@ export function FlexibilityTestCard({
 
   function handleDeleteRecord(recordId: string) {
     deleteRecord(recordId);
-    toast.success("기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.FLEX_CARD_RECORD_DELETED);
   }
 
   return (
@@ -533,11 +534,11 @@ export function FlexibilityTestCard({
         memberName={memberName}
         onSubmit={(date, entries, notes) => {
           if (entries.length === 0) {
-            toast.error("최소 하나 이상의 항목에 값을 입력하세요.");
+            toast.error(TOAST.MEMBERS.FLEX_CARD_MIN_VALUE_REQUIRED);
             return;
           }
           addRecord(date, entries, notes);
-          toast.success("유연성 테스트 기록이 추가되었습니다.");
+          toast.success(TOAST.MEMBERS.FLEX_CARD_RECORD_ADDED);
           setAddRecordOpen(false);
         }}
       />

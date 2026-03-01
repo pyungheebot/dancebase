@@ -26,6 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Settings, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { format } from "date-fns";
 import type { EntityContext } from "@/types/entity-context";
 import type { FinanceTransactionWithDetails } from "@/types";
@@ -104,17 +105,17 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
     const expenseVal = parseInt(formExpense.replace(/,/g, ""), 10);
 
     if (isNaN(incomeVal) || incomeVal < 0) {
-      toast.error("올바른 수입 예산 금액을 입력해주세요");
+      toast.error(TOAST.FINANCE.BUDGET_INCOME_REQUIRED);
       return;
     }
     if (isNaN(expenseVal) || expenseVal < 0) {
-      toast.error("올바른 지출 예산 금액을 입력해주세요");
+      toast.error(TOAST.FINANCE.BUDGET_EXPENSE_REQUIRED);
       return;
     }
 
     await execute(async () => {
       if (!user) {
-        toast.error("로그인이 필요합니다");
+        toast.error(TOAST.FINANCE.BUDGET_LOGIN_REQUIRED);
         return;
       }
 
@@ -132,11 +133,11 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
         .upsert(payload, { onConflict: "entity_type,entity_id,year_month" });
 
       if (error) {
-        toast.error("예산 저장에 실패했습니다");
+        toast.error(TOAST.FINANCE.BUDGET_SAVE_ERROR);
         return;
       }
 
-      toast.success("예산이 저장되었습니다");
+      toast.success(TOAST.FINANCE.BUDGET_SAVED);
       invalidateFinanceBudget(entityType, entityId, selectedMonth);
       refetch();
       setDialogOpen(false);
@@ -153,11 +154,11 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
         .eq("id", budget.id);
 
       if (error) {
-        toast.error("예산 삭제에 실패했습니다");
+        toast.error(TOAST.FINANCE.BUDGET_DELETE_ERROR);
         return;
       }
 
-      toast.success("예산이 삭제되었습니다");
+      toast.success(TOAST.FINANCE.BUDGET_DELETED);
       invalidateFinanceBudget(entityType, entityId, selectedMonth);
       refetch();
       setDialogOpen(false);

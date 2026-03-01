@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Settings, Plus, Trash2, Calculator, Users, Percent, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useSplitPresets,
   RULE_TYPE_LABELS,
@@ -148,7 +149,7 @@ function PresetFormDialog({ open, onOpenChange, initial, onSave }: PresetFormDia
   const handleSave = () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("프리셋 이름을 입력해주세요");
+      toast.error(TOAST.FINANCE.PRESET_NAME_REQUIRED);
       return;
     }
 
@@ -358,7 +359,7 @@ function SimulationSection({ preset, groupMembers, nicknameMap }: SimulationSect
 
   const handleSimulate = () => {
     if (parsedAmount <= 0) {
-      toast.error("총액을 입력해주세요");
+      toast.error(TOAST.FINANCE.PRESET_AMOUNT_REQUIRED);
       return;
     }
 
@@ -525,7 +526,7 @@ export function SplitPresetManager({
     config: SplitPreset["config"]
   ) => {
     createPreset(name, ruleType, config);
-    toast.success("프리셋이 생성되었습니다");
+    toast.success(TOAST.FINANCE.PRESET_CREATED);
   };
 
   const handleUpdate = (
@@ -535,14 +536,14 @@ export function SplitPresetManager({
   ) => {
     if (!editingPreset) return;
     updatePreset(editingPreset.id, { name, ruleType, config });
-    toast.success("프리셋이 수정되었습니다");
+    toast.success(TOAST.FINANCE.PRESET_UPDATED);
     setEditingPreset(null);
   };
 
   const handleDelete = (id: string) => {
     deletePreset(id);
     if (selectedPresetId === id) setSelectedPresetId(null);
-    toast.success("프리셋이 삭제되었습니다");
+    toast.success(TOAST.FINANCE.PRESET_DELETED);
   };
 
   return (

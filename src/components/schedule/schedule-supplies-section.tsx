@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ShoppingBag, Plus, Trash2, CheckCircle2, User } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useScheduleSupplies } from "@/hooks/use-schedule-supplies";
 
 type ScheduleSuppliesSectionProps = {
@@ -50,7 +51,7 @@ export function ScheduleSuppliesSection({
 
   const handleAdd = useCallback(() => {
     if (!newName.trim()) {
-      toast.error("준비물 이름을 입력해주세요");
+      toast.error(TOAST.SCHEDULE.SUPPLY_NAME_REQUIRED);
       return;
     }
     const success = addItem(newName, newAssignee);
@@ -58,7 +59,7 @@ export function ScheduleSuppliesSection({
       toast.error(`준비물은 최대 ${maxItems}개까지 추가할 수 있습니다`);
       return;
     }
-    toast.success("준비물을 추가했습니다");
+    toast.success(TOAST.SCHEDULE.SUPPLY_ADDED);
     setNewName("");
     setNewAssignee("");
     nameInputRef.current?.focus();

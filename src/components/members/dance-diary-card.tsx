@@ -31,6 +31,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useDanceDiary } from "@/hooks/use-dance-diary";
 import type { DiaryCardEntry, DiaryCardEmotion, DiaryCardEmotionMeta } from "@/types";
@@ -644,19 +645,19 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
   // 저장
   const handleSave = useCallback(() => {
     if (!form.date) {
-      toast.error("날짜를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.DIARY_DATE_REQUIRED);
       return;
     }
     if (!form.title.trim() && !form.content.trim()) {
-      toast.error("제목 또는 내용을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.DIARY_TITLE_CONTENT_REQUIRED);
       return;
     }
     if (editingId) {
       updateEntry(editingId, form);
-      toast.success("일기가 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.DIARY_UPDATED);
     } else {
       addEntry(form);
-      toast.success("일기가 저장되었습니다.");
+      toast.success(TOAST.MEMBERS.DIARY_SAVED);
     }
     closeForm();
   }, [form, editingId, addEntry, updateEntry, closeForm]);
@@ -665,7 +666,7 @@ export function DanceDiaryCard({ memberId }: { memberId: string }) {
   const handleDelete = useCallback(
     (id: string) => {
       deleteEntry(id);
-      toast.success("일기가 삭제되었습니다.");
+      toast.success(TOAST.MEMBERS.DIARY_DELETED);
     },
     [deleteEntry]
   );

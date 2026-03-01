@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Filter, Save, Trash2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useMemberFilterPresets,
   EMPTY_FILTER_CONDITION,
@@ -212,12 +213,12 @@ export function MemberFilterPresetPanel({
     const preset = presets.find((p) => p.id === selectedPresetId);
     if (!preset) return;
     if (preset.isDefault) {
-      toast.error("기본 프리셋은 삭제할 수 없습니다");
+      toast.error(TOAST.MEMBERS.PRESET_DEFAULT_DELETE_ERROR);
       return;
     }
     const result = deletePreset(selectedPresetId);
     if (result) {
-      toast.success("프리셋이 삭제되었습니다");
+      toast.success(TOAST.MEMBERS.PRESET_DELETED);
       setSelectedPresetId("");
     }
   };
@@ -226,7 +227,7 @@ export function MemberFilterPresetPanel({
   const handleSavePreset = () => {
     const trimmed = saveNameInput.trim();
     if (!trimmed) {
-      toast.error("프리셋 이름을 입력해주세요");
+      toast.error(TOAST.MEMBERS.PRESET_NAME_REQUIRED);
       return;
     }
     savePreset(trimmed, localFilters);

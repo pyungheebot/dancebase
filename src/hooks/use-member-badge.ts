@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { BadgeDefinition, BadgeRarity, MemberBadgeAward } from "@/types";
 
 type MemberBadgeStore = {
@@ -14,19 +15,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadStore(groupId: string): MemberBadgeStore {
-  if (typeof window === "undefined") return { badges: [], awards: [] };
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return { badges: [], awards: [] };
-    return JSON.parse(raw) as MemberBadgeStore;
-  } catch {
-    return { badges: [], awards: [] };
-  }
+  return loadFromStorage<MemberBadgeStore>(getStorageKey(groupId), { badges: [], awards: [] });
 }
 
 function saveStore(groupId: string, store: MemberBadgeStore): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(store));
+  saveToStorage(getStorageKey(groupId), store);
 }
 
 function generateId(): string {

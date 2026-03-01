@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   ChevronDown,
   ChevronUp,
@@ -152,7 +153,7 @@ function AddRecordDialog({ open, part, onClose, onAdd }: AddRecordDialogProps) {
   function handleSubmit() {
     const num = parseFloat(value);
     if (isNaN(num) || num < 0) {
-      toast.error("올바른 측정값을 입력하세요.");
+      toast.error(TOAST.MEMBERS.FLEXIBILITY_GOAL_INVALID);
       return;
     }
     onAdd(date, num, note.trim());
@@ -233,7 +234,7 @@ function GoalDialog({ open, part, currentGoal, onClose, onSave }: GoalDialogProp
   function handleSave() {
     const num = parseFloat(goal);
     if (isNaN(num) || num <= 0) {
-      toast.error("올바른 목표값을 입력하세요.");
+      toast.error(TOAST.MEMBERS.FLEXIBILITY_GOAL_INVALID);
       return;
     }
     onSave(num);
@@ -467,7 +468,7 @@ export function DanceFlexibilityCard({ memberId }: { memberId: string }) {
 
   function handleRemoveRecord(part: FlexTrackPart, recordId: string) {
     removeRecord(part, recordId);
-    toast.success("기록이 삭제되었습니다.");
+    toast.success(TOAST.MEMBERS.RECORD_DELETED);
   }
 
   function handleUpdateGoal(part: FlexTrackPart, goal: number) {

@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useAvailabilityPoll,
   type AvailabilityResponse,
@@ -146,15 +147,15 @@ export function AvailabilityPollDialog({
       .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
 
     if (!title.trim()) {
-      toast.error("제목을 입력해 주세요.");
+      toast.error(TOAST.SCHEDULE.AVAIL_POLL_TITLE_REQUIRED);
       return;
     }
     if (validDates.length === 0) {
-      toast.error("날짜를 최소 1개 입력해 주세요. (형식: YYYY-MM-DD)");
+      toast.error(TOAST.SCHEDULE.AVAIL_POLL_DATE_REQUIRED);
       return;
     }
     if (selectedSlots.size === 0) {
-      toast.error("시간대를 최소 1개 선택해 주세요.");
+      toast.error(TOAST.SCHEDULE.AVAIL_POLL_TIME_REQUIRED);
       return;
     }
 
@@ -170,7 +171,7 @@ export function AvailabilityPollDialog({
 
     setMyAvailable({});
     setMode("respond");
-    toast.success("투표가 생성되었습니다.");
+    toast.success(TOAST.SCHEDULE.AVAIL_POLL_CREATED);
   }
 
   // ============================================================
@@ -185,7 +186,7 @@ export function AvailabilityPollDialog({
     if (!poll) return;
     submitResponse({ userId, userName, available: myAvailable });
     setMode("result");
-    toast.success("응답이 저장되었습니다.");
+    toast.success(TOAST.SCHEDULE.AVAIL_POLL_RESPONSE_SAVED);
   }
 
   // ============================================================
@@ -199,7 +200,7 @@ export function AvailabilityPollDialog({
     setSelectedSlots(new Set(TIME_SLOT_OPTIONS));
     setMyAvailable({});
     setMode(canEdit ? "create" : "respond");
-    toast.success("투표가 삭제되었습니다.");
+    toast.success(TOAST.SCHEDULE.AVAIL_POLL_DELETED);
   }
 
   // ============================================================

@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePreExcuse } from "@/hooks/use-pre-excuse";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import type { PreExcuseReason } from "@/types";
@@ -91,7 +92,7 @@ export function PreExcuseDialog({
 
   const handleSubmit = () => {
     if (isScheduleStarted) {
-      toast.error("이미 시작된 일정은 사전 결석 신고를 할 수 없습니다");
+      toast.error(TOAST.SCHEDULE.PRE_EXCUSE_STARTED);
       return;
     }
     execute(async () => {

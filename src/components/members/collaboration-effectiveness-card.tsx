@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Collapsible,
   CollapsibleContent,
@@ -172,12 +173,12 @@ export function CollaborationEffectivenessCard({
 
   function handleSubmit() {
     if (!targetId) {
-      toast.error("평가할 동료를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.PEER_FEEDBACK_PEER_REQUIRED);
       return;
     }
     const hasAllScores = COLLAB_DIMENSIONS.every((d) => scores[d] >= 1 && scores[d] <= 5);
     if (!hasAllScores) {
-      toast.error("모든 항목에 점수를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.PEER_FEEDBACK_ALL_REQUIRED);
       return;
     }
     void execute(async () => {

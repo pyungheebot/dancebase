@@ -177,19 +177,19 @@ function InjuryFormDialog({
 
   function handleSubmit() {
     if (!form.bodyPart) {
-      toast.error("부상 부위를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.INJURY_LOG_PART_REQUIRED);
       return;
     }
     if (!form.injuryType) {
-      toast.error("부상 유형을 선택해주세요.");
+      toast.error(TOAST.MEMBERS.INJURY_LOG_TYPE_REQUIRED);
       return;
     }
     if (!form.severity) {
-      toast.error("심각도를 선택해주세요.");
+      toast.error(TOAST.MEMBERS.INJURY_LOG_SEVERITY_REQUIRED);
       return;
     }
     if (!form.injuredAt) {
-      toast.error("부상 날짜를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.INJURY_LOG_DATE_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -607,7 +607,7 @@ export function InjuryLogCard({ memberId }: InjuryLogCardProps) {
       rehabStatus: form.rehabStatus,
       treatmentNote: form.treatmentNote,
     });
-    toast.success("부상 기록이 추가되었습니다.");
+    toast.success(TOAST.MEMBERS.INJURY_LOG_ADDED);
     setShowAddDialog(false);
   }
 
@@ -624,7 +624,7 @@ export function InjuryLogCard({ memberId }: InjuryLogCardProps) {
       treatmentNote: form.treatmentNote,
     });
     if (ok) {
-      toast.success("부상 기록이 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.INJURY_LOG_UPDATED);
     } else {
       toast.error(TOAST.UPDATE_ERROR);
     }
@@ -634,7 +634,7 @@ export function InjuryLogCard({ memberId }: InjuryLogCardProps) {
   function handleDelete(id: string) {
     const ok = deleteEntry(id);
     if (ok) {
-      toast.success("부상 기록이 삭제되었습니다.");
+      toast.success(TOAST.MEMBERS.INJURY_LOG_DELETED);
     } else {
       toast.error(TOAST.DELETE_ERROR);
     }
@@ -647,7 +647,7 @@ export function InjuryLogCard({ memberId }: InjuryLogCardProps) {
         `재활 상태가 '${REHAB_STATUS_LABELS[status]}'으로 변경되었습니다.`
       );
     } else {
-      toast.error("상태 변경에 실패했습니다.");
+      toast.error(TOAST.MEMBERS.INJURY_STATUS_ERROR);
     }
   }
 

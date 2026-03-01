@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupPracticeJournalEntry,
   GroupPracticeJournalMonthStat,
@@ -17,26 +18,14 @@ function storageKey(groupId: string): string {
 }
 
 function loadEntries(groupId: string): GroupPracticeJournalEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as GroupPracticeJournalEntry[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<GroupPracticeJournalEntry[]>(storageKey(groupId), []);
 }
 
 function saveEntries(
   groupId: string,
   entries: GroupPracticeJournalEntry[]
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(entries));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
+  saveToStorage(storageKey(groupId), entries);
 }
 
 // ============================================

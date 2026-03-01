@@ -18,6 +18,7 @@ import {
   Activity,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSkillEvolutionTracker } from "@/hooks/use-skill-evolution-tracker";
 import { SKILL_CATEGORIES, SKILL_CATEGORY_LABELS } from "@/types";
 import type { SkillCategory } from "@/types";
@@ -330,7 +331,7 @@ export function SkillEvolutionTracker({
   const handleSave = () => {
     void executeSave(async () => {
       saveSnapshot(draftScores);
-      toast.success("이번 달 스킬이 기록되었습니다");
+      toast.success(TOAST.MEMBERS.SKILL_EVOL_MONTHLY_SAVED);
       setRecording(false);
     });
   };

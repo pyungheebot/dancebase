@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Collapsible,
   CollapsibleContent,
@@ -75,15 +76,15 @@ export function KudosBoardCard({
 
   function handleSend() {
     if (!fromName.trim()) {
-      toast.error("보내는 사람 이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.KUDOS_SENDER_REQUIRED);
       return;
     }
     if (!toName.trim()) {
-      toast.error("받는 사람을 선택해주세요.");
+      toast.error(TOAST.MEMBERS.KUDOS_RECEIVER_REQUIRED);
       return;
     }
     if (!message.trim()) {
-      toast.error("칭찬 메시지를 입력해주세요.");
+      toast.error(TOAST.MEMBERS.KUDOS_MESSAGE_REQUIRED);
       return;
     }
 
@@ -94,7 +95,7 @@ export function KudosBoardCard({
       setToName("");
       setMessage("");
     } catch {
-      toast.error("칭찬 전송 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.KUDOS_SEND_ERROR);
     } finally {
       setSending(false);
     }
@@ -102,7 +103,7 @@ export function KudosBoardCard({
 
   function handleDelete(id: string) {
     deleteKudos(id);
-    toast.success("칭찬 메시지를 삭제했습니다.");
+    toast.success(TOAST.MEMBERS.KUDOS_DELETED);
   }
 
   return (

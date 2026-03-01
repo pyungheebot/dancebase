@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type { MemberIntroCard } from "@/types";
 
 // ============================================
@@ -16,12 +17,7 @@ function storageKey(groupId: string): string {
 // ============================================
 
 function persistCards(groupId: string, cards: MemberIntroCard[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(cards));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId), cards);
 }
 
 // ============================================

@@ -25,6 +25,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMemberIntroCard, validateIntroCard } from "@/hooks/use-member-intro-card";
 import { formatYearMonthDay } from "@/lib/date-utils";
 import type { MemberIntroCardV2 } from "@/types";
@@ -146,7 +147,7 @@ export function MemberIntroCardsPanel({
       !card.motto &&
       !card.joinReason
     ) {
-      toast.error("최소 한 가지 항목을 입력해주세요");
+      toast.error(TOAST.MEMBERS.INTRO_CARD_MIN_REQUIRED);
       return;
     }
 
@@ -156,7 +157,7 @@ export function MemberIntroCardsPanel({
       return;
     }
 
-    toast.success("자기소개 카드가 저장되었습니다");
+    toast.success(TOAST.MEMBERS.INTRO_CARD_SAVED);
     setEditMode(false);
     setGenreInput("");
   };
@@ -173,11 +174,11 @@ export function MemberIntroCardsPanel({
     const value = genreInput.trim();
     if (!value) return;
     if (editState.favoriteGenres.length >= 3) {
-      toast.error("장르는 최대 3개까지 입력할 수 있습니다");
+      toast.error(TOAST.MEMBERS.GENRE_MAX);
       return;
     }
     if (editState.favoriteGenres.includes(value)) {
-      toast.error("이미 추가된 장르입니다");
+      toast.error(TOAST.MEMBERS.GENRE_DUPLICATE);
       setGenreInput("");
       return;
     }
@@ -199,7 +200,7 @@ export function MemberIntroCardsPanel({
   // 카드 삭제
   const handleClear = () => {
     clearIntro();
-    toast.success("자기소개 카드가 삭제되었습니다");
+    toast.success(TOAST.MEMBERS.INTRO_CARD_DELETED);
     setEditMode(false);
   };
 

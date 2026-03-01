@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { ImpressionPost, ImpressionMood } from "@/types";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
@@ -9,23 +10,11 @@ import type { ImpressionPost, ImpressionMood } from "@/types";
 const LS_KEY = (groupId: string) => `dancebase:impressions:${groupId}`;
 
 function loadPosts(groupId: string): ImpressionPost[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ImpressionPost[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<ImpressionPost[]>(LS_KEY(groupId), []);
 }
 
 function savePosts(groupId: string, posts: ImpressionPost[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(posts));
-  } catch {
-    /* ignore */
-  }
+  saveToStorage(LS_KEY(groupId), posts);
 }
 
 // ─── 훅 ─────────────────────────────────────────────────────

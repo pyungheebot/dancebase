@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Trophy,
@@ -222,10 +223,10 @@ export function DanceAuditionCard({ memberId }: DanceAuditionCardProps) {
         judgesFeedback: editForm.judgesFeedback.trim(),
         personalNote: editForm.personalNote.trim(),
       });
-      toast.success("오디션 기록이 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.AUDITION_UPDATED);
       cancelEdit();
     } catch {
-      toast.error("오디션 기록 수정 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.AUDITION_EDIT_ERROR);
     }
   }
 
@@ -238,7 +239,7 @@ export function DanceAuditionCard({ memberId }: DanceAuditionCardProps) {
       deleteRecord(recordId);
       toast.success(`'${name}' 오디션 기록이 삭제되었습니다.`);
     } catch {
-      toast.error("오디션 기록 삭제 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.AUDITION_DELETE_ERROR);
     }
   }
 

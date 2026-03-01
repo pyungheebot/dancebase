@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Target, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { useAttendanceGoal } from "@/hooks/use-attendance-goals";
@@ -114,13 +115,13 @@ export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps
   const handleSave = async () => {
     const rate = parseInt(targetRateInput, 10);
     if (isNaN(rate) || rate < 1 || rate > 100) {
-      toast.error("목표 출석률은 1~100 사이의 숫자여야 합니다");
+      toast.error(TOAST.ATTENDANCE.GOAL_RANGE);
       return;
     }
 
     await execute(async () => {
       if (!user) {
-        toast.error("로그인이 필요합니다");
+        toast.error(TOAST.LOGIN_REQUIRED);
         return;
       }
 
@@ -131,7 +132,7 @@ export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps
           .update({ target_rate: rate, period: periodInput })
           .eq("group_id", groupId);
         if (error) {
-          toast.error("목표 저장에 실패했습니다");
+          toast.error(TOAST.ATTENDANCE.GOAL_SAVE_ERROR);
           return;
         }
       } else {
@@ -143,12 +144,12 @@ export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps
           created_by: user.id,
         });
         if (error) {
-          toast.error("목표 저장에 실패했습니다");
+          toast.error(TOAST.ATTENDANCE.GOAL_SAVE_ERROR);
           return;
         }
       }
 
-      toast.success("출석 목표가 저장되었습니다");
+      toast.success(TOAST.ATTENDANCE.GOAL_SAVED);
       setEditMode(false);
       invalidateAttendanceGoal(groupId);
       refetch();
@@ -163,10 +164,10 @@ export function AttendanceGoalCard({ groupId, canEdit }: AttendanceGoalCardProps
         .delete()
         .eq("group_id", groupId);
       if (error) {
-        toast.error("목표 삭제에 실패했습니다");
+        toast.error(TOAST.ATTENDANCE.GOAL_DELETE_ERROR);
         return;
       }
-      toast.success("출석 목표가 삭제되었습니다");
+      toast.success(TOAST.ATTENDANCE.GOAL_DELETED);
       setEditMode(false);
       invalidateAttendanceGoal(groupId);
       refetch();

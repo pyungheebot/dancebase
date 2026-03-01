@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   BookOpen,
@@ -270,10 +271,10 @@ export function DanceWorkshopCard({ memberId }: DanceWorkshopCardProps) {
         rating: editForm.rating,
         notes: editForm.notes.trim(),
       });
-      toast.success("워크숍 이력이 수정되었습니다.");
+      toast.success(TOAST.MEMBERS.WORKSHOP_UPDATED);
       cancelEdit();
     } catch {
-      toast.error("워크숍 수정 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.WORKSHOP_EDIT_ERROR);
     }
   }
 
@@ -286,7 +287,7 @@ export function DanceWorkshopCard({ memberId }: DanceWorkshopCardProps) {
       deleteEntry(entryId);
       toast.success(`'${name}' 이력이 삭제되었습니다.`);
     } catch {
-      toast.error("워크숍 삭제 중 오류가 발생했습니다.");
+      toast.error(TOAST.MEMBERS.WORKSHOP_DELETE_ERROR);
     }
   }
 

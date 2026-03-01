@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import {
   useDanceNetworking,
@@ -133,7 +134,7 @@ function GenreInput({
     const trimmed = inputVal.trim();
     if (!trimmed) return;
     if (genres.includes(trimmed)) {
-      toast.error("이미 추가된 장르입니다.");
+      toast.error(TOAST.MEMBERS.NETWORKING_GENRE_DUPLICATE);
       return;
     }
     onChange([...genres, trimmed]);
@@ -274,7 +275,7 @@ function ContactForm({
 
   function handleSubmit() {
     if (!form.name.trim()) {
-      toast.error("이름을 입력해주세요.");
+      toast.error(TOAST.MEMBERS.NETWORKING_NAME_REQUIRED);
       return;
     }
     onSubmit(form);
@@ -706,7 +707,7 @@ export function DanceNetworkingCard({ memberId }: { memberId: string }) {
         role: form.role,
         notes: form.notes || undefined,
       });
-      toast.success("연락처를 수정했습니다.");
+      toast.success(TOAST.MEMBERS.NETWORKING_CONTACT_UPDATED);
       setEditTarget(null);
     },
     [editTarget, updateEntry]

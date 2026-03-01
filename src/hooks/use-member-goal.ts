@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MemberGoalEntry,
   MemberGoalCategory,
@@ -17,23 +18,11 @@ function storageKey(groupId: string): string {
 }
 
 function loadEntries(groupId: string): MemberGoalEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MemberGoalEntry[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<MemberGoalEntry[]>(storageKey(groupId), []);
 }
 
 function saveEntries(groupId: string, entries: MemberGoalEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(entries));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId), entries);
 }
 
 // ============================================

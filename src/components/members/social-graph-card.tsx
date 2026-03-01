@@ -35,6 +35,7 @@ import {
   Network,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { SocialRelationType, SocialRelation } from "@/types";
 import type { EntityMember } from "@/types/entity-context";
 
@@ -224,15 +225,15 @@ function AddRelationForm({ members, onAdd, onClose }: AddRelationFormProps) {
   const handleSubmit = () => {
     if (!canSubmit) {
       if (member1 === member2) {
-        toast.error("서로 다른 멤버를 선택하세요");
+        toast.error(TOAST.MEMBERS.SOCIAL_GRAPH_SAME_PERSON);
       } else {
-        toast.error("멤버를 선택하세요");
+        toast.error(TOAST.MEMBERS.SOCIAL_GRAPH_MEMBER_SELECT);
       }
       return;
     }
     const ok = onAdd({ member1, member2, relationType, strength, since, note });
     if (ok) {
-      toast.success("관계가 추가되었습니다");
+      toast.success(TOAST.MEMBERS.SOCIAL_RELATION_ADDED);
       onClose();
     }
   };
@@ -624,7 +625,7 @@ export function SocialGraphCard({ groupId, members }: SocialGraphCardProps) {
                     relation={relation}
                     onDelete={() => {
                       const ok = deleteRelation(relation.id);
-                      if (ok) toast.success("관계가 삭제되었습니다");
+                      if (ok) toast.success(TOAST.MEMBERS.SOCIAL_RELATION_DELETED);
                     }}
                     onStrengthChange={(strength) => {
                       updateStrength(relation.id, strength);

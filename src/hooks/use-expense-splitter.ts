@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type { ExpenseSplitItem, ExpenseSplitSession } from "@/types";
 
 const MAX_SESSIONS = 10;
@@ -11,12 +12,7 @@ function storageKey(groupId: string): string {
 }
 
 function saveSessions(groupId: string, sessions: ExpenseSplitSession[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(sessions));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId), sessions);
 }
 
 // 누가 누구에게 얼마를 보내야 하는지 계산

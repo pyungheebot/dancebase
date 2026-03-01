@@ -18,6 +18,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { invalidateBoard, invalidateBoardPost } from "@/lib/swr/invalidate";
 import { BoardBookmarkButton } from "./board-bookmark-button";
 import { BoardScheduledBadge } from "./board-scheduled-badge";
@@ -102,7 +103,7 @@ export function BoardPostList({
       .update(updateData)
       .eq("id", post.id);
     if (error) {
-      toast.error("고정 설정에 실패했습니다");
+      toast.error(TOAST.BOARD.PIN_ERROR);
     } else {
       toast.success(isPinned ? "고정을 해제했습니다" : "게시글을 상단에 고정했습니다");
       invalidateBoard(groupId);

@@ -6,30 +6,20 @@ import { swrKeys } from "@/lib/swr/keys";
 import { ActivityRetrospective } from "@/types";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
-import { removeFromStorage } from "@/lib/local-storage";
+import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
 
 const CACHE_KEY_PREFIX = "dancebase:retrospective:";
 const MAX_CACHED_MONTHS = 12;
 
 function loadCache(groupId: string): ActivityRetrospective[] {
-  try {
-    const raw = localStorage.getItem(`${CACHE_KEY_PREFIX}${groupId}`);
-    if (!raw) return [];
-    return JSON.parse(raw) as ActivityRetrospective[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<ActivityRetrospective[]>(`${CACHE_KEY_PREFIX}${groupId}`, []);
 }
 
 function saveCache(groupId: string, reports: ActivityRetrospective[]): void {
-  try {
-    // 최신 순 정렬 후 최대 12개월만 유지
-    const sorted = [...reports].sort((a, b) => b.month.localeCompare(a.month));
-    const trimmed = sorted.slice(0, MAX_CACHED_MONTHS);
-    localStorage.setItem(`${CACHE_KEY_PREFIX}${groupId}`, JSON.stringify(trimmed));
-  } catch {
-    // localStorage 쓰기 실패는 무시
-  }
+  // 최신 순 정렬 후 최대 12개월만 유지
+  const sorted = [...reports].sort((a, b) => b.month.localeCompare(a.month));
+  const trimmed = sorted.slice(0, MAX_CACHED_MONTHS);
+  saveToStorage(`${CACHE_KEY_PREFIX}${groupId}`, trimmed);
 }
 
 function getCachedReport(

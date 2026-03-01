@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { GroupPoll, PollOption } from "@/types";
 
 const STORAGE_KEY_PREFIX = "dancebase:polls:";
@@ -11,25 +12,13 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadPolls(groupId: string): GroupPoll[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as GroupPoll[];
-  } catch {
-    return [];
-  }
+  const parsed = loadFromStorage<unknown>(getStorageKey(groupId), []);
+  if (!Array.isArray(parsed)) return [];
+  return parsed as GroupPoll[];
 }
 
 function savePolls(groupId: string, polls: GroupPoll[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(polls));
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
+  saveToStorage(getStorageKey(groupId), polls);
 }
 
 function isPollExpired(poll: GroupPoll): boolean {

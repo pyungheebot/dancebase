@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
-import { removeFromStorage } from "@/lib/local-storage";
+import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
 import type {
   BudgetAlertLevel,
   MonthlyBudgetStatus,
@@ -20,20 +20,15 @@ function getStorageKey(groupId: string): string {
 
 // localStorage에서 예산 목표 로드
 function loadBudgetTarget(groupId: string): number | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return null;
-    const val = parseInt(raw, 10);
-    return isNaN(val) || val <= 0 ? null : val;
-  } catch {
-    return null;
-  }
+  const raw = loadFromStorage<string | null>(getStorageKey(groupId), null);
+  if (!raw) return null;
+  const val = parseInt(raw, 10);
+  return isNaN(val) || val <= 0 ? null : val;
 }
 
 // localStorage에 예산 목표 저장
 function saveBudgetTarget(groupId: string, amount: number): void {
-  localStorage.setItem(getStorageKey(groupId), String(amount));
+  saveToStorage(getStorageKey(groupId), String(amount));
 }
 
 // localStorage에서 예산 목표 삭제

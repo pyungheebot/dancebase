@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { CheckCircle2, Clock, PhoneCall, RefreshCw, XCircle } from "lucide-react";
 import { formatKo } from "@/lib/date-utils";
 import type { EntityContext } from "@/types/entity-context";
@@ -42,7 +43,7 @@ export function ContactVerificationSection({ ctx }: ContactVerificationSectionPr
     const memberUserIds = ctx.members.map((m) => m.userId);
 
     if (memberUserIds.length === 0) {
-      toast.error("그룹에 멤버가 없습니다");
+      toast.error(TOAST.MEMBERS.INACTIVE_MEMBER_MIN);
       setRequesting(false);
       return;
     }
@@ -59,7 +60,7 @@ export function ContactVerificationSection({ ctx }: ContactVerificationSectionPr
     setRequesting(false);
 
     if (error) {
-      toast.error("연락처 재확인 요청에 실패했습니다");
+      toast.error(TOAST.MEMBERS.CONTACT_REVERIFY_ERROR);
       return;
     }
 

@@ -199,7 +199,7 @@ export function SessionFeedbackGenerator({
 
   const handleGenerate = async () => {
     if (!selectedScheduleId) {
-      toast.error("일정을 선택해주세요.");
+      toast.error(TOAST.SCHEDULE.SESSION_FEEDBACK_SCHEDULE_REQUIRED);
       return;
     }
     setGenerating(true);
@@ -208,7 +208,7 @@ export function SessionFeedbackGenerator({
     try {
       const result = await generateFeedback(selectedScheduleId);
       setDraft(result);
-      toast.success("피드백이 생성되었습니다.");
+      toast.success(TOAST.SCHEDULE.SESSION_FEEDBACK_GENERATED);
     } catch (e) {
       toast.error(
         e instanceof Error ? e.message : "피드백 생성에 실패했습니다."
@@ -223,7 +223,7 @@ export function SessionFeedbackGenerator({
     executeSave(async () => {
       try {
         saveFeedback({ ...draft, customNote });
-        toast.success("피드백이 저장되었습니다.");
+        toast.success(TOAST.SCHEDULE.SESSION_FEEDBACK_SAVED);
         setDraft(null);
         setCustomNote("");
       } catch {
@@ -234,7 +234,7 @@ export function SessionFeedbackGenerator({
 
   const handleDelete = (id: string) => {
     deleteFeedback(id);
-    toast.success("피드백이 삭제되었습니다.");
+    toast.success(TOAST.SCHEDULE.SESSION_FEEDBACK_DELETED);
   };
 
   const handleDiscard = () => {

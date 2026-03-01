@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   usePreRsvp,
   type PreRsvpResponse,
@@ -141,11 +142,11 @@ export function PreRsvpPoll({
 
   function handleCreate() {
     if (!title.trim()) {
-      toast.error("제목을 입력해 주세요.");
+      toast.error(TOAST.SCHEDULE.RSVP_POLL_TITLE_REQUIRED);
       return;
     }
     if (!proposedDate) {
-      toast.error("날짜를 선택해 주세요.");
+      toast.error(TOAST.SCHEDULE.RSVP_POLL_DATE_REQUIRED);
       return;
     }
 
@@ -159,7 +160,7 @@ export function PreRsvpPoll({
 
     setMyResponse(null);
     setMode("respond");
-    toast.success("의향 조사가 생성되었습니다.");
+    toast.success(TOAST.SCHEDULE.RSVP_POLL_CREATED);
   }
 
   // ============================================================
@@ -173,12 +174,12 @@ export function PreRsvpPoll({
   function handleSubmitResponse() {
     if (!poll) return;
     if (!myResponse) {
-      toast.error("응답을 선택해 주세요.");
+      toast.error(TOAST.SCHEDULE.RSVP_POLL_RESPONSE_REQUIRED);
       return;
     }
     submitResponse({ userId, userName, response: myResponse });
     setMode("result");
-    toast.success("응답이 저장되었습니다.");
+    toast.success(TOAST.SCHEDULE.RSVP_POLL_RESPONSE_SAVED);
   }
 
   // ============================================================
@@ -187,7 +188,7 @@ export function PreRsvpPoll({
 
   function handleClose() {
     closePoll();
-    toast.success("조사가 마감되었습니다.");
+    toast.success(TOAST.SCHEDULE.RSVP_POLL_CLOSED);
   }
 
   function handleDelete() {
@@ -198,7 +199,7 @@ export function PreRsvpPoll({
     setDescription("");
     setMyResponse(null);
     setMode(canEdit ? "create" : "respond");
-    toast.success("의향 조사가 삭제되었습니다.");
+    toast.success(TOAST.SCHEDULE.RSVP_POLL_DELETED);
   }
 
   // ============================================================

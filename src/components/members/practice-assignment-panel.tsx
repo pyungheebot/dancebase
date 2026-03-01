@@ -39,6 +39,7 @@ import {
   Flag,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   usePracticeAssignments,
   calcAssignmentProgress,
@@ -162,11 +163,11 @@ function CreateAssignmentDialog({ members, onSubmit }: CreateAssignmentDialogPro
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("과제 제목을 입력해주세요");
+      toast.error(TOAST.MEMBERS.ASSIGNMENT_TITLE_REQUIRED);
       return;
     }
     if (selectedMemberIds.length === 0) {
-      toast.error("대상 멤버를 1명 이상 선택해주세요");
+      toast.error(TOAST.MEMBERS.ASSIGNMENT_MEMBER_REQUIRED);
       return;
     }
 
@@ -389,7 +390,7 @@ function AssignmentCard({
     onUpdateStatus(assignment.id, userId, currentProgress, noteInput);
     setEditingNoteUserId(null);
     setNoteInput("");
-    toast.success("메모가 저장되었습니다");
+    toast.success(TOAST.MEMBERS.MEMO_SAVED);
   };
 
   // 내가 대상 멤버인지 여부
@@ -591,7 +592,7 @@ function AssignmentCard({
                 className="h-6 text-[11px] text-muted-foreground hover:text-destructive px-2"
                 onClick={() => {
                   onDelete(assignment.id);
-                  toast.success("과제가 삭제되었습니다");
+                  toast.success(TOAST.MEMBERS.ASSIGNMENT_DELETED);
                 }}
               >
                 <Trash2 className="h-3 w-3 mr-1" />
@@ -635,7 +636,7 @@ export function PracticeAssignmentPanel({
     dueDate: string | null;
   }) => {
     createAssignment({ ...params, createdBy: currentUserId });
-    toast.success("연습 과제가 생성되었습니다");
+    toast.success(TOAST.MEMBERS.ASSIGNMENT_CREATED);
   };
 
   return (

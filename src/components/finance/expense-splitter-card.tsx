@@ -37,6 +37,7 @@ import {
   FolderPlus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useExpenseSplitter,
   calculateSettlements,
@@ -87,19 +88,19 @@ function AddItemDialog({
 
   const handleSubmit = () => {
     if (!description.trim()) {
-      toast.error("항목 설명을 입력해주세요");
+      toast.error(TOAST.FINANCE.EXPENSE_DESC_REQUIRED);
       return;
     }
     if (parsedAmount <= 0) {
-      toast.error("금액을 입력해주세요");
+      toast.error(TOAST.FINANCE.EXPENSE_AMOUNT_REQUIRED);
       return;
     }
     if (!paidBy) {
-      toast.error("지불자를 선택해주세요");
+      toast.error(TOAST.FINANCE.EXPENSE_PAYER_REQUIRED);
       return;
     }
     if (splitAmong.length === 0) {
-      toast.error("분할 대상을 한 명 이상 선택해주세요");
+      toast.error(TOAST.FINANCE.EXPENSE_TARGET_REQUIRED);
       return;
     }
 
@@ -265,7 +266,7 @@ function CreateSessionDialog({
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      toast.error("세션 이름을 입력해주세요");
+      toast.error(TOAST.FINANCE.EXPENSE_SESSION_NAME_REQUIRED);
       return;
     }
     onCreate(title.trim());
@@ -513,7 +514,7 @@ export function ExpenseSplitterCard({ groupId, memberNames = [] }: Props) {
   const handleCreateSession = (title: string) => {
     const newSession = createSession(title);
     if (!newSession) {
-      toast.error(`세션은 최대 10개까지 만들 수 있습니다`);
+      toast.error(TOAST.FINANCE.EXPENSE_ITEM_MAX);
       return;
     }
     setSelectedSessionId(newSession.id);
@@ -529,7 +530,7 @@ export function ExpenseSplitterCard({ groupId, memberNames = [] }: Props) {
     if (!selectedSessionId) return;
     const ok = addItem(selectedSessionId, item);
     if (!ok) {
-      toast.error("항목은 세션당 최대 20개까지 추가할 수 있습니다");
+      toast.error(TOAST.FINANCE.EXPENSE_ITEM_MAX);
       return;
     }
     toast.success(`"${item.description}" 항목이 추가되었습니다`);
@@ -538,7 +539,7 @@ export function ExpenseSplitterCard({ groupId, memberNames = [] }: Props) {
   const handleRemoveItem = (itemId: string) => {
     if (!selectedSessionId) return;
     removeItem(selectedSessionId, itemId);
-    toast.success("항목이 삭제되었습니다");
+    toast.success(TOAST.FINANCE.EXPENSE_ITEM_DELETED);
   };
 
   const handleDeleteSession = (sessionId: string, title: string) => {

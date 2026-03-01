@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCog, Plus, X, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useScheduleRoles } from "@/hooks/use-schedule-roles";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import type { GroupMemberWithProfile } from "@/types";
@@ -86,18 +87,18 @@ export function ScheduleRolesSection({
 
   const handleAdd = async () => {
     if (!selectedUserId) {
-      toast.error("멤버를 선택해주세요");
+      toast.error(TOAST.SCHEDULE.ROLE_MEMBER_REQUIRED);
       return;
     }
     if (!roleName.trim()) {
-      toast.error("역할명을 입력해주세요");
+      toast.error(TOAST.SCHEDULE.ROLE_NAME_REQUIRED);
       return;
     }
 
     await execute(async () => {
       try {
         await addRole(selectedUserId, roleName.trim());
-        toast.success("역할을 배정했습니다");
+        toast.success(TOAST.SCHEDULE.ROLE_ASSIGNED);
         setSelectedUserId("");
         setRoleName("");
         setAddOpen(false);
@@ -105,12 +106,12 @@ export function ScheduleRolesSection({
         const msg =
           err instanceof Error
             ? err.message
-            : "역할 배정에 실패했습니다";
+            : TOAST.SCHEDULE.ROLE_ASSIGN_ERROR;
         // 중복 에러 처리
         if (msg.includes("duplicate") || msg.includes("unique")) {
-          toast.error("이미 동일한 역할이 배정되어 있습니다");
+          toast.error(TOAST.SCHEDULE.ROLE_DUPLICATE);
         } else {
-          toast.error("역할 배정에 실패했습니다");
+          toast.error(TOAST.SCHEDULE.ROLE_ASSIGN_ERROR);
         }
       }
     });
@@ -120,9 +121,9 @@ export function ScheduleRolesSection({
     setRemovingId(roleId);
     try {
       await removeRole(roleId);
-      toast.success("역할을 삭제했습니다");
+      toast.success(TOAST.SCHEDULE.ROLE_DELETED);
     } catch {
-      toast.error("역할 삭제에 실패했습니다");
+      toast.error(TOAST.SCHEDULE.ROLE_DELETE_ERROR);
     } finally {
       setRemovingId(null);
     }

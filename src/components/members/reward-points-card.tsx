@@ -41,6 +41,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useActivityRewardPoints } from "@/hooks/use-reward-points";
 import { ACTIVITY_POINT_DEFAULTS, ACTIVITY_POINT_LABELS } from "@/types";
 import type { PointActionType } from "@/types";
@@ -138,16 +139,16 @@ export function RewardPointsCard({ groupId }: RewardPointsCardProps) {
   // 포인트 부여 제출
   const handleGrantSubmit = () => {
     if (!formMemberName.trim()) {
-      toast.error("멤버명을 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_POINTS_MEMBER_NAME_REQUIRED);
       return;
     }
     const pts = Number(formPoints);
     if (!pts || pts === 0) {
-      toast.error("포인트를 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_POINTS_POINT_REQUIRED);
       return;
     }
     if (!formDescription.trim()) {
-      toast.error("설명을 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_POINTS_DESC_REQUIRED);
       return;
     }
 

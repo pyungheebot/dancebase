@@ -37,6 +37,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useReceiptManagement } from "@/hooks/use-receipt-management";
 import type { ReceiptCategory, ReceiptStatus } from "@/types";
 
@@ -171,20 +172,20 @@ function AddReceiptDialog({ onAdd }: AddDialogProps) {
 
   function handleSubmit() {
     if (!title.trim()) {
-      toast.error("제목을 입력해 주세요.");
+      toast.error(TOAST.FINANCE.RECEIPT_TITLE_REQUIRED);
       return;
     }
     const parsedAmount = Number(amount);
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
-      toast.error("유효한 금액을 입력해 주세요.");
+      toast.error(TOAST.FINANCE.RECEIPT_AMOUNT_REQUIRED);
       return;
     }
     if (!submittedBy.trim()) {
-      toast.error("제출자를 입력해 주세요.");
+      toast.error(TOAST.FINANCE.RECEIPT_SUBMITTER_REQUIRED);
       return;
     }
     if (!date) {
-      toast.error("날짜를 선택해 주세요.");
+      toast.error(TOAST.FINANCE.RECEIPT_DATE_REQUIRED);
       return;
     }
 
@@ -199,7 +200,7 @@ function AddReceiptDialog({ onAdd }: AddDialogProps) {
     );
 
     if (result) {
-      toast.success("영수증이 등록되었습니다.");
+      toast.success(TOAST.FINANCE.RECEIPT_REGISTERED);
       setTitle("");
       setAmount("");
       setCategory("other");
@@ -412,22 +413,22 @@ export function ReceiptManagementCard({ groupId }: Props) {
 
   function handleApprove(id: string, approverName: string) {
     approveReceipt(id, approverName);
-    toast.success("영수증을 승인했습니다.");
+    toast.success(TOAST.FINANCE.RECEIPT_APPROVED);
   }
 
   function handleReject(id: string) {
     rejectReceipt(id);
-    toast.success("영수증을 거절했습니다.");
+    toast.success(TOAST.FINANCE.RECEIPT_REJECTED);
   }
 
   function handleReimburse(id: string) {
     reimburseReceipt(id);
-    toast.success("환급 처리되었습니다.");
+    toast.success(TOAST.FINANCE.RECEIPT_REFUNDED);
   }
 
   function handleDelete(id: string) {
     deleteReceipt(id);
-    toast.success("영수증이 삭제되었습니다.");
+    toast.success(TOAST.FINANCE.RECEIPT_DELETED);
   }
 
   return (

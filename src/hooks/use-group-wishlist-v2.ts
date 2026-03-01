@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupWishItem,
   GroupWishCategory,
@@ -15,23 +16,11 @@ import type {
 const LS_KEY = (groupId: string) => `dancebase:wishlist-v2:${groupId}`;
 
 function loadItems(groupId: string): GroupWishItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as GroupWishItem[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<GroupWishItem[]>(LS_KEY(groupId), []);
 }
 
 function saveItems(groupId: string, items: GroupWishItem[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(items));
-  } catch {
-    /* ignore */
-  }
+  saveToStorage(LS_KEY(groupId), items);
 }
 
 // ─── 훅 ─────────────────────────────────────────────────────

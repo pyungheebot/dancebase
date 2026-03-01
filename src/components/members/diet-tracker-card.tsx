@@ -508,7 +508,7 @@ export function DietTrackerCard({
   // 저장
   const handleSave = useCallback(() => {
     if (form.foods.length === 0) {
-      toast.error("음식을 하나 이상 입력하세요.");
+      toast.error(TOAST.MEMBERS.DIET_FOOD_REQUIRED);
       return;
     }
 
@@ -525,7 +525,7 @@ export function DietTrackerCard({
         notes: form.notes || undefined,
       });
       if (ok) {
-        toast.success("식사 기록이 수정되었습니다.");
+        toast.success(TOAST.MEMBERS.DIET_UPDATED);
         closeDialog();
       } else {
         toast.error(TOAST.UPDATE_ERROR);
@@ -540,7 +540,7 @@ export function DietTrackerCard({
         protein: proteinNum,
         notes: form.notes || undefined,
       });
-      toast.success("식사가 기록되었습니다.");
+      toast.success(TOAST.MEMBERS.DIET_SAVED);
       closeDialog();
     }
   }, [form, editingId, selectedDate, addMeal, updateMeal, closeDialog]);
@@ -550,7 +550,7 @@ export function DietTrackerCard({
     (id: string) => {
       const ok = deleteMeal(id);
       if (ok) {
-        toast.success("식사 기록이 삭제되었습니다.");
+        toast.success(TOAST.MEMBERS.DIET_DELETED);
       } else {
         toast.error(TOAST.DELETE_ERROR);
       }

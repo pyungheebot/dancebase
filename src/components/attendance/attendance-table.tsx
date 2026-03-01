@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { MapPin, Loader2, Info, LogOut, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   calculateDistance,
   isWithinAttendanceWindow,
@@ -428,14 +429,14 @@ export function AttendanceTable({
         .update({ status, checked_at: new Date().toISOString() })
         .eq("schedule_id", schedule.id)
         .eq("user_id", userId);
-      if (error) { toast.error("출석 상태 변경에 실패했습니다"); setUpdating(null); return; }
+      if (error) { toast.error(TOAST.ATTENDANCE.STATUS_CHANGE_ERROR); setUpdating(null); return; }
     } else {
       const { error } = await supabase.from("attendance").insert({
         schedule_id: schedule.id,
         user_id: userId,
         status,
       });
-      if (error) { toast.error("출석 체크에 실패했습니다"); setUpdating(null); return; }
+      if (error) { toast.error(TOAST.ATTENDANCE.CHECK_ERROR); setUpdating(null); return; }
     }
 
     onUpdate();
@@ -508,7 +509,7 @@ export function AttendanceTable({
             })
             .eq("schedule_id", schedule.id)
             .eq("user_id", currentUserId);
-          if (error) { toast.error("출석 체크에 실패했습니다"); setUpdating(null); return; }
+          if (error) { toast.error(TOAST.ATTENDANCE.CHECK_ERROR); setUpdating(null); return; }
         } else {
           const { error } = await supabase.from("attendance").insert({
             schedule_id: schedule.id,
@@ -517,7 +518,7 @@ export function AttendanceTable({
             check_in_latitude: pos.coords.latitude,
             check_in_longitude: pos.coords.longitude,
           });
-          if (error) { toast.error("출석 체크에 실패했습니다"); setUpdating(null); return; }
+          if (error) { toast.error(TOAST.ATTENDANCE.CHECK_ERROR); setUpdating(null); return; }
         }
 
         onUpdate();
@@ -540,7 +541,7 @@ export function AttendanceTable({
     setUpdating(userId);
 
     if (!isWithinCheckoutWindow(schedule.starts_at, schedule.ends_at)) {
-      toast.error("체크아웃 가능 시간이 아닙니다");
+      toast.error(TOAST.ATTENDANCE.CHECKOUT_TIME_ERROR);
       setUpdating(null);
       return;
     }
@@ -559,7 +560,7 @@ export function AttendanceTable({
             })
             .eq("schedule_id", schedule.id)
             .eq("user_id", userId);
-          if (error) { toast.error("종료확인에 실패했습니다"); }
+          if (error) { toast.error(TOAST.ATTENDANCE.CHECKOUT_ERROR); }
           onUpdate();
           setUpdating(null);
         },
@@ -570,7 +571,7 @@ export function AttendanceTable({
             .update({ checked_out_at: new Date().toISOString() })
             .eq("schedule_id", schedule.id)
             .eq("user_id", userId);
-          if (error) { toast.error("종료확인에 실패했습니다"); }
+          if (error) { toast.error(TOAST.ATTENDANCE.CHECKOUT_ERROR); }
           onUpdate();
           setUpdating(null);
         },
@@ -583,7 +584,7 @@ export function AttendanceTable({
         .update({ checked_out_at: new Date().toISOString() })
         .eq("schedule_id", schedule.id)
         .eq("user_id", userId);
-      if (error) { toast.error("종료확인에 실패했습니다"); }
+      if (error) { toast.error(TOAST.ATTENDANCE.CHECKOUT_ERROR); }
       onUpdate();
       setUpdating(null);
     }

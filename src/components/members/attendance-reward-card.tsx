@@ -42,6 +42,7 @@ import {
   Gift,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAttendanceReward } from "@/hooks/use-attendance-reward";
 import type { AttendanceRewardTier } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -125,17 +126,17 @@ function AwardDialog({ memberNames, onAward }: AwardDialogProps) {
 
   const handleSubmit = () => {
     if (!memberName) {
-      toast.error("멤버를 선택해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_MEMBER_REQUIRED);
       return;
     }
     const rate = Number(attendanceRate);
     if (!attendanceRate || rate < 0 || rate > 100) {
-      toast.error("출석률을 0~100 사이로 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_RATE_RANGE);
       return;
     }
     const pts = Number(points);
     if (!points || pts <= 0) {
-      toast.error("포인트를 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_POINT_REQUIRED);
       return;
     }
 
@@ -279,21 +280,21 @@ function AddRuleDialog({ onAdd }: AddRuleDialogProps) {
   const handleSubmit = () => {
     const rate = Number(requiredAttendance);
     if (!requiredAttendance || rate < 0 || rate > 100) {
-      toast.error("필요 출석률을 0~100 사이로 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_REQUIRED_RATE_RANGE);
       return;
     }
     if (!rewardName.trim()) {
-      toast.error("보상명을 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_NAME_REQUIRED);
       return;
     }
     const pts = Number(points);
     if (!points || pts <= 0) {
-      toast.error("포인트를 입력해주세요");
+      toast.error(TOAST.MEMBERS.REWARD_POINT_REQUIRED);
       return;
     }
 
     onAdd(tier, rate, rewardName.trim(), rewardDescription.trim(), pts);
-    toast.success("보상 규칙이 추가되었습니다");
+    toast.success(TOAST.MEMBERS.REWARD_RULE_ADDED);
 
     // 초기화
     setTier("bronze");
@@ -643,7 +644,7 @@ export function AttendanceRewardCard({
                             className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-red-500"
                             onClick={() => {
                               revokeReward(record.id);
-                              toast.success("보상이 취소되었습니다");
+                              toast.success(TOAST.MEMBERS.REWARD_CANCELLED);
                             }}
                           >
                             <Trash2 className="h-3 w-3" />
@@ -692,7 +693,7 @@ export function AttendanceRewardCard({
                             className="h-6 w-6 p-0 shrink-0 text-muted-foreground hover:text-red-500"
                             onClick={() => {
                               deleteRule(rule.id);
-                              toast.success("규칙이 삭제되었습니다");
+                              toast.success(TOAST.MEMBERS.REWARD_RULE_DELETED);
                             }}
                           >
                             <Trash2 className="h-3 w-3" />

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { GroupHealthSnapshot, GroupHealthSnapshotResult } from "@/types/index";
 
 const MAX_SNAPSHOTS = 6;
@@ -10,27 +11,15 @@ const LS_PREFIX = "dancebase:health-snapshots:";
 
 /** localStorage에서 스냅샷 배열을 읽습니다 */
 function loadSnapshots(groupId: string): GroupHealthSnapshot[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(`${LS_PREFIX}${groupId}`);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as GroupHealthSnapshot[];
-  } catch {
-    return [];
-  }
+  const parsed = loadFromStorage<unknown>(`${LS_PREFIX}${groupId}`, []);
+  if (!Array.isArray(parsed)) return [];
+  return parsed as GroupHealthSnapshot[];
 }
 
 /** localStorage에 스냅샷 배열을 저장합니다 (최대 MAX_SNAPSHOTS개 유지) */
 function saveSnapshots(groupId: string, snapshots: GroupHealthSnapshot[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    const trimmed = snapshots.slice(-MAX_SNAPSHOTS);
-    localStorage.setItem(`${LS_PREFIX}${groupId}`, JSON.stringify(trimmed));
-  } catch {
-    // localStorage 저장 실패는 무시
-  }
+  const trimmed = snapshots.slice(-MAX_SNAPSHOTS);
+  saveToStorage(`${LS_PREFIX}${groupId}`, trimmed);
 }
 
 /** 현재 연월을 "YYYY-MM" 형식으로 반환합니다 */

@@ -215,7 +215,7 @@ function AddItemDialog({
     const trimmed = tagInput.trim();
     if (!trimmed) return;
     if (tags.includes(trimmed)) {
-      toast.error("이미 추가된 태그입니다.");
+      toast.error(TOAST.MEMBERS.INSPIRATION_TAG_DUPLICATE);
       return;
     }
     setTags((prev) => [...prev, trimmed]);
@@ -229,7 +229,7 @@ function AddItemDialog({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) {
-      toast.error("제목을 입력해 주세요.");
+      toast.error(TOAST.MEMBERS.INSPIRATION_TITLE_INPUT_REQUIRED);
       return;
     }
     const urlError = validateUrl(url);
@@ -246,7 +246,7 @@ function AddItemDialog({
         content: memo.trim(),
         tags,
       });
-      toast.success("영감 아이템이 추가되었습니다.");
+      toast.success(TOAST.MEMBERS.INSPIRATION_ITEM_ADDED);
       reset();
       setOpen(false);
     });
@@ -534,7 +534,7 @@ export function InspirationBoardCard({ memberId }: { memberId: string }) {
   async function handleDelete(id: string) {
     try {
       await deleteItem(id);
-      toast.success("아이템이 삭제되었습니다.");
+      toast.success(TOAST.MEMBERS.INSPIRATION_ITEM_DELETED);
     } catch {
       toast.error(TOAST.DELETE_ERROR);
     }

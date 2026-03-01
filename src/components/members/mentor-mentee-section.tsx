@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Users, ArrowRight, Star, Check, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import type { EntityMember } from "@/types/entity-context";
 
 type MentorMenteeSectionProps = {
@@ -120,7 +121,7 @@ export function MentorMenteeSection({
                   skillsLoading={skillsLoading}
                   onCreated={() => {
                     setDialogOpen(false);
-                    toast.success("매칭이 추가되었습니다");
+                    toast.success(TOAST.MEMBERS.MENTOR_MENTEE_MATCH_ADDED);
                   }}
                   createMatch={createMatch}
                 />
@@ -151,11 +152,11 @@ export function MentorMenteeSection({
                     canManage={canManage}
                     onComplete={() => {
                       completeMatch(match.id);
-                      toast.success("매칭이 완료 처리되었습니다");
+                      toast.success(TOAST.MEMBERS.MENTOR_MENTEE_COMPLETED);
                     }}
                     onDelete={() => {
                       deleteMatch(match.id);
-                      toast.success("매칭이 삭제되었습니다");
+                      toast.success(TOAST.MEMBERS.MENTOR_MENTEE_DELETED);
                     }}
                   />
                 ))}
@@ -184,7 +185,7 @@ export function MentorMenteeSection({
                         onComplete={undefined}
                         onDelete={() => {
                           deleteMatch(match.id);
-                          toast.success("매칭이 삭제되었습니다");
+                          toast.success(TOAST.MEMBERS.MENTOR_MENTEE_DELETED);
                         }}
                       />
                     ))}
@@ -366,10 +367,10 @@ function MatchCreateForm({
   const handleSubmit = () => {
     if (!canSubmit) {
       if (mentorId === menteeId) {
-        toast.error("멘토와 멘티를 다른 멤버로 선택하세요");
+        toast.error(TOAST.MEMBERS.MENTOR_MENTEE_SAME_PERSON);
         return;
       }
-      toast.error("모든 항목을 선택하세요");
+      toast.error(TOAST.MEMBERS.MENTOR_MENTEE_ALL_REQUIRED);
       return;
     }
 

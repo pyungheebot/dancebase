@@ -6,6 +6,7 @@ import { useContactVerification } from "@/hooks/use-contact-verification";
 import { invalidateContactVerification } from "@/lib/swr/invalidate";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { CheckCircle2, PhoneCall, X } from "lucide-react";
 
 type ContactVerifyBannerProps = {
@@ -45,11 +46,11 @@ export function ContactVerifyBanner({ groupId, currentUserId }: ContactVerifyBan
     setConfirming(false);
 
     if (error) {
-      toast.error("연락처 확인에 실패했습니다");
+      toast.error(TOAST.MEMBERS.CONTACT_VERIFY_ERROR);
       return;
     }
 
-    toast.success("연락처가 확인되었습니다");
+    toast.success(TOAST.MEMBERS.CONTACT_VERIFY_SUCCESS);
     invalidateContactVerification(groupId);
     refetch();
   };

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { StickyNote, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMemberNotes } from "@/hooks/use-member-notes";
 import type { MemberNoteCategory, MemberNoteV2 } from "@/types";
 import { formatYearMonthDay } from "@/lib/date-utils";
@@ -81,12 +82,12 @@ function NoteItem({ note, onUpdate, onDelete }: NoteItemProps) {
   const handleSave = () => {
     const trimmed = draft.trim();
     if (!trimmed) {
-      toast.error("메모 내용을 입력해주세요");
+      toast.error(TOAST.MEMBERS.NOTE_CONTENT_REQUIRED);
       return;
     }
     onUpdate(note.id, trimmed, draftCategory);
     setEditing(false);
-    toast.success("메모가 수정되었습니다");
+    toast.success(TOAST.MEMBERS.NOTE_UPDATED);
   };
 
   const handleCancel = () => {
@@ -97,7 +98,7 @@ function NoteItem({ note, onUpdate, onDelete }: NoteItemProps) {
 
   const handleDelete = () => {
     onDelete(note.id);
-    toast.success("메모가 삭제되었습니다");
+    toast.success(TOAST.MEMBERS.NOTE_DELETED);
   };
 
   if (editing) {
@@ -220,14 +221,14 @@ export function MemberNotesSheet({
   const handleAdd = () => {
     const trimmed = newContent.trim();
     if (!trimmed) {
-      toast.error("메모 내용을 입력해주세요");
+      toast.error(TOAST.MEMBERS.NOTE_CONTENT_REQUIRED);
       return;
     }
     addNote(targetUserId, trimmed, newCategory);
     setNewContent("");
     setNewCategory("general");
     setComposing(false);
-    toast.success("메모가 추가되었습니다");
+    toast.success(TOAST.MEMBERS.NOTE_ADDED);
   };
 
   const handleCancelCompose = () => {

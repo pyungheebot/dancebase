@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MemberFilterPreset,
   MemberFilterCondition,
@@ -93,23 +94,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadPresetsFromStorage(groupId: string): MemberFilterPreset[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MemberFilterPreset[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<MemberFilterPreset[]>(getStorageKey(groupId), []);
 }
 
 function savePresetsToStorage(groupId: string, presets: MemberFilterPreset[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(presets));
-  } catch {
-    // 무시
-  }
+  saveToStorage(getStorageKey(groupId), presets);
 }
 
 // ============================================

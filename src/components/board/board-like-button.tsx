@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useBoardPostLikes } from "@/hooks/use-board";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import type { BoardPostLike } from "@/types";
 import { createNotification } from "@/lib/notifications";
@@ -23,7 +24,7 @@ export function BoardLikeButton({ postId, postAuthorId }: BoardLikeButtonProps) 
 
   const handleToggle = async () => {
     if (!user) {
-      toast.error("로그인이 필요합니다");
+      toast.error(TOAST.BOARD.LIKE_LOGIN_REQUIRED);
       return;
     }
     if (toggling) return;
@@ -88,7 +89,7 @@ export function BoardLikeButton({ postId, postAuthorId }: BoardLikeButtonProps) 
     } catch {
       // 롤백
       mutate();
-      toast.error("좋아요 처리에 실패했습니다");
+      toast.error(TOAST.BOARD.LIKE_ERROR);
     } finally {
       setToggling(false);
     }

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import { LeadershipCandidate } from "@/types";
 
 const STORAGE_KEY_PREFIX = "dancebase:leadership-dismissed";
@@ -12,19 +13,11 @@ function getDismissedKey(groupId: string) {
 }
 
 function loadDismissed(groupId: string): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getDismissedKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as string[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<string[]>(getDismissedKey(groupId), []);
 }
 
 function saveDismissed(groupId: string, dismissed: string[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getDismissedKey(groupId), JSON.stringify(dismissed));
+  saveToStorage(getDismissedKey(groupId), dismissed);
 }
 
 export function useLeadershipCandidates(groupId: string) {

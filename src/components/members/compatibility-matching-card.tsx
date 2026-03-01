@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Card,
   CardContent,
@@ -257,7 +258,7 @@ function ProfileDialog({
 
   function handleSave() {
     if (!selectedMember) {
-      toast.error("멤버를 선택해 주세요");
+      toast.error(TOAST.MEMBERS.PARTNER_MEMBER_REQUIRED);
       return;
     }
     onSave(selectedMember, dims);

@@ -85,6 +85,7 @@ import { FinanceExportButton } from "@/components/finance/finance-export-button"
 import { exportToCsv } from "@/lib/export/csv-exporter";
 import { Pencil, Trash2, Download, Search, X, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { format } from "date-fns";
 import { useEntitySettings } from "@/hooks/use-entity-settings";
 import type { EntityContext } from "@/types/entity-context";
@@ -179,7 +180,7 @@ export function FinanceContent({
     const day = parseInt(dayStr, 10);
     const { error } = await saveDueDate({ day });
     if (error) {
-      toast.error("납부 기한 저장에 실패했습니다");
+      toast.error(TOAST.FINANCE.DEADLINE_SAVE_ERROR);
     } else {
       toast.success(
         day === 0 ? "납부 기한이 해제되었습니다" : `납부 기한이 매월 ${day}일로 설정되었습니다`
@@ -318,9 +319,9 @@ export function FinanceContent({
       .delete()
       .eq("id", deleteTargetId);
     if (error) {
-      toast.error("거래 삭제에 실패했습니다");
+      toast.error(TOAST.FINANCE.TRANSACTION_DELETE_ERROR);
     } else {
-      toast.success("거래가 삭제되었습니다");
+      toast.success(TOAST.FINANCE.TRANSACTION_DELETED);
       refetch();
     }
     setDeleteTargetId(null);

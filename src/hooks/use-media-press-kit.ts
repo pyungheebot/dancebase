@@ -5,6 +5,7 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MediaPressKitEntry,
   MediaPressKitOutlet,
@@ -21,28 +22,14 @@ function getStorageKey(groupId: string, projectId: string): string {
 }
 
 function loadSheet(groupId: string, projectId: string): MediaPressKitSheet {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    if (raw) return JSON.parse(raw) as MediaPressKitSheet;
-  } catch {
-    // 파싱 실패 시 빈 시트 반환
-  }
-  return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
+  return loadFromStorage<MediaPressKitSheet>(
+    getStorageKey(groupId, projectId),
+    { groupId, projectId, entries: [], updatedAt: new Date().toISOString() }
+  );
 }
 
 function saveSheet(sheet: MediaPressKitSheet): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      getStorageKey(sheet.groupId, sheet.projectId),
-      JSON.stringify(sheet)
-    );
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
+  saveToStorage(getStorageKey(sheet.groupId, sheet.projectId), sheet);
 }
 
 // ============================================================
