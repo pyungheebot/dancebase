@@ -423,7 +423,7 @@ function RuleItem({
   };
 
   return (
-    <div className="border rounded-lg p-3 space-y-1.5 bg-white">
+    <div className="border rounded-lg p-3 space-y-1.5 bg-card">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
           <Badge className={`text-[10px] px-1.5 py-0 border ${meta.badgeCls}`}>
@@ -471,7 +471,7 @@ function RecordItem({
   };
 
   return (
-    <div className="border rounded-lg p-3 bg-white">
+    <div className="border rounded-lg p-3 bg-card">
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1 flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -627,7 +627,7 @@ export function GroupPenaltyCard({ groupId }: { groupId: string }) {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="border rounded-xl bg-white shadow-sm">
+      <div className="border rounded-xl bg-card shadow-sm">
         {/* 카드 헤더 */}
         <CollapsibleTrigger asChild>
           <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-t-xl transition-colors">

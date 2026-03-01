@@ -300,7 +300,7 @@ export function TicketSalesCard({ projectId }: { projectId: string }) {
 
   if (loading) {
     return (
-      <div className="border rounded-lg p-3 bg-white animate-pulse">
+      <div className="border rounded-lg p-3 bg-card animate-pulse">
         <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
         <div className="h-3 w-48 bg-gray-100 rounded" />
       </div>
@@ -308,7 +308,7 @@ export function TicketSalesCard({ projectId }: { projectId: string }) {
   }
 
   return (
-    <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
+    <div className="border rounded-lg bg-card shadow-sm overflow-hidden">
       {/* 헤더 */}
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>

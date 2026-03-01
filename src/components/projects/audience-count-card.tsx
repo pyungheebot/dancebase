@@ -173,7 +173,7 @@ function RecordRow({
     record.byType.staff;
 
   return (
-    <div className="rounded-lg border border-gray-100 bg-white p-3 space-y-2">
+    <div className="rounded-lg border border-gray-100 bg-card p-3 space-y-2">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">

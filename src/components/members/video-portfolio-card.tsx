@@ -297,7 +297,7 @@ function EntryItem({ entry, onEdit, onDelete }: EntryItemProps) {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   return (
-    <div className="border rounded-md p-3 space-y-2 bg-white hover:bg-gray-50 transition-colors">
+    <div className="border rounded-md p-3 space-y-2 bg-card hover:bg-muted/30 transition-colors">
       {/* 상단: 제목 + 배지 */}
       <div className="flex items-start gap-2">
         {/* 썸네일 */}

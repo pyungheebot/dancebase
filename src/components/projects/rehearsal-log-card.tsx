@@ -526,7 +526,7 @@ function EntryRow({
 
           {/* 메모 */}
           {entry.note && (
-            <p className="text-[11px] text-muted-foreground bg-white border rounded px-2 py-1.5 leading-relaxed">
+            <p className="text-[11px] text-muted-foreground bg-muted/30 border rounded px-2 py-1.5 leading-relaxed">
               {entry.note}
             </p>
           )}

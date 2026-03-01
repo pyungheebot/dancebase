@@ -175,7 +175,7 @@ function AddBlockForm({ routineId, onAdd, onClose }: AddBlockFormProps) {
               className={`rounded-full px-2 py-0.5 text-[10px] font-medium border transition-all ${
                 isSelected
                   ? `${colors.bg} ${colors.text} ${colors.border}`
-                  : "bg-white text-gray-400 border-gray-200 hover:border-gray-300"
+                  : "bg-background text-gray-400 border-gray-200 hover:border-gray-300"
               }`}
             >
               {BLOCK_TYPE_LABELS[type]}
@@ -338,7 +338,7 @@ function RoutineEditor({
   };
 
   return (
-    <div className="rounded-b-lg border-x border-b border-gray-200 bg-white p-3">
+    <div className="rounded-b-lg border-x border-b border-gray-200 bg-card p-3">
       {/* 블록 목록 */}
       {routine.blocks.length === 0 ? (
         <p className="py-4 text-center text-[11px] text-gray-400">
@@ -451,7 +451,7 @@ function RoutineListItem({
     <div className="rounded-lg border border-gray-200 overflow-hidden">
       {/* 루틴 헤더 */}
       <div
-        className={`flex items-center gap-2 px-3 py-2 bg-white cursor-pointer hover:bg-gray-50 transition-colors ${
+        className={`flex items-center gap-2 px-3 py-2 bg-card cursor-pointer hover:bg-muted/30 transition-colors ${
           isEditing ? "border-b border-gray-100" : ""
         }`}
         onClick={onToggleEdit}
@@ -631,7 +631,7 @@ export function RoutineBuilderCard({ groupId }: RoutineBuilderCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 카드 헤더 */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Pencil className="h-4 w-4 text-indigo-500" />
           <span className="text-sm font-semibold text-gray-800">연습 루틴 빌더</span>
@@ -659,7 +659,7 @@ export function RoutineBuilderCard({ groupId }: RoutineBuilderCardProps) {
 
       {/* 카드 본문 */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-t-0 border-gray-200 bg-white p-4">
+        <div className="rounded-b-lg border border-t-0 border-gray-200 bg-card p-4">
           {/* 루틴 목록 */}
           {routines.length === 0 && !showCreateForm ? (
             <div className="py-6 text-center">

@@ -180,7 +180,7 @@ function TaskCard({ task, onEdit, onDelete, onStatusChange }: TaskCardProps) {
     new Date(task.dueDate) < new Date(new Date().toDateString());
 
   return (
-    <div className="bg-white rounded-md border border-gray-100 p-2.5 shadow-sm space-y-1.5">
+    <div className="bg-card rounded-md border border-gray-100 p-2.5 shadow-sm space-y-1.5">
       {/* 채널 배지 + 상태 아이콘 */}
       <div className="flex items-center justify-between gap-1">
         <Badge
@@ -786,7 +786,7 @@ export function MarketingCampaignCard({ projectId }: MarketingCampaignCardProps)
                       >
                         {STATUS_LABELS[status]}
                       </span>
-                      <span className="text-[10px] text-gray-400 bg-white rounded-full px-1.5 py-0.5 border">
+                      <span className="text-[10px] text-gray-400 bg-background rounded-full px-1.5 py-0.5 border">
                         {tasks.length}
                       </span>
                     </div>

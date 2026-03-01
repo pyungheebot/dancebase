@@ -583,7 +583,7 @@ function StageView({
             {/* 수정/삭제 버튼 (항상 보임 on hover) */}
             <div className="absolute -top-2 -right-2 hidden group-hover:flex gap-0.5 pointer-events-auto">
               <button
-                className="w-4 h-4 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-sm hover:bg-blue-50"
+                className="w-4 h-4 bg-background border border-gray-300 rounded-full flex items-center justify-center shadow-sm hover:bg-blue-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEditPosition(pos);
@@ -593,7 +593,7 @@ function StageView({
                 <Pencil className="h-2 w-2 text-blue-600" />
               </button>
               <button
-                className="w-4 h-4 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-sm hover:bg-red-50"
+                className="w-4 h-4 bg-background border border-gray-300 rounded-full flex items-center justify-center shadow-sm hover:bg-red-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   onRemovePosition(pos.id);

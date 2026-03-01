@@ -509,7 +509,7 @@ function OverlapPanel({
                               </span>
                               <Badge
                                 variant="outline"
-                                className="text-[10px] px-1 py-0 bg-white/60 border-green-300 text-green-700"
+                                className="text-[10px] px-1 py-0 bg-card/60 border-green-300 text-green-700"
                               >
                                 {totalCount}명
                               </Badge>

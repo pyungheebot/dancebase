@@ -126,14 +126,14 @@ function CelebrationSection({
           value={fromName}
           onChange={(e) => setFromName(e.target.value.slice(0, 15))}
           placeholder="이름"
-          className="w-20 shrink-0 rounded border border-gray-200 bg-white px-1.5 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-300"
+          className="w-20 shrink-0 rounded border border-gray-200 bg-background px-1.5 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-300"
         />
         <input
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value.slice(0, 60))}
           placeholder="축하 메시지 입력"
-          className="flex-1 rounded border border-gray-200 bg-white px-1.5 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-300"
+          className="flex-1 rounded border border-gray-200 bg-background px-1.5 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-300"
           onKeyDown={(e) => {
             if (e.key === "Enter") handleAdd();
           }}
@@ -175,7 +175,7 @@ function BirthdayItem({
       className={`rounded-lg border p-3 ${
         isToday
           ? "border-pink-300 bg-pink-50"
-          : "border-gray-200 bg-white"
+          : "border-gray-200 bg-card"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -562,7 +562,7 @@ export function MemberBirthdayCard({ groupId }: MemberBirthdayCardProps) {
     <>
       <Collapsible open={open} onOpenChange={setOpen}>
         {/* 헤더 */}
-        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
           <div className="flex items-center gap-2">
             <Cake className="h-4 w-4 text-pink-500" />
             <span className="text-sm font-semibold text-gray-800">
@@ -604,7 +604,7 @@ export function MemberBirthdayCard({ groupId }: MemberBirthdayCardProps) {
 
         {/* 본문 */}
         <CollapsibleContent>
-          <div className="rounded-b-lg border border-gray-200 bg-white p-4">
+          <div className="rounded-b-lg border border-gray-200 bg-card p-4">
             {/* 로딩 */}
             {loading && (
               <div className="py-6 text-center text-xs text-gray-400">

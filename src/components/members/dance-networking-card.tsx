@@ -461,7 +461,7 @@ function EntryCard({
 
   return (
     <Collapsible open={expanded} onOpenChange={setExpanded}>
-      <div className="border rounded-md bg-white overflow-hidden">
+      <div className="border rounded-md bg-card overflow-hidden">
         {/* 헤더 행 */}
         <div className="flex items-center gap-2 px-3 py-2">
           {/* 즐겨찾기 버튼 */}
@@ -736,7 +736,7 @@ export function DanceNetworkingCard({ memberId }: { memberId: string }) {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         {/* 헤더 */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
           <div className="flex items-center gap-2">

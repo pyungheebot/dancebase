@@ -467,7 +467,7 @@ export function GroupTimelineCard({ groupId }: { groupId: string }) {
   return (
     <>
       <Collapsible open={open} onOpenChange={setOpen}>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-gray-200 bg-card shadow-sm overflow-hidden">
           {/* 헤더 */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <div className="flex items-center gap-2">
@@ -529,7 +529,7 @@ export function GroupTimelineCard({ groupId }: { groupId: string }) {
                       className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                         filterCategory === c
                           ? "bg-indigo-600 text-white border-indigo-600"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                          : "bg-background text-gray-600 border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       {c}

@@ -350,7 +350,7 @@ function EntryCard({ entry, prevEntry, onEdit, onDelete }: EntryCardProps) {
   const delta = prevLevel !== null ? level - prevLevel : null;
 
   return (
-    <div className="rounded-lg border bg-white p-3 space-y-2">
+    <div className="rounded-lg border bg-card p-3 space-y-2">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
@@ -456,19 +456,19 @@ function StatsPanel({ stats }: { stats: GrowthJournalStats }) {
 
       {/* 요약 수치 */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-lg bg-white border p-2 text-center">
+        <div className="rounded-lg bg-card border p-2 text-center">
           <div className="text-base font-bold text-blue-600">
             {stats.totalEntries}
           </div>
           <div className="text-[10px] text-muted-foreground">총 일지</div>
         </div>
-        <div className="rounded-lg bg-white border p-2 text-center">
+        <div className="rounded-lg bg-card border p-2 text-center">
           <div className="text-base font-bold text-yellow-500">
             {stats.overallAvgLevel > 0 ? stats.overallAvgLevel : "-"}
           </div>
           <div className="text-[10px] text-muted-foreground">평균 성장도</div>
         </div>
-        <div className="rounded-lg bg-white border p-2 text-center">
+        <div className="rounded-lg bg-card border p-2 text-center">
           <div className="text-base font-bold text-purple-600">
             {stats.memberEntryCount.length}
           </div>
@@ -519,7 +519,7 @@ function StatsPanel({ stats }: { stats: GrowthJournalStats }) {
             {stats.memberEntryCount.map(({ memberName, count }) => (
               <div
                 key={memberName}
-                className="flex items-center gap-1 rounded-full bg-white border px-2 py-0.5"
+                className="flex items-center gap-1 rounded-full bg-card border px-2 py-0.5"
               >
                 <User className="h-2.5 w-2.5 text-muted-foreground" />
                 <span className="text-[10px]">

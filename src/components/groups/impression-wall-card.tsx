@@ -207,7 +207,7 @@ function WriteDialog({ hook }: WriteDialogProps) {
                     className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                       selected
                         ? `${meta.bg} ${meta.border} ${meta.text} font-semibold`
-                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                        : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     <span>{meta.emoji}</span>
@@ -305,7 +305,7 @@ function PostCard({ post, onLike, onDelete }: PostCardProps) {
         <button
           type="button"
           onClick={() => onLike(post.id)}
-          className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] text-gray-400 transition-colors hover:bg-white/60 hover:text-pink-500"
+          className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] text-gray-400 transition-colors hover:bg-card/60 hover:text-pink-500"
           title="좋아요"
         >
           <Heart className="h-3 w-3" />
@@ -438,7 +438,7 @@ export function ImpressionWallCard({ groupId }: ImpressionWallCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <MessageSquareHeart className="h-4 w-4 text-pink-500" />
           <span className="text-sm font-semibold text-gray-800">소감 벽</span>
@@ -474,7 +474,7 @@ export function ImpressionWallCard({ groupId }: ImpressionWallCardProps) {
 
       {/* ── 본문 ── */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
 
           {/* 통계 요약 */}
           {hook.totalPosts > 0 && (
@@ -534,7 +534,7 @@ export function ImpressionWallCard({ groupId }: ImpressionWallCardProps) {
                 className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                   activeMood === "all"
                     ? "border-gray-400 bg-gray-800 text-white"
-                    : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                    : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                 }`}
               >
                 전체 {hook.totalPosts}
@@ -551,7 +551,7 @@ export function ImpressionWallCard({ groupId }: ImpressionWallCardProps) {
                     className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                       activeMood === m
                         ? `${meta.bg} ${meta.border} ${meta.text} font-semibold`
-                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                        : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     <span>{meta.emoji}</span>

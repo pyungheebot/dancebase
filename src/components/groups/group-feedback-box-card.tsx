@@ -318,7 +318,7 @@ function FeedbackItem({
   return (
     <div
       className={`border rounded-lg p-3 space-y-2 ${
-        feedback.resolved ? "bg-gray-50 opacity-70" : "bg-white"
+        feedback.resolved ? "bg-gray-50 opacity-70" : "bg-card"
       }`}
     >
       {/* 헤더 */}
@@ -462,7 +462,7 @@ export function GroupFeedbackBoxCard({ groupId }: { groupId: string }) {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="border rounded-xl bg-white shadow-sm">
+      <div className="border rounded-xl bg-card shadow-sm">
         {/* 카드 헤더 */}
         <CollapsibleTrigger asChild>
           <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-t-xl transition-colors">

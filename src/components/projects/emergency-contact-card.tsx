@@ -127,7 +127,7 @@ function ContactRow({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="flex items-start gap-2 p-2.5 rounded-lg border bg-white hover:bg-gray-50 transition-colors">
+    <div className="flex items-start gap-2 p-2.5 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
       {/* 긴급도 배지 */}
       <span
         className={`shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0 rounded ${PRIORITY_COLORS[contact.priority]}`}

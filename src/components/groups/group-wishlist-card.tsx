@@ -283,7 +283,7 @@ function AddItemDialog({ hook }: AddItemDialogProps) {
                     className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                       selected
                         ? `${meta.bg} ${meta.border} ${meta.text} font-semibold`
-                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                        : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     {meta.icon}
@@ -309,7 +309,7 @@ function AddItemDialog({ hook }: AddItemDialogProps) {
                     className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                       selected
                         ? `${meta.badge} border-transparent font-semibold`
-                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                        : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     {meta.label}
@@ -445,7 +445,7 @@ function EditItemDialog({ item, hook, open, onOpenChange }: EditItemDialogProps)
                     className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                       selected
                         ? `${meta.bg} ${meta.border} ${meta.text} font-semibold`
-                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                        : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     {meta.icon}
@@ -470,7 +470,7 @@ function EditItemDialog({ item, hook, open, onOpenChange }: EditItemDialogProps)
                     className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                       selected
                         ? `${meta.badge} border-transparent font-semibold`
-                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                        : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     {meta.label}
@@ -664,7 +664,7 @@ function WishItemCard({ item, hook }: WishItemCardProps) {
               type="button"
               onClick={handleLike}
               disabled={isInactive}
-              className="flex flex-col items-center gap-0.5 rounded-md px-1.5 py-1 text-gray-400 transition-colors hover:bg-white/60 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex flex-col items-center gap-0.5 rounded-md px-1.5 py-1 text-gray-400 transition-colors hover:bg-card/60 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-40"
               title="좋아요"
             >
               <Heart className="h-3 w-3" />
@@ -762,7 +762,7 @@ export function GroupWishlistCard({ groupId }: { groupId: string }) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-violet-500" />
           <span className="text-sm font-semibold text-gray-800">그룹 위시리스트</span>
@@ -794,7 +794,7 @@ export function GroupWishlistCard({ groupId }: { groupId: string }) {
 
       {/* ── 본문 ── */}
       <CollapsibleContent>
-        <div className="space-y-4 rounded-b-lg border border-gray-200 bg-white p-4">
+        <div className="space-y-4 rounded-b-lg border border-gray-200 bg-card p-4">
 
           {/* 통계 요약 */}
           <StatsRow stats={hook.stats} />
@@ -825,7 +825,7 @@ export function GroupWishlistCard({ groupId }: { groupId: string }) {
                     className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                       activeCat === "all"
                         ? "border-gray-400 bg-gray-800 text-white"
-                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                        : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     전체
@@ -842,7 +842,7 @@ export function GroupWishlistCard({ groupId }: { groupId: string }) {
                         className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                           activeCat === cat
                             ? `${meta.bg} ${meta.border} ${meta.text} font-semibold`
-                            : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                            : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                         }`}
                       >
                         {meta.icon}
@@ -864,7 +864,7 @@ export function GroupWishlistCard({ groupId }: { groupId: string }) {
                     className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                       activeStatus === "all"
                         ? "border-gray-400 bg-gray-800 text-white"
-                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                        : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     전체
@@ -881,7 +881,7 @@ export function GroupWishlistCard({ groupId }: { groupId: string }) {
                         className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                           activeStatus === s
                             ? `${meta.badge} border-transparent font-semibold`
-                            : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
+                            : "border-gray-200 bg-background text-gray-500 hover:bg-gray-50"
                         }`}
                       >
                         <span className="inline-flex">{meta.icon}</span>

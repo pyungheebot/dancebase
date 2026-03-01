@@ -377,7 +377,7 @@ function EntryCard({ entry, onEdit, onDelete, onStatusChange }: EntryCardProps) 
 
   return (
     <div
-      className={`rounded-md border border-l-4 bg-white p-3 space-y-2 ${STATUS_CARD_COLORS[entry.status]}`}
+      className={`rounded-md border border-l-4 bg-card p-3 space-y-2 ${STATUS_CARD_COLORS[entry.status]}`}
     >
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">

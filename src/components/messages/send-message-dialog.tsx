@@ -89,6 +89,7 @@ export function SendMessageDialog({
               placeholder="메시지 내용을 입력하세요"
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              maxLength={5000}
               rows={4}
             />
             <Button

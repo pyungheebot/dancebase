@@ -537,7 +537,7 @@ export function SocialCalendarCard({
                         return (
                           <div
                             key={post.id}
-                            className="border rounded-md p-2.5 space-y-1.5 bg-white"
+                            className="border rounded-md p-2.5 space-y-1.5 bg-card"
                           >
                             {/* 상단: 플랫폼 배지 + 제목 + 액션 */}
                             <div className="flex items-start gap-2">

@@ -404,7 +404,7 @@ function PlanItem({ plan, onToggle, onEdit, onDelete }: PlanItemProps) {
       className={`rounded-lg border p-2.5 transition-colors ${
         plan.isCompleted
           ? "bg-gray-50 border-gray-200"
-          : "bg-white border-gray-200"
+          : "bg-card border-gray-200"
       }`}
     >
       {/* 상단 행 */}

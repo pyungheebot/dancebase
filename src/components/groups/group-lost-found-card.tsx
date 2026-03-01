@@ -334,7 +334,7 @@ function LostFoundItemCard({
   };
 
   return (
-    <div className="border rounded-lg p-3 bg-white space-y-2">
+    <div className="border rounded-lg p-3 bg-card space-y-2">
       {/* 헤더 행 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
@@ -413,7 +413,7 @@ function LostFoundItemCard({
               className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                 item.status === s
                   ? STATUS_META[s].badgeCls + " font-semibold"
-                  : "border-gray-200 text-gray-400 hover:border-gray-300 bg-white"
+                  : "border-gray-200 text-gray-400 hover:border-gray-300 bg-background"
               }`}
             >
               {s}
@@ -504,7 +504,7 @@ export function GroupLostFoundCard({ groupId }: { groupId: string }) {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="border rounded-xl bg-white shadow-sm">
+      <div className="border rounded-xl bg-card shadow-sm">
         {/* 카드 헤더 */}
         <CollapsibleTrigger asChild>
           <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-t-xl transition-colors">
@@ -588,7 +588,7 @@ export function GroupLostFoundCard({ groupId }: { groupId: string }) {
                     className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
                       filter === f
                         ? "bg-orange-500 text-white border-orange-500 font-semibold"
-                        : "border-gray-200 text-gray-500 hover:border-gray-300 bg-white"
+                        : "border-gray-200 text-gray-500 hover:border-gray-300 bg-background"
                     }`}
                   >
                     {f}

@@ -152,7 +152,7 @@ export function InviteModal({ inviteCode }: InviteModalProps) {
           {/* QR코드 탭 */}
           <TabsContent value="qr" className="mt-4 space-y-3">
             <div className="flex flex-col items-center gap-3">
-              <div className="border rounded-lg p-3 bg-white">
+              <div className="border rounded-lg p-3 bg-card">
                 <Image
                   src={qrImageUrl}
                   alt="초대 QR코드"

@@ -321,7 +321,7 @@ function GateCard({
       </div>
 
       {/* 카운트 컨트롤 */}
-      <div className="mt-3 flex items-center justify-between rounded-md bg-white/70 px-3 py-2">
+      <div className="mt-3 flex items-center justify-between rounded-md bg-card/70 px-3 py-2">
         <div className="flex items-center gap-1 text-muted-foreground">
           <Users className="h-3.5 w-3.5" />
           <span className="text-xs">입장 인원</span>

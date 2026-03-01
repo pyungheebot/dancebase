@@ -187,7 +187,7 @@ function AddRecordDialog({ memberNames, onAdd }: AddRecordDialogProps) {
                     className={`rounded px-2 py-0.5 text-[11px] font-medium border transition-all ${
                       selectedMembers.includes(name)
                         ? "bg-blue-500 text-white border-blue-500"
-                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
+                        : "bg-background text-gray-600 border-gray-200 hover:bg-gray-100"
                     }`}
                   >
                     {name}
@@ -228,7 +228,7 @@ function AddRecordDialog({ memberNames, onAdd }: AddRecordDialogProps) {
                     className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium border transition-all ${
                       status === s
                         ? `${STATUS_BADGE_CLASS[s]} border-transparent`
-                        : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                        : "bg-background text-gray-500 border-gray-200 hover:bg-gray-50"
                     }`}
                   >
                     {STATUS_ICON[s]}
@@ -593,7 +593,7 @@ export function AttendanceDashboardCard({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         {/* 헤더 */}
         <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b">
           <CollapsibleTrigger asChild>

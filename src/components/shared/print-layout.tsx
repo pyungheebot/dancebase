@@ -61,12 +61,17 @@ export function PrintLayout({
             .${printAreaClass},
             .${printAreaClass} * {
               visibility: visible;
+              color-scheme: light !important;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
             .${printAreaClass} {
               position: absolute;
               left: 0;
               top: 0;
               width: 100%;
+              background-color: #ffffff !important;
+              color: #000000 !important;
             }
             .print\\:hidden {
               display: none !important;

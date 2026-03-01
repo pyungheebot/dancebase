@@ -614,7 +614,7 @@ export function PracticePlaylistCard({ groupId }: PracticePlaylistCardProps) {
     <>
       <Collapsible open={open} onOpenChange={setOpen}>
         {/* 헤더 */}
-        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
           <div className="flex items-center gap-2">
             <ListMusic className="h-4 w-4 text-violet-500" />
             <span className="text-sm font-semibold text-gray-800">
@@ -657,7 +657,7 @@ export function PracticePlaylistCard({ groupId }: PracticePlaylistCardProps) {
 
         {/* 본문 */}
         <CollapsibleContent>
-          <div className="rounded-b-lg border border-gray-200 bg-white p-4">
+          <div className="rounded-b-lg border border-gray-200 bg-card p-4">
             {/* 플레이리스트 없을 때 */}
             {playlists.length === 0 ? (
               <div className="py-6 flex flex-col items-center gap-2 text-muted-foreground">

@@ -137,7 +137,7 @@ function OutletTag({
 }) {
   const typeConf = OUTLET_TYPE_CONFIG[outlet.type];
   return (
-    <div className="flex items-center gap-1 rounded-md border bg-white px-2 py-1">
+    <div className="flex items-center gap-1 rounded-md border bg-card px-2 py-1">
       <button
         onClick={onToggle}
         className="shrink-0"
@@ -191,7 +191,7 @@ function EntryRow({
   const publishedCount = entry.outlets.filter((o) => o.published).length;
 
   return (
-    <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
+    <div className="rounded-lg border border-gray-100 bg-card overflow-hidden">
       {/* 헤더 */}
       <div className="flex items-start gap-2 p-3">
         <button

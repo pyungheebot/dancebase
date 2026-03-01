@@ -192,7 +192,7 @@ function AnniversaryRow({
           ? "border-purple-300 bg-purple-50"
           : isPast
           ? "border-gray-200 bg-gray-50 opacity-60"
-          : "border-gray-200 bg-white"
+          : "border-gray-200 bg-card"
       }`}
     >
       <div className="flex items-center gap-2">
@@ -539,7 +539,7 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="rounded-xl border border-gray-200 bg-card p-4">
         <div className="animate-pulse space-y-2">
           <div className="h-4 bg-gray-100 rounded w-1/3" />
           <div className="h-3 bg-gray-100 rounded w-1/2" />
@@ -550,7 +550,7 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
+    <div className="rounded-xl border border-gray-200 bg-card p-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">

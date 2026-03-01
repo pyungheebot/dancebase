@@ -371,7 +371,7 @@ function AddLogForm({ routines, onAdd, onClose }: AddLogFormProps) {
       {selectedRoutine && selectedRoutine.exercises.length > 0 && (
         <div className="space-y-1">
           <Label className="text-xs">완료한 운동</Label>
-          <div className="space-y-1 rounded-md border border-violet-100 bg-white p-2">
+          <div className="space-y-1 rounded-md border border-violet-100 bg-card p-2">
             {selectedRoutine.exercises.map((ex) => {
               const checked = completedExercises.includes(ex.id);
               return (
@@ -709,7 +709,7 @@ export function StretchingRoutineCard({ memberId }: { memberId: string }) {
             <button
               className={`flex-1 rounded py-1 text-xs font-medium transition-colors ${
                 activeTab === "routines"
-                  ? "bg-white shadow-sm text-teal-700"
+                  ? "bg-background shadow-sm text-teal-700"
                   : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setActiveTab("routines")}
@@ -720,7 +720,7 @@ export function StretchingRoutineCard({ memberId }: { memberId: string }) {
             <button
               className={`flex-1 rounded py-1 text-xs font-medium transition-colors ${
                 activeTab === "logs"
-                  ? "bg-white shadow-sm text-violet-700"
+                  ? "bg-background shadow-sm text-violet-700"
                   : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setActiveTab("logs")}

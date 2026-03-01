@@ -463,7 +463,7 @@ function QuizPlayArea({
       </div>
 
       {/* 문제 */}
-      <div className="rounded bg-white border p-2.5 space-y-0.5">
+      <div className="rounded bg-card border p-2.5 space-y-0.5">
         <p className="text-[10px] text-muted-foreground">
           {currentQ.aboutMember}님에 관한 문제
         </p>
@@ -482,14 +482,14 @@ function QuizPlayArea({
             disabled={selected !== null}
             className={`rounded border px-2 py-2 text-xs text-left transition-colors leading-tight ${
               selected === null
-                ? "bg-white hover:bg-purple-100 hover:border-purple-400 border-border"
+                ? "bg-background hover:bg-purple-100 hover:border-purple-400 border-border"
                 : selected === idx
                 ? idx === currentQ.correctIndex
                   ? "bg-green-100 border-green-500 text-green-700"
                   : "bg-red-100 border-red-400 text-red-600"
                 : idx === currentQ.correctIndex
                 ? "bg-green-50 border-green-400 text-green-600"
-                : "bg-white border-border text-muted-foreground opacity-60"
+                : "bg-background border-border text-muted-foreground opacity-60"
             }`}
           >
             <span className="font-bold mr-1">{idx + 1}.</span>

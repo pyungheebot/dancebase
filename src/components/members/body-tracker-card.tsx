@@ -302,7 +302,7 @@ function EntryItem({ entry, onEdit, onDelete }: EntryItemProps) {
     });
 
   return (
-    <div className="rounded-lg border p-2.5 bg-white space-y-1.5">
+    <div className="rounded-lg border p-2.5 bg-card space-y-1.5">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-gray-800">
           {formatYearMonthDay(entry.date)}

@@ -466,7 +466,7 @@ export function SharedLibraryCard({ groupId }: { groupId: string }) {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-lg border border-gray-200 bg-card shadow-sm">
         {/* 헤더 */}
         <div className="flex items-center justify-between px-4 py-3">
           <CollapsibleTrigger asChild>

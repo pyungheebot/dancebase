@@ -417,7 +417,7 @@ function IssueRow({ issue, onToggle, onEdit, onDelete }: IssueRowProps) {
       className={`flex items-start gap-2 p-2 rounded-lg border text-xs transition-colors ${
         issue.resolved
           ? "bg-green-50 border-green-100"
-          : "bg-white border-gray-100"
+          : "bg-card border-gray-100"
       }`}
     >
       {/* 해결 토글 버튼 */}
@@ -623,7 +623,7 @@ function SessionSection({
                   className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                     filterResolved === "all"
                       ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                      : "bg-background text-gray-500 border-gray-200 hover:border-gray-400"
                   }`}
                 >
                   전체 {totalCount}
@@ -633,7 +633,7 @@ function SessionSection({
                   className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                     filterResolved === "unresolved"
                       ? "bg-red-500 text-white border-red-500"
-                      : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                      : "bg-background text-gray-500 border-gray-200 hover:border-gray-400"
                   }`}
                 >
                   미해결 {totalCount - resolvedCount}
@@ -643,7 +643,7 @@ function SessionSection({
                   className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                     filterResolved === "resolved"
                       ? "bg-green-500 text-white border-green-500"
-                      : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                      : "bg-background text-gray-500 border-gray-200 hover:border-gray-400"
                   }`}
                 >
                   해결 {resolvedCount}

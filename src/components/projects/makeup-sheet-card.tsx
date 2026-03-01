@@ -426,7 +426,7 @@ function AreaSection({
           {sorted.map((product) => (
             <div
               key={product.id}
-              className="flex items-start gap-2 bg-white/70 rounded px-2 py-1.5 group"
+              className="flex items-start gap-2 bg-card/70 rounded px-2 py-1.5 group"
             >
               {/* 색상 칩 */}
               <div className="flex-shrink-0 mt-0.5">

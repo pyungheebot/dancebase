@@ -184,7 +184,7 @@ function EntryCard({ entry, onEdit, onDelete }: EntryCardProps) {
           ? "border-red-300 bg-red-50"
           : isImportant
           ? "border-yellow-300 bg-yellow-50"
-          : "border-gray-200 bg-white"
+          : "border-gray-200 bg-card"
       }`}
     >
       {/* 헤더 행 */}

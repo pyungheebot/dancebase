@@ -73,7 +73,7 @@ function AnswerItem({
       className={`rounded-lg border p-3 ${
         answer.isAccepted
           ? "border-green-400 bg-green-50"
-          : "border-gray-200 bg-white"
+          : "border-gray-200 bg-card"
       }`}
     >
       {/* 채택 표시 */}
@@ -199,7 +199,7 @@ function QuestionItem({
     <Collapsible open={expanded} onOpenChange={setExpanded}>
       {/* 질문 헤더 */}
       <CollapsibleTrigger asChild>
-        <div className="flex cursor-pointer items-start gap-2 rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:bg-gray-50">
+        <div className="flex cursor-pointer items-start gap-2 rounded-lg border border-gray-200 bg-card p-3 transition-colors hover:bg-gray-50">
           <div className="flex-1 min-w-0">
             {/* 배지 행 */}
             <div className="mb-1 flex flex-wrap items-center gap-1">
@@ -399,7 +399,7 @@ function AddQuestionForm({
               className={`rounded-full px-2 py-0.5 text-[10px] font-medium border transition-all ${
                 category === cat
                   ? CATEGORY_COLORS[cat] + " border-transparent"
-                  : "bg-white text-gray-400 border-gray-200 hover:border-gray-300"
+                  : "bg-background text-gray-400 border-gray-200 hover:border-gray-300"
               }`}
             >
               {cat}
@@ -490,7 +490,7 @@ export function QnaBoardCard({ groupId }: QnaBoardCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <HelpCircle className="h-4 w-4 text-cyan-500" />
           <span className="text-sm font-semibold text-gray-800">Q&A 보드</span>
@@ -523,7 +523,7 @@ export function QnaBoardCard({ groupId }: QnaBoardCardProps) {
 
       {/* 본문 */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4">
           {/* 검색 */}
           <div className="relative mb-3">
             <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
@@ -548,7 +548,7 @@ export function QnaBoardCard({ groupId }: QnaBoardCardProps) {
                     ? cat === "전체"
                       ? "bg-gray-800 text-white border-gray-800"
                       : CATEGORY_COLORS[cat] + " border-transparent"
-                    : "bg-white text-gray-400 border-gray-200 hover:border-gray-300"
+                    : "bg-background text-gray-400 border-gray-200 hover:border-gray-300"
                 }`}
               >
                 {cat}
@@ -573,7 +573,7 @@ export function QnaBoardCard({ groupId }: QnaBoardCardProps) {
                       : value === "answered"
                       ? "bg-blue-200 text-blue-800 border-blue-400"
                       : "bg-green-200 text-green-800 border-green-400"
-                    : "bg-white text-gray-400 border-gray-200 hover:border-gray-300"
+                    : "bg-background text-gray-400 border-gray-200 hover:border-gray-300"
                 }`}
               >
                 {label}

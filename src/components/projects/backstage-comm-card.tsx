@@ -160,7 +160,7 @@ function MessageRow({
           ? "bg-red-50 border-red-200"
           : msg.isPinned
           ? "bg-yellow-50 border-yellow-200"
-          : "bg-white border-gray-100"
+          : "bg-card border-gray-100"
       }`}
     >
       {/* 상단 행 */}

@@ -767,7 +767,7 @@ export function ReadReceiptCard({
                   className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
                     activeTab === tab.key
                       ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                      : "bg-background text-gray-600 border-gray-200 hover:bg-gray-50"
                   }`}
                 >
                   {tab.label}

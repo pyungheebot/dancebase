@@ -195,7 +195,7 @@ function LetterRow({
   const typeConf = SPONSOR_TYPE_CONFIG[entry.sponsorType];
 
   return (
-    <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
+    <div className="rounded-lg border border-gray-100 bg-card overflow-hidden">
       {/* 헤더 */}
       <div className="flex items-start gap-2 p-3">
         <button

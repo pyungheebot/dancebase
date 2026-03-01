@@ -446,7 +446,7 @@ export function TechRequirementsCard({
                             <span className="text-xs font-semibold">
                               {CATEGORY_LABELS[cat]}
                             </span>
-                            <Badge className="text-[9px] px-1 py-0 bg-white/70 text-gray-700 border border-gray-300">
+                            <Badge className="text-[9px] px-1 py-0 bg-background/70 text-gray-700 border border-gray-300">
                               {catItems.length}
                             </Badge>
                             <span className="text-[10px] text-muted-foreground">

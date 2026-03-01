@@ -160,7 +160,7 @@ function AddSponsorForm({ onAdd, onClose }: AddSponsorFormProps) {
         <select
           value={type}
           onChange={(e) => setType(e.target.value as SponsorType)}
-          className="flex-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
+          className="flex-1 rounded-md border border-gray-200 bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
           title="스폰서 유형"
         >
           {(Object.keys(SPONSOR_TYPE_LABELS) as SponsorType[]).map((t) => (
@@ -170,7 +170,7 @@ function AddSponsorForm({ onAdd, onClose }: AddSponsorFormProps) {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as SponsorStatus)}
-          className="flex-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
+          className="flex-1 rounded-md border border-gray-200 bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
           title="계약 상태"
         >
           {(Object.keys(SPONSOR_STATUS_LABELS) as SponsorStatus[]).map((s) => (
@@ -294,7 +294,7 @@ interface SponsorRowProps {
 
 function SponsorRow({ sponsor, onDelete, onChangeStatus }: SponsorRowProps) {
   return (
-    <div className="rounded-md border border-gray-100 bg-white px-3 py-2 space-y-1">
+    <div className="rounded-md border border-gray-100 bg-background px-3 py-2 space-y-1">
       {/* 상단: 이름 + 배지 + 삭제 */}
       <div className="flex items-start gap-2">
         <span className={`mt-0.5 shrink-0 ${SPONSOR_TYPE_COLORS[sponsor.type].split(" ")[1]}`}>
@@ -480,7 +480,7 @@ export function EventSponsorshipCard({ groupId }: EventSponsorshipCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Handshake className="h-4 w-4 text-indigo-500" />
           <span className="text-sm font-semibold text-gray-800">스폰서/협력사</span>
@@ -520,7 +520,7 @@ export function EventSponsorshipCard({ groupId }: EventSponsorshipCardProps) {
 
       {/* 본문 */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           {/* 통계 요약 */}
           <StatsSummary
             totalCount={totalCount}
@@ -566,7 +566,7 @@ export function EventSponsorshipCard({ groupId }: EventSponsorshipCardProps) {
                 onClick={() => setActiveTab(tab.value)}
                 className={`shrink-0 rounded-md px-2.5 py-1 text-[10px] font-medium transition-colors ${
                   activeTab === tab.value
-                    ? "bg-white text-gray-800 shadow-sm"
+                    ? "bg-background text-gray-800 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >

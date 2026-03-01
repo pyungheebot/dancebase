@@ -158,7 +158,7 @@ function RideCard({
     ride.status === "open" && ride.passengers.length < ride.totalSeats;
 
   return (
-    <div className="border border-gray-100 rounded-lg p-3 bg-white shadow-sm">
+    <div className="border border-gray-100 rounded-lg p-3 bg-card shadow-sm">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
@@ -629,7 +629,7 @@ export function CarpoolManagementCard({
   return (
     <>
       <Collapsible open={open} onOpenChange={setOpen}>
-        <div className="border border-gray-200 rounded-xl bg-white shadow-sm">
+        <div className="border border-gray-200 rounded-xl bg-card shadow-sm">
           {/* 헤더 */}
           <CollapsibleTrigger asChild>
             <button className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 rounded-xl transition-colors">

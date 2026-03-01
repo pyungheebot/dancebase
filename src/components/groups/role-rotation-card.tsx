@@ -395,7 +395,7 @@ function CurrentWeekSection({ hook }: CurrentWeekSectionProps) {
               className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 transition-colors ${
                 a.completed
                   ? "border-emerald-200 bg-emerald-50"
-                  : "border-gray-100 bg-white"
+                  : "border-gray-200 bg-card"
               }`}
             >
               {/* 이모지 */}
@@ -602,7 +602,7 @@ function HistoryPanel({ hook }: HistoryPanelProps) {
       </CollapsibleTrigger>
 
       <CollapsibleContent>
-        <div className="mt-2 rounded-md border border-gray-100 bg-white p-3">
+        <div className="mt-2 rounded-md border border-gray-100 bg-card p-3">
           <HistorySection hook={hook} />
         </div>
       </CollapsibleContent>
@@ -626,7 +626,7 @@ export function RoleRotationCard({ groupId }: RoleRotationCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <RefreshCw className="h-4 w-4 text-indigo-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -673,7 +673,7 @@ export function RoleRotationCard({ groupId }: RoleRotationCardProps) {
 
       {/* ── 본문 ── */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           {/* 이번 주 배정 */}
           <CurrentWeekSection hook={hook} />
 

@@ -119,7 +119,7 @@ function SlotForm({ initialDay, onSubmit, onClose, conflictSlot }: SlotFormProps
             className={`flex-1 rounded py-1 text-[11px] font-medium transition-colors ${
               day === d.key
                 ? "bg-gray-800 text-white"
-                : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-100"
+                : "bg-card border border-gray-200 text-gray-500 hover:bg-gray-100"
             }`}
           >
             {d.label}
@@ -156,7 +156,7 @@ function SlotForm({ initialDay, onSubmit, onClose, conflictSlot }: SlotFormProps
             className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition-colors ${
               type === t
                 ? "text-white"
-                : "bg-white border border-gray-200 text-gray-500 hover:bg-gray-100"
+                : "bg-card border border-gray-200 text-gray-500 hover:bg-gray-100"
             }`}
             style={type === t ? { backgroundColor: SLOT_TYPE_COLORS[t] } : {}}
           >
@@ -357,7 +357,7 @@ export function WeeklyTimetableCard({ groupId }: WeeklyTimetableCardProps) {
 
       {/* 본문 */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           {/* 슬롯 추가 폼 */}
           {showForm && (
             <SlotForm

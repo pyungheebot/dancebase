@@ -569,7 +569,7 @@ function VenueItem({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-lg border border-gray-100 bg-white shadow-sm">
+    <div className="rounded-lg border border-gray-100 bg-card shadow-sm">
       {/* 헤더 행 */}
       <div className="flex items-start gap-2 p-3">
         {/* 즐겨찾기 버튼 */}
@@ -802,7 +802,7 @@ export function PracticeVenueCard({ groupId }: PracticeVenueCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-teal-600" />
           <span className="text-sm font-semibold text-gray-800">연습 장소 관리</span>

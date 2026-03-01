@@ -310,7 +310,7 @@ function EventRow({
   }
 
   return (
-    <div className="rounded-lg border bg-white p-3 space-y-2">
+    <div className="rounded-lg border bg-card p-3 space-y-2">
       {/* 이벤트 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -395,7 +395,7 @@ function EventRow({
                         ? "ring-yellow-400"
                         : "ring-red-400"
                     }`
-                  : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                  : "bg-background text-gray-500 border-gray-200 hover:bg-gray-50"
               }`}
             >
               {RESPONSE_ICON[resp]}
@@ -478,7 +478,7 @@ export function EventRsvpCard({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         {/* 헤더 */}
         <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b">
           <CollapsibleTrigger asChild>

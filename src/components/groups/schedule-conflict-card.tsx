@@ -530,7 +530,7 @@ export function ScheduleConflictCard({
     <>
       <Collapsible open={open} onOpenChange={setOpen}>
         {/* 헤더 */}
-        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
           <div className="flex items-center gap-2">
             <CalendarX2 className="h-4 w-4 text-rose-500" />
             <span className="text-sm font-semibold text-gray-800">
@@ -573,7 +573,7 @@ export function ScheduleConflictCard({
 
         {/* 본문 */}
         <CollapsibleContent>
-          <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+          <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
 
             {/* ---- 충돌 감지 섹션 ---- */}
             <div>

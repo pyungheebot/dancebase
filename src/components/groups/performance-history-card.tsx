@@ -438,7 +438,7 @@ function RecordItem({ record, onEdit, onDelete }: RecordItemProps) {
     record.lessonsLearned;
 
   return (
-    <div className="rounded-lg border bg-white p-3 space-y-2">
+    <div className="rounded-lg border bg-card p-3 space-y-2">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 min-w-0">
@@ -776,7 +776,7 @@ export function PerformanceHistoryCard({ groupId }: PerformanceHistoryCardProps)
                   "rounded-full px-2 py-0.5 text-[10px] border transition-colors",
                   typeFilter === "all"
                     ? "bg-indigo-100 text-indigo-700 border-indigo-300"
-                    : "bg-white text-muted-foreground border-border hover:bg-muted/40"
+                    : "bg-background text-muted-foreground border-border hover:bg-muted/40"
                 )}
               >
                 전체
@@ -789,7 +789,7 @@ export function PerformanceHistoryCard({ groupId }: PerformanceHistoryCardProps)
                     "rounded-full px-2 py-0.5 text-[10px] border transition-colors",
                     typeFilter === t
                       ? cn(TYPE_COLOR[t], "border-transparent")
-                      : "bg-white text-muted-foreground border-border hover:bg-muted/40"
+                      : "bg-background text-muted-foreground border-border hover:bg-muted/40"
                   )}
                 >
                   {TYPE_LABEL[t]}

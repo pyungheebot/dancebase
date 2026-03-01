@@ -142,7 +142,7 @@ export function KudosBoardCard({
               <div className="grid grid-cols-2 gap-2">
                 {/* 보내는 사람 */}
                 {currentUserName ? (
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground border rounded px-2 py-1.5 bg-white">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground border rounded px-2 py-1.5 bg-card">
                     <span className="font-medium text-foreground">
                       {currentUserName}
                     </span>
@@ -190,7 +190,7 @@ export function KudosBoardCard({
                     className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border transition-colors ${
                       category === cat
                         ? "bg-yellow-500 text-white border-yellow-500"
-                        : "bg-white text-muted-foreground border-border hover:border-yellow-400"
+                        : "bg-background text-muted-foreground border-border hover:border-yellow-400"
                     }`}
                   >
                     <span>{KUDOS_CATEGORY_EMOJI[cat]}</span>

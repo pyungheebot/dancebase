@@ -235,7 +235,7 @@ function SongForm({
                 purpose: e.target.value as MyPlaylistSongPurpose,
               }))
             }
-            className="w-full h-7 text-xs border border-gray-200 rounded-md px-2 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
+            className="w-full h-7 text-xs border border-gray-200 rounded-md px-2 bg-background focus:outline-none focus:ring-1 focus:ring-blue-400"
           >
             {ALL_PURPOSES.map((p) => (
               <option key={p} value={p}>
@@ -251,7 +251,7 @@ function SongForm({
             onChange={(e) =>
               setForm((prev) => ({ ...prev, genre: e.target.value }))
             }
-            className="w-full h-7 text-xs border border-gray-200 rounded-md px-2 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
+            className="w-full h-7 text-xs border border-gray-200 rounded-md px-2 bg-background focus:outline-none focus:ring-1 focus:ring-blue-400"
           >
             <option value="">선택</option>
             {DANCE_PLAYLIST_GENRES.map((g) => (
@@ -397,7 +397,7 @@ function PlaylistPanel({
       <div className="border border-gray-200 rounded-lg overflow-hidden">
         {/* 헤더 */}
         <CollapsibleTrigger asChild>
-          <div className="flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-gray-50 cursor-pointer transition-colors">
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-card hover:bg-muted/30 cursor-pointer transition-colors">
             <ListMusic className="h-4 w-4 text-indigo-500 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-gray-900 truncate">

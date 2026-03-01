@@ -229,7 +229,7 @@ function SignatureStatusTab({
         return (
           <div
             key={tpl.id}
-            className="rounded-lg border border-gray-200 bg-white p-3"
+            className="rounded-lg border border-gray-200 bg-card p-3"
           >
             {/* 동의서 헤더 */}
             <div className="mb-2 flex items-center gap-1.5">
@@ -390,7 +390,7 @@ function NewWaiverTab({
                 className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                   type === t
                     ? `${meta.color} border-current font-semibold`
-                    : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
+                    : "border-gray-200 bg-background text-gray-500 hover:border-gray-300"
                 }`}
               >
                 {meta.icon}
@@ -487,7 +487,7 @@ function SignModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
+      <div className="w-full max-w-md rounded-xl border border-gray-200 bg-card shadow-xl">
         {/* 헤더 */}
         <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
           <FileCheck className="h-4 w-4 text-green-600" />
@@ -652,7 +652,7 @@ export function WaiverManagementCard({ groupId }: WaiverManagementCardProps) {
     <>
       <Collapsible open={open} onOpenChange={setOpen}>
         {/* 헤더 */}
-        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-card px-4 py-2.5">
           <div className="flex items-center gap-2">
             <FileCheck className="h-4 w-4 text-teal-600" />
             <span className="text-sm font-semibold text-gray-800">
@@ -705,7 +705,7 @@ export function WaiverManagementCard({ groupId }: WaiverManagementCardProps) {
                     onClick={() => setTab(key)}
                     className={`flex-1 rounded-md py-1 text-[11px] font-medium transition-colors ${
                       tab === key
-                        ? "bg-white text-gray-900 shadow-sm"
+                        ? "bg-background text-gray-900 shadow-sm"
                         : "text-gray-500 hover:text-gray-700"
                     }`}
                   >

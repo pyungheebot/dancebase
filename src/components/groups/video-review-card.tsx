@@ -539,7 +539,7 @@ function EntryItem({
   );
 
   return (
-    <div className="rounded-lg border bg-white p-3 space-y-2">
+    <div className="rounded-lg border bg-card p-3 space-y-2">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 min-w-0">

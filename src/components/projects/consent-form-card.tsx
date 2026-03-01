@@ -347,7 +347,7 @@ function ItemRow({ item, onSign, onDecline, onEdit, onDelete }: ItemRowProps) {
           ? "bg-green-50 border-green-100"
           : item.status === "declined"
           ? "bg-red-50 border-red-100"
-          : "bg-white border-gray-100"
+          : "bg-card border-gray-100"
       }`}
     >
       {/* 상태 아이콘 */}

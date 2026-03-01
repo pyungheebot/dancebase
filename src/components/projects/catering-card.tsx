@@ -290,7 +290,7 @@ function EntryFormDialog({
                     className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                       selected
                         ? "bg-indigo-600 text-white border-indigo-600"
-                        : "bg-white text-gray-600 border-gray-300 hover:border-indigo-400"
+                        : "bg-background text-gray-600 border-gray-300 hover:border-indigo-400"
                     }`}
                   >
                     {DIETARY_LABELS[d]}
@@ -409,7 +409,7 @@ function EntryRow({
   onStatusChange: (id: string, status: CateringStatus) => void;
 }) {
   return (
-    <div className="rounded-lg border bg-white p-3 space-y-2">
+    <div className="rounded-lg border bg-card p-3 space-y-2">
       {/* 헤더 행 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">

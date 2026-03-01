@@ -457,7 +457,7 @@ function VersionDetail({
   }
 
   return (
-    <div className="border rounded-lg p-3 space-y-3 bg-white">
+    <div className="border rounded-lg p-3 space-y-3 bg-card">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -687,7 +687,7 @@ function PosterProjectRow({
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger asChild>
-        <div className="flex items-center justify-between p-2.5 rounded-lg border bg-white hover:bg-gray-50 cursor-pointer transition-colors">
+        <div className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-muted/30 cursor-pointer transition-colors">
           <div className="flex items-center gap-2 min-w-0">
             {open ? (
               <ChevronDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />
@@ -864,7 +864,7 @@ export function PosterManagementCard({
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       {/* 카드 헤더 */}
       <CollapsibleTrigger asChild>
-        <div className="flex items-center justify-between p-3 rounded-lg border bg-white hover:bg-gray-50 cursor-pointer transition-colors">
+        <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/30 cursor-pointer transition-colors">
           <div className="flex items-center gap-2">
             <ImageIcon className="h-4 w-4 text-indigo-500" aria-hidden="true" />
             <span className="text-sm font-medium text-gray-800">
@@ -899,19 +899,19 @@ export function PosterManagementCard({
           {/* 통계 요약 */}
           {!loading && stats.totalVersions > 0 && (
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-white rounded p-2 text-center border">
+              <div className="bg-card rounded p-2 text-center border">
                 <p className="text-sm font-semibold text-gray-800">
                   {stats.totalProjects}
                 </p>
                 <p className="text-[10px] text-gray-500">포스터</p>
               </div>
-              <div className="bg-white rounded p-2 text-center border">
+              <div className="bg-card rounded p-2 text-center border">
                 <p className="text-sm font-semibold text-gray-800">
                   {stats.totalVersions}
                 </p>
                 <p className="text-[10px] text-gray-500">총 버전</p>
               </div>
-              <div className="bg-white rounded p-2 text-center border">
+              <div className="bg-card rounded p-2 text-center border">
                 <p className="text-sm font-semibold text-green-600">
                   {stats.approvedVersions}
                 </p>

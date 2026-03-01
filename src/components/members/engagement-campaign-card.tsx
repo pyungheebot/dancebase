@@ -398,7 +398,7 @@ function CampaignRow({
                 {campaign.memos.map((memo) => (
                   <div
                     key={memo.id}
-                    className="text-[10px] text-gray-600 bg-white rounded px-2 py-1 border border-gray-100"
+                    className="text-[10px] text-gray-600 bg-muted/30 rounded px-2 py-1 border border-gray-100"
                   >
                     <p>{memo.content}</p>
                     <p className="text-gray-400 mt-0.5">
@@ -559,7 +559,7 @@ export function EngagementCampaignCard({ groupId }: EngagementCampaignCardProps)
   // ---- 로딩 상태 ----
   if (loading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white mt-4 overflow-hidden">
+      <div className="rounded-lg border border-gray-200 bg-card mt-4 overflow-hidden">
         <div className="flex items-center gap-2 px-3 py-2.5">
           <Skeleton className="h-4 w-4 rounded" />
           <Skeleton className="h-3 w-32" />

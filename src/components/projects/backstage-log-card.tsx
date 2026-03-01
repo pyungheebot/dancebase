@@ -483,7 +483,7 @@ function SessionCard({
                         ? "opacity-50 bg-gray-50"
                         : entry.category === "emergency"
                         ? "bg-red-50 border-red-200"
-                        : "bg-white"
+                        : "bg-card"
                     }`}
                   >
                     {/* 왼쪽: 타임라인 점 */}

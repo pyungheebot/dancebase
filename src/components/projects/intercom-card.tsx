@@ -254,7 +254,7 @@ function ChannelItem({
         className={`rounded-md border ${
           channel.isEmergency
             ? "border-red-300 bg-red-50"
-            : "border-gray-200 bg-white"
+            : "border-gray-200 bg-card"
         }`}
       >
         {/* 채널 헤더 */}
@@ -329,7 +329,7 @@ function ChannelItem({
                 {channel.persons.map((person) => (
                   <div
                     key={person.id}
-                    className="flex items-center justify-between rounded bg-white border border-gray-100 px-2 py-1"
+                    className="flex items-center justify-between rounded bg-muted/30 border border-gray-100 px-2 py-1"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-xs font-medium truncate">
@@ -465,14 +465,14 @@ export function IntercomCard({ projectId }: { projectId: string }) {
 
   if (loading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
+      <div className="rounded-lg border border-gray-200 bg-card p-4">
         <div className="h-4 w-32 rounded bg-gray-100 animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div className="rounded-lg border border-gray-200 bg-card shadow-sm">
       {/* 카드 헤더 */}
       <Collapsible open={cardOpen} onOpenChange={setCardOpen}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">

@@ -36,8 +36,8 @@ const TIME_SLOT_LABELS: Record<string, string> = {
 
 /** 히트맵 셀 배경색 */
 function getHeatmapClass(count: number, max: number): string {
-  if (count === 0) return "bg-white border border-gray-200";
-  if (max === 0) return "bg-white border border-gray-200";
+  if (count === 0) return "bg-background border border-gray-200";
+  if (max === 0) return "bg-background border border-gray-200";
   const ratio = count / max;
   if (ratio >= 0.8) return "bg-green-600 text-white border border-green-700";
   if (ratio >= 0.5) return "bg-green-400 text-white border border-green-500";
@@ -426,7 +426,7 @@ export function AvailabilityPollDialog({
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[10px] text-muted-foreground">인원:</span>
           {[
-            { label: "0명", cls: "bg-white border border-gray-200" },
+            { label: "0명", cls: "bg-background border border-gray-200" },
             { label: "소수", cls: "bg-green-50 border border-green-200" },
             { label: "중간", cls: "bg-green-200 border border-green-300" },
             { label: "다수", cls: "bg-green-400 border border-green-500" },

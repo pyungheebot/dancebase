@@ -167,7 +167,7 @@ function AddExceptionDialog({ memberNames, onClose, onSubmit }: AddDialogProps) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
+      <div className="w-full max-w-md rounded-xl border border-gray-200 bg-card shadow-xl">
         {/* 헤더 */}
         <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
           <AlertTriangle className="h-4 w-4 text-orange-500" />
@@ -321,7 +321,7 @@ function ApproveDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-xs rounded-xl border border-gray-200 bg-white shadow-xl">
+      <div className="w-full max-w-xs rounded-xl border border-gray-200 bg-card shadow-xl">
         <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <span className="text-sm font-semibold text-gray-800">승인 처리</span>
@@ -567,7 +567,7 @@ export function AttendanceExceptionCard({
                       onClick={() => setFilterType(t)}
                       className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
                         filterType === t
-                          ? `bg-white shadow-sm ${meta.color}`
+                          ? `bg-card shadow-sm ${meta.color}`
                           : "text-gray-500 hover:text-gray-700"
                       }`}
                     >

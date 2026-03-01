@@ -116,7 +116,7 @@ function AddItemForm({ onAdd, onClose }: AddItemFormProps) {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="flex-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
+          className="flex-1 rounded-md border border-gray-200 bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
         >
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>{c}</option>
@@ -125,7 +125,7 @@ function AddItemForm({ onAdd, onClose }: AddItemFormProps) {
         <select
           value={condition}
           onChange={(e) => setCondition(e.target.value as EquipmentCondition)}
-          className="flex-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
+          className="flex-1 rounded-md border border-gray-200 bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
         >
           {(Object.keys(CONDITION_LABELS) as EquipmentCondition[]).map((c) => (
             <option key={c} value={c}>{CONDITION_LABELS[c]}</option>
@@ -220,7 +220,7 @@ function CheckoutForm({ items, onCheckout, onClose }: CheckoutFormProps) {
       <select
         value={equipmentId}
         onChange={(e) => setEquipmentId(e.target.value)}
-        className="w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
+        className="w-full rounded-md border border-gray-200 bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
       >
         {items.map((item) => (
           <option key={item.id} value={item.id}>
@@ -242,7 +242,7 @@ function CheckoutForm({ items, onCheckout, onClose }: CheckoutFormProps) {
           value={expectedReturn}
           min={todayStr()}
           onChange={(e) => setExpectedReturn(e.target.value)}
-          className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300"
+          className="rounded-md border border-gray-200 bg-background px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300"
           title="반납 예정일"
         />
       </div>
@@ -324,7 +324,7 @@ function EquipmentRow({ item, activeCheckoutCount, onDelete }: EquipmentRowProps
   const available = item.quantity - activeCheckoutCount;
 
   return (
-    <div className="flex items-center gap-2 rounded-md border border-gray-100 bg-white px-3 py-2">
+    <div className="flex items-center gap-2 rounded-md border border-gray-100 bg-background px-3 py-2">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-gray-800 truncate">{item.name}</span>
@@ -452,7 +452,7 @@ export function EquipmentInventoryCard({ groupId }: EquipmentInventoryCardProps)
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Package className="h-4 w-4 text-teal-500" />
           <span className="text-sm font-semibold text-gray-800">장비 인벤토리</span>
@@ -492,7 +492,7 @@ export function EquipmentInventoryCard({ groupId }: EquipmentInventoryCardProps)
 
       {/* 본문 */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           {/* 통계 요약 */}
           <StatsSummary
             totalItems={totalItems}
@@ -511,7 +511,7 @@ export function EquipmentInventoryCard({ groupId }: EquipmentInventoryCardProps)
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 rounded-md py-1 text-xs font-medium transition-colors ${
                   activeTab === tab
-                    ? "bg-white text-gray-800 shadow-sm"
+                    ? "bg-background text-gray-800 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >

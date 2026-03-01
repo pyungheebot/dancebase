@@ -452,7 +452,7 @@ function NoteCard({
   const totalCount = note.actionItems.length;
 
   return (
-    <div className="rounded-lg border bg-white p-3 space-y-2">
+    <div className="rounded-lg border bg-card p-3 space-y-2">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
@@ -593,13 +593,13 @@ function StatsPanel({
 
       {/* 요약 수치 */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-lg bg-white border p-2 text-center">
+        <div className="rounded-lg bg-card border p-2 text-center">
           <div className="text-base font-bold text-blue-600">
             {stats.totalNotes}
           </div>
           <div className="text-[10px] text-muted-foreground">총 노트</div>
         </div>
-        <div className="rounded-lg bg-white border p-2 text-center">
+        <div className="rounded-lg bg-card border p-2 text-center">
           <div className="text-base font-bold text-purple-600">
             {stats.avgEnergyLevel > 0
               ? `${ENERGY_EMOJI[Math.round(stats.avgEnergyLevel)]} ${stats.avgEnergyLevel}`
@@ -607,7 +607,7 @@ function StatsPanel({
           </div>
           <div className="text-[10px] text-muted-foreground">평균 에너지</div>
         </div>
-        <div className="rounded-lg bg-white border p-2 text-center">
+        <div className="rounded-lg bg-card border p-2 text-center">
           <div className="text-base font-bold text-green-600">
             {stats.totalActionItems > 0
               ? `${stats.doneActionItems}/${stats.totalActionItems}`

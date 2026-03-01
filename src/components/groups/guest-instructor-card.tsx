@@ -147,7 +147,7 @@ function AddInstructorForm({ onAdd, onClose }: AddInstructorFormProps) {
         <select
           value={genre}
           onChange={(e) => setGenre(e.target.value)}
-          className="flex-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
+          className="flex-1 rounded-md border border-gray-200 bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
         >
           {GENRE_OPTIONS.map((g) => (
             <option key={g} value={g}>
@@ -255,7 +255,7 @@ function AddLessonForm({ instructorId, onAdd, onClose }: AddLessonFormProps) {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300"
+          className="rounded-md border border-gray-200 bg-background px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300"
           title="수업 날짜"
         />
         <div className="flex items-center gap-1">
@@ -345,7 +345,7 @@ function InstructorCard({
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+    <div className="rounded-lg border border-gray-200 bg-card overflow-hidden">
       {/* 강사 헤더 */}
       <div className="flex items-start gap-2 px-3 py-2.5">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-600">
@@ -474,7 +474,7 @@ function InstructorCard({
               {visibleLessons.map((lesson) => (
                 <div
                   key={lesson.id}
-                  className="flex items-start gap-2 rounded-md border border-gray-100 bg-white px-2.5 py-2"
+                  className="flex items-start gap-2 rounded-md border border-gray-100 bg-card px-2.5 py-2"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -641,7 +641,7 @@ export function GuestInstructorCard({ groupId }: GuestInstructorCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-card px-4 py-2.5">
         <div className="flex items-center gap-2">
           <UserCheck className="h-4 w-4 text-purple-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -680,7 +680,7 @@ export function GuestInstructorCard({ groupId }: GuestInstructorCardProps) {
 
       {/* 본문 */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           {/* 통계 요약 */}
           <SummaryStats
             total={stats.total}

@@ -302,7 +302,7 @@ function TrackRow({
 }) {
   return (
     <div className="border border-gray-100 rounded-lg overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2.5 bg-white">
+      <div className="flex items-center gap-2 px-3 py-2.5 bg-card">
         {/* 순서 번호 */}
         <span className="text-[10px] text-gray-400 w-4 shrink-0 text-center">
           {index + 1}
@@ -443,7 +443,7 @@ export function MusicQueueCard({ groupId }: { groupId: string }) {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border border-gray-100 rounded-xl bg-white shadow-sm">
+      <div className="border border-gray-100 rounded-xl bg-card shadow-sm">
         {/* 헤더 */}
         <CollapsibleTrigger asChild>
           <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-xl transition-colors">
@@ -510,7 +510,7 @@ export function MusicQueueCard({ groupId }: { groupId: string }) {
                           className={`group flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-colors cursor-pointer ${
                             isCurrent
                               ? "bg-violet-50 border-violet-200"
-                              : "bg-white border-gray-100 hover:border-violet-200"
+                              : "bg-card border-gray-100 hover:border-violet-200"
                           }`}
                           onClick={() => setActiveTab(s.id)}
                         >

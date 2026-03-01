@@ -154,7 +154,7 @@ function SessionCard({
           "border rounded-lg overflow-hidden",
           session.isActive
             ? "border-green-300 bg-green-50/40"
-            : "border-gray-200 bg-white"
+            : "border-gray-200 bg-card"
         )}
       >
         {/* 세션 헤더 */}
@@ -208,7 +208,7 @@ function SessionCard({
 
             {/* QR 코드 표시 (활성 세션만) */}
             {session.isActive && (
-              <div className="bg-white border border-gray-200 rounded-lg">
+              <div className="bg-card border border-gray-200 rounded-lg">
                 <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1">
                   <QrCode className="h-3.5 w-3.5 text-indigo-500" />
                   <span className="text-xs font-medium text-gray-700">
@@ -319,7 +319,7 @@ function SessionCard({
                   {records.map((r) => (
                     <div
                       key={r.id}
-                      className="flex items-center justify-between bg-white border border-gray-100 rounded px-2 py-1"
+                      className="flex items-center justify-between bg-card border border-gray-100 rounded px-2 py-1"
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <CheckCircle2 className="h-3 w-3 text-green-500 flex-shrink-0" />

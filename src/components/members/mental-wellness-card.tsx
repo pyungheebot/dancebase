@@ -442,7 +442,7 @@ function EntryItem({ entry, onEdit, onDelete }: EntryItemProps) {
   const moodCfg = MOOD_CONFIG[entry.overallMood];
 
   return (
-    <div className="rounded-lg border p-2.5 bg-white space-y-1.5">
+    <div className="rounded-lg border p-2.5 bg-card space-y-1.5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-gray-800">

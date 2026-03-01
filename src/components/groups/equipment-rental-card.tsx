@@ -179,7 +179,7 @@ function ItemRow({
   const pastRentals = item.rentals.filter((r) => !!r.returnDate);
 
   return (
-    <div className="rounded-lg border bg-white shadow-sm">
+    <div className="rounded-lg border bg-card shadow-sm">
       {/* 장비 헤더 */}
       <div className="flex items-center gap-2 p-3">
         <div className="flex-1 min-w-0">
@@ -462,7 +462,7 @@ export function EquipmentRentalCard({ groupId, memberNames = [] }: Props) {
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <div className="rounded-xl border bg-white shadow-sm">
+        <div className="rounded-xl border bg-card shadow-sm">
           {/* 헤더 */}
           <CollapsibleTrigger asChild>
             <div className="flex cursor-pointer items-center gap-2 px-4 py-3 hover:bg-gray-50 transition-colors">

@@ -302,7 +302,7 @@ function ItemRow({ item, onToggle, onEdit, onDelete }: ItemRowProps) {
       className={`flex items-start gap-2 p-2 rounded-lg border text-xs transition-colors ${
         item.completed
           ? "bg-green-50 border-green-100"
-          : "bg-white border-gray-100"
+          : "bg-card border-gray-100"
       }`}
     >
       {/* 완료 토글 버튼 */}

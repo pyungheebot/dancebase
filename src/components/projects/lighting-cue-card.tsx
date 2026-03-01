@@ -639,7 +639,7 @@ export function LightingCueCard({ groupId, projectId }: LightingCueCardProps) {
                       className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                         selectedZone === "__all__"
                           ? "bg-yellow-100 text-yellow-700 border-yellow-300"
-                          : "bg-white text-muted-foreground border-gray-200 hover:bg-gray-50"
+                          : "bg-background text-muted-foreground border-gray-200 hover:bg-muted/30"
                       }`}
                       onClick={() => setSelectedZone("__all__")}
                     >
@@ -651,7 +651,7 @@ export function LightingCueCard({ groupId, projectId }: LightingCueCardProps) {
                         className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                           selectedZone === zone
                             ? "bg-yellow-100 text-yellow-700 border-yellow-300"
-                            : "bg-white text-muted-foreground border-gray-200 hover:bg-gray-50"
+                            : "bg-background text-muted-foreground border-gray-200 hover:bg-muted/30"
                         }`}
                         onClick={() => setSelectedZone(zone)}
                       >

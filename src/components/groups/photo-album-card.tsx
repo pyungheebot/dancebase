@@ -162,7 +162,7 @@ function AddPhotoForm({ albumId, onAdd, onClose }: AddPhotoFormProps) {
             type="date"
             value={takenAt}
             onChange={(e) => setTakenAt(e.target.value)}
-            className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="rounded-md border border-gray-200 bg-background px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300"
             title="촬영 날짜"
           />
         </div>
@@ -262,7 +262,7 @@ function PhotoGrid({ photos, onDelete }: PhotoGridProps) {
       {photos.map((photo) => (
         <div
           key={photo.id}
-          className="group relative rounded-lg border border-gray-100 bg-white overflow-hidden"
+          className="group relative rounded-lg border border-gray-100 bg-card overflow-hidden"
         >
           {photo.imageUrl ? (
             <div className="relative w-full h-28">
@@ -286,7 +286,7 @@ function PhotoGrid({ photos, onDelete }: PhotoGridProps) {
             className={`absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity ${
               deleteConfirm === photo.id
                 ? "bg-red-100 text-red-600 opacity-100"
-                : "bg-white/80 text-gray-500"
+                : "bg-card/80 text-gray-500"
             }`}
             onClick={() => {
               if (deleteConfirm === photo.id) {
@@ -392,7 +392,7 @@ function AlbumRow({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
+      <div className="rounded-lg border border-gray-100 bg-card overflow-hidden">
         <div className="flex items-center gap-2 px-3 py-2">
           <div className="shrink-0 w-10 h-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
             {album.coverUrl ? (
@@ -520,7 +520,7 @@ export function PhotoAlbumCard({ groupId }: PhotoAlbumCardProps) {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <ImageIcon className="h-4 w-4 text-violet-500" />
           <span className="text-sm font-semibold text-gray-800">포토 앨범</span>
@@ -547,7 +547,7 @@ export function PhotoAlbumCard({ groupId }: PhotoAlbumCardProps) {
       </div>
 
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-lg bg-violet-50 px-3 py-2 text-center">
               <div className="text-sm font-bold text-violet-700">{totalAlbums}</div>

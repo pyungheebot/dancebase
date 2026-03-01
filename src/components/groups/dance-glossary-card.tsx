@@ -94,7 +94,7 @@ function RelatedTermsInput({
   };
 
   return (
-    <div className="rounded-md border border-gray-200 bg-white px-2 py-1.5 focus-within:ring-1 focus-within:ring-gray-300">
+    <div className="rounded-md border border-gray-200 bg-background px-2 py-1.5 focus-within:ring-1 focus-within:ring-gray-300">
       <div className="flex flex-wrap gap-1 mb-1">
         {value.map((t) => (
           <span
@@ -189,7 +189,7 @@ function TermItem({
           type="text"
           value={editTerm}
           onChange={(e) => setEditTerm(e.target.value.slice(0, 60))}
-          className="w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-300"
+          className="w-full rounded-md border border-gray-200 bg-background px-2 py-1 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-300"
           placeholder="용어명"
         />
         <div>
@@ -208,7 +208,7 @@ function TermItem({
           onChange={(e) =>
             setEditCategory(e.target.value as GlossaryCategoryNew)
           }
-          className="w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300"
+          className="w-full rounded-md border border-gray-200 bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300"
         >
           {CATEGORY_OPTIONS.map((c) => (
             <option key={c} value={c}>
@@ -224,7 +224,7 @@ function TermItem({
           type="text"
           value={editExample}
           onChange={(e) => setEditExample(e.target.value.slice(0, 200))}
-          className="w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300"
+          className="w-full rounded-md border border-gray-200 bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300"
           placeholder="사용 예시 (선택)"
         />
         <div className="flex justify-end gap-1.5">
@@ -247,7 +247,7 @@ function TermItem({
   }
 
   return (
-    <div className="rounded-lg border border-gray-100 bg-white p-3 shadow-sm">
+    <div className="rounded-lg border border-gray-100 bg-card p-3 shadow-sm">
       {/* 헤더: 용어명 + 배지 + 버튼 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
@@ -427,7 +427,7 @@ function AddTermDialog({
               onChange={(e) =>
                 setCategory(e.target.value as GlossaryCategoryNew)
               }
-              className="w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
+              className="w-full rounded-md border border-gray-200 bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
             >
               {CATEGORY_OPTIONS.map((c) => (
                 <option key={c} value={c}>
@@ -649,7 +649,7 @@ export function DanceGlossaryCard({ groupId }: DanceGlossaryCardProps) {
     <>
       <Collapsible open={open} onOpenChange={setOpen}>
         {/* 헤더 */}
-        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+        <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
           <div className="flex items-center gap-2">
             <BookText className="h-4 w-4 text-violet-500" />
             <span className="text-sm font-semibold text-gray-800">
@@ -679,7 +679,7 @@ export function DanceGlossaryCard({ groupId }: DanceGlossaryCardProps) {
 
         {/* 본문 */}
         <CollapsibleContent>
-          <div className="rounded-b-lg border border-gray-200 bg-white p-4">
+          <div className="rounded-b-lg border border-gray-200 bg-card p-4">
             {/* 검색 바 */}
             <div className="relative mb-3">
               <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
@@ -708,7 +708,7 @@ export function DanceGlossaryCard({ groupId }: DanceGlossaryCardProps) {
                 className={`rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors ${
                   selectedCategory === "all"
                     ? "border-violet-400 bg-violet-100 text-violet-700"
-                    : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
+                    : "border-gray-200 bg-background text-gray-500 hover:border-gray-300"
                 }`}
               >
                 전체
@@ -726,7 +726,7 @@ export function DanceGlossaryCard({ groupId }: DanceGlossaryCardProps) {
                     className={`rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors ${
                       isActive
                         ? `border-transparent ${meta.color}`
-                        : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
+                        : "border-gray-200 bg-background text-gray-500 hover:border-gray-300"
                     }`}
                   >
                     {meta.label}

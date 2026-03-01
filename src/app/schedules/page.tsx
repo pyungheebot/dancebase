@@ -6,6 +6,7 @@ import { formatShortDate } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Badge } from "@/components/ui/badge";
+import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import {
   Loader2,
   MapPin,
@@ -108,6 +109,9 @@ export default function AllSchedulesPage() {
   const [schedules, setSchedules] = useState<ScheduleWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+
+  // 스크롤 위치 복원
+  useScrollRestore();
 
   const fetchSchedules = useCallback(async () => {
     const { data } = await supabase

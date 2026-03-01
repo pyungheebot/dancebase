@@ -380,7 +380,7 @@ function ChartPanel({
   }
 
   return (
-    <div className="border rounded-lg bg-white overflow-hidden">
+    <div className="border rounded-lg bg-card overflow-hidden">
       <Collapsible open={expanded} onOpenChange={setExpanded}>
         {/* 패널 헤더 */}
         <div className="flex items-center justify-between px-3 py-2 bg-gray-50">

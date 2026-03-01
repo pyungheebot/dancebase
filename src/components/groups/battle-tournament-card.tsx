@@ -282,7 +282,7 @@ function MatchCard({ match, editable, onRecord }: MatchCardProps) {
       className={`rounded-lg border px-3 py-2.5 ${
         isDone
           ? "border-gray-100 bg-gray-50"
-          : "border-indigo-100 bg-white shadow-sm"
+          : "border-indigo-100 bg-card shadow-sm"
       }`}
     >
       <div className="flex items-center gap-2">
@@ -438,7 +438,7 @@ function ActiveTournamentView({
         {tournament.participants.map((p) => (
           <Badge
             key={p}
-            className="bg-white text-[10px] px-1.5 py-0 text-gray-600 border border-gray-200 hover:bg-white"
+            className="bg-background text-[10px] px-1.5 py-0 text-gray-600 border border-gray-200 hover:bg-background"
           >
             {p}
           </Badge>
@@ -494,7 +494,7 @@ function TournamentListItem({
   return (
     <div
       className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 transition-colors hover:bg-gray-50 ${
-        isSelected ? "border-indigo-300 bg-indigo-50" : "border-gray-100 bg-white"
+        isSelected ? "border-indigo-300 bg-indigo-50" : "border-gray-100 bg-card"
       }`}
       onClick={() => onSelect(tournament)}
     >
@@ -653,7 +653,7 @@ export function BattleTournamentCard({
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-card px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Swords className="h-4 w-4 text-indigo-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -696,7 +696,7 @@ export function BattleTournamentCard({
 
       {/* ── 본문 ── */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           {loading ? (
             <div className="flex items-center justify-center py-8 text-xs text-gray-400">
               불러오는 중...

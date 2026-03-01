@@ -312,7 +312,7 @@ type InjuryItemProps = {
 
 function InjuryItem({ record, onStatusChange, onEditNote, onDelete }: InjuryItemProps) {
   return (
-    <div className="border rounded-lg p-3 space-y-2 bg-white">
+    <div className="border rounded-lg p-3 space-y-2 bg-card">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -565,7 +565,7 @@ export function HealthTrackingCard({ groupId, userId }: HealthTrackingCardProps)
                         className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                           filterStatus === s
                             ? "bg-gray-800 text-white border-gray-800"
-                            : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                            : "bg-background text-gray-500 border-gray-200 hover:border-gray-400"
                         }`}
                       >
                         {s === "all" ? "전체" : STATUS_LABELS[s]}

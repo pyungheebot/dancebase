@@ -406,7 +406,7 @@ function PollItem({ poll, onCastVote, onClose, onDelete }: PollItemProps) {
   const isDdayPast = dday.startsWith("D+");
 
   return (
-    <div className="rounded-lg border border-gray-100 bg-white p-3 space-y-2 hover:border-gray-200 transition-colors">
+    <div className="rounded-lg border border-gray-100 bg-card p-3 space-y-2 hover:border-gray-200 transition-colors">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">

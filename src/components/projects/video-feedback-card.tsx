@@ -324,7 +324,7 @@ function TimestampRow({ timestamp, onDelete }: TimestampRowProps) {
   const meta = CATEGORY_META[timestamp.category];
 
   return (
-    <div className="flex items-start gap-2 py-2 px-2 rounded-lg border border-gray-100 bg-white hover:bg-gray-50 transition-colors group">
+    <div className="flex items-start gap-2 py-2 px-2 rounded-lg border border-gray-100 bg-card hover:bg-muted/30 transition-colors group">
       {/* 시간 */}
       <div className="flex items-center gap-0.5 flex-shrink-0 mt-0.5">
         <Clock className="h-2.5 w-2.5 text-muted-foreground" />
@@ -409,10 +409,10 @@ function VideoPanel({
   }
 
   return (
-    <div className="border rounded-lg bg-white overflow-hidden">
+    <div className="border rounded-lg bg-card overflow-hidden">
       <Collapsible open={expanded} onOpenChange={setExpanded}>
         {/* 영상 헤더 */}
-        <div className="flex items-center justify-between px-3 py-2 bg-gray-50">
+        <div className="flex items-center justify-between px-3 py-2 bg-muted/40">
           <div className="flex items-center gap-2 min-w-0">
             <CollapsibleTrigger asChild>
               <Button

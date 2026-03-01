@@ -565,7 +565,7 @@ function EventPanel({
   const existingTypes = event.tiers.map((t) => t.type);
 
   return (
-    <div className="border rounded-lg bg-white overflow-hidden">
+    <div className="border rounded-lg bg-card overflow-hidden">
       <Collapsible open={expanded} onOpenChange={setExpanded}>
         {/* 이벤트 헤더 */}
         <div className="flex items-center justify-between px-3 py-2 bg-gray-50">
@@ -747,7 +747,7 @@ function EventPanel({
                       return (
                         <div
                           key={sale.id}
-                          className="flex items-center gap-2 py-1.5 px-2 rounded-lg border border-gray-100 bg-white hover:bg-gray-50 transition-colors group"
+                          className="flex items-center gap-2 py-1.5 px-2 rounded-lg border border-gray-100 bg-card hover:bg-muted/30 transition-colors group"
                         >
                           <div className="flex-1 min-w-0 space-y-0.5">
                             <div className="flex items-center gap-1.5 flex-wrap">

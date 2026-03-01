@@ -175,7 +175,7 @@ function RecordCard({
       <div
         className={cn(
           "rounded-lg border p-2.5",
-          isComplete ? "border-green-200 bg-green-50" : "border-gray-200 bg-white"
+          isComplete ? "border-green-200 bg-green-50" : "border-gray-200 bg-card"
         )}
       >
         <CollapsibleTrigger asChild>

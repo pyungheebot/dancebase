@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/use-auth";
+import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { createClient } from "@/lib/supabase/client";
 import { FinanceTransactionForm } from "@/components/groups/finance-transaction-form";
 import { FinanceCategoryManager } from "@/components/groups/finance-category-manager";
@@ -155,6 +156,10 @@ export function FinanceContent({
   const supabase = createClient();
   const { user } = useAuth();
   const currentUserId = user?.id ?? "";
+
+  // 스크롤 위치 복원
+  useScrollRestore();
+
   const [editingTxn, setEditingTxn] = useState<FinanceTransaction | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 

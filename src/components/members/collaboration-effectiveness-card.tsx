@@ -105,7 +105,7 @@ function ScoreSelector({
           className={`h-6 w-6 rounded text-[11px] font-semibold border transition-colors ${
             value >= n
               ? "bg-indigo-500 text-white border-indigo-500"
-              : "bg-white text-muted-foreground border-border hover:border-indigo-300"
+              : "bg-background text-muted-foreground border-border hover:border-indigo-300"
           }`}
         >
           {n}
@@ -589,7 +589,7 @@ export function CollaborationEffectivenessCard({
                                 {COLLAB_DIMENSIONS.map((dim) => (
                                   <span
                                     key={dim}
-                                    className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full bg-white border border-border"
+                                    className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full bg-background border border-border"
                                   >
                                     {COLLAB_DIMENSION_LABEL[dim]}
                                     <span className="font-semibold text-indigo-600">

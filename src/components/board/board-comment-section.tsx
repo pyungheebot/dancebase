@@ -172,6 +172,7 @@ function CommentItem({
               value={editingContent}
               onChange={(e) => editingContentChange(e.target.value)}
               className="text-sm min-h-[60px] resize-none"
+              maxLength={2000}
               autoFocus
             />
             <div className="flex gap-1">
@@ -390,6 +391,7 @@ export function BoardCommentSection({
                           handleSubmit(commentNode.id);
                         }
                       }}
+                      maxLength={2000}
                       className="flex-1 h-8 text-sm"
                       autoFocus
                     />
@@ -440,6 +442,7 @@ export function BoardCommentSection({
               handleSubmit(null);
             }
           }}
+          maxLength={2000}
           className="flex-1"
         />
         <Button

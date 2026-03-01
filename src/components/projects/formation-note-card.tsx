@@ -505,7 +505,7 @@ export function FormationNoteCard({
   return (
     <>
       <Collapsible open={open} onOpenChange={setOpen}>
-        <div className="border rounded-lg bg-white shadow-sm">
+        <div className="border rounded-lg bg-card shadow-sm">
           {/* 헤더 */}
           <CollapsibleTrigger asChild>
             <button className="w-full flex items-center justify-between px-3 py-2 hover:bg-gray-50 transition-colors rounded-t-lg">
@@ -662,7 +662,7 @@ export function FormationNoteCard({
 
                       {/* 메모 */}
                       {selectedSnapshot.notes && (
-                        <p className="text-[10px] text-gray-500 bg-white rounded px-2 py-1 border">
+                        <p className="text-[10px] text-gray-500 bg-muted/30 rounded px-2 py-1 border">
                           {selectedSnapshot.notes}
                         </p>
                       )}

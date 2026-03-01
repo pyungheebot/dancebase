@@ -308,7 +308,7 @@ export function SchedulePreferenceCard({
               {/* 범례 */}
               <div className="flex items-center gap-1.5 mt-2">
                 <span className="text-[10px] text-gray-400">적음</span>
-                {["bg-white border border-gray-200", "bg-green-100", "bg-green-200", "bg-green-400", "bg-green-600", "bg-green-800"].map(
+                {["bg-background border border-gray-200", "bg-green-100", "bg-green-200", "bg-green-400", "bg-green-600", "bg-green-800"].map(
                   (cls, i) => (
                     <div
                       key={i}

@@ -103,7 +103,7 @@ function SetlistItemRow({
   const meta = ITEM_TYPE_META[item.type];
 
   return (
-    <div className="flex items-center gap-2 py-2 px-3 rounded-lg border border-gray-100 bg-white hover:bg-gray-50 transition-colors">
+    <div className="flex items-center gap-2 py-2 px-3 rounded-lg border border-gray-100 bg-card hover:bg-muted/30 transition-colors">
       {/* 순서 번호 */}
       <span className="w-5 text-center text-xs font-medium text-gray-400 shrink-0">
         {item.order}
@@ -265,7 +265,7 @@ export function SetlistManagementCard({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
+      <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
         {/* 헤더 */}
         <CollapsibleTrigger asChild>
           <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors select-none">

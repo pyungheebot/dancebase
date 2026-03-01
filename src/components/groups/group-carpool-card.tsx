@@ -85,7 +85,7 @@ function CarPoolItemCard({
   }
 
   return (
-    <div className="border rounded-lg p-3 space-y-2 bg-white">
+    <div className="border rounded-lg p-3 space-y-2 bg-card">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -445,7 +445,7 @@ export function GroupCarPoolCard({ groupId }: { groupId: string }) {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
+      <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
         {/* 카드 헤더 */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
           <CollapsibleTrigger asChild>

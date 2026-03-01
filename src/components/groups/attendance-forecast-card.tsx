@@ -286,7 +286,7 @@ function QuickResponseButtons({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="사유를 입력해주세요..."
-            className="text-xs min-h-[48px] resize-none bg-white"
+            className="text-xs min-h-[48px] resize-none bg-background"
             autoFocus
           />
           <div className="flex gap-1.5 justify-end">
@@ -619,7 +619,7 @@ export function AttendanceForecastCard({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border border-gray-100 rounded-xl bg-white shadow-sm">
+      <div className="border border-gray-100 rounded-xl bg-card shadow-sm">
         {/* 헤더 */}
         <CollapsibleTrigger asChild>
           <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-xl transition-colors">

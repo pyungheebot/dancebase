@@ -295,7 +295,7 @@ function MealItem({
           {meal.foods.map((food) => (
             <Badge
               key={food}
-              className="text-[10px] px-1.5 py-0 bg-white/70 text-slate-600 border-slate-200"
+              className="text-[10px] px-1.5 py-0 bg-card/70 text-slate-600 border-slate-200"
             >
               {food}
             </Badge>

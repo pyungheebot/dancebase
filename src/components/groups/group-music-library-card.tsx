@@ -430,7 +430,7 @@ export function GroupMusicLibraryCard({ groupId }: { groupId: string }) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div className="flex items-center justify-between px-4 py-3 bg-card border border-gray-200 rounded-xl shadow-sm">
         <div className="flex items-center gap-2">
           <Music className="h-4 w-4 text-indigo-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -487,7 +487,7 @@ export function GroupMusicLibraryCard({ groupId }: { groupId: string }) {
       </div>
 
       <CollapsibleContent>
-        <div className="mt-1 border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
+        <div className="mt-1 border border-gray-200 rounded-xl bg-card shadow-sm overflow-hidden">
           {loading ? (
             <div className="px-4 py-8 text-center text-xs text-gray-400">
               불러오는 중...
@@ -557,7 +557,7 @@ export function GroupMusicLibraryCard({ groupId }: { groupId: string }) {
                       className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                         filterUseCase === val
                           ? "bg-indigo-600 text-white border-indigo-600"
-                          : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                          : "bg-background text-gray-500 border-gray-200 hover:border-gray-400"
                       }`}
                     >
                       {label}

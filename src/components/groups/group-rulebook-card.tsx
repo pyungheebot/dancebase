@@ -72,7 +72,7 @@ function SectionItem({
 
   return (
     <div
-      className={`rounded-lg border bg-white ${
+      className={`rounded-lg border bg-card ${
         section.isImportant
           ? "border-amber-300 bg-amber-50"
           : "border-gray-200"
@@ -473,7 +473,7 @@ export function GroupRulebookCard({ groupId }: { groupId: string }) {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-card p-4 shadow-sm">
         <div className="flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-gray-400" />
           <span className="text-sm text-gray-400">불러오는 중...</span>
@@ -484,7 +484,7 @@ export function GroupRulebookCard({ groupId }: { groupId: string }) {
 
   return (
     <>
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-card shadow-sm">
         {/* 카드 헤더 */}
         <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
           <div className="flex items-center gap-2">

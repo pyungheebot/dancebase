@@ -680,7 +680,7 @@ function CueRow({
         cue.isChecked
           ? "bg-green-50/60 border-green-200"
           : cue.isActive
-            ? "bg-white border-border"
+            ? "bg-card border-border"
             : "bg-muted/20 border-dashed border-border opacity-60"
       }`}
     >

@@ -175,7 +175,7 @@ function HighlightItem({
   }
 
   return (
-    <div className="border rounded-lg p-3 space-y-2 bg-white">
+    <div className="border rounded-lg p-3 space-y-2 bg-card">
       {/* 헤더 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 flex-wrap min-w-0">
@@ -311,13 +311,13 @@ function StatsSection({ stats }: { stats: HighlightStats }) {
         <div className="border rounded-lg p-3 mt-1 space-y-3 bg-muted/30">
           {/* 요약 수치 */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="text-center p-2 bg-white rounded border">
+            <div className="text-center p-2 bg-card rounded border">
               <p className="text-[10px] text-muted-foreground">이번 달</p>
               <p className="text-lg font-bold text-blue-600">
                 {stats.thisMonthCount}
               </p>
             </div>
-            <div className="text-center p-2 bg-white rounded border">
+            <div className="text-center p-2 bg-card rounded border">
               <p className="text-[10px] text-muted-foreground">전체</p>
               <p className="text-lg font-bold">{stats.totalCount}</p>
             </div>

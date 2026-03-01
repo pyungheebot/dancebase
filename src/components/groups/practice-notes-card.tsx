@@ -386,7 +386,7 @@ function NoteItem({
       className={`rounded-lg border p-3 space-y-2 transition-colors ${
         note.isPinned
           ? "bg-amber-50 border-amber-200"
-          : "bg-white border-gray-100 hover:border-gray-200"
+          : "bg-card border-gray-100 hover:border-gray-200"
       }`}
     >
       {/* 헤더: 핀 + 제목 + 날짜 + 액션 */}

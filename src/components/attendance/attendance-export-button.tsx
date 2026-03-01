@@ -209,7 +209,7 @@ export function AttendanceExportButton({
 
           {/* 미리보기 */}
           {reportData ? (
-            <div className="border rounded-md p-4 bg-white">
+            <div className="border rounded-md p-4 bg-card">
               <AttendancePrintView data={reportData} />
             </div>
           ) : (

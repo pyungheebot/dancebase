@@ -400,7 +400,7 @@ function MemberRow({
               className={`rounded-full border px-2 py-0.5 text-[10px] transition-colors ${
                 member.status === s
                   ? `${sm.badge} border-transparent font-semibold`
-                  : "border-gray-200 bg-white text-gray-400 hover:bg-gray-50"
+                  : "border-gray-200 bg-background text-gray-400 hover:bg-muted/30"
               }`}
             >
               {sm.label}
@@ -491,7 +491,7 @@ function PeriodCard({ period, hook }: PeriodCardProps) {
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white">
+    <div className="rounded-lg border border-gray-200 bg-card">
       {/* 기간 헤더 */}
       <div className="flex items-center gap-2 px-3 py-2.5">
         <button
@@ -738,7 +738,7 @@ export function GroupDuesTrackerCard({ groupId }: { groupId: string }) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-card px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Wallet className="h-4 w-4 text-emerald-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -772,7 +772,7 @@ export function GroupDuesTrackerCard({ groupId }: { groupId: string }) {
 
       {/* ── 본문 ── */}
       <CollapsibleContent>
-        <div className="space-y-4 rounded-b-lg border border-gray-200 bg-white p-4">
+        <div className="space-y-4 rounded-b-lg border border-gray-200 bg-card p-4">
 
           {/* 최근 납부율 추이 */}
           {hook.recentTrend.length > 0 && (

@@ -171,7 +171,7 @@ function AppreciationCardItem({
             "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full transition-colors",
             isLiked
               ? "bg-red-100 text-red-500"
-              : "bg-white/60 text-gray-400 hover:text-red-400"
+              : "bg-card/60 text-gray-400 hover:text-red-400"
           )}
         >
           <Heart
@@ -323,7 +323,7 @@ function SendCardDialog({
                     "text-lg w-8 h-8 rounded-md border transition-colors",
                     selectedEmoji === emoji
                       ? "border-yellow-400 bg-yellow-50"
-                      : "border-gray-200 bg-white hover:border-gray-300"
+                      : "border-gray-200 bg-background hover:border-gray-300"
                   )}
                 >
                   {emoji}
@@ -371,7 +371,7 @@ function SendCardDialog({
             >
               <span
                 className={cn(
-                  "inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform",
+                  "inline-block h-3.5 w-3.5 rounded-full bg-card shadow transition-transform",
                   isPublic ? "translate-x-4" : "translate-x-0.5"
                 )}
               />
@@ -477,7 +477,7 @@ export function AppreciationCardCard({
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-gray-200 bg-card shadow-sm overflow-hidden">
           {/* 헤더 */}
           <CollapsibleTrigger asChild>
             <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
@@ -621,7 +621,7 @@ export function AppreciationCardCard({
                       "text-[10px] px-2.5 py-1 rounded-full border transition-colors",
                       filter === key
                         ? "bg-gray-800 text-white border-gray-800"
-                        : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                        : "bg-background text-gray-500 border-gray-200 hover:border-gray-300"
                     )}
                   >
                     {label}

@@ -436,11 +436,12 @@ export function BoardPostForm({
           </Select>
         </div>
         <div>
-          <Label className="text-xs">제목</Label>
+          <Label className="text-xs">제목 <span className="text-destructive">*</span></Label>
           <Input
             className="mt-1"
             placeholder="제목을 입력하세요"
             value={title}
+            maxLength={150}
             onChange={(e) => {
               setTitle(e.target.value);
               if (mode === "create") {
@@ -455,6 +456,7 @@ export function BoardPostForm({
             className="mt-1 min-h-[120px]"
             placeholder="내용을 입력하세요"
             value={content}
+            maxLength={10000}
             onChange={(e) => {
               setContent(e.target.value);
               if (mode === "create") {

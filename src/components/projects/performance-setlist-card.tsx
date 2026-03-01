@@ -286,7 +286,7 @@ function SongRow({
       className={`flex items-start gap-2 rounded-md border p-3 ${
         item.isEncore
           ? "bg-amber-50 border-amber-200"
-          : "bg-white border-border"
+          : "bg-card border-border"
       }`}
     >
       {/* 순서 번호 + 이동 버튼 */}

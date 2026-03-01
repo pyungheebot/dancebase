@@ -171,7 +171,7 @@ function GenerateDialog({ onGenerate }: GenerateDialogProps) {
                   className={`flex-1 rounded-lg border py-2 text-xs font-medium transition-colors ${
                     period === p
                       ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                      : "border-gray-200 bg-background text-gray-600 hover:border-gray-300"
                   }`}
                 >
                   {p === "monthly" ? "월간" : "분기"}
@@ -259,7 +259,7 @@ function ReportRow({ report, onDelete }: ReportRowProps) {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
+      <div className="rounded-lg border border-gray-100 bg-card overflow-hidden">
         {/* 헤더 행 */}
         <div className="flex items-center gap-2 px-3 py-2.5">
           <CalendarCheck className="h-3.5 w-3.5 shrink-0 text-gray-400" />
@@ -437,7 +437,7 @@ export function ActivityReportCard({ groupId }: ActivityReportCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 카드 헤더 */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-blue-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -465,7 +465,7 @@ export function ActivityReportCard({ groupId }: ActivityReportCardProps) {
 
       {/* 카드 본문 */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-3">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-3">
           {reports.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-1 py-10 text-gray-400">
               <FileText className="h-8 w-8 opacity-30" />

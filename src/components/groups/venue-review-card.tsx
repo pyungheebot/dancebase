@@ -437,7 +437,7 @@ function ReviewCard({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="rounded-lg border border-gray-100 bg-white p-3 shadow-sm space-y-2">
+    <div className="rounded-lg border border-gray-100 bg-card p-3 shadow-sm space-y-2">
       {/* 헤더: 장소명 + 종합 별점 */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -577,7 +577,7 @@ function VenueRankingView({
             className={`rounded-lg border p-3 ${
               idx === 0
                 ? "border-yellow-300 bg-yellow-50 ring-1 ring-yellow-200"
-                : "border-gray-100 bg-white"
+                : "border-gray-200 bg-card"
             }`}
           >
             <div className="flex items-center justify-between gap-2">
@@ -687,7 +687,7 @@ export function VenueReviewCard({ groupId }: VenueReviewCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-green-600" />
           <span className="text-sm font-semibold text-gray-800">

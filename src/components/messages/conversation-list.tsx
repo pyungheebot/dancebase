@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { formatRelative } from "@/lib/date-utils";
 import { useConversations } from "@/hooks/use-messages";
+import { useScrollRestoreRef } from "@/hooks/use-scroll-restore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, MessageCircle, SquarePen } from "lucide-react";
 import { NewConversationDialog } from "./new-conversation-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -16,6 +16,9 @@ export function ConversationList() {
   const pathname = usePathname();
   const { conversations, loading } = useConversations();
   const [newDialogOpen, setNewDialogOpen] = useState(false);
+
+  // 대화 목록 스크롤 위치 복원 (커스텀 스크롤 컨테이너 ref 방식)
+  const scrollRef = useScrollRestoreRef("scroll-messages-conversations");
 
   return (
     <div className="flex flex-col h-full">
@@ -34,7 +37,7 @@ export function ConversationList() {
       </div>
 
       {/* 대화 목록 */}
-      <ScrollArea className="flex-1">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -105,7 +108,7 @@ export function ConversationList() {
             })}
           </div>
         )}
-      </ScrollArea>
+      </div>
 
       <NewConversationDialog
         open={newDialogOpen}

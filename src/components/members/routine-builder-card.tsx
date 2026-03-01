@@ -604,7 +604,7 @@ export function RoutineBuilderCard({ memberId }: { memberId: string }) {
             <button
               className={`flex-1 rounded py-1 text-xs font-medium transition-colors ${
                 filter === "all"
-                  ? "bg-white shadow-sm text-indigo-700"
+                  ? "bg-background shadow-sm text-indigo-700"
                   : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setFilter("all")}
@@ -614,7 +614,7 @@ export function RoutineBuilderCard({ memberId }: { memberId: string }) {
             <button
               className={`flex-1 rounded py-1 text-xs font-medium transition-colors ${
                 filter === "favorited"
-                  ? "bg-white shadow-sm text-yellow-700"
+                  ? "bg-background shadow-sm text-yellow-700"
                   : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setFilter("favorited")}

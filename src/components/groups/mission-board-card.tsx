@@ -260,7 +260,7 @@ function AddMissionDialog({ memberNames, onAdd }: AddMissionDialogProps) {
                 value={deadline}
                 min={todayStr()}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                className="w-full rounded-md border border-gray-200 bg-background px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
               />
             </div>
             <div className="w-24">
@@ -359,7 +359,7 @@ function LeaderboardSection({
           <div
             key={entry.memberName}
             className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${
-              meta ? meta.bg : "border-gray-100 bg-white"
+              meta ? meta.bg : "border-gray-100 bg-card"
             }`}
           >
             {/* 순위 아이콘 */}
@@ -459,7 +459,7 @@ function MissionList({
             key={mission.id}
             className={`group rounded-lg border px-3 py-2.5 transition-opacity ${
               mission.isActive
-                ? "border-gray-200 bg-white"
+                ? "border-gray-200 bg-background"
                 : "border-gray-100 bg-gray-50 opacity-50"
             }`}
           >
@@ -645,7 +645,7 @@ export function MissionBoardCard({
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-card px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Flag className="h-4 w-4 text-indigo-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -685,7 +685,7 @@ export function MissionBoardCard({
 
       {/* ── 본문 ── */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           {stats.totalMissions === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-gray-400">
               <Flag className="h-10 w-10 opacity-20" />

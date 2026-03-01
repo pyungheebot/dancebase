@@ -224,7 +224,7 @@ function AddChallengeDialog({ onAdd }: AddChallengeDialogProps) {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                className="w-full rounded-md border border-gray-200 bg-background px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
               />
             </div>
             <div className="flex-1">
@@ -236,7 +236,7 @@ function AddChallengeDialog({ onAdd }: AddChallengeDialogProps) {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 min={startDate}
-                className="w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
+                className="w-full rounded-md border border-gray-200 bg-background px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
               />
             </div>
           </div>
@@ -316,7 +316,7 @@ function StatusFilterTabs({
           className={`rounded-full border px-2.5 py-0.5 text-[10px] font-medium transition-colors ${
             selected === key
               ? "border-orange-400 bg-orange-500 text-white"
-              : "border-gray-200 bg-white text-gray-500 hover:border-orange-300 hover:text-orange-500"
+              : "border-gray-200 bg-background text-gray-500 hover:border-orange-300 hover:text-orange-500"
           }`}
         >
           {label}
@@ -367,7 +367,7 @@ function ChallengeItem({
   };
 
   return (
-    <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
+    <div className="rounded-lg border border-gray-100 bg-card overflow-hidden">
       {/* 요약 행 */}
       <div
         className="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors"
@@ -508,7 +508,7 @@ function ChallengeItem({
               {challenge.participants.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center gap-2 rounded-md border border-gray-100 bg-white px-2.5 py-1.5"
+                  className="flex items-center gap-2 rounded-md border border-gray-100 bg-card px-2.5 py-1.5"
                 >
                   <span className="w-20 shrink-0 truncate text-xs font-medium text-gray-700">
                     {p.name}
@@ -591,7 +591,7 @@ export function DanceChallengeCard({ groupId }: DanceChallengeCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-card px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Flame className="h-4 w-4 text-orange-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -631,7 +631,7 @@ export function DanceChallengeCard({ groupId }: DanceChallengeCardProps) {
 
       {/* ── 본문 ── */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           {challenges.length === 0 ? (
             /* 데이터 없음 */
             <div className="flex flex-col items-center justify-center gap-2 py-10 text-gray-400">

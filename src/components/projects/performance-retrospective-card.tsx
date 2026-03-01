@@ -255,7 +255,7 @@ function KptColumn({ category, items, onAdd, onVote }: KptColumnProps) {
           .map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded border px-2 py-1.5 flex items-start gap-1.5"
+              className="bg-muted/30 rounded border px-2 py-1.5 flex items-start gap-1.5"
             >
               <p className="text-[11px] leading-snug flex-1">{item.content}</p>
               <button
@@ -277,7 +277,7 @@ function KptColumn({ category, items, onAdd, onVote }: KptColumnProps) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="새 항목..."
-          className="h-6 text-[11px] flex-1 bg-white"
+          className="h-6 text-[11px] flex-1 bg-background"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -289,7 +289,7 @@ function KptColumn({ category, items, onAdd, onVote }: KptColumnProps) {
           type="button"
           variant="outline"
           size="sm"
-          className="h-6 px-1.5 flex-shrink-0 bg-white"
+          className="h-6 px-1.5 flex-shrink-0 bg-background"
           onClick={handleAdd}
         >
           <Plus className="h-3 w-3" />

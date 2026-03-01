@@ -496,7 +496,7 @@ function VenueItem({
   }, [venue.facilities]);
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+    <div className="rounded-lg border border-gray-200 bg-card overflow-hidden">
       {/* 헤더 */}
       <div className="px-3 py-2.5 flex items-start gap-2">
         <Building2 className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />

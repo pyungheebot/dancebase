@@ -633,7 +633,7 @@ function CapsuleItem({
             {capsule.messages.map((msg) => (
               <div
                 key={msg.id}
-                className="bg-white/70 rounded px-2 py-1.5 space-y-0.5"
+                className="bg-card/70 rounded px-2 py-1.5 space-y-0.5"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold text-green-700">
@@ -867,7 +867,7 @@ function EntryItem({
             작성일: {formatYearMonthDay(entry.writtenAt)}
           </p>
           {entry.currentGoal && (
-            <div className="bg-white/60 rounded px-2 py-1.5 space-y-0.5">
+            <div className="bg-card/60 rounded px-2 py-1.5 space-y-0.5">
               <div className="flex items-center gap-1">
                 <Target className="h-2.5 w-2.5 text-orange-500" />
                 <span className="text-[10px] font-semibold text-orange-700">
@@ -880,7 +880,7 @@ function EntryItem({
             </div>
           )}
           {entry.currentRepertoire.length > 0 && (
-            <div className="bg-white/60 rounded px-2 py-1.5 space-y-1">
+            <div className="bg-card/60 rounded px-2 py-1.5 space-y-1">
               <div className="flex items-center gap-1">
                 <Music2 className="h-2.5 w-2.5 text-purple-500" />
                 <span className="text-[10px] font-semibold text-purple-700">
@@ -901,7 +901,7 @@ function EntryItem({
             </div>
           )}
           {entry.photoUrl && (
-            <div className="bg-white/60 rounded px-2 py-1.5 space-y-1">
+            <div className="bg-card/60 rounded px-2 py-1.5 space-y-1">
               <div className="flex items-center gap-1">
                 <ImageIcon className="h-2.5 w-2.5 text-cyan-500" />
                 <span className="text-[10px] font-semibold text-cyan-700">
@@ -929,7 +929,7 @@ function EntryItem({
             {entry.messages.map((msg) => (
               <div
                 key={msg.id}
-                className="bg-white/70 rounded px-2 py-1.5 space-y-0.5"
+                className="bg-card/70 rounded px-2 py-1.5 space-y-0.5"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold text-green-700">

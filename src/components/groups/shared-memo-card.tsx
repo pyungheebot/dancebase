@@ -225,7 +225,7 @@ function AddMemoForm({
           value={author}
           onChange={(e) => setAuthor(e.target.value.slice(0, 20))}
           placeholder="작성자 (선택)"
-          className="flex-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+          className="flex-1 rounded-md border border-gray-200 bg-background px-2 py-1 text-xs placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
           disabled={isFull}
         />
         <input
@@ -233,7 +233,7 @@ function AddMemoForm({
           value={expiresAt}
           min={today()}
           onChange={(e) => setExpiresAt(e.target.value)}
-          className="rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300"
+          className="rounded-md border border-gray-200 bg-background px-2 py-1 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-300"
           disabled={isFull}
           title="만료일 (선택)"
         />
@@ -293,7 +293,7 @@ export function SharedMemoCard({ groupId }: SharedMemoCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* 헤더 */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <StickyNote className="h-4 w-4 text-indigo-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -324,7 +324,7 @@ export function SharedMemoCard({ groupId }: SharedMemoCardProps) {
 
       {/* 본문 */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4">
           {/* 메모 그리드 */}
           {memos.length > 0 ? (
             <div className="mb-4 grid grid-cols-2 gap-2">

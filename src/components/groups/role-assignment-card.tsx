@@ -97,7 +97,7 @@ function AddItemForm({ hook, onClose }: AddItemFormProps) {
             className={`rounded-full border px-2 py-0.5 text-[10px] transition-colors ${
               roleName === name
                 ? "border-indigo-400 bg-indigo-100 text-indigo-700"
-                : "border-gray-200 bg-white text-gray-500 hover:border-indigo-300 hover:text-indigo-600"
+                : "border-gray-200 bg-background text-gray-500 hover:border-indigo-300 hover:text-indigo-600"
             }`}
           >
             {name}
@@ -272,7 +272,7 @@ function RoleItemCard({ item, hook }: RoleItemCardProps) {
     <div
       className={`rounded-lg border p-3 transition-colors ${
         item.status === "active"
-          ? "border-gray-100 bg-white"
+          ? "border-gray-100 bg-card"
           : "border-gray-100 bg-gray-50 opacity-70"
       }`}
     >
@@ -471,7 +471,7 @@ export function RoleAssignmentCard({ groupId }: RoleAssignmentCardProps) {
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       {/* ── 헤더 ── */}
-      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-white px-4 py-2.5">
+      <div className="flex items-center justify-between rounded-t-lg border border-b-0 border-gray-200 bg-background px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-indigo-500" />
           <span className="text-sm font-semibold text-gray-800">
@@ -506,7 +506,7 @@ export function RoleAssignmentCard({ groupId }: RoleAssignmentCardProps) {
 
       {/* ── 본문 ── */}
       <CollapsibleContent>
-        <div className="rounded-b-lg border border-gray-200 bg-white p-4 space-y-4">
+        <div className="rounded-b-lg border border-gray-200 bg-card p-4 space-y-4">
           {/* 상단 액션 버튼 */}
           <div className="flex items-center gap-2">
             <Button
@@ -525,7 +525,7 @@ export function RoleAssignmentCard({ groupId }: RoleAssignmentCardProps) {
                 className={`px-3 py-1 text-[11px] transition-colors ${
                   !showExpired
                     ? "bg-indigo-500 text-white"
-                    : "bg-white text-gray-500 hover:bg-gray-50"
+                    : "bg-background text-gray-500 hover:bg-gray-50"
                 }`}
                 onClick={() => setShowExpired(false)}
               >
@@ -536,7 +536,7 @@ export function RoleAssignmentCard({ groupId }: RoleAssignmentCardProps) {
                 className={`px-3 py-1 text-[11px] transition-colors ${
                   showExpired
                     ? "bg-gray-500 text-white"
-                    : "bg-white text-gray-500 hover:bg-gray-50"
+                    : "bg-background text-gray-500 hover:bg-gray-50"
                 }`}
                 onClick={() => setShowExpired(true)}
               >

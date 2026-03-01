@@ -376,6 +376,7 @@ export function ChatView({ partnerId }: ChatViewProps) {
                 handleSend();
               }
             }}
+            maxLength={5000}
             className="flex-1 min-h-[40px] max-h-[120px] resize-none rounded-full border bg-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             rows={1}
           />

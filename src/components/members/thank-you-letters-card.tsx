@@ -262,7 +262,7 @@ export function ThankYouLettersCard({
                     className={`rounded-full px-2 py-0.5 text-[10px] font-medium border transition-colors ${
                       filterCategory === "all"
                         ? "bg-pink-500 text-white border-pink-500"
-                        : "bg-white text-muted-foreground border-border hover:border-pink-300"
+                        : "bg-background text-muted-foreground border-border hover:border-pink-300"
                     }`}
                   >
                     전체
@@ -275,7 +275,7 @@ export function ThankYouLettersCard({
                       className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium border transition-colors ${
                         filterCategory === cat
                           ? "bg-pink-500 text-white border-pink-500"
-                          : "bg-white text-muted-foreground border-border hover:border-pink-300"
+                          : "bg-background text-muted-foreground border-border hover:border-pink-300"
                       }`}
                     >
                       <span>{THANK_YOU_CATEGORY_EMOJI[cat]}</span>
@@ -343,7 +343,7 @@ export function ThankYouLettersCard({
                   {/* 보내는 사람 / 받는 사람 */}
                   <div className="grid grid-cols-2 gap-2">
                     {currentUserName ? (
-                      <div className="flex items-center gap-1.5 text-xs border rounded-lg px-2.5 py-1.5 bg-white/70">
+                      <div className="flex items-center gap-1.5 text-xs border rounded-lg px-2.5 py-1.5 bg-card/70">
                         <span className="font-medium text-foreground truncate">
                           {currentUserName}
                         </span>
@@ -356,12 +356,12 @@ export function ThankYouLettersCard({
                         placeholder="보내는 사람"
                         value={fromName}
                         onChange={(e) => setFromName(e.target.value)}
-                        className="h-8 text-xs bg-white/70"
+                        className="h-8 text-xs bg-background/70"
                       />
                     )}
 
                     <Select value={toName} onValueChange={setToName}>
-                      <SelectTrigger className="h-8 text-xs bg-white/70">
+                      <SelectTrigger className="h-8 text-xs bg-background/70">
                         <SelectValue placeholder="받는 사람 선택" />
                       </SelectTrigger>
                       <SelectContent>
@@ -388,7 +388,7 @@ export function ThankYouLettersCard({
                           className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-medium border transition-colors ${
                             category === cat
                               ? "bg-pink-500 text-white border-pink-500"
-                              : "bg-white text-muted-foreground border-border hover:border-pink-300"
+                              : "bg-background text-muted-foreground border-border hover:border-pink-300"
                           }`}
                         >
                           <span>{THANK_YOU_CATEGORY_EMOJI[cat]}</span>
@@ -410,7 +410,7 @@ export function ThankYouLettersCard({
                           className={`flex items-center justify-center rounded-lg p-1 text-base transition-all border ${
                             selectedEmoji === emoji
                               ? "border-pink-400 bg-pink-100 scale-110 shadow-sm"
-                              : "border-transparent bg-white/60 hover:bg-white hover:border-pink-200"
+                              : "border-transparent bg-card/60 hover:bg-card hover:border-pink-200"
                           }`}
                         >
                           {emoji}
@@ -425,7 +425,7 @@ export function ThankYouLettersCard({
                       placeholder="감사한 마음을 전해보세요. (최대 200자)"
                       value={message}
                       onChange={(e) => setMessage(e.target.value.slice(0, 200))}
-                      className="text-xs min-h-[72px] resize-none bg-white/70 border-pink-200 focus-visible:ring-pink-300"
+                      className="text-xs min-h-[72px] resize-none bg-background/70 border-pink-200 focus-visible:ring-pink-300"
                     />
                     <p className="text-right text-[10px] text-muted-foreground">
                       {message.length}/200

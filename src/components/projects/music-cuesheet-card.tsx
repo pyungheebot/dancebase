@@ -215,7 +215,7 @@ function CueEntryRow({
   const actionMeta = ACTION_META[entry.action];
 
   return (
-    <div className="flex items-start gap-2 py-2 px-2 rounded-lg border border-gray-100 bg-white hover:bg-gray-50 transition-colors group">
+    <div className="flex items-start gap-2 py-2 px-2 rounded-lg border border-gray-100 bg-card hover:bg-muted/30 transition-colors group">
       {/* 순서 번호 */}
       <span className="w-5 text-center text-[10px] font-mono text-muted-foreground flex-shrink-0 mt-0.5">
         {String(entry.order).padStart(2, "0")}
@@ -519,7 +519,7 @@ function CuesheetPanel({
   }
 
   return (
-    <div className="border rounded-lg bg-white overflow-hidden">
+    <div className="border rounded-lg bg-card overflow-hidden">
       <Collapsible open={expanded} onOpenChange={setExpanded}>
         {/* 큐시트 헤더 */}
         <div className="flex items-center justify-between px-3 py-2 bg-gray-50">

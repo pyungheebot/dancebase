@@ -344,7 +344,7 @@ export function MemberEngagementForecastCard({
   // 로딩 상태
   if (loading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white mt-4 overflow-hidden">
+      <div className="rounded-lg border border-gray-200 bg-card mt-4 overflow-hidden">
         <div className="flex items-center gap-2 px-3 py-2.5">
           <Skeleton className="h-4 w-4 rounded" />
           <Skeleton className="h-3 w-32" />

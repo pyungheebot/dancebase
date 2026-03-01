@@ -402,7 +402,7 @@ function MemberEvalDialog({
                     className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                       selectedMember === name
                         ? "bg-indigo-600 text-white border-indigo-600"
-                        : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300"
+                        : "bg-background text-gray-600 border-gray-200 hover:border-indigo-300"
                     }`}
                   >
                     {name}
@@ -599,7 +599,7 @@ function SessionDetailPanel({
           {session.criteria.map((cr) => (
             <div
               key={cr.id}
-              className="flex items-center gap-1 bg-white border border-gray-200 rounded px-2 py-0.5"
+              className="flex items-center gap-1 bg-card border border-gray-200 rounded px-2 py-0.5"
             >
               <span className="text-[10px] text-gray-600">{cr.name}</span>
               <span className="text-[10px] text-gray-400">
@@ -836,7 +836,7 @@ export function PracticeEvaluationCard({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border border-gray-100 rounded-xl bg-white shadow-sm">
+      <div className="border border-gray-100 rounded-xl bg-card shadow-sm">
         {/* 헤더 */}
         <CollapsibleTrigger asChild>
           <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-xl transition-colors">
@@ -897,7 +897,7 @@ export function PracticeEvaluationCard({
                     return (
                       <div
                         key={performer.memberName}
-                        className="flex items-center gap-1.5 bg-white rounded-lg px-2 py-1 border border-yellow-100"
+                        className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-2 py-1 border border-yellow-100"
                       >
                         <span className={`text-xs ${medalColors[idx]}`}>
                           {idx === 0 ? "1" : idx === 1 ? "2" : "3"}위

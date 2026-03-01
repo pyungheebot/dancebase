@@ -773,7 +773,7 @@ export function InjuryLogCard({ memberId }: InjuryLogCardProps) {
                       className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                         filterStatus === s
                           ? "bg-gray-800 text-white border-gray-800"
-                          : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                          : "bg-background text-gray-500 border-gray-200 hover:border-gray-400"
                       }`}
                     >
                       {s === "all"

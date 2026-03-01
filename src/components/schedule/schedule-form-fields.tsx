@@ -76,6 +76,7 @@ export function ScheduleFormFields({
           onChange={(e) => onChange({ title: e.target.value })}
           onBlur={onBlurTitle}
           required
+          maxLength={150}
           className={errors.title ? "border-destructive focus-visible:ring-destructive" : ""}
         />
         {errors.title && (
@@ -91,6 +92,7 @@ export function ScheduleFormFields({
           placeholder="설명 (선택사항)"
           value={values.description}
           onChange={(e) => onChange({ description: e.target.value })}
+          maxLength={2000}
         />
       </div>
 
