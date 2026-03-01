@@ -66,7 +66,7 @@ const BADGE_DEFINITIONS: Array<{
   },
 ];
 
-type RawAttendanceRow = {
+export type RawAttendanceRow = {
   schedule_id: string;
   status: string;
   checked_at: string;
@@ -76,7 +76,7 @@ type RawAttendanceRow = {
  * 출석 상태 배열로 최대 연속 출석 횟수 계산
  * checked_at 기준 오름차순 정렬 후 연속 present/late 카운트
  */
-function calcMaxStreak(rows: RawAttendanceRow[]): number {
+export function calcMaxStreak(rows: RawAttendanceRow[]): number {
   if (rows.length === 0) return 0;
 
   // 날짜 오름차순 정렬
