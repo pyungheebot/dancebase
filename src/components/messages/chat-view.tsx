@@ -9,8 +9,9 @@ import { useConversation } from "@/hooks/use-messages";
 import { useAuth } from "@/hooks/use-auth";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, Send, CheckCheck } from "lucide-react";
+import { ArrowLeft, Loader2, MessageCircle, Send, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
+import { ChatSkeleton } from "@/components/messages/chat-skeleton";
 import type { Message } from "@/types";
 
 function formatDateSeparator(date: Date): string {
@@ -302,11 +303,7 @@ export function ChatView({ partnerId }: ChatViewProps) {
   }, [messages, user?.id, partnerName, partnerAvatarUrl]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <ChatSkeleton />;
   }
 
   return (
@@ -350,27 +347,40 @@ export function ChatView({ partnerId }: ChatViewProps) {
         aria-live="polite"
         className="flex-1 overflow-y-auto px-4 py-2"
       >
-        {/* 이전 메시지 불러오기 버튼 */}
+        {/* 이전 메시지 불러오기 */}
         {hasMore && (
           <div className="flex justify-center py-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-              className="text-xs h-7"
-            >
-              {loadingMore && (
-                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-              )}
-              이전 메시지 불러오기
-            </Button>
+            {loadingMore ? (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>불러오는 중...</span>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLoadMore}
+                className="text-xs h-7"
+              >
+                이전 메시지 불러오기
+              </Button>
+            )}
           </div>
         )}
         {messages.length === 0 ? (
-          <p className="text-center text-sm text-muted-foreground py-12">
-            메시지를 보내 대화를 시작하세요
-          </p>
+          <div className="flex flex-col items-center justify-center h-full gap-3 py-16 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <MessageCircle className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {partnerName ? `${partnerName}님과 대화 시작` : "새 대화"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                아래 입력창에 메시지를 입력해 대화를 시작하세요
+              </p>
+            </div>
+          </div>
         ) : (
           renderedMessages
         )}

@@ -93,19 +93,19 @@ export function EntityNav({ ctx }: EntityNavProps) {
   const currentPageLabel = activeTab && activeTab.key !== "dashboard" ? activeTab.label : null;
 
   const navClass = isProject
-    ? "border-b mb-3 -mx-3 px-3 flex gap-px overflow-x-auto scrollbar-none"
-    : "border-b mb-4 flex gap-1 overflow-x-auto scrollbar-none px-6 -mx-6";
+    ? "border-b mb-3 -mx-3 px-3 flex gap-px overflow-x-auto scrollbar-none snap-x snap-mandatory"
+    : "border-b mb-4 flex gap-1 overflow-x-auto scrollbar-none px-6 -mx-6 snap-x snap-mandatory";
 
   const linkClass = (active: boolean) =>
     isProject
       ? cn(
-          "flex items-center gap-1 px-2 py-1.5 text-[11px] whitespace-nowrap border-b-2 transition-colors",
+          "flex items-center gap-1 px-2 py-1.5 min-h-[44px] text-[11px] whitespace-nowrap border-b-2 transition-colors snap-start",
           active
             ? "border-primary text-primary font-medium"
             : "border-transparent text-muted-foreground hover:text-foreground"
         )
       : cn(
-          "flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-2 text-xs md:text-sm whitespace-nowrap border-b-2 transition-colors",
+          "flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-2 min-h-[44px] text-xs md:text-sm whitespace-nowrap border-b-2 transition-colors snap-start",
           active
             ? "border-foreground text-foreground font-medium"
             : "border-transparent text-muted-foreground hover:text-foreground"

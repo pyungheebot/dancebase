@@ -1,9 +1,11 @@
 "use client";
 
+import { useId } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FormField } from "@/components/ui/form-field";
 import {
   Select,
   SelectContent,
@@ -13,6 +15,8 @@ import {
 } from "@/components/ui/select";
 import type { ProjectFeature, ProjectVisibility } from "@/types";
 import { PROJECT_TYPES, PROJECT_STATUSES, PROJECT_FEATURES } from "@/types";
+import { useFieldValidation } from "@/hooks/use-field-validation";
+import { validateRequired, validateDateRange } from "@/lib/validation";
 
 export type ProjectFormValues = {
   name: string;
@@ -40,13 +44,29 @@ type ProjectFormFieldsProps = {
   values: ProjectFormValues;
   onChange: <K extends keyof ProjectFormValues>(key: K, value: ProjectFormValues[K]) => void;
   showStatus?: boolean;
+  /** 검증 오류가 있을 때 true를 전달 (부모에서 submit 비활성화용) */
+  onValidationChange?: (hasError: boolean) => void;
 };
 
 export function ProjectFormFields({
   values,
   onChange,
   showStatus,
+  onValidationChange,
 }: ProjectFormFieldsProps) {
+  const nameInputId = useId();
+  const nameErrorId = useId();
+
+  const nameField = useFieldValidation([
+    (v) => validateRequired(v, "프로젝트 이름"),
+  ]);
+
+  const dateRangeError = validateDateRange(values.start_date, values.end_date);
+
+  const notifyValidation = (nameError: string | null) => {
+    onValidationChange?.(!!nameError || !!dateRangeError);
+  };
+
   const toggleFeature = (feature: ProjectFeature) => {
     onChange(
       "features",
@@ -58,15 +78,27 @@ export function ProjectFormFields({
 
   return (
     <>
-      <div>
-        <Label className="text-xs">이름</Label>
+      {/* 이름 — 필수 */}
+      <FormField label="이름" required error={nameField.error}>
         <Input
-          className="mt-1"
+          id={nameInputId}
+          className={`mt-1${nameField.error ? " border-destructive focus-visible:ring-destructive" : ""}`}
           placeholder="프로젝트 이름"
           value={values.name}
-          onChange={(e) => onChange("name", e.target.value)}
+          onChange={(e) => {
+            onChange("name", e.target.value);
+            nameField.onChange(e.target.value);
+            notifyValidation(nameField.rawError);
+          }}
+          onBlur={() => {
+            nameField.onBlur(values.name);
+            notifyValidation(nameField.rawError);
+          }}
+          aria-invalid={!!nameField.error}
+          aria-describedby={nameField.error ? nameErrorId : undefined}
         />
-      </div>
+      </FormField>
+
       <div>
         <Label className="text-xs">설명</Label>
         <Textarea
@@ -76,6 +108,7 @@ export function ProjectFormFields({
           onChange={(e) => onChange("description", e.target.value)}
         />
       </div>
+
       <div>
         <Label className="text-xs">유형</Label>
         <Select value={values.type} onValueChange={(v) => onChange("type", v)}>
@@ -89,6 +122,7 @@ export function ProjectFormFields({
           </SelectContent>
         </Select>
       </div>
+
       {showStatus && (
         <div>
           <Label className="text-xs">상태</Label>
@@ -104,26 +138,40 @@ export function ProjectFormFields({
           </Select>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label className="text-xs">시작일 (선택)</Label>
-          <Input
-            className="mt-1"
-            type="date"
-            value={values.start_date}
-            onChange={(e) => onChange("start_date", e.target.value)}
-          />
+
+      {/* 날짜 범위 — 시작일 < 종료일 검증 */}
+      <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label className="text-xs">시작일 (선택)</Label>
+            <Input
+              className="mt-1"
+              type="date"
+              value={values.start_date}
+              onChange={(e) => {
+                onChange("start_date", e.target.value);
+                notifyValidation(nameField.rawError);
+              }}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">종료일 (선택)</Label>
+            <Input
+              className={`mt-1${dateRangeError ? " border-destructive focus-visible:ring-destructive" : ""}`}
+              type="date"
+              value={values.end_date}
+              onChange={(e) => {
+                onChange("end_date", e.target.value);
+                notifyValidation(nameField.rawError);
+              }}
+            />
+          </div>
         </div>
-        <div>
-          <Label className="text-xs">종료일 (선택)</Label>
-          <Input
-            className="mt-1"
-            type="date"
-            value={values.end_date}
-            onChange={(e) => onChange("end_date", e.target.value)}
-          />
-        </div>
+        {dateRangeError && (
+          <p className="text-xs text-destructive" role="alert">{dateRangeError}</p>
+        )}
       </div>
+
       <div>
         <Label className="text-xs">공개 설정</Label>
         <Select
@@ -140,6 +188,7 @@ export function ProjectFormFields({
           </SelectContent>
         </Select>
       </div>
+
       <div>
         <Label className="text-xs">활성화 기능</Label>
         <div className="mt-1.5 space-y-2">

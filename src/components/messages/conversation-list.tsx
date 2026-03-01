@@ -8,8 +8,9 @@ import { useConversations } from "@/hooks/use-messages";
 import { useScrollRestoreRef } from "@/hooks/use-scroll-restore";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
-import { Loader2, MessageCircle, SquarePen } from "lucide-react";
+import { MessageCircle, SquarePen } from "lucide-react";
 import { NewConversationDialog } from "./new-conversation-dialog";
+import { ConversationListSkeleton } from "./conversation-list-skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
 
 export function ConversationList() {
@@ -39,9 +40,7 @@ export function ConversationList() {
       {/* 대화 목록 */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
+          <ConversationListSkeleton />
         ) : conversations.length === 0 ? (
           <EmptyState
             icon={MessageCircle}

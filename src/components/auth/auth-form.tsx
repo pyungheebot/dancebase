@@ -1,26 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/form-field";
 import { SubmitButton } from "@/components/shared/submit-button";
+import { useFieldValidation } from "@/hooks/use-field-validation";
 
 type AuthFormProps = {
   inviteCode?: string;
 };
 
+// ── 검증 함수 ──────────────────────────────────────────────────────────────
+
+function validateEmail(value: string): string | null {
+  if (!value.trim()) return "이메일을 입력해주세요";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "올바른 이메일 형식이 아닙니다";
+  return null;
+}
+
+function validatePassword(value: string): string | null {
+  if (!value) return "비밀번호를 입력해주세요";
+  if (value.length < 6) return "비밀번호는 최소 6자 이상이어야 합니다";
+  return null;
+}
+
+// ── 비밀번호 강도 계산 ─────────────────────────────────────────────────────
+
+type PasswordStrength = { level: 0 | 1 | 2 | 3; label: string; color: string };
+
+function getPasswordStrength(password: string): PasswordStrength {
+  if (!password) return { level: 0, label: "", color: "" };
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[a-zA-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (score === 1) return { level: 1, label: "약함", color: "bg-destructive" };
+  if (score === 2) return { level: 2, label: "보통", color: "bg-yellow-500" };
+  return { level: 3, label: "강함", color: "bg-green-500" };
+}
+
+// ── 컴포넌트 ──────────────────────────────────────────────────────────────
+
 export function AuthForm({ inviteCode }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showEmailLogin, setShowEmailLogin] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+
+  const emailId = useId();
+  const emailErrorId = useId();
+  const passwordId = useId();
+  const passwordErrorId = useId();
+
+  const emailField = useFieldValidation([validateEmail]);
+  const passwordField = useFieldValidation([validatePassword]);
+
+  const passwordStrength = getPasswordStrength(password);
 
   const getRedirectPath = () => {
     if (inviteCode) return `/join/${inviteCode}`;
@@ -29,19 +71,21 @@ export function AuthForm({ inviteCode }: AuthFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
+    setServerError(null);
 
+    // 제출 시 모든 필드 강제 검증
+    const emailValid = emailField.validate(email);
+    const passwordValid = passwordField.validate(password);
+    if (!emailValid || !passwordValid) return;
+
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       router.push(getRedirectPath());
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "오류가 발생했습니다");
+      setServerError(err instanceof Error ? err.message : "오류가 발생했습니다");
     } finally {
       setLoading(false);
     }
@@ -53,9 +97,7 @@ export function AuthForm({ inviteCode }: AuthFormProps) {
       : `${window.location.origin}/auth/callback`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: callbackUrl,
-      },
+      options: { redirectTo: callbackUrl },
     });
   };
 
@@ -92,40 +134,93 @@ export function AuthForm({ inviteCode }: AuthFormProps) {
 
       {showEmailLogin && (
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs text-muted-foreground">이메일</Label>
+          {/* 이메일 */}
+          <FormField label="이메일" required error={emailField.error}>
             <Input
-              id="email"
+              id={emailId}
               type="email"
               placeholder="email@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="h-9 bg-background"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                emailField.onChange(e.target.value);
+              }}
+              onBlur={() => emailField.onBlur(email)}
+              aria-invalid={!!emailField.error}
+              aria-describedby={emailField.error ? emailErrorId : undefined}
+              className={`h-9 bg-background${emailField.error ? " border-destructive focus-visible:ring-destructive" : ""}`}
             />
-          </div>
-          <div className="space-y-1.5">
+          </FormField>
+
+          {/* 비밀번호 */}
+          <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-xs text-muted-foreground">비밀번호</Label>
-              <Link href="/reset-password" className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
+              <FormField label="비밀번호" required error={null}>
+                <span />
+              </FormField>
+              <Link
+                href="/reset-password"
+                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              >
                 비밀번호를 잊으셨나요?
               </Link>
             </div>
             <Input
-              id="password"
+              id={passwordId}
               type="password"
               placeholder="비밀번호를 입력하세요"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="h-9 bg-background"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                passwordField.onChange(e.target.value);
+              }}
+              onBlur={() => passwordField.onBlur(password)}
+              aria-invalid={!!passwordField.error}
+              aria-describedby={passwordField.error ? passwordErrorId : undefined}
+              className={`h-9 bg-background${passwordField.error ? " border-destructive focus-visible:ring-destructive" : ""}`}
             />
+            {/* 비밀번호 강도 표시 */}
+            {password.length > 0 && (
+              <div className="space-y-1">
+                <div className="flex gap-1">
+                  {([1, 2, 3] as const).map((i) => (
+                    <div
+                      key={i}
+                      className={`h-1 flex-1 rounded-full transition-colors ${
+                        passwordStrength.level >= i
+                          ? passwordStrength.color
+                          : "bg-muted"
+                      }`}
+                    />
+                  ))}
+                </div>
+                {passwordStrength.label && (
+                  <p className="text-[10px] text-muted-foreground">
+                    강도: <span className="font-medium">{passwordStrength.label}</span>
+                    {passwordStrength.level < 3 && (
+                      <span> — 8자 이상, 영문+숫자 조합을 권장합니다</span>
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
+            {passwordField.error && (
+              <p id={passwordErrorId} className="text-xs text-destructive" role="alert">
+                {passwordField.error}
+              </p>
+            )}
           </div>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
+
+          {serverError && (
+            <p className="text-sm text-destructive" role="alert">{serverError}</p>
           )}
-          <SubmitButton variant="outline" className="w-full h-9 text-sm bg-background" loading={loading} loadingText="처리 중...">
+
+          <SubmitButton
+            variant="outline"
+            className="w-full h-9 text-sm bg-background"
+            loading={loading}
+            loadingText="처리 중..."
+          >
             로그인
           </SubmitButton>
         </form>

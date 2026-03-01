@@ -38,7 +38,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-11 w-11 min-h-[44px] min-w-[44px]"
             onClick={() => setSidebarOpen(true)}
             aria-label="메뉴"
           >

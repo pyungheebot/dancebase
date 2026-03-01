@@ -31,6 +31,7 @@ import {
   validateRequired,
   validatePositiveNumber,
 } from "@/lib/validation";
+import { FormField } from "@/components/ui/form-field";
 
 type MemberOption = {
   id: string;
@@ -312,13 +313,11 @@ export function FinanceTransactionForm({
           </div>
         )}
 
-        <div className="space-y-1">
-          <Label className="text-xs">
-            금액 (원) <span className="text-destructive">*</span>
-          </Label>
+        <FormField label="금액 (원)" required error={state.amountError}>
           <Input
             ref={amountInputRef}
             type="number"
+            inputMode="numeric"
             min="1"
             placeholder="0"
             value={state.amount}
@@ -330,15 +329,13 @@ export function FinanceTransactionForm({
               setField("amountError", validatePositiveNumber(state.amount))
             }
             required
+            aria-invalid={!!state.amountError}
             className={`h-8 text-sm${
               state.amountError
                 ? " border-destructive focus-visible:ring-destructive"
                 : ""
             }`}
           />
-          {state.amountError && (
-            <p className="text-xs text-destructive">{state.amountError}</p>
-          )}
           {/* 수수료 자동 계산 표시 (fee_rate > 0이고 금액이 입력된 경우) */}
           {feeRate > 0 && amountNum > 0 && (
             <div className="rounded-md bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/40 px-2.5 py-1.5 space-y-0.5">
@@ -358,12 +355,9 @@ export function FinanceTransactionForm({
               </div>
             </div>
           )}
-        </div>
+        </FormField>
 
-        <div className="space-y-1">
-          <Label className="text-xs">
-            제목 <span className="text-destructive">*</span>
-          </Label>
+        <FormField label="제목" required error={state.titleError}>
           <Input
             placeholder="거래 내용"
             value={state.title}
@@ -375,16 +369,14 @@ export function FinanceTransactionForm({
               setField("titleError", validateRequired(state.title, "제목"))
             }
             required
+            aria-invalid={!!state.titleError}
             className={`h-8 text-sm${
               state.titleError
                 ? " border-destructive focus-visible:ring-destructive"
                 : ""
             }`}
           />
-          {state.titleError && (
-            <p className="text-xs text-destructive">{state.titleError}</p>
-          )}
-        </div>
+        </FormField>
 
         <div className="space-y-1">
           <Label className="text-xs">설명 (선택)</Label>

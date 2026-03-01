@@ -46,7 +46,7 @@ function NotificationDropdown() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-6 w-6"
+          className="relative h-11 w-11 min-h-[44px] min-w-[44px] md:h-6 md:w-6 md:min-h-0 md:min-w-0"
           aria-label={count > 0 ? `알림, 읽지 않은 알림 ${count > 99 ? "99개 이상" : `${count}개`}` : "알림"}
         >
           <Bell className="h-3.5 w-3.5" aria-hidden="true" />
@@ -122,7 +122,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void } = {}) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 md:hidden"
+              className="h-11 w-11 min-h-[44px] min-w-[44px] md:h-6 md:w-6 md:min-h-0 md:min-w-0 md:hidden"
               onClick={onMenuClick}
               aria-label="사이드바 메뉴 열기"
               aria-controls="sidebar"
@@ -139,7 +139,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void } = {}) {
         <nav className="flex items-center gap-1">
           {user ? (
             <>
-              <Button variant="ghost" size="icon" className="relative h-6 w-6" asChild aria-label="메시지">
+              <Button variant="ghost" size="icon" className="relative h-11 w-11 min-h-[44px] min-w-[44px] md:h-6 md:w-6 md:min-h-0 md:min-w-0" asChild aria-label="메시지">
                 <Link href="/messages">
                   <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                   <UnreadBadge />
@@ -148,7 +148,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void } = {}) {
               <NotificationDropdown />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-6 w-6 rounded-full" aria-label="내 메뉴">
+                  <Button variant="ghost" className="relative h-11 w-11 min-h-[44px] min-w-[44px] md:h-6 md:w-6 md:min-h-0 md:min-w-0 rounded-full" aria-label="내 메뉴">
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={profile?.avatar_url ?? undefined} />
                       <AvatarFallback className="text-[10px]">

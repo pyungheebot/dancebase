@@ -29,6 +29,7 @@ interface ProjectFormProps {
 export function ProjectForm({ groupId, onCreated }: ProjectFormProps) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<ProjectFormValues>(DEFAULT_PROJECT_FORM_VALUES);
+  const [hasValidationError, setHasValidationError] = useState(false);
   const { pending: submitting, execute } = useAsyncAction();
   const { user } = useAuth();
   const supabase = createClient();
@@ -77,13 +78,17 @@ export function ProjectForm({ groupId, onCreated }: ProjectFormProps) {
           <DialogTitle>새 프로젝트 만들기</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <ProjectFormFields values={form} onChange={handleChange} />
+          <ProjectFormFields
+            values={form}
+            onChange={handleChange}
+            onValidationChange={setHasValidationError}
+          />
           <SubmitButton
             className="w-full"
             onClick={handleSubmit}
             loading={submitting}
             loadingText="생성 중..."
-            disabled={!form.name.trim()}
+            disabled={!form.name.trim() || hasValidationError}
           >
             생성
           </SubmitButton>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer } from "react";
+import { useReducer, useCallback } from "react";
 import { isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, addMonths, subMonths, format } from "date-fns";
 import { formatYearMonth, formatShortDateTime, formatKo, formatTime } from "@/lib/date-utils";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { detectConflicts } from "@/lib/schedule-conflict";
 import { useMemo } from "react";
+import { useSwipe } from "@/hooks/use-swipe";
 
 const MAX_VISIBLE_EVENTS = 2;
 
@@ -440,6 +441,16 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
     pendingEditSchedule,
   } = state;
 
+  // 좌/우 스와이프로 월 변경
+  const handleSwipe = useCallback(
+    (direction: "left" | "right" | "up" | "down") => {
+      if (direction === "left") dispatch({ type: "NEXT_MONTH" });
+      if (direction === "right") dispatch({ type: "PREV_MONTH" });
+    },
+    []
+  );
+  const swipeHandlers = useSwipe({ onSwipe: handleSwipe, threshold: 50 });
+
   // 충돌하는 일정 ID 집합 계산 (양방향 충돌 감지)
   const conflictingIds = useMemo(() => {
     const ids = new Set<string>();
@@ -644,7 +655,10 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-px bg-border rounded overflow-hidden">
+      <div
+        className="grid grid-cols-7 gap-px bg-border rounded overflow-hidden"
+        {...swipeHandlers}
+      >
         {weekDays.map((day) => (
           <div key={day} className="bg-muted px-1 py-0.5 text-center text-[10px] font-medium">
             {day}
