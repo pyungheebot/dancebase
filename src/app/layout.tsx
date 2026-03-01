@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PwaInstallPrompt } from "@/components/shared/pwa-install-prompt";
 import { WebVitalsReporter } from "@/components/shared/web-vitals-reporter";
+import { OfflineBanner } from "@/components/shared/offline-banner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -73,6 +74,7 @@ export default function RootLayout({
         >
           본문으로 건너뛰기
         </a>
+        <OfflineBanner />
         <Script id="sw-register" strategy="afterInteractive">
           {`if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js");}`}
         </Script>
