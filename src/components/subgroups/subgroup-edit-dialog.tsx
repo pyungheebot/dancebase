@@ -11,10 +11,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/ui/form-field";
 import { toast } from "sonner";
 import { invalidateSubgroups } from "@/lib/swr/invalidate";
+import { validateField, VALIDATION } from "@/lib/validation-rules";
 
 interface SubgroupEditDialogProps {
   open: boolean;
@@ -37,6 +38,7 @@ export function SubgroupEditDialog({
 }: SubgroupEditDialogProps) {
   const [name, setName] = useState(subgroup.name);
   const [description, setDescription] = useState(subgroup.description ?? "");
+  const [nameError, setNameError] = useState<string | null>(null);
   const { pending, execute } = useAsyncAction();
 
   useEffect(() => {
@@ -44,13 +46,33 @@ export function SubgroupEditDialog({
       startTransition(() => {
         setName(subgroup.name);
         setDescription(subgroup.description ?? "");
+        setNameError(null);
       });
     }
   }, [open, subgroup]);
 
+  // 이름 blur 시 검증
+  const handleNameBlur = () => {
+    setNameError(validateField(name, VALIDATION.name));
+  };
+
+  // 이름 변경 시 실시간 에러 초기화
+  const handleNameChange = (value: string) => {
+    setName(value);
+    if (nameError) {
+      setNameError(validateField(value, VALIDATION.name));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+
+    // 제출 전 최종 검증
+    const err = validateField(name, VALIDATION.name);
+    if (err) {
+      setNameError(err);
+      return;
+    }
 
     await execute(async () => {
       const supabase = createClient();
@@ -80,31 +102,46 @@ export function SubgroupEditDialog({
           <DialogTitle className="text-sm">하위그룹 수정</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="edit-name" className="text-xs">
-              이름 <span className="text-destructive">*</span>
-            </Label>
+          {/* 이름 필드 */}
+          <FormField
+            label="이름"
+            htmlFor="edit-subgroup-name"
+            required
+            error={nameError}
+          >
             <Input
-              id="edit-name"
+              id="edit-subgroup-name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
+              onBlur={handleNameBlur}
               placeholder="하위그룹 이름"
               className="h-8 text-sm"
+              maxLength={50}
+              aria-invalid={!!nameError}
+              aria-describedby={nameError ? "edit-subgroup-name-help" : undefined}
+              aria-required="true"
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="edit-description" className="text-xs">
-              설명
-            </Label>
+          </FormField>
+
+          {/* 설명 필드 */}
+          <FormField
+            label="설명"
+            htmlFor="edit-subgroup-description"
+            description="500자 이내로 입력해주세요"
+          >
             <Textarea
-              id="edit-description"
+              id="edit-subgroup-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="하위그룹 설명 (선택)"
               className="text-sm resize-none"
               rows={3}
+              maxLength={500}
+              showCharCount
+              aria-label="하위그룹 설명"
             />
-          </div>
+          </FormField>
+
           <Button
             type="submit"
             className="w-full"

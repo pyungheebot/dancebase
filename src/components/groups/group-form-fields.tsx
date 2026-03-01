@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/ui/form-field";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -78,15 +79,20 @@ export function GroupFormFields({ values, onChange, errors = {}, onBlur }: Group
 
   return (
     <div className="space-y-4">
+      {/* 기본 정보 카드 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-xs font-semibold">기본 정보</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="space-y-1">
-            <Label htmlFor="group-name" className="text-xs">
-              그룹 이름 <span className="text-destructive">*</span>
-            </Label>
+          {/* 그룹 이름 */}
+          <FormField
+            label="그룹 이름"
+            htmlFor="group-name"
+            required
+            error={errors.name}
+            description="2~50자 이내로 입력해주세요"
+          >
             <Input
               id="group-name"
               placeholder="예: 서울 힙합 크루"
@@ -94,30 +100,40 @@ export function GroupFormFields({ values, onChange, errors = {}, onBlur }: Group
               onChange={(e) => onChange("name", e.target.value)}
               onBlur={() => onBlur?.("name")}
               required
+              maxLength={50}
+              aria-invalid={!!errors.name}
+              aria-required="true"
+              aria-describedby={errors.name ? "group-name-help" : "group-name-help"}
               className={errors.name ? "border-destructive focus-visible:ring-destructive" : ""}
             />
-            {errors.name && (
-              <p className="text-xs text-destructive">{errors.name}</p>
-            )}
-            <p className="text-[10px] text-muted-foreground">2~50자 이내로 입력해주세요</p>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="group-description" className="text-xs">설명</Label>
+          </FormField>
+
+          {/* 설명 */}
+          <FormField
+            label="설명"
+            htmlFor="group-description"
+            description="그룹에 대한 설명을 입력해주세요 (선택사항)"
+          >
             <Textarea
               id="group-description"
               placeholder="그룹에 대한 설명 (선택사항)"
               value={values.description}
               onChange={(e) => onChange("description", e.target.value)}
               rows={3}
+              maxLength={500}
+              showCharCount
+              aria-label="그룹 설명 (선택)"
             />
-          </div>
+          </FormField>
+
+          {/* 그룹 유형 */}
           <div className="space-y-1">
-            <Label className="text-xs">그룹 유형</Label>
+            <Label htmlFor="group-type" className="text-xs">그룹 유형</Label>
             <Select
               value={values.groupType}
               onValueChange={(v) => onChange("groupType", v as GroupType)}
             >
-              <SelectTrigger>
+              <SelectTrigger id="group-type" aria-label="그룹 유형 선택">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -130,26 +146,37 @@ export function GroupFormFields({ values, onChange, errors = {}, onBlur }: Group
         </CardContent>
       </Card>
 
+      {/* 댄스 장르 카드 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-xs font-semibold">댄스 장르</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex flex-wrap gap-2">
+          {/* 선택된 장르 목록 */}
+          <div className="flex flex-wrap gap-2" role="list" aria-label="선택된 장르 목록">
             {values.danceGenre.map((genre) => (
-              <Badge key={genre} variant="secondary" className="gap-1">
+              <Badge key={genre} variant="secondary" className="gap-1" role="listitem">
                 {genre}
-                <button type="button" onClick={() => removeGenre(genre)}>
-                  <X className="h-3 w-3" />
+                <button
+                  type="button"
+                  onClick={() => removeGenre(genre)}
+                  aria-label={`${genre} 장르 제거`}
+                  className="focus:outline-none focus:ring-1 focus:ring-ring rounded"
+                >
+                  <X className="h-3 w-3" aria-hidden="true" />
                 </button>
               </Badge>
             ))}
           </div>
+
+          {/* 장르 직접 입력 */}
           <div className="flex gap-2">
             <Input
+              id="genre-input"
               value={genreInput}
               onChange={(e) => setGenreInput(e.target.value)}
               placeholder="장르를 입력하세요"
+              aria-label="댄스 장르 직접 입력"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -162,17 +189,21 @@ export function GroupFormFields({ values, onChange, errors = {}, onBlur }: Group
               variant="outline"
               onClick={() => addGenre(genreInput)}
               disabled={!genreInput.trim()}
+              aria-label="장르 추가"
             >
               추가
             </Button>
           </div>
-          <div className="flex flex-wrap gap-1.5">
+
+          {/* 빠른 선택 */}
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="자주 쓰는 장르 빠른 선택">
             {COMMON_GENRES.filter((g) => !values.danceGenre.includes(g)).map((genre) => (
               <button
                 key={genre}
                 type="button"
                 onClick={() => addGenre(genre)}
-                className="text-xs px-2 py-1 rounded-md border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                aria-label={`${genre} 장르 추가`}
+                className="text-xs px-2 py-1 rounded-md border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 + {genre}
               </button>
@@ -181,18 +212,20 @@ export function GroupFormFields({ values, onChange, errors = {}, onBlur }: Group
         </CardContent>
       </Card>
 
+      {/* 공개 설정 카드 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-xs font-semibold">공개 설정</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          {/* 공개 범위 */}
           <div className="space-y-1">
-            <Label className="text-xs">공개 범위</Label>
+            <Label htmlFor="group-visibility" className="text-xs">공개 범위</Label>
             <Select
               value={values.visibility}
               onValueChange={(v) => onChange("visibility", v as GroupVisibility)}
             >
-              <SelectTrigger>
+              <SelectTrigger id="group-visibility" aria-label="그룹 공개 범위 선택">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -202,13 +235,15 @@ export function GroupFormFields({ values, onChange, errors = {}, onBlur }: Group
               </SelectContent>
             </Select>
           </div>
+
+          {/* 가입 정책 */}
           <div className="space-y-1">
-            <Label className="text-xs">가입 정책</Label>
+            <Label htmlFor="group-join-policy" className="text-xs">가입 정책</Label>
             <Select
               value={values.joinPolicy}
               onValueChange={(v) => onChange("joinPolicy", v as GroupJoinPolicy)}
             >
-              <SelectTrigger>
+              <SelectTrigger id="group-join-policy" aria-label="그룹 가입 정책 선택">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -221,26 +256,31 @@ export function GroupFormFields({ values, onChange, errors = {}, onBlur }: Group
         </CardContent>
       </Card>
 
+      {/* 인원 제한 카드 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-xs font-semibold">인원 제한</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Label htmlFor="max-members" className="text-xs">최대 인원</Label>
-          <Input
-            id="max-members"
-            type="number"
-            min="1"
-            value={values.maxMembers}
-            onChange={(e) => onChange("maxMembers", e.target.value)}
-            onBlur={() => onBlur?.("maxMembers")}
-            placeholder="무제한"
-            className={errors.maxMembers ? "border-destructive focus-visible:ring-destructive" : ""}
-          />
-          {errors.maxMembers && (
-            <p className="text-xs text-destructive">{errors.maxMembers}</p>
-          )}
-          <p className="text-xs text-muted-foreground">비워두면 인원 제한 없음</p>
+          <FormField
+            label="최대 인원"
+            htmlFor="max-members"
+            error={errors.maxMembers}
+            description="비워두면 인원 제한 없음"
+          >
+            <Input
+              id="max-members"
+              type="number"
+              min="1"
+              value={values.maxMembers}
+              onChange={(e) => onChange("maxMembers", e.target.value)}
+              onBlur={() => onBlur?.("maxMembers")}
+              placeholder="무제한"
+              aria-invalid={!!errors.maxMembers}
+              aria-label="최대 인원 수 (선택)"
+              className={errors.maxMembers ? "border-destructive focus-visible:ring-destructive" : ""}
+            />
+          </FormField>
         </CardContent>
       </Card>
     </div>

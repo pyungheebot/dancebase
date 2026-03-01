@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { FormField } from "@/components/ui/form-field";
 import { ShieldCheck, Clock, X, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
@@ -20,6 +21,7 @@ import {
   type AttendanceExcuse,
 } from "@/hooks/use-attendance-excuses";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { validateField, VALIDATION } from "@/lib/validation-rules";
 
 type AttendanceExcuseDialogProps = {
   scheduleId: string;
@@ -55,6 +57,7 @@ export function AttendanceExcuseDialog({
   onSubmitted,
 }: AttendanceExcuseDialogProps) {
   const [reason, setReason] = useState("");
+  const [reasonError, setReasonError] = useState<string | null>(null);
   const { pending: submitting, execute } = useAsyncAction();
   const [existing, setExisting] = useState<AttendanceExcuse | null>(null);
   const [loadingExisting, setLoadingExisting] = useState(false);
@@ -75,19 +78,22 @@ export function AttendanceExcuseDialog({
     });
   }, [open, scheduleId, userId]);
 
+  // reason blur 시 검증
+  const handleReasonBlur = () => {
+    setReasonError(validateField(reason, VALIDATION.reason));
+  };
+
   const handleSubmit = async () => {
-    const trimmed = reason.trim();
-    if (!trimmed) {
-      toast.error(TOAST.ATTENDANCE.EXCUSE_REASON_REQUIRED);
-      return;
-    }
-    if (trimmed.length < 5) {
+    // 최종 검증
+    const err = validateField(reason, VALIDATION.reason);
+    setReasonError(err);
+    if (err) {
       toast.error(TOAST.ATTENDANCE.EXCUSE_REASON_MIN);
       return;
     }
 
     await execute(async () => {
-      const { error } = await submitExcuse(scheduleId, userId, trimmed);
+      const { error } = await submitExcuse(scheduleId, userId, reason.trim());
 
       if (error) {
         toast.error(TOAST.ATTENDANCE.EXCUSE_ERROR);
@@ -111,7 +117,7 @@ export function AttendanceExcuseDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
-            <FileText className="h-4 w-4" />
+            <FileText className="h-4 w-4" aria-hidden="true" />
             결석 사유 제출
           </DialogTitle>
         </DialogHeader>
@@ -124,9 +130,9 @@ export function AttendanceExcuseDialog({
           <div className="space-y-3">
             {/* 기존 신청 상태 표시 */}
             {hasExistingExcuse && statusConfig && (
-              <div className="rounded-md border p-3 space-y-2">
+              <div className="rounded-md border p-3 space-y-2" role="status" aria-label="기존 면제 신청 상태">
                 <div className="flex items-center gap-1.5">
-                  <statusConfig.icon className="h-3.5 w-3.5" />
+                  <statusConfig.icon className="h-3.5 w-3.5" aria-hidden="true" />
                   <Badge
                     variant="outline"
                     className={`text-[10px] px-1.5 py-0 ${statusConfig.className}`}
@@ -152,21 +158,29 @@ export function AttendanceExcuseDialog({
 
             {/* 사유 입력 (승인된 경우는 수정 불가) */}
             {excuseStatus !== "approved" && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">
-                  결석 사유
-                </label>
+              <FormField
+                label="결석 사유"
+                htmlFor="excuse-reason"
+                required
+                error={reasonError}
+                description="5자 이상 상세히 입력해주세요"
+              >
                 <Textarea
+                  id="excuse-reason"
                   placeholder="결석 사유를 상세히 입력해주세요 (예: 업무 출장, 가족 행사 등)"
                   value={reason}
-                  onChange={(e) => setReason(e.target.value)}
+                  onChange={(e) => {
+                    setReason(e.target.value);
+                    if (reasonError) setReasonError(validateField(e.target.value, VALIDATION.reason));
+                  }}
+                  onBlur={handleReasonBlur}
                   className="text-sm min-h-[100px] resize-none"
                   maxLength={500}
+                  showCharCount
+                  aria-invalid={!!reasonError}
+                  aria-required="true"
                 />
-                <p className="text-[11px] text-muted-foreground text-right">
-                  {reason.length}/500
-                </p>
-              </div>
+              </FormField>
             )}
 
             <p className="text-[11px] text-muted-foreground">
@@ -181,6 +195,7 @@ export function AttendanceExcuseDialog({
             size="sm"
             className="h-7 text-xs"
             onClick={() => onOpenChange(false)}
+            aria-label="다이얼로그 닫기"
           >
             닫기
           </Button>
@@ -190,6 +205,7 @@ export function AttendanceExcuseDialog({
               className="h-7 text-xs"
               onClick={handleSubmit}
               disabled={submitting || !reason.trim()}
+              aria-label={hasExistingExcuse ? "결석 사유 재제출" : "결석 사유 제출"}
             >
               {submitting ? "제출 중..." : hasExistingExcuse ? "재제출" : "제출"}
             </Button>

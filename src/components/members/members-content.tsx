@@ -4,16 +4,14 @@ import { useState, useMemo, Suspense } from "react";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { useTableFilter } from "@/hooks/use-table-filter";
 import { useFormSubmission } from "@/hooks/use-form-submission";
+import { useMemberFilter } from "@/hooks/use-member-filter";
+import { useGroupMemberList } from "@/hooks/use-group-member-list";
 import { createClient } from "@/lib/supabase/client";
 import { MemberList } from "@/components/groups/member-list";
 import { InviteModal } from "@/components/groups/invite-modal";
 import { MemberCategoryManager } from "@/components/groups/member-category-manager";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -22,81 +20,54 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserPopoverMenu } from "@/components/user/user-popover-menu";
 import { SubgroupInviteFromParent } from "@/components/subgroups/subgroup-invite-from-parent";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, Download, Plus, Search, Tags, Trash2, TrendingUp, Users } from "lucide-react";
+import { Download, Plus, Tags, Users } from "lucide-react";
+import { MemberDanceCards } from "@/components/members/member-dance-cards";
+import { GroupMemberSections } from "@/components/members/group-member-sections";
+import { ProjectMemberListView } from "@/components/members/project-member-list-view";
 import { InviteGroupMembersDialog } from "@/components/members/invite-group-members-dialog";
-import { MemberAdvancedFilter } from "@/components/members/member-advanced-filter";
-import { useMemberFilter } from "@/hooks/use-member-filter";
+import { MemberBulkActions } from "@/components/members/member-bulk-actions";
+import { MemberListHeader } from "@/components/members/member-list-header";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { exportToCsv } from "@/lib/export/csv-exporter";
 import { getCategoryColorClasses } from "@/types";
 import { lazyLoad } from "@/lib/dynamic-import";
-import { EmptyState } from "@/components/shared/empty-state";
+import { filterAndSortEntityMembers } from "@/lib/members/filter";
+import type { EntityContext, EntityMember } from "@/types/entity-context";
+import type { MemberCategory } from "@/types";
 
-// 멤버 관리 섹션 (중간 크기) - dynamic import로 초기 번들 분리
-const InactiveMembersSection     = lazyLoad(() => import("@/components/members/inactive-members-section").then(m => ({ default: m.InactiveMembersSection })), { skeletonHeight: "h-32" });
+// ============================================
+// Dynamic imports — 상단 액션 버튼 (클릭 전까지 로딩 불필요)
+// ============================================
+
 const MemberComparisonDashboard  = lazyLoad(() => import("@/components/members/member-comparison-dashboard").then(m => ({ default: m.MemberComparisonDashboard })), { skeletonHeight: "h-8" });
-const MemberActivityReport       = lazyLoad(() => import("@/components/members/member-activity-report").then(m => ({ default: m.MemberActivityReport })), { skeletonHeight: "h-32" });
-const MemberActivityTrendChart   = lazyLoad(() => import("@/components/members/member-activity-trend-chart").then(m => ({ default: m.MemberActivityTrendChart })), { skeletonHeight: "h-24" });
-const SkillMatrixSection         = lazyLoad(() => import("@/components/members/skill-matrix-section").then(m => ({ default: m.SkillMatrixSection })), { skeletonHeight: "h-32" });
-const SkillMatrixCard            = lazyLoad(() => import("@/components/groups/skill-matrix-card").then(m => ({ default: m.SkillMatrixCard })), { skeletonHeight: "h-32" });
-const ContactVerificationSection = lazyLoad(() => import("@/components/members/contact-verification-section").then(m => ({ default: m.ContactVerificationSection })), { skeletonHeight: "h-32" });
-const ContactVerifyBanner        = lazyLoad(() => import("@/components/members/contact-verify-banner").then(m => ({ default: m.ContactVerifyBanner })), { skeletonHeight: "h-12" });
-const RolePromotionSection       = lazyLoad(() => import("@/components/members/role-promotion-section").then(m => ({ default: m.RolePromotionSection })), { skeletonHeight: "h-32" });
-const MemberRiskAlert            = lazyLoad(() => import("@/components/members/member-risk-alert").then(m => ({ default: m.MemberRiskAlert })), { noLoading: true });
-const MentorMenteeSection        = lazyLoad(() => import("@/components/members/mentor-mentee-section").then(m => ({ default: m.MentorMenteeSection })), { skeletonHeight: "h-32" });
-// 버튼 트리거 컴포넌트 - 클릭 전까지 불필요
 const MyFeedbackSheet            = lazyLoad(() => import("@/components/members/peer-feedback-dialog").then(m => ({ default: m.MyFeedbackSheet })), { noLoading: true });
 const RewardPointsShop           = lazyLoad(() => import("@/components/members/reward-points-shop").then(m => ({ default: m.RewardPointsShop })), { noLoading: true });
 const DynamicTeamManager         = lazyLoad(() => import("@/components/members/dynamic-team-manager").then(m => ({ default: m.DynamicTeamManager })), { noLoading: true });
 const PartnerMatchingPanel       = lazyLoad(() => import("@/components/members/partner-matching-panel").then(m => ({ default: m.PartnerMatchingPanel })), { noLoading: true });
 
-// 스킬 트리 카드
-const SkillTreeCard              = lazyLoad(() => import("@/components/members/skill-tree-card").then(m => ({ default: m.SkillTreeCard })), { skeletonHeight: "h-32" });
 
-// 댄스 카드 (대형 컴포넌트, 840~1200줄)
-const DanceWorkshopCard          = lazyLoad(() => import("@/components/members/dance-workshop-card").then(m => ({ default: m.DanceWorkshopCard })), { skeletonHeight: "h-32" });
-const DanceAuditionCard          = lazyLoad(() => import("@/components/members/dance-audition-card").then(m => ({ default: m.DanceAuditionCard })), { skeletonHeight: "h-32" });
-const DanceClassLogCard          = lazyLoad(() => import("@/components/members/dance-class-log-card").then(m => ({ default: m.DanceClassLogCard })), { skeletonHeight: "h-32" });
-const DanceNetworkingCard        = lazyLoad(() => import("@/components/members/dance-networking-card").then(m => ({ default: m.DanceNetworkingCard })), { skeletonHeight: "h-32" });
-const InjuryLogCard              = lazyLoad(() => import("@/components/members/injury-log-card").then(m => ({ default: m.InjuryLogCard })), { skeletonHeight: "h-32" });
-const DanceStyleAnalysisCard     = lazyLoad(() => import("@/components/members/dance-style-analysis-card").then(m => ({ default: m.DanceStyleAnalysisCard })), { skeletonHeight: "h-32" });
-const RoutineBuilderCard         = lazyLoad(() => import("@/components/members/routine-builder-card").then(m => ({ default: m.RoutineBuilderCard })), { skeletonHeight: "h-32" });
-const InspirationBoardCard       = lazyLoad(() => import("@/components/members/inspiration-board-card").then(m => ({ default: m.InspirationBoardCard })), { skeletonHeight: "h-32" });
-const DanceMusicCard             = lazyLoad(() => import("@/components/members/dance-music-card").then(m => ({ default: m.DanceMusicCard })), { skeletonHeight: "h-32" });
-const DanceGoalCard              = lazyLoad(() => import("@/components/members/dance-goal-card").then(m => ({ default: m.DanceGoalCard })), { skeletonHeight: "h-32" });
-const DanceConditionJournalCard  = lazyLoad(() => import("@/components/members/dance-condition-journal-card").then(m => ({ default: m.DanceConditionJournalCard })), { skeletonHeight: "h-32" });
-const DanceVideoPortfolioCard    = lazyLoad(() => import("@/components/members/dance-video-portfolio-card").then(m => ({ default: m.DanceVideoPortfolioCard })), { skeletonHeight: "h-32" });
-const DanceClassReviewCard       = lazyLoad(() => import("@/components/members/dance-class-review-card").then(m => ({ default: m.DanceClassReviewCard })), { skeletonHeight: "h-32" });
-const DanceCompetitionCard       = lazyLoad(() => import("@/components/members/dance-competition-card").then(m => ({ default: m.DanceCompetitionCard })), { skeletonHeight: "h-32" });
-const DanceStyleProfileCard      = lazyLoad(() => import("@/components/members/dance-style-profile-card").then(m => ({ default: m.DanceStyleProfileCard })), { skeletonHeight: "h-32" });
-const DanceDiaryCard             = lazyLoad(() => import("@/components/members/dance-diary-card").then(m => ({ default: m.DanceDiaryCard })), { skeletonHeight: "h-32" });
-const DanceCertificationCard     = lazyLoad(() => import("@/components/members/dance-certification-card").then(m => ({ default: m.DanceCertificationCard })), { skeletonHeight: "h-32" });
-const DancePlaylistCard          = lazyLoad(() => import("@/components/members/dance-playlist-card").then(m => ({ default: m.DancePlaylistCard })), { skeletonHeight: "h-32" });
-const DanceFlexibilityCard       = lazyLoad(() => import("@/components/members/dance-flexibility-card").then(m => ({ default: m.DanceFlexibilityCard })), { skeletonHeight: "h-32" });
-const DanceMoodBoardCard         = lazyLoad(() => import("@/components/members/dance-mood-board-card").then(m => ({ default: m.DanceMoodBoardCard })), { skeletonHeight: "h-32" });
-const DanceNutritionCard         = lazyLoad(() => import("@/components/members/dance-nutrition-card").then(m => ({ default: m.DanceNutritionCard })), { skeletonHeight: "h-32" });
-import type { EntityContext, EntityMember } from "@/types/entity-context";
-import type { GroupMemberWithProfile, MemberCategory, Profile } from "@/types";
+// ============================================
+// 공통 유틸
+// ============================================
+
+/** EntityMember role → 한글 */
+function roleLabel(role: string): string {
+  if (role === "leader") return "리더";
+  if (role === "sub_leader") return "서브리더";
+  return "멤버";
+}
+
+// ============================================
+// 진입점 Props & 컴포넌트
+// ============================================
 
 type MembersContentProps = {
   ctx: EntityContext;
@@ -148,17 +119,6 @@ export function MembersContent({
 }
 
 // ============================================
-// 공통 유틸
-// ============================================
-
-/** EntityMember role → 한글 */
-function roleLabel(role: string): string {
-  if (role === "leader") return "리더";
-  if (role === "sub_leader") return "서브리더";
-  return "멤버";
-}
-
-// ============================================
 // 그룹 멤버 콘텐츠
 // ============================================
 
@@ -175,234 +135,49 @@ function GroupMembersContent({
   inviteCode?: string;
   onUpdate: () => void;
 }) {
-  const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("all");
-
-  // URL 쿼리 파라미터 동기화 + 검색 디바운싱 통합 관리
-  // - role/sort는 즉시 URL 반영
-  // - q(검색어)는 로컬 입력 → 500ms 디바운스 후 URL 반영
-  const {
-    filters,
-    setFilter,
-    searchInput,
-    setSearchInput,
-    debouncedSearch,
-  } = useTableFilter(
-    { q: "", role: "all", sort: "name" },
-    { searchKey: "q", debounceMs: 500 }
-  );
-
-  const roleFilter = filters.role;
-  const sortOrder = filters.sort;
-  // 필터링 로직에서는 디바운싱된 검색어를 사용
-  const searchQuery = debouncedSearch;
-
-  const setRoleFilter = (v: string) => setFilter("role", v);
-  const setSortOrder = (v: string) => setFilter("sort", v);
-
-  // 고급 필터
-  const {
-    filter: advFilter,
-    activeCount: advActiveCount,
-    toggleRole: advToggleRole,
-    setJoinedFrom: advSetJoinedFrom,
-    setJoinedTo: advSetJoinedTo,
-    setAttendanceMin: advSetAttendanceMin,
-    setAttendanceMax: advSetAttendanceMax,
-    resetFilter: advResetFilter,
-  } = useMemberFilter();
-
-  // 활동 추세 차트용 선택 멤버
-  const [trendUserId, setTrendUserId] = useState<string>("");
-
-  // 일괄 선택 상태
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkRemoveOpen, setBulkRemoveOpen] = useState(false);
-
-  // 일괄 역할 변경 / 일괄 제거 공통 pending 관리 (useFormSubmission으로 수동 setState 대체)
-  const { pending: bulkLoading, submit: submitBulk } = useFormSubmission();
-
   // 스크롤 위치 복원
   useScrollRestore();
 
-  const supabase = createClient();
+  // 상태 로직 전체를 훅으로 위임
+  const {
+    categoryManagerOpen,
+    setCategoryManagerOpen,
+    selectedCategory,
+    setSelectedCategory,
+    filters,
+    searchInput,
+    setSearchInput,
+    setFilter,
+    advFilter,
+    advActiveCount,
+    advToggleRole,
+    advSetJoinedFrom,
+    advSetJoinedTo,
+    advSetAttendanceMin,
+    advSetAttendanceMax,
+    advResetFilter,
+    selectedIds,
+    allSelected,
+    someSelected,
+    handleToggleSelectAll,
+    handleToggleSelect,
+    bulkLoading,
+    bulkRemoveOpen,
+    setBulkRemoveOpen,
+    handleBulkRoleChange,
+    handleBulkRemoveConfirm,
+    filteredMembers,
+    allMembersForList,
+    isGrouped,
+    handleExportCsv,
+  } = useGroupMemberList(ctx, currentUserId, categories, onUpdate);
 
   const canManage = ctx.permissions.canManageMembers;
-
-  // 현재 사용자의 group_member id (자기 자신은 선택 불가)
-  const currentUserMemberId = useMemo(
-    () => ctx.members.find((m) => m.userId === currentUserId)?.id ?? null,
-    [ctx.members, currentUserId]
-  );
-
-  const handleExportCsv = () => {
-    const headers = ["이름", "역할", "가입일"];
-    const rows = ctx.members.map((m) => [
-      m.nickname || m.profile.name,
-      roleLabel(m.role),
-      m.joinedAt ? m.joinedAt.slice(0, 10) : "",
-    ]);
-    exportToCsv(`멤버목록_${ctx.header.name}`, headers, rows);
-    toast.success(TOAST.MEMBERS.CSV_DOWNLOADED);
-  };
-
-  // NormalizedMember → GroupMemberWithProfile 역변환
-  const allMembersForList: GroupMemberWithProfile[] = ctx.members.map((m) => ({
-    id: m.id,
-    group_id: ctx.groupId,
-    user_id: m.userId,
-    role: m.role,
-    joined_at: m.joinedAt,
-    nickname: m.nickname,
-    category_id: m.categoryId ?? null,
-    profiles: {
-      ...({} as Profile),
-      id: m.profile.id,
-      name: m.profile.name,
-      avatar_url: m.profile.avatar_url,
-      dance_genre: m.profile.dance_genre ?? [],
-    },
-  }));
-
-  const filteredMembers = useMemo(() => {
-    let result = allMembersForList;
-
-    // 카테고리 필터
-    if (selectedCategory !== "all") {
-      result =
-        selectedCategory === "none"
-          ? result.filter(
-              (m) => !m.category_id || !categories.some((c) => c.id === m.category_id)
-            )
-          : result.filter((m) => m.category_id === selectedCategory);
-    }
-
-    // 검색어 필터
-    const query = searchQuery.trim().toLowerCase();
-    if (query) {
-      result = result.filter((m) => {
-        const displayName = (m.nickname || m.profiles.name || "").toLowerCase();
-        return displayName.includes(query);
-      });
-    }
-
-    // 역할 필터 (기본 Select)
-    if (roleFilter !== "all") {
-      result = result.filter((m) => m.role === roleFilter);
-    }
-
-    // 고급 필터 — 역할 (체크박스 복수 선택)
-    if (advFilter.roles.length > 0) {
-      result = result.filter((m) =>
-        advFilter.roles.includes(m.role as "leader" | "sub_leader" | "member")
-      );
-    }
-
-    // 고급 필터 — 가입일 범위
-    if (advFilter.joinedFrom) {
-      result = result.filter(
-        (m) => m.joined_at && m.joined_at.slice(0, 10) >= advFilter.joinedFrom
-      );
-    }
-    if (advFilter.joinedTo) {
-      result = result.filter(
-        (m) => m.joined_at && m.joined_at.slice(0, 10) <= advFilter.joinedTo
-      );
-    }
-
-    // 정렬
-    result = [...result].sort((a, b) => {
-      if (sortOrder === "name") {
-        const nameA = (a.nickname || a.profiles.name || "").toLowerCase();
-        const nameB = (b.nickname || b.profiles.name || "").toLowerCase();
-        return nameA.localeCompare(nameB, "ko");
-      }
-      if (sortOrder === "joined") {
-        return (a.joined_at || "").localeCompare(b.joined_at || "");
-      }
-      return 0;
-    });
-
-    return result;
-  }, [allMembersForList, selectedCategory, categories, searchQuery, roleFilter, sortOrder, advFilter]);
-
-  const isGrouped =
-    selectedCategory === "all" &&
-    !searchQuery.trim() &&
-    roleFilter === "all" &&
-    advActiveCount === 0;
   const myRole = ctx.permissions.canEdit ? "leader" : "member";
-
-  // 선택 가능한 멤버 ids (자기 자신 제외)
-  const selectableIds = useMemo(
-    () => filteredMembers.filter((m) => m.id !== currentUserMemberId).map((m) => m.id),
-    [filteredMembers, currentUserMemberId]
-  );
-
-  const allSelected =
-    selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id));
-  const someSelected = selectedIds.size > 0;
-
-  const handleToggleSelectAll = () => {
-    if (allSelected) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(selectableIds));
-    }
-  };
-
-  const handleToggleSelect = (memberId: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(memberId)) {
-        next.delete(memberId);
-      } else {
-        next.add(memberId);
-      }
-      return next;
-    });
-  };
-
-  const handleBulkRoleChange = async (newRole: "leader" | "sub_leader" | "member") => {
-    if (selectedIds.size === 0) return;
-    const ids = Array.from(selectedIds);
-
-    // submitBulk: pending 자동 관리 + 에러 시 toast.error 자동 호출
-    await submitBulk(async () => {
-      const { error } = await supabase
-        .from("group_members")
-        .update({ role: newRole })
-        .in("id", ids);
-      if (error) throw new Error(TOAST.MEMBERS.ROLE_CHANGE_ERROR);
-
-      const label = newRole === "leader" ? "그룹장" : newRole === "sub_leader" ? "부그룹장" : "멤버";
-      toast.success(`${ids.length}명의 역할이 ${label}(으)로 변경되었습니다`);
-      setSelectedIds(new Set());
-      onUpdate();
-    });
-  };
-
-  const handleBulkRemoveConfirm = async () => {
-    if (selectedIds.size === 0) return;
-    const ids = Array.from(selectedIds);
-
-    // submitBulk: pending 자동 관리 + 에러 시 toast.error 자동 호출
-    await submitBulk(async () => {
-      const { error } = await supabase
-        .from("group_members")
-        .delete()
-        .in("id", ids);
-      if (error) throw new Error(TOAST.MEMBERS.MEMBER_REMOVE_ERROR);
-
-      setBulkRemoveOpen(false);
-      toast.success(`${ids.length}명이 제거되었습니다`);
-      setSelectedIds(new Set());
-      onUpdate();
-    });
-  };
 
   return (
     <>
+      {/* 상단 액션 버튼 영역 */}
       <div className="flex items-center justify-end gap-1 mb-2">
         {ctx.members.length > 1 && (
           <MemberComparisonDashboard
@@ -460,6 +235,7 @@ function GroupMembersContent({
         )}
       </div>
 
+      {/* 카테고리 선택 */}
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xs font-medium">멤버 관리</h2>
         {categories.length > 0 && (
@@ -489,114 +265,37 @@ function GroupMembersContent({
       </div>
 
       {/* 검색 / 역할 필터 / 정렬 툴바 */}
-      <div className="flex items-center gap-1.5 mb-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-          <Input
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="멤버 검색"
-            className="h-7 pl-6 text-xs"
-          />
-        </div>
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-24 h-7 text-xs shrink-0">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">전체</SelectItem>
-            <SelectItem value="leader">리더</SelectItem>
-            <SelectItem value="sub_leader">서브리더</SelectItem>
-            <SelectItem value="member">멤버</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sortOrder} onValueChange={setSortOrder}>
-          <SelectTrigger className="w-24 h-7 text-xs shrink-0">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">이름순</SelectItem>
-            <SelectItem value="joined">가입일순</SelectItem>
-          </SelectContent>
-        </Select>
-        <MemberAdvancedFilter
-          filter={advFilter}
-          activeCount={advActiveCount}
-          onToggleRole={advToggleRole}
-          onSetJoinedFrom={advSetJoinedFrom}
-          onSetJoinedTo={advSetJoinedTo}
-          onSetAttendanceMin={advSetAttendanceMin}
-          onSetAttendanceMax={advSetAttendanceMax}
-          onReset={advResetFilter}
-        />
-      </div>
+      <MemberListHeader
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        roleFilter={filters.role}
+        onRoleFilterChange={(v) => setFilter("role", v)}
+        sortOrder={filters.sort}
+        onSortOrderChange={(v) => setFilter("sort", v)}
+        advFilter={advFilter}
+        advActiveCount={advActiveCount}
+        onAdvToggleRole={advToggleRole}
+        onAdvSetJoinedFrom={advSetJoinedFrom}
+        onAdvSetJoinedTo={advSetJoinedTo}
+        onAdvSetAttendanceMin={advSetAttendanceMin}
+        onAdvSetAttendanceMax={advSetAttendanceMax}
+        onAdvReset={advResetFilter}
+      />
 
-      {/* 일괄 선택 툴바 — canManageMembers일 때만 */}
+      {/* 일괄 선택 툴바 — canManageMembers이고 멤버가 있을 때만 */}
       {canManage && filteredMembers.length > 0 && (
-        <div className="flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded border bg-muted/40">
-          <Checkbox
-            checked={allSelected}
-            onCheckedChange={handleToggleSelectAll}
-            className="shrink-0"
-            aria-label="전체 선택"
-          />
-          <span className="text-xs text-muted-foreground flex-1">
-            {someSelected ? `${selectedIds.size}명 선택됨` : "전체 선택"}
-          </span>
-          {someSelected && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 text-[11px] px-2"
-                  disabled={bulkLoading}
-                >
-                  일괄 작업
-                  <ChevronDown className="h-3 w-3 ml-1" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[140px]">
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="text-xs">
-                    역할 변경
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem
-                      className="text-xs"
-                      onSelect={() => handleBulkRoleChange("leader")}
-                    >
-                      그룹장
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-xs"
-                      onSelect={() => handleBulkRoleChange("sub_leader")}
-                    >
-                      부그룹장
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-xs"
-                      onSelect={() => handleBulkRoleChange("member")}
-                    >
-                      멤버
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-xs"
-                  variant="destructive"
-                  onSelect={() => setBulkRemoveOpen(true)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                  멤버 제거
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
+        <MemberBulkActions
+          allSelected={allSelected}
+          someSelected={someSelected}
+          selectedCount={selectedIds.size}
+          bulkLoading={bulkLoading}
+          onToggleSelectAll={handleToggleSelectAll}
+          onBulkRoleChange={handleBulkRoleChange}
+          onBulkRemoveOpen={() => setBulkRemoveOpen(true)}
+        />
       )}
 
+      {/* 멤버 목록 */}
       <MemberList
         members={filteredMembers}
         myRole={myRole}
@@ -610,6 +309,7 @@ function GroupMembersContent({
         onToggleSelect={handleToggleSelect}
       />
 
+      {/* 일괄 제거 확인 다이얼로그 */}
       <ConfirmDialog
         open={bulkRemoveOpen}
         onOpenChange={(open) => {
@@ -621,6 +321,7 @@ function GroupMembersContent({
         destructive
       />
 
+      {/* 카테고리 관리 시트 */}
       <MemberCategoryManager
         groupId={ctx.groupId}
         categories={categories}
@@ -630,151 +331,19 @@ function GroupMembersContent({
         onUpdate={onUpdate}
       />
 
-      {/* 출석/납부 위험 멤버 경고 (리더/매니저 전용, 위험 멤버 없으면 숨김) */}
-      <MemberRiskAlert ctx={ctx} />
-
-      {/* 비활성 멤버 섹션 (리더 전용, 비활성 멤버가 없으면 숨김) */}
-      <InactiveMembersSection ctx={ctx} />
-
-      {/* 역할 자동 승격 제안 (canEdit 권한 + 멤버가 있는 경우에만 표시) */}
-      {ctx.permissions.canEdit && ctx.members.length > 0 && (
-        <RolePromotionSection
-          groupId={ctx.groupId}
-          members={ctx.members}
-          onUpdate={onUpdate}
-        />
-      )}
-
-      {/* 멤버 활동 리포트 (canEdit 권한인 경우에만 표시) */}
-      {ctx.permissions.canEdit && ctx.members.length > 0 && (
-        <MemberActivityReport
-          groupId={ctx.groupId}
-          groupName={ctx.header.name}
-          members={ctx.members}
-        />
-      )}
-
-      {/* 멤버 역량 맵 (canEdit 권한인 경우에만 표시) */}
-      {ctx.permissions.canEdit && ctx.members.length > 0 && (
-        <SkillMatrixSection
-          groupId={ctx.groupId}
-          members={ctx.members}
-          canEdit={ctx.permissions.canEdit}
-        />
-      )}
-
-      {/* 기술 매트릭스 (목표 레벨/평가일 포함 - localStorage 기반) */}
-      <SkillMatrixCard groupId={ctx.groupId} />
-
-      {/* 멘토-멘티 매칭 (canEdit 권한인 경우에만 관리 가능, 멤버가 있을 때만 표시) */}
-      {ctx.members.length > 0 && (
-        <MentorMenteeSection
-          groupId={ctx.groupId}
-          members={ctx.members}
-          canManage={ctx.permissions.canEdit}
-        />
-      )}
-
-      {/* 연락처 재확인 배너 (미확인 멤버에게만 표시) */}
-      {!ctx.permissions.canEdit && (
-        <div className="mt-4">
-          <ContactVerifyBanner
-            groupId={ctx.groupId}
-            currentUserId={currentUserId}
-          />
-        </div>
-      )}
-
-      {/* 연락처 재확인 관리 섹션 (리더/서브리더 전용) */}
-      {ctx.permissions.canEdit && ctx.members.length > 0 && (
-        <ContactVerificationSection ctx={ctx} />
-      )}
-
-      {/* 멤버 활동 추세 차트 */}
-      {ctx.members.length > 0 && (
-        <Card className="mt-4">
-          <CardHeader className="pb-2 pt-3 px-4">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-xs font-semibold flex items-center gap-1.5">
-                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
-                활동 추세
-              </CardTitle>
-              <Select
-                value={trendUserId}
-                onValueChange={setTrendUserId}
-              >
-                <SelectTrigger className="w-32 h-6 text-[11px]">
-                  <SelectValue placeholder="멤버 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ctx.members.map((m) => (
-                    <SelectItem key={m.userId} value={m.userId}>
-                      {m.nickname || m.profile.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-3">
-            {trendUserId ? (
-              <MemberActivityTrendChart
-                groupId={ctx.groupId}
-                userId={trendUserId}
-                weeks={8}
-              />
-            ) : (
-              <p className="text-[11px] text-muted-foreground text-center py-6">
-                멤버를 선택하면 최근 8주간 활동 추세를 확인할 수 있습니다
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* 멤버 스킬 트리 (개인 스킬 성장 시각화) */}
-      <SkillTreeCard
-        groupId={ctx.groupId}
-        userId={currentUserId}
-        canEdit={ctx.permissions.canEdit}
+      {/* 분석/관리 섹션 모음 (위험 알림, 비활성, 역할 승격, 리포트, 스킬, 멘토, 연락처, 추세) */}
+      <GroupMemberSections
+        ctx={ctx}
+        currentUserId={currentUserId}
+        onUpdate={onUpdate}
       />
 
-      {/* 댄스 워크숍 이력 (개인 워크숍/마스터클래스 참석 이력) */}
-      <DanceWorkshopCard memberId={currentUserId} />
-
-      {/* 댄스 오디션 기록 (오디션 참가 이력 및 결과 관리) */}
-      <DanceAuditionCard memberId={currentUserId} />
-
-      {/* 댄스 수업 수강 기록 (그룹 내부/외부 수업 이력 관리) */}
-      <DanceClassLogCard memberId={currentUserId} />
-
-      {/* 댄스 네트워킹 연락처 (댄스 업계 인맥 관리) */}
-      <DanceNetworkingCard memberId={currentUserId} />
-
-      {/* 댄스 부상 기록 (부상 이력 및 재활 상태 추적) */}
-      <InjuryLogCard memberId={currentUserId} />
-
-      {/* 댄스 스타일 분석 (개인 댄스 스타일 특성 기록) */}
-      <DanceStyleAnalysisCard memberId={currentUserId} />
-
-      {/* 댄스 루틴 빌더 (개인 연습 루틴 구성) */}
-      <RoutineBuilderCard memberId={currentUserId} />
-      <InspirationBoardCard memberId={currentUserId} />
-      <DanceMusicCard memberId={currentUserId} />
-      <DanceGoalCard memberId={currentUserId} />
-      <DanceConditionJournalCard memberId={currentUserId} />
-      <DanceVideoPortfolioCard memberId={currentUserId} />
-      <DanceClassReviewCard memberId={currentUserId} />
-
-      {/* 댄스 대회 참가 기록 (대회/컴피티션 참가 이력) */}
-      <DanceCompetitionCard memberId={currentUserId} />
-      <DanceStyleProfileCard memberId={currentUserId} />
-      <DanceDiaryCard memberId={currentUserId} />
-      <DanceCertificationCard memberId={currentUserId} />
-      <DancePlaylistCard memberId={currentUserId} />
-      <DanceFlexibilityCard memberId={currentUserId} />
-      <DanceMoodBoardCard memberId={currentUserId} />
-      <DanceNutritionCard memberId={currentUserId} />
+      {/* 개인 댄스 카드 섹션 (22개 카드, dynamic import로 초기 번들 분리) */}
+      <MemberDanceCards
+        userId={currentUserId}
+        groupId={ctx.groupId}
+        canEdit={ctx.permissions.canEdit}
+      />
     </>
   );
 }
@@ -785,7 +354,7 @@ function GroupMembersContent({
 
 function ProjectMembersContent({
   ctx,
-
+  currentUserId: _currentUserId,
   parentMembers,
   onUpdate,
 }: {
@@ -796,13 +365,11 @@ function ProjectMembersContent({
 }) {
   const [addOpen, setAddOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState("");
-  // 멤버 추가 pending 관리 (useFormSubmission으로 대체)
+  // 멤버 추가 pending 관리
   const { pending: submitting, submit: submitAddMember } = useFormSubmission();
   const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
 
-  // URL 쿼리 파라미터 동기화 + 검색 디바운싱 통합 관리
-  // - role/sort는 즉시 URL 반영
-  // - q(검색어)는 로컬 입력 → 500ms 디바운스 후 URL 반영
+  // 검색/필터/정렬 (URL 동기화 + 디바운싱)
   const {
     filters,
     setFilter,
@@ -816,11 +383,7 @@ function ProjectMembersContent({
 
   const roleFilter = filters.role;
   const sortOrder = filters.sort;
-  // 필터링 로직에서는 디바운싱된 검색어를 사용
   const searchQuery = debouncedSearch;
-
-  const setRoleFilter = (v: string) => setFilter("role", v);
-  const setSortOrder = (v: string) => setFilter("sort", v);
 
   // 고급 필터
   const {
@@ -855,8 +418,6 @@ function ProjectMembersContent({
 
   const handleAddMember = async () => {
     if (!selectedUserId || !ctx.projectId) return;
-
-    // submitAddMember: errorMessage 옵션 적용됨 → 에러 시 자동 toast.error
     await submitAddMember(async () => {
       const { error } = await supabase.from("project_members").insert({
         project_id: ctx.projectId!,
@@ -894,60 +455,14 @@ function ProjectMembersContent({
     onUpdate();
   };
 
-  const displayedMembers = useMemo(() => {
-    let result = [...ctx.members];
-
-    // 검색어 필터
-    const query = searchQuery.trim().toLowerCase();
-    if (query) {
-      result = result.filter((m) => {
-        const displayName = (m.nickname || m.profile.name || "").toLowerCase();
-        return displayName.includes(query);
-      });
-    }
-
-    // 역할 필터 (기본 Select)
-    if (roleFilter !== "all") {
-      result = result.filter((m) => m.role === roleFilter);
-    }
-
-    // 고급 필터 — 역할 (체크박스 복수 선택)
-    if (advFilter.roles.length > 0) {
-      result = result.filter((m) =>
-        advFilter.roles.includes(m.role as "leader" | "sub_leader" | "member")
-      );
-    }
-
-    // 고급 필터 — 가입일 범위
-    if (advFilter.joinedFrom) {
-      result = result.filter(
-        (m) => m.joinedAt && m.joinedAt.slice(0, 10) >= advFilter.joinedFrom
-      );
-    }
-    if (advFilter.joinedTo) {
-      result = result.filter(
-        (m) => m.joinedAt && m.joinedAt.slice(0, 10) <= advFilter.joinedTo
-      );
-    }
-
-    // 정렬
-    result = result.sort((a, b) => {
-      if (sortOrder === "name") {
-        const nameA = (a.nickname || a.profile.name || "").toLowerCase();
-        const nameB = (b.nickname || b.profile.name || "").toLowerCase();
-        return nameA.localeCompare(nameB, "ko");
-      }
-      if (sortOrder === "joined") {
-        return (a.joinedAt || "").localeCompare(b.joinedAt || "");
-      }
-      return 0;
-    });
-
-    return result;
-  }, [ctx.members, searchQuery, roleFilter, sortOrder, advFilter]);
+  const displayedMembers = useMemo(
+    () => filterAndSortEntityMembers(ctx.members, { searchQuery, roleFilter, sortOrder, advFilter }),
+    [ctx.members, searchQuery, roleFilter, sortOrder, advFilter]
+  );
 
   return (
     <>
+      {/* 헤더: 멤버 수 + 액션 버튼 */}
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-base font-semibold">멤버 ({ctx.members.length})</h2>
         <div className="flex items-center gap-1">
@@ -971,161 +486,75 @@ function ProjectMembersContent({
             />
           )}
           {ctx.permissions.canEdit && availableMembers.length > 0 && (
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="h-7 text-xs">
-                <Plus className="h-3 w-3 mr-1" />
-                멤버 추가
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-sm">
-              <DialogHeader>
-                <DialogTitle>멤버 추가</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3">
-                <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="멤버를 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableMembers.map((m) => (
-                      <SelectItem key={m.userId} value={m.userId}>
-                        {m.nickname || m.profile.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  className="w-full"
-                  onClick={handleAddMember}
-                  disabled={!selectedUserId || submitting}
-                >
-                  {submitting ? "추가 중..." : "추가"}
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="h-7 text-xs">
+                  <Plus className="h-3 w-3 mr-1" />
+                  멤버 추가
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>멤버 추가</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="멤버를 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableMembers.map((m) => (
+                        <SelectItem key={m.userId} value={m.userId}>
+                          {m.nickname || m.profile.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    className="w-full"
+                    onClick={handleAddMember}
+                    disabled={!selectedUserId || submitting}
+                  >
+                    {submitting ? "추가 중..." : "추가"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       </div>
 
       {/* 검색 / 역할 필터 / 정렬 툴바 */}
-      <div className="flex items-center gap-1.5 mb-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-          <Input
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="멤버 검색"
-            className="h-7 pl-6 text-xs"
-          />
-        </div>
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-24 h-7 text-xs shrink-0">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">전체</SelectItem>
-            <SelectItem value="leader">리더</SelectItem>
-            <SelectItem value="sub_leader">서브리더</SelectItem>
-            <SelectItem value="member">멤버</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sortOrder} onValueChange={setSortOrder}>
-          <SelectTrigger className="w-24 h-7 text-xs shrink-0">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">이름순</SelectItem>
-            <SelectItem value="joined">가입일순</SelectItem>
-          </SelectContent>
-        </Select>
-        <MemberAdvancedFilter
-          filter={advFilter}
-          activeCount={advActiveCount}
-          onToggleRole={advToggleRole}
-          onSetJoinedFrom={advSetJoinedFrom}
-          onSetJoinedTo={advSetJoinedTo}
-          onSetAttendanceMin={advSetAttendanceMin}
-          onSetAttendanceMax={advSetAttendanceMax}
-          onReset={advResetFilter}
-        />
-      </div>
+      <MemberListHeader
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        roleFilter={roleFilter}
+        onRoleFilterChange={(v) => setFilter("role", v)}
+        sortOrder={sortOrder}
+        onSortOrderChange={(v) => setFilter("sort", v)}
+        advFilter={advFilter}
+        advActiveCount={advActiveCount}
+        onAdvToggleRole={advToggleRole}
+        onAdvSetJoinedFrom={advSetJoinedFrom}
+        onAdvSetJoinedTo={advSetJoinedTo}
+        onAdvSetAttendanceMin={advSetAttendanceMin}
+        onAdvSetAttendanceMax={advSetAttendanceMax}
+        onAdvReset={advResetFilter}
+      />
 
-      {displayedMembers.length === 0 && ctx.members.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title="프로젝트 멤버가 없습니다"
-          description="그룹 멤버를 추가해 프로젝트에 참여시켜보세요."
-          action={
-            ctx.permissions.canEdit && availableMembers.length > 0
-              ? { label: "멤버 추가", onClick: () => setAddOpen(true) }
-              : undefined
-          }
-        />
-      ) : displayedMembers.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title="검색 결과가 없습니다"
-          description="검색어나 필터를 변경해보세요."
-        />
-      ) : (
-      <div className="rounded-lg border divide-y">
-        {displayedMembers.map((member) => {
-            const displayName = member.nickname || member.profile.name;
-            return (
-              <div key={member.id} className="flex items-center justify-between px-3 py-2">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">
-                      {displayName?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <UserPopoverMenu
-                    userId={member.userId}
-                    displayName={displayName}
-                    groupId={ctx.groupId}
-                    className="text-sm truncate hover:underline text-left"
-                  >
-                    {displayName}
-                  </UserPopoverMenu>
-                  {member.role === "leader" && (
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                      프로젝트장
-                    </Badge>
-                  )}
-                </div>
-                {ctx.permissions.canEdit && (
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Select
-                      value={member.role}
-                      onValueChange={(val) => handleRoleChange(member.id, val)}
-                    >
-                      <SelectTrigger className="h-6 w-20 text-[11px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="leader">리더</SelectItem>
-                        <SelectItem value="member">멤버</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                      onClick={() => setRemoveTargetId(member.userId)}
-                      aria-label="멤버 삭제"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-      </div>
-      )}
+      {/* 멤버 목록 */}
+      <ProjectMemberListView
+        displayedMembers={displayedMembers}
+        totalMemberCount={ctx.members.length}
+        groupId={ctx.groupId}
+        canEdit={ctx.permissions.canEdit}
+        canAddMember={ctx.permissions.canEdit && availableMembers.length > 0}
+        onRoleChange={handleRoleChange}
+        onRemove={setRemoveTargetId}
+        onAddOpen={() => setAddOpen(true)}
+      />
 
+      {/* 멤버 제거 확인 다이얼로그 */}
       <ConfirmDialog
         open={!!removeTargetId}
         onOpenChange={(open) => {

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/ui/form-field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ShieldCheck, Send, MessageCirclePlus } from "lucide-react";
 import { toast } from "sonner";
@@ -21,6 +22,7 @@ import {
   useAnonymousFeedback,
   CATEGORY_LABELS,
 } from "@/hooks/use-anonymous-feedback";
+import { validateField, VALIDATION } from "@/lib/validation-rules";
 import type { FeedbackCategory } from "@/types";
 
 // ============================================
@@ -82,6 +84,7 @@ export function AnonymousFeedbackDialog({
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<FeedbackCategory>("praise");
   const [content, setContent] = useState("");
+  const [contentError, setContentError] = useState<string | null>(null);
   const { pending: submitting, execute } = useAsyncAction();
 
   const { sendFeedback, hasSentTo } = useAnonymousFeedback(groupId);
@@ -89,12 +92,16 @@ export function AnonymousFeedbackDialog({
   const alreadySent = hasSentTo(currentUserId, targetUserId);
   const MAX_LENGTH = 300;
 
+  // content blur 시 검증
+  const handleContentBlur = () => {
+    setContentError(validateField(content, VALIDATION.feedback));
+  };
+
   const handleSubmit = async () => {
-    if (!content.trim()) {
-      toast.error(TOAST.MEMBERS.ANON_CONTENT_MIN);
-      return;
-    }
-    if (content.trim().length < 5) {
+    // 최종 검증
+    const err = validateField(content, VALIDATION.feedback);
+    setContentError(err);
+    if (err) {
       toast.error(TOAST.MEMBERS.ANON_CONTENT_MIN);
       return;
     }
@@ -112,6 +119,7 @@ export function AnonymousFeedbackDialog({
     setOpen(next);
     if (!next) {
       setContent("");
+      setContentError(null);
       setCategory("praise");
     }
   };
@@ -124,8 +132,9 @@ export function AnonymousFeedbackDialog({
             variant="ghost"
             size="sm"
             className="h-7 text-xs text-muted-foreground hover:text-foreground px-2"
+            aria-label={`${targetName}에게 익명 피드백 보내기`}
           >
-            <MessageCirclePlus className="h-3 w-3 mr-1" />
+            <MessageCirclePlus className="h-3 w-3 mr-1" aria-hidden="true" />
             익명 피드백
           </Button>
         )}
@@ -140,8 +149,8 @@ export function AnonymousFeedbackDialog({
 
         {alreadySent ? (
           // 이미 보낸 경우
-          <div className="py-8 text-center space-y-2">
-            <MessageCirclePlus className="h-8 w-8 text-muted-foreground mx-auto" />
+          <div className="py-8 text-center space-y-2" role="status">
+            <MessageCirclePlus className="h-8 w-8 text-muted-foreground mx-auto" aria-hidden="true" />
             <p className="text-xs text-muted-foreground">
               이미 이 멤버에게 피드백을 보냈습니다
             </p>
@@ -150,11 +159,14 @@ export function AnonymousFeedbackDialog({
           <div className="space-y-4">
             {/* 카테고리 선택 */}
             <div className="space-y-2">
-              <Label className="text-xs font-medium">카테고리</Label>
+              <Label className="text-xs font-medium" id="feedback-category-label">
+                카테고리
+              </Label>
               <RadioGroup
                 value={category}
                 onValueChange={(val) => setCategory(val as FeedbackCategory)}
                 className="grid grid-cols-2 gap-2"
+                aria-labelledby="feedback-category-label"
               >
                 {CATEGORIES.map((cat) => (
                   <div
@@ -162,7 +174,11 @@ export function AnonymousFeedbackDialog({
                     className="flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => setCategory(cat)}
                   >
-                    <RadioGroupItem value={cat} id={`anon-fb-${cat}`} />
+                    <RadioGroupItem
+                      value={cat}
+                      id={`anon-fb-${cat}`}
+                      aria-label={CATEGORY_LABELS[cat]}
+                    />
                     <Label
                       htmlFor={`anon-fb-${cat}`}
                       className="cursor-pointer"
@@ -179,23 +195,33 @@ export function AnonymousFeedbackDialog({
             </div>
 
             {/* 내용 입력 */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">내용</Label>
+            <FormField
+              label="내용"
+              htmlFor="anon-feedback-content"
+              required
+              error={contentError}
+              description="구체적이고 건설적인 내용을 작성해 주세요 (5자~300자)"
+            >
               <Textarea
+                id="anon-feedback-content"
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  if (contentError) setContentError(validateField(e.target.value, VALIDATION.feedback));
+                }}
+                onBlur={handleContentBlur}
                 placeholder="구체적이고 건설적인 내용을 작성해 주세요"
                 maxLength={MAX_LENGTH}
+                showCharCount
                 className="min-h-[90px] text-xs resize-none"
+                aria-invalid={!!contentError}
+                aria-required="true"
               />
-              <p className="text-[10px] text-muted-foreground text-right">
-                {content.length}/{MAX_LENGTH}
-              </p>
-            </div>
+            </FormField>
 
             {/* 익명 안내 */}
-            <div className="flex items-start gap-2 rounded-md bg-muted/60 px-3 py-2">
-              <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+            <div className="flex items-start gap-2 rounded-md bg-muted/60 px-3 py-2" role="note">
+              <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
               <p className="text-[10px] text-muted-foreground leading-relaxed">
                 익명으로 전송됩니다. 작성자 정보는 절대 공개되지 않습니다.
               </p>
@@ -206,8 +232,9 @@ export function AnonymousFeedbackDialog({
               className="w-full h-8 text-xs"
               onClick={handleSubmit}
               disabled={submitting || !content.trim() || content.trim().length < 5}
+              aria-label={`${targetName}에게 익명으로 피드백 전송`}
             >
-              <Send className="h-3 w-3 mr-1.5" />
+              <Send className="h-3 w-3 mr-1.5" aria-hidden="true" />
               익명으로 전송
             </Button>
           </div>
