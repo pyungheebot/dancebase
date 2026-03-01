@@ -6,6 +6,8 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { SWRProvider } from "@/lib/swr/provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PwaInstallPrompt } from "@/components/shared/pwa-install-prompt";
+import { WebVitalsReporter } from "@/components/shared/web-vitals-reporter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -80,6 +82,8 @@ export default function RootLayout({
               <TooltipProvider>
                 {children}
                 <Toaster richColors position="top-center" />
+                <PwaInstallPrompt />
+                <WebVitalsReporter />
               </TooltipProvider>
             </SettingsProvider>
           </SWRProvider>

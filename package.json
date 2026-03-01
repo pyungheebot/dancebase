@@ -12,7 +12,9 @@
     "db:migrate": "supabase db push --linked",
     "db:new": "supabase migration new",
     "db:reset": "supabase db reset --linked",
-    "db:status": "supabase migration list --linked"
+    "db:status": "supabase migration list --linked",
+    "analyze": "ANALYZE=true next build",
+    "clean": "rm -rf .next"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
@@ -31,7 +33,8 @@
     "react-hook-form": "^7.71.2",
     "sonner": "^2.0.7",
     "swr": "^2.4.0",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "web-vitals": "^5.1.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

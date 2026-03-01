@@ -4,8 +4,8 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: "/",
-      disallow: ["/api/", "/dashboard/", "/groups/", "/profile/", "/messages/", "/settings/"],
+      allow: ["/", "/explore", "/groups/"],
+      disallow: ["/api/", "/dashboard/", "/profile/", "/messages/", "/settings/", "/stats/"],
     },
     sitemap: "https://dancebase.app/sitemap.xml",
   };
