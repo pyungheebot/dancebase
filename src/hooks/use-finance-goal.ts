@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { FinanceGoal } from "@/types";
 import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
+import logger from "@/lib/logger";
 
 const STORAGE_KEY_PREFIX = "finance-goal-";
 
@@ -52,7 +53,7 @@ export function useFinanceGoal(groupId: string, projectId?: string | null) {
       const { data, error } = await query;
 
       if (error) {
-        console.error("수입 조회 실패:", error);
+        logger.error("수입 조회 실패", "useFinanceGoal", error);
         setCurrentIncome(0);
         return;
       }

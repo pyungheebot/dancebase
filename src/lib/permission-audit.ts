@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import logger from "@/lib/logger";
 
 type LogPermissionChangeParams = {
   groupId: string;
@@ -27,6 +28,6 @@ export async function logPermissionChange(
   });
 
   if (error) {
-    console.error("권한 감사 로그 기록 실패:", error.message);
+    logger.error("권한 감사 로그 기록 실패", "permissionAudit", error.message);
   }
 }

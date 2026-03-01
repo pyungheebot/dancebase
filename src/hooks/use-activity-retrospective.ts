@@ -7,6 +7,7 @@ import { ActivityRetrospective } from "@/types";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/local-storage";
+import logger from "@/lib/logger";
 
 const CACHE_KEY_PREFIX = "dancebase:retrospective:";
 const MAX_CACHED_MONTHS = 12;
@@ -182,7 +183,7 @@ export function useActivityRetrospective(groupId: string) {
       toast.success(`${month} 활동 회고 리포트가 생성되었습니다.`);
       return report;
     } catch (err) {
-      console.error("[useActivityRetrospective] generateReport error:", err);
+      logger.error("generateReport error", "useActivityRetrospective", err);
       toast.error(TOAST.REPORT.CREATE_ERROR);
       return null;
     }

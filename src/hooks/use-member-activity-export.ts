@@ -10,6 +10,7 @@ import type {
   MemberActivityExportItems,
   MemberActivityExportData,
 } from "@/types";
+import logger from "@/lib/logger";
 
 /** 기간 옵션 → 시작 날짜(ISO 문자열) 변환. "all"이면 null 반환 */
 function periodToStartDate(period: MemberActivityExportPeriod): string | null {
@@ -183,7 +184,7 @@ export function useMemberActivityExport() {
 
       toast.success(`${memberName}님의 활동 내역을 내보냈습니다.`);
     } catch (err) {
-      console.error("활동 내보내기 오류:", err);
+      logger.error("활동 내보내기 오류", "useMemberActivityExport", err);
       toast.error(TOAST.EXPORT_ERROR);
     } finally {
       setLoading(false);

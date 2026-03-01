@@ -92,8 +92,10 @@ export function LocationAutocomplete({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!shouldShow) {
       if (e.key === "ArrowDown" && history.length > 0) {
+        e.preventDefault();
         setOpen(true);
-        setActiveIndex(0);
+        // open이 false → true로 바뀌는 렌더 후 인덱스 설정
+        setTimeout(() => setActiveIndex(0), 0);
       }
       return;
     }
@@ -102,12 +104,18 @@ export function LocationAutocomplete({
       case "ArrowDown":
         e.preventDefault();
         setActiveIndex((prev) =>
-          prev < history.length - 1 ? prev + 1 : prev
+          prev < history.length - 1 ? prev + 1 : 0
         );
         break;
       case "ArrowUp":
         e.preventDefault();
-        setActiveIndex((prev) => (prev > 0 ? prev - 1 : 0));
+        setActiveIndex((prev) => {
+          if (prev <= 0) {
+            // 첫 항목에서 Up → 입력창으로 포커스 복귀, 인덱스 해제
+            return -1;
+          }
+          return prev - 1;
+        });
         break;
       case "Enter":
         if (activeIndex >= 0 && history[activeIndex]) {

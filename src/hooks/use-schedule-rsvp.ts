@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { optimisticMutate } from "@/lib/swr/optimistic";
 import type { ScheduleRsvpSummary, ScheduleRsvpResponse } from "@/types";
 
 export function useScheduleRsvp(scheduleId: string | null) {
@@ -64,59 +65,63 @@ export function useScheduleRsvp(scheduleId: string | null) {
     };
   };
 
-  // RSVP 제출 (낙관적 업데이트 + 서버 요청 + 실패 시 롤백)
+  // RSVP 제출 (낙관적 업데이트 + 서버 요청 + 실패 시 자동 롤백)
   const submitRsvp = async (userId: string, response: ScheduleRsvpResponse) => {
     if (!scheduleId) return;
-    const previousData = data;
 
-    // 1. 낙관적 업데이트: 즉시 로컬 상태 변경 (revalidate 없이)
-    await mutate(buildOptimisticData(data, response), { revalidate: false });
+    const key = swrKeys.scheduleRsvp(scheduleId);
+    const ok = await optimisticMutate<ScheduleRsvpSummary | null>(
+      key,
+      (current) => buildOptimisticData(current, response),
+      async () => {
+        const supabase = createClient();
+        const { error } = await supabase.from("schedule_rsvp").upsert(
+          {
+            schedule_id: scheduleId,
+            user_id: userId,
+            response,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "schedule_id,user_id" }
+        );
+        if (error) throw error;
+      },
+      {
+        revalidate: true,  // 성공 후 서버 최신값으로 재검증
+        rollbackOnError: true,
+      }
+    );
 
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.from("schedule_rsvp").upsert(
-        {
-          schedule_id: scheduleId,
-          user_id: userId,
-          response,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "schedule_id,user_id" }
-      );
-      if (error) throw error;
-
-      // 2. 서버 상태로 최종 재검증
-      await mutate();
-    } catch (err) {
-      // 3. 실패 시 이전 상태로 롤백
-      await mutate(previousData, { revalidate: false });
-      throw err;
+    if (!ok) {
+      throw new Error("RSVP 제출에 실패했습니다.");
     }
   };
 
-  // RSVP 취소 (낙관적 업데이트 + 서버 요청 + 실패 시 롤백)
+  // RSVP 취소 (낙관적 업데이트 + 서버 요청 + 실패 시 자동 롤백)
   const cancelRsvp = async (userId: string) => {
     if (!scheduleId) return;
-    const previousData = data;
 
-    // 1. 낙관적 업데이트: my_response를 null로 즉시 변경
-    await mutate(buildOptimisticData(data, null), { revalidate: false });
+    const key = swrKeys.scheduleRsvp(scheduleId);
+    const ok = await optimisticMutate<ScheduleRsvpSummary | null>(
+      key,
+      (current) => buildOptimisticData(current, null),
+      async () => {
+        const supabase = createClient();
+        const { error } = await supabase
+          .from("schedule_rsvp")
+          .delete()
+          .eq("schedule_id", scheduleId)
+          .eq("user_id", userId);
+        if (error) throw error;
+      },
+      {
+        revalidate: true,
+        rollbackOnError: true,
+      }
+    );
 
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("schedule_rsvp")
-        .delete()
-        .eq("schedule_id", scheduleId)
-        .eq("user_id", userId);
-      if (error) throw error;
-
-      // 2. 서버 상태로 최종 재검증
-      await mutate();
-    } catch (err) {
-      // 3. 실패 시 이전 상태로 롤백
-      await mutate(previousData, { revalidate: false });
-      throw err;
+    if (!ok) {
+      throw new Error("RSVP 취소에 실패했습니다.");
     }
   };
 

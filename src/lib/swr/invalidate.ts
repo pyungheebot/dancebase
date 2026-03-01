@@ -989,3 +989,53 @@ export function invalidatePaymentMethods(groupId: string) {
 export function invalidateSettlementRequests(groupId: string) {
   mutate(swrKeys.settlementRequests(groupId));
 }
+
+/**
+ * 패턴 배열로 여러 SWR 캐시 키를 일괄 무효화
+ * key가 패턴 중 하나라도 startsWith 매칭되면 무효화
+ *
+ * @param patterns - 무효화할 키 접두사 패턴 목록
+ *
+ * @example
+ * invalidateRelated(["/groups/abc/board", "/groups/abc/finance"]);
+ */
+export function invalidateRelated(patterns: string[]): void {
+  mutate(
+    (key: unknown) =>
+      typeof key === "string" &&
+      patterns.some((pattern) => key.startsWith(pattern)),
+    undefined,
+    { revalidate: true }
+  );
+}
+
+/**
+ * 메시지/대화 관련 캐시 일괄 무효화
+ * 새 메시지 송수신, 대화 상태 변경 후 호출
+ */
+export function invalidateMessages(): void {
+  mutate(swrKeys.conversations());
+  mutate(swrKeys.unreadCount());
+}
+
+/**
+ * 특정 그룹의 일정 관련 캐시 일괄 무효화
+ * 일정 생성/수정/삭제 후 호출
+ */
+export function invalidateGroupSchedules(groupId: string): void {
+  // 프리픽스 매칭으로 project 파라미터가 붙은 캐시도 한 번에 무효화
+  mutate(
+    (key: unknown) =>
+      typeof key === "string" &&
+      key.startsWith(`/groups/${groupId}/schedules`),
+    undefined,
+    { revalidate: true }
+  );
+  mutate(
+    (key: unknown) =>
+      typeof key === "string" &&
+      key.startsWith(`/upcoming-schedules/${groupId}`),
+    undefined,
+    { revalidate: true }
+  );
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Component, type ReactNode, type ErrorInfo } from "react";
+import logger from "@/lib/logger";
 
 interface Props {
   children: ReactNode;
@@ -21,7 +22,11 @@ export class CardErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error(`[CardErrorBoundary] ${this.props.cardName || "Unknown"}:`, error, errorInfo);
+    logger.error(
+      `${this.props.cardName || "Unknown"}: ${error.message}`,
+      "CardErrorBoundary",
+      errorInfo
+    );
   }
 
   render() {

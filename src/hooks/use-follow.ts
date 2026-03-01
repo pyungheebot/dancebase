@@ -5,9 +5,15 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateProfile, invalidateFollowList, invalidateSuggestedFollows } from "@/lib/swr/invalidate";
+import { optimisticMutate } from "@/lib/swr/optimistic";
 import { useAuth } from "@/hooks/use-auth";
 import { createNotification } from "@/lib/notifications";
 import type { Profile } from "@/types";
+
+type FollowStatus = {
+  isFollowing: boolean;
+  isFollowedBy: boolean;
+};
 
 export function useFollow(targetUserId: string) {
   const { user } = useAuth();
@@ -51,53 +57,53 @@ export function useFollow(targetUserId: string) {
   const loaded = !!data || !swrKey;
 
   const toggleFollow = async () => {
-    if (!user || toggling) return;
+    if (!user || toggling || !swrKey) return;
     setToggling(true);
-    const supabase = createClient();
 
     const newIsFollowing = !isFollowing;
+    const supabase = createClient();
 
-    // 낙관적 업데이트
-    mutate(
-      { isFollowing: newIsFollowing, isFollowedBy },
-      false,
-    );
+    // optimisticMutate: 즉시 UI 반영 + 실패 시 자동 롤백
+    await optimisticMutate<FollowStatus>(
+      swrKey,
+      () => ({ isFollowing: newIsFollowing, isFollowedBy }),
+      async () => {
+        if (isFollowing) {
+          const { error } = await supabase
+            .from("follows")
+            .delete()
+            .eq("follower_id", user.id)
+            .eq("following_id", targetUserId);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from("follows").insert({
+            follower_id: user.id,
+            following_id: targetUserId,
+          });
+          if (error) throw error;
 
-    try {
-      if (isFollowing) {
-        await supabase
-          .from("follows")
-          .delete()
-          .eq("follower_id", user.id)
-          .eq("following_id", targetUserId);
-      } else {
-        await supabase.from("follows").insert({
-          follower_id: user.id,
-          following_id: targetUserId,
-        });
+          // 팔로우 알림 발송 (fire-and-forget, 실패해도 롤백 불필요)
+          createNotification({
+            userId: targetUserId,
+            type: "new_follow",
+            title: "새 팔로워",
+            message: `${user.user_metadata?.name ?? user.email ?? "누군가"}님이 회원님을 팔로우합니다.`,
+            link: `/users/${user.id}`,
+          });
+        }
 
-        // 팔로우 알림 발송
-        createNotification({
-          userId: targetUserId,
-          type: "new_follow",
-          title: "새 팔로워",
-          message: `${user.user_metadata?.name ?? user.email ?? "누군가"}님이 회원님을 팔로우합니다.`,
-          link: `/users/${user.id}`,
-        });
+        // 관련 캐시 무효화 (성공 시에만)
+        invalidateProfile(targetUserId);
+        invalidateProfile(user.id);
+        invalidateFollowList(targetUserId);
+        invalidateFollowList(user.id);
+        invalidateSuggestedFollows();
+      },
+      {
+        revalidate: true,   // 성공 후 팔로우 상태 서버에서 재검증
+        rollbackOnError: true,
       }
-
-      await mutate();
-
-      // 캐시 무효화
-      invalidateProfile(targetUserId);
-      invalidateProfile(user.id);
-      invalidateFollowList(targetUserId);
-      invalidateFollowList(user.id);
-      invalidateSuggestedFollows();
-    } catch {
-      // 실패 시 롤백
-      await mutate();
-    }
+    );
 
     setToggling(false);
   };

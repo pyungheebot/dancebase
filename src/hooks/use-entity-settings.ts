@@ -6,6 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import type { EntitySettingRow } from "@/types";
+import logger from "@/lib/logger";
 
 type UseEntitySettingsParams = {
   entityType: "group" | "project";
@@ -32,7 +33,7 @@ export function useEntitySettings<T extends Record<string, unknown>>(
         .maybeSingle();
 
       if (error) {
-        console.error("entity_settings 조회 오류:", error);
+        logger.error("entity_settings 조회 오류", "useEntitySettings", error);
         return null;
       }
 

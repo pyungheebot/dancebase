@@ -18,6 +18,7 @@ import {
   type PollShareOption,
 } from "@/lib/poll-share-renderer";
 import { toast } from "sonner";
+import logger from "@/lib/logger";
 
 interface PollShareCardProps {
   question: string;
@@ -54,7 +55,7 @@ export function PollShareCard({
       canvasRef.current = canvas;
       setPreviewSrc(canvas.toDataURL("image/png"));
     } catch (err) {
-      console.error(err);
+      logger.error("미리보기 생성 실패", "PollShareCard", err);
       toast.error("미리보기 생성에 실패했습니다.");
     } finally {
       setGenerating(false);
@@ -81,7 +82,7 @@ export function PollShareCard({
       downloadCanvasAsPng(canvasRef.current, `${question}_투표결과.png`);
       toast.success("이미지가 저장되었습니다.");
     } catch (err) {
-      console.error(err);
+      logger.error("이미지 저장 실패", "PollShareCard", err);
       toast.error("이미지 저장에 실패했습니다.");
     }
   };
@@ -99,7 +100,7 @@ export function PollShareCard({
         // 사용자가 공유 취소 — 무시
         return;
       }
-      console.error(err);
+      logger.error("공유 실패", "PollShareCard", err);
       toast.error("공유에 실패했습니다.");
     }
   };

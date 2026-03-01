@@ -85,10 +85,26 @@ export function CommandPalette() {
         value={query}
         onValueChange={setQuery}
       />
+      {/* 스크린리더: 결과 수 실시간 안내 */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {query.trim()
+          ? `${[...groupedCommands.values()].reduce((sum, items) => sum + items.length, 0)}개 결과`
+          : ""}
+      </div>
+
       <CommandList>
         <CommandEmpty>
-          <div className="flex flex-col items-center gap-1 py-2 text-muted-foreground">
-            <Search className="h-6 w-6 opacity-30" />
+          <div
+            className="flex flex-col items-center gap-1 py-2 text-muted-foreground"
+            role="alert"
+            aria-label="검색 결과 없음"
+          >
+            <Search className="h-6 w-6 opacity-30" aria-hidden="true" />
             <span className="text-xs">일치하는 결과가 없습니다.</span>
           </div>
         </CommandEmpty>

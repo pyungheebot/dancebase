@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import type { PostReadStatus } from "@/types";
 import type { GroupMemberWithProfile } from "@/types";
+import logger from "@/lib/logger";
 
 export type ReadStatusMember = {
   userId: string;
@@ -106,7 +107,7 @@ export function useMarkPostAsRead(postId: string, userId: string | null) {
 
       if (error) {
         // 읽음 처리 실패는 조용히 무시 (UX 방해하지 않음)
-        console.error("[post-read-status] 읽음 처리 실패:", error.message);
+        logger.error("읽음 처리 실패", "post-read-status", error.message);
         return;
       }
 

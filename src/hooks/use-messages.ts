@@ -7,6 +7,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { realtimeConfig } from "@/lib/swr/cache-config";
 import { useAuth } from "@/hooks/use-auth";
 import type { Conversation, Message } from "@/types";
+import logger from "@/lib/logger";
 
 export function useConversations() {
   const { user } = useAuth();
@@ -102,7 +103,7 @@ export function useConversation(partnerId: string) {
         .eq("receiver_id", user.id)
         .is("read_at", null)
         .then(({ error }: { error: unknown }) => {
-          if (error) console.error("Failed to mark messages as read:", error);
+          if (error) logger.error("Failed to mark messages as read", "useMessages", error);
         });
 
       const fetched = ((messagesRes.data as Message[]) ?? []).reverse();
@@ -156,7 +157,7 @@ export function useConversation(partnerId: string) {
         .limit(PAGE_SIZE);
 
       if (error) {
-        console.error("Failed to load older messages:", error);
+        logger.error("Failed to load older messages", "useMessages", error);
         return;
       }
 

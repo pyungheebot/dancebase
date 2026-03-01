@@ -1,5 +1,6 @@
 import type { SWRConfiguration } from "swr";
 import { shouldRetryOnError, retryDelay, isAuthError } from "./error-handler";
+import logger from "@/lib/logger";
 
 /**
  * SWR 글로벌 기본값
@@ -23,10 +24,7 @@ export const swrConfig: SWRConfiguration = {
   onError: (error, key) => {
     // 인증 에러는 auth provider에서 처리하므로 무시
     if (isAuthError(error)) return;
-    // 개발 환경에서만 상세 로그 출력
-    if (process.env.NODE_ENV === "development") {
-      console.error(`[SWR] ${key}:`, error);
-    }
+    logger.error(`${key}:`, "SWR", error);
   },
   // SWR 내장 재시도를 비활성화하고 onErrorRetry로 직접 제어
   shouldRetryOnError: true,

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { realtimeConfig } from "@/lib/swr/cache-config";
 import { invalidateNotifications } from "@/lib/swr/invalidate";
+import { optimisticMutateMany, type OptimisticTarget } from "@/lib/swr/optimistic";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import type { Notification } from "@/types";
@@ -94,23 +95,39 @@ export function useNotifications(limit = 10) {
   }, []);
 
   const markAsRead = async (notificationId: string) => {
-    // Optimistic: 즉시 UI 업데이트
-    await mutate(
-      (prev) => prev?.map((n) => n.id === notificationId ? { ...n, is_read: true } : n),
-      false
-    );
-    // 서버 반영
     const supabase = createClient();
-    const { error } = await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("id", notificationId);
 
-    if (error) {
-      // 롤백
-      mutate();
-      toast.error(TOAST.NOTIFICATION.READ_ERROR);
-    }
+    // notifications 목록 + 읽지 않은 카운트를 동시에 낙관적 업데이트
+    // 각 타겟이 서로 다른 타입(Notification[], number)이므로 unknown으로 캐스팅
+    await optimisticMutateMany(
+      [
+        {
+          key: swrKeys.notifications(),
+          updater: (prev: unknown) =>
+            ((prev as Notification[] | undefined) ?? []).map((n) =>
+              n.id === notificationId ? { ...n, is_read: true } : n
+            ),
+        },
+        {
+          key: swrKeys.unreadNotificationCount(),
+          updater: (prev: unknown) => Math.max(0, ((prev as number | undefined) ?? 0) - 1),
+        },
+      ] as OptimisticTarget<unknown>[],
+      async () => {
+        const { error } = await supabase
+          .from("notifications")
+          .update({ is_read: true })
+          .eq("id", notificationId);
+
+        if (error) throw error;
+      },
+      {
+        revalidate: false, // 서버 반영 확인 없이 낙관적 상태 유지
+        onError: () => {
+          toast.error(TOAST.NOTIFICATION.READ_ERROR);
+        },
+      }
+    );
   };
 
   const markAllAsRead = async () => {
@@ -120,23 +137,35 @@ export function useNotifications(limit = 10) {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Optimistic: 즉시 UI 업데이트
-    await mutate(
-      (prev) => prev?.map((n) => ({ ...n, is_read: true })),
-      false
-    );
-    // 서버 반영
-    const { error } = await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("user_id", user.id)
-      .eq("is_read", false);
+    // 현재 읽지 않은 알림 수 (롤백 시 복원용으로 optimisticMutateMany가 자동 처리)
+    await optimisticMutateMany(
+      [
+        {
+          key: swrKeys.notifications(),
+          updater: (prev: unknown) =>
+            ((prev as Notification[] | undefined) ?? []).map((n) => ({ ...n, is_read: true })),
+        },
+        {
+          key: swrKeys.unreadNotificationCount(),
+          updater: () => 0,
+        },
+      ] as OptimisticTarget<unknown>[],
+      async () => {
+        const { error } = await supabase
+          .from("notifications")
+          .update({ is_read: true })
+          .eq("user_id", user.id)
+          .eq("is_read", false);
 
-    if (error) {
-      // 롤백
-      mutate();
-      toast.error(TOAST.NOTIFICATION.READ_ERROR);
-    }
+        if (error) throw error;
+      },
+      {
+        revalidate: false,
+        onError: () => {
+          toast.error(TOAST.NOTIFICATION.READ_ERROR);
+        },
+      }
+    );
   };
 
   return {

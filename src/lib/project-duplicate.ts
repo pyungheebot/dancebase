@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import logger from "@/lib/logger";
 
 export type DuplicateOptions = {
   boardCategories: boolean;
@@ -76,7 +77,7 @@ export async function duplicateProject(
 
   if (memberError) {
     // 멤버 추가 실패는 치명적이지 않으므로 경고만 로그
-    console.warn("프로젝트 멤버 추가 실패:", memberError.message);
+    logger.warn("프로젝트 멤버 추가 실패", "projectDuplicate", memberError.message);
   }
 
   // 4. 멤버 구성 복사 (복제한 사용자 본인 제외)
@@ -99,7 +100,7 @@ export async function duplicateProject(
         .insert(toInsert);
 
       if (membersInsertError) {
-        console.warn("멤버 복사 실패:", membersInsertError.message);
+        logger.warn("멤버 복사 실패", "projectDuplicate", membersInsertError.message);
       }
     }
   }

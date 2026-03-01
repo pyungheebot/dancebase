@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import logger from "@/lib/logger";
 
 interface PageErrorProps {
   title: string;
@@ -13,7 +14,7 @@ interface PageErrorProps {
 
 export function PageError({ title, error, reset }: PageErrorProps) {
   useEffect(() => {
-    console.error(error);
+    logger.error(error.message, "PageError", error);
   }, [error]);
 
   return (
