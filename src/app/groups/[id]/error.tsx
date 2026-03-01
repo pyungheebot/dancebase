@@ -1,30 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { PageError } from "@/components/shared/page-error";
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="text-center space-y-4 max-w-md">
-        <AlertTriangle className="h-12 w-12 text-destructive mx-auto" />
-        <h2 className="text-xl font-semibold">그룹을 불러올 수 없습니다</h2>
-        <p className="text-muted-foreground">
-          그룹 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.
-        </p>
-        <Button onClick={reset}>다시 시도</Button>
-      </div>
-    </div>
-  );
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  return <PageError title="그룹을 불러올 수 없습니다" error={error} reset={reset} />;
 }

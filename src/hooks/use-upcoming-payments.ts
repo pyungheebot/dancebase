@@ -44,10 +44,16 @@ export function useUpcomingPayments() {
 
       if (memberError || !memberGroups || memberGroups.length === 0) return [];
 
-      const groupIds = memberGroups.map((m: { group_id: string }) => m.group_id);
+      type MemberGroupRow = {
+        group_id: string;
+        groups: { id: string; name: string } | null;
+      };
+
+      const typedMemberGroups = memberGroups as MemberGroupRow[];
+      const groupIds = typedMemberGroups.map((m) => m.group_id);
       const groupNameMap: Record<string, string> = {};
-      for (const m of memberGroups) {
-        const g = m.groups as unknown as { id: string; name: string } | null;
+      for (const m of typedMemberGroups) {
+        const g = m.groups;
         if (g) groupNameMap[g.id] = g.name;
       }
 
@@ -77,7 +83,7 @@ export function useUpcomingPayments() {
         projects: { id: string; name: string } | null;
       };
 
-      const results: UpcomingPayment[] = (transactions as unknown as TxRow[]).map((tx) => {
+      const results: UpcomingPayment[] = (transactions as TxRow[]).map((tx) => {
         return {
           id: tx.id,
           title: tx.title,

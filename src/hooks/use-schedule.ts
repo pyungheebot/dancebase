@@ -99,7 +99,7 @@ export function useAttendance(scheduleId: string) {
     const supabase = createClient();
     const { data } = await supabase
       .from("attendance")
-      .select("id, schedule_id, user_id, status, checked_at, check_in_latitude, check_in_longitude, checked_out_at, check_out_latitude, check_out_longitude, excuse_reason, excuse_status, profiles(*)")
+      .select("id, schedule_id, user_id, status, checked_at, check_in_latitude, check_in_longitude, checked_out_at, check_out_latitude, check_out_longitude, excuse_reason, excuse_status, profiles(id, name, avatar_url)")
       .eq("schedule_id", scheduleId);
 
     return (data ?? []) as AttendanceWithProfile[];

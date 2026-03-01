@@ -74,7 +74,7 @@ export function useProjectDetail(projectId: string) {
 
     const [projectRes, membersRes] = await Promise.all([
       supabase.from("projects").select("*").eq("id", projectId).single(),
-      supabase.from("project_members").select("*, profiles(*)").eq("project_id", projectId).order("joined_at"),
+      supabase.from("project_members").select("*, profiles(id, name, avatar_url)").eq("project_id", projectId).order("joined_at"),
     ]);
 
     const project = (projectRes.data as Project) ?? null;

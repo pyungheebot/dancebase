@@ -171,14 +171,17 @@ export function DashboardContent({ ctx }: DashboardContentProps) {
     const [postsRes, txnsRes] = await Promise.all([postsQuery, txnsQuery]);
 
     if (postsRes.data) {
-      type RawPost = (typeof postsRes.data)[number];
+      type RawPost = {
+        comment_count: { count: number }[] | number | null;
+        [key: string]: unknown;
+      };
       setRecentPosts(
-        postsRes.data.map((p: RawPost) => ({
+        (postsRes.data as RawPost[]).map((p) => ({
           ...p,
           comment_count: Array.isArray(p.comment_count)
-            ? (p.comment_count[0] as { count: number })?.count ?? 0
+            ? p.comment_count[0]?.count ?? 0
             : 0,
-        })) as unknown as BoardPostWithDetails[]
+        })) as BoardPostWithDetails[]
       );
     }
     if (txnsRes.data) setRecentTransactions(txnsRes.data as FinanceTransaction[]);
@@ -195,7 +198,7 @@ export function DashboardContent({ ctx }: DashboardContentProps) {
       const supabase = createClient();
       const { data } = await supabase
         .from("attendance")
-        .select("*, profiles(*)")
+        .select("*, profiles(id, name, avatar_url)")
         .eq("schedule_id", nextSchedule.id);
       if (data) setNextScheduleAttendance(data as AttendanceWithProfile[]);
     }

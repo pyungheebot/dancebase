@@ -172,7 +172,7 @@ export function AttendanceContent({
     setLoadingAttendance(true);
     const { data } = await supabase
       .from("attendance")
-      .select("*, profiles(*)")
+      .select("*, profiles(id, name, avatar_url)")
       .eq("schedule_id", selectedScheduleId);
     if (data) setAttendance(data as AttendanceWithProfile[]);
     setLoadingAttendance(false);

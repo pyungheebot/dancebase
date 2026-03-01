@@ -43,11 +43,13 @@ export function useEntitySettings<T extends Record<string, unknown>>(
   const value: T = (data?.value as T) ?? defaultValue;
 
   const save = async (newValue: T): Promise<{ error: Error | null }> => {
+    // T extends Record<string, unknown>이므로 직접 할당 가능
+    const valueAsRecord = newValue as Record<string, unknown>;
     // Optimistic: 즉시 UI 업데이트
     await mutate(
       (prev) => prev
-        ? { ...prev, value: newValue as unknown as Record<string, unknown>, updated_at: new Date().toISOString() }
-        : ({ id: "", entity_type: entityType, entity_id: entityId, key, value: newValue as unknown as Record<string, unknown>, updated_at: new Date().toISOString() } satisfies EntitySettingRow),
+        ? { ...prev, value: valueAsRecord, updated_at: new Date().toISOString() }
+        : ({ id: "", entity_type: entityType, entity_id: entityId, key, value: valueAsRecord, updated_at: new Date().toISOString() } satisfies EntitySettingRow),
       false
     );
 
@@ -57,7 +59,7 @@ export function useEntitySettings<T extends Record<string, unknown>>(
         entity_type: entityType,
         entity_id: entityId,
         key,
-        value: newValue as unknown as Record<string, unknown>,
+        value: valueAsRecord,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "entity_type,entity_id,key" }

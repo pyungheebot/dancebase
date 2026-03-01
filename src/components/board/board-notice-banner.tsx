@@ -77,15 +77,19 @@ function useBoardNotices(groupId: string, projectId?: string | null, userId?: st
         );
       }
 
+      type RawNoticePost = {
+        board_comments: { count: number }[] | null;
+        board_post_likes: { count: number }[] | null;
+        [key: string]: unknown;
+      };
+
       const { data: rows, error } = await query;
       if (error || !rows) return [] as BoardPostWithDetails[];
 
-      return rows.map((post: Record<string, unknown>) => ({
+      return (rows as RawNoticePost[]).map((post) => ({
         ...post,
-        comment_count:
-          (post.board_comments as { count: number }[])?.[0]?.count ?? 0,
-        like_count:
-          (post.board_post_likes as { count: number }[])?.[0]?.count ?? 0,
+        comment_count: post.board_comments?.[0]?.count ?? 0,
+        like_count: post.board_post_likes?.[0]?.count ?? 0,
         board_comments: undefined,
         board_post_likes: undefined,
       })) as unknown as BoardPostWithDetails[];

@@ -52,7 +52,7 @@ export function useGroupDetail(groupId: string) {
 
       const [groupRes, membersRes, categoriesRes] = await Promise.all([
         supabase.from("groups").select("id, name, description, invite_code, invite_code_enabled, invite_code_expires_at, created_by, created_at, group_type, visibility, join_policy, dance_genre, avatar_url, max_members, parent_group_id").eq("id", groupId).single(),
-        supabase.from("group_members").select("id, group_id, user_id, role, joined_at, nickname, category_id, dashboard_settings, profiles(*)").eq("group_id", groupId).order("joined_at"),
+        supabase.from("group_members").select("id, group_id, user_id, role, joined_at, nickname, category_id, dashboard_settings, profiles(id, name, avatar_url)").eq("group_id", groupId).order("joined_at"),
         supabase.from("member_categories").select("id, group_id, name, sort_order, color, created_at").eq("group_id", groupId).order("sort_order"),
       ]);
 

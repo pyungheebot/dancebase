@@ -25,13 +25,28 @@ export function useDeadlineProjects() {
       } = await supabase.auth.getUser();
       if (!user) return [];
 
+      type ProjectRow = {
+        id: string;
+        name: string;
+        group_id: string;
+        end_date: string | null;
+        status: string;
+        groups: { id: string; name: string } | null;
+      };
+
+      type MembershipRow = {
+        project_id: string;
+        projects: ProjectRow | null;
+      };
+
       // project_members → projects → groups 조인으로 조회
-      const { data: memberships, error } = await supabase
+      const { data: rawMemberships, error } = await supabase
         .from("project_members")
         .select(
           "project_id, projects(id, name, group_id, end_date, status, groups(id, name))"
         )
         .eq("user_id", user.id);
+      const memberships = rawMemberships as MembershipRow[] | null;
 
       if (error || !memberships) return [];
 
@@ -41,14 +56,7 @@ export function useDeadlineProjects() {
       const results: DeadlineProject[] = [];
 
       for (const m of memberships) {
-        const project = m.projects as unknown as {
-          id: string;
-          name: string;
-          group_id: string;
-          end_date: string | null;
-          status: string;
-          groups: { id: string; name: string } | null;
-        } | null;
+        const project = m.projects;
 
         if (!project) continue;
         if (!project.end_date) continue;

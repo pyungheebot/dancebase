@@ -105,18 +105,22 @@ export function useBoard(groupId: string, projectId?: string | null) {
       const to = from + PAGE_SIZE - 1;
       query = query.range(from, to);
 
-      const { data, count } = await query;
+      type RawBoardPost = {
+        board_comments: { count: number }[] | null;
+        board_post_likes: { count: number }[] | null;
+        [key: string]: unknown;
+      };
 
-      if (data) {
-        const posts = data.map((post: Record<string, unknown>) => ({
+      const { data: rawData, count } = await query;
+
+      if (rawData) {
+        const posts = ((rawData as RawBoardPost[]).map((post) => ({
           ...post,
-          comment_count:
-            (post.board_comments as { count: number }[])?.[0]?.count ?? 0,
-          like_count:
-            (post.board_post_likes as { count: number }[])?.[0]?.count ?? 0,
+          comment_count: post.board_comments?.[0]?.count ?? 0,
+          like_count: post.board_post_likes?.[0]?.count ?? 0,
           board_comments: undefined,
           board_post_likes: undefined,
-        })) as unknown as BoardPostWithDetails[];
+        })) as unknown) as BoardPostWithDetails[];
         return { posts, totalCount: count ?? 0 };
       }
 
@@ -342,7 +346,7 @@ export function useBoardTrash(groupId: string) {
         .order("deleted_at", { ascending: false });
 
       if (error) return [] as BoardTrashPost[];
-      return (data ?? []) as unknown as BoardTrashPost[];
+      return (data ?? []) as BoardTrashPost[];
     },
   );
 

@@ -11,6 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { FlipHorizontal, Maximize, SwitchCamera, VideoOff } from "lucide-react";
 
+interface WebkitHTMLVideoElement extends HTMLVideoElement {
+  webkitRequestFullscreen?: () => void;
+  webkitEnterFullscreen?: () => void;
+}
+
 export function MirrorModeDialog() {
   const [open, setOpen] = useState(false);
   const [supported, setSupported] = useState(false);
@@ -100,14 +105,14 @@ export function MirrorModeDialog() {
   };
 
   const handleFullscreen = () => {
-    const el = videoRef.current;
+    const el = videoRef.current as WebkitHTMLVideoElement | null;
     if (!el) return;
     if (el.requestFullscreen) {
       el.requestFullscreen();
-    } else if ((el as unknown as { webkitRequestFullscreen?: () => void }).webkitRequestFullscreen) {
-      (el as unknown as { webkitRequestFullscreen: () => void }).webkitRequestFullscreen();
-    } else if ((el as unknown as { webkitEnterFullscreen?: () => void }).webkitEnterFullscreen) {
-      (el as unknown as { webkitEnterFullscreen: () => void }).webkitEnterFullscreen();
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    } else if (el.webkitEnterFullscreen) {
+      el.webkitEnterFullscreen();
     }
   };
 

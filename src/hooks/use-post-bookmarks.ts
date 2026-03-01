@@ -36,9 +36,9 @@ export function usePostBookmarks(groupId?: string | null) {
       if (error) return [] as PostBookmarkWithPost[];
 
       // board_posts가 null인 항목은 이미 삭제된 게시글이므로 제외
-      const filtered = (data ?? []).filter(
-        (b: Record<string, unknown>) => b.board_posts !== null
-      ) as unknown as PostBookmarkWithPost[];
+      const filtered = ((data ?? []) as PostBookmarkWithPost[]).filter(
+        (b) => b.board_posts !== null
+      );
 
       if (groupId) {
         return filtered.filter(

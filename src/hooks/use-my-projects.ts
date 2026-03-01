@@ -18,18 +18,24 @@ export function useMyProjects() {
       } = await supabase.auth.getUser();
       if (!user) return {} as ProjectsByGroup;
 
+      type MembershipRow = {
+        project_id: string;
+        projects: Pick<Project, "id" | "name" | "group_id" | "status"> | null;
+      };
+
       // 프로젝트 멤버로 참여 중인 프로젝트
-      const { data: memberships } = await supabase
+      const { data: rawMemberships } = await supabase
         .from("project_members")
         .select("project_id, projects(id, name, group_id, status)")
         .eq("user_id", user.id);
+      const memberships = rawMemberships as MembershipRow[] | null;
 
       const grouped: ProjectsByGroup = {};
       const seen = new Set<string>();
 
       if (memberships) {
         for (const m of memberships) {
-          const project = m.projects as unknown as Pick<Project, "id" | "name" | "group_id" | "status"> | null;
+          const project = m.projects;
           if (!project || project.status === "종료") continue;
           seen.add(project.id);
           if (!grouped[project.group_id]) grouped[project.group_id] = [];
@@ -45,14 +51,20 @@ export function useMyProjects() {
 
       if (myGroups && myGroups.length > 0) {
         const groupIds = myGroups.map((g: { group_id: string }) => g.group_id);
-        const { data: sharedRows } = await supabase
+        type SharedRow = {
+          group_id: string;
+          projects: Pick<Project, "id" | "name" | "group_id" | "status"> | null;
+        };
+
+        const { data: rawSharedRows } = await supabase
           .from("project_shared_groups")
           .select("group_id, projects(id, name, group_id, status)")
           .in("group_id", groupIds);
+        const sharedRows = rawSharedRows as SharedRow[] | null;
 
         if (sharedRows) {
           for (const row of sharedRows) {
-            const project = row.projects as unknown as Pick<Project, "id" | "name" | "group_id" | "status"> | null;
+            const project = row.projects;
             if (!project || project.status === "종료" || seen.has(project.id)) continue;
             seen.add(project.id);
             // 공유 프로젝트는 공유받은 그룹 아래에 표시

@@ -65,7 +65,7 @@ export function useParentGroupMembers(parentGroupId: string | null) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("group_members")
-        .select("*, profiles(*)")
+        .select("*, profiles(id, name, avatar_url)")
         .eq("group_id", parentGroupId)
         .order("joined_at");
       if (error) return [];
