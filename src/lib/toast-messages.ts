@@ -1,3 +1,4 @@
+/** 전역 토스트 메시지 상수. 일관된 사용자 피드백을 위해 사용 */
 export const TOAST = {
   SAVE_SUCCESS: "저장되었습니다.",
   SAVE_ERROR: "저장에 실패했습니다.",

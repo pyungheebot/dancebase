@@ -1,9 +1,15 @@
 /**
  * 범용 CSV 생성 및 다운로드 유틸리티
  * UTF-8 BOM 포함 — 한글 Excel 호환
+ * @module csv-exporter
  */
 
-/** 단일 셀 값을 CSV 안전 문자열로 변환 */
+/**
+ * 단일 셀 값을 CSV 안전 문자열로 변환
+ * 쉼표, 줄바꿈, 큰따옴표가 포함된 경우 큰따옴표로 감싸고 내부 큰따옴표를 이스케이프
+ * @param value - 변환할 셀 값
+ * @returns CSV 규격에 맞게 이스케이프된 문자열
+ */
 function escapeCsvCell(value: string | number | null | undefined): string {
   const str = value == null ? "" : String(value);
   // 쉼표, 줄바꿈, 큰따옴표 포함 시 큰따옴표로 감쌈
@@ -15,8 +21,9 @@ function escapeCsvCell(value: string | number | null | undefined): string {
 
 /**
  * 헤더 + 행 배열을 UTF-8 BOM 포함 CSV 문자열로 변환
- * @param headers 헤더 행
- * @param rows    데이터 행 배열 (각 셀은 string)
+ * @param headers - 헤더 행 (열 이름 배열)
+ * @param rows - 데이터 행 배열 (각 셀은 string)
+ * @returns CRLF 줄바꿈으로 구분된 CSV 형식 문자열
  */
 export function generateCSV(headers: string[], rows: string[][]): string {
   const lines: string[] = [];
@@ -30,8 +37,8 @@ export function generateCSV(headers: string[], rows: string[][]): string {
 /**
  * CSV 문자열을 파일로 다운로드
  * BOM(\uFEFF) 추가로 Excel 한글 깨짐 방지
- * @param filename    파일명 (.csv 자동 추가)
- * @param csvContent  CSV 문자열
+ * @param filename - 파일명 (.csv 확장자 없으면 자동 추가)
+ * @param csvContent - CSV 문자열 (BOM 없이 전달, 내부에서 자동 추가)
  */
 export function downloadCSV(filename: string, csvContent: string): void {
   const bom = "\uFEFF";
@@ -47,10 +54,11 @@ export function downloadCSV(filename: string, csvContent: string): void {
 }
 
 /**
- * 헤더 + 데이터 행을 CSV 파일로 즉시 내보내기 (편의함수)
- * @param filename 파일명
- * @param headers  헤더 행
- * @param rows     데이터 행 배열
+ * 헤더 + 데이터 행을 CSV 파일로 즉시 내보내기 (편의 함수)
+ * generateCSV + downloadCSV를 한 번에 수행
+ * @param filename - 다운로드 파일명 (.csv 확장자 없으면 자동 추가)
+ * @param headers - 헤더 행 (열 이름 배열)
+ * @param rows - 데이터 행 배열 (string, number, null, undefined 혼용 가능)
  */
 export function exportToCsv(
   filename: string,

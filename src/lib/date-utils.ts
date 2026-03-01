@@ -6,47 +6,85 @@ function toDate(date: Date | string): Date {
   return typeof date === "string" ? new Date(date) : date;
 }
 
-// 범용 한국어 포맷 함수
+/**
+ * 날짜를 한국어 포맷으로 변환
+ * @param date - Date 객체 또는 ISO 문자열
+ * @param pattern - date-fns 포맷 패턴
+ * @returns 한국어 포맷된 날짜 문자열
+ * @example formatKo(new Date(), "yyyy년 M월 d일") // "2026년 3월 1일"
+ */
 export function formatKo(date: Date | string, pattern: string): string {
   return format(toDate(date), pattern, { locale: ko });
 }
 
-// "2026년 2월"
+/**
+ * 날짜를 "yyyy년 M월" 형식으로 변환
+ * @param date - Date 객체 또는 ISO 문자열
+ * @returns 연월 문자열 (예: "2026년 2월")
+ */
 export function formatYearMonth(date: Date | string): string {
   return format(toDate(date), "yyyy년 M월", { locale: ko });
 }
 
-// "2026년 2월 28일"
+/**
+ * 날짜를 "yyyy년 M월 d일" 형식으로 변환
+ * @param date - Date 객체 또는 ISO 문자열
+ * @returns 연월일 문자열 (예: "2026년 2월 28일")
+ */
 export function formatYearMonthDay(date: Date | string): string {
   return format(toDate(date), "yyyy년 M월 d일", { locale: ko });
 }
 
-// "2026년 2월 28일 (토)"
+/**
+ * 날짜를 "yyyy년 M월 d일 (요일)" 형식으로 변환
+ * @param date - Date 객체 또는 ISO 문자열
+ * @returns 요일 포함 날짜 문자열 (예: "2026년 2월 28일 (토)")
+ */
 export function formatFullDate(date: Date | string): string {
   return format(toDate(date), "yyyy년 M월 d일 (EEE)", { locale: ko });
 }
 
-// "2월 28일"
+/**
+ * 날짜를 "M월 d일" 형식으로 변환
+ * @param date - Date 객체 또는 ISO 문자열
+ * @returns 월일 문자열 (예: "2월 28일")
+ */
 export function formatMonthDay(date: Date | string): string {
   return format(toDate(date), "M월 d일", { locale: ko });
 }
 
-// "2/28 (토)"
+/**
+ * 날짜를 "M/d (요일)" 형식으로 변환
+ * @param date - Date 객체 또는 ISO 문자열
+ * @returns 짧은 날짜 문자열 (예: "2/28 (토)")
+ */
 export function formatShortDate(date: Date | string): string {
   return format(toDate(date), "M/d (EEE)", { locale: ko });
 }
 
-// "2/28 (토) 14:30"
+/**
+ * 날짜와 시간을 "M/d (요일) HH:mm" 형식으로 변환
+ * @param date - Date 객체 또는 ISO 문자열
+ * @returns 짧은 날짜+시간 문자열 (예: "2/28 (토) 14:30")
+ */
 export function formatShortDateTime(date: Date | string): string {
   return format(toDate(date), "M/d (EEE) HH:mm", { locale: ko });
 }
 
-// "14:30"
+/**
+ * 날짜를 "HH:mm" 형식의 시간 문자열로 변환
+ * @param date - Date 객체 또는 ISO 문자열
+ * @returns 24시간제 시간 문자열 (예: "14:30")
+ */
 export function formatTime(date: Date | string): string {
   return format(toDate(date), "HH:mm");
 }
 
-// "3분 전"
+/**
+ * 날짜를 현재 시각 기준 상대적 시간 문자열로 변환
+ * @param date - Date 객체 또는 ISO 문자열
+ * @returns 한국어 상대 시간 문자열 (예: "3분 전", "2시간 후")
+ */
 export function formatRelative(date: Date | string): string {
   return formatDistanceToNow(toDate(date), { locale: ko, addSuffix: true });
 }

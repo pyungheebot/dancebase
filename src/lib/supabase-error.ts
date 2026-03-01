@@ -15,6 +15,14 @@ const ERROR_MESSAGES: Record<string, string> = {
   "PGRST204": "결과가 없습니다.",
 };
 
+/**
+ * Supabase PostgreSQL 에러 코드를 한국어 사용자 메시지로 변환
+ * @param error - Supabase 쿼리 에러 객체
+ * @returns 사용자에게 표시할 한국어 에러 메시지
+ * @example
+ * const { error } = await supabase.from("table").insert(data);
+ * if (error) toast.error(getSupabaseErrorMessage(error));
+ */
 export function getSupabaseErrorMessage(error: SupabaseError | null | undefined): string {
   if (!error) return "알 수 없는 오류가 발생했습니다.";
   if (error.code && ERROR_MESSAGES[error.code]) {
