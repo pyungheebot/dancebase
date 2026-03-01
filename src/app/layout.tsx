@@ -26,7 +26,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Groop - 댄서를 위한 그룹 관리 서비스",
+  title: {
+    default: "Groop - 댄서를 위한 그룹 관리 서비스",
+    template: "%s",
+  },
   description: "그룹을 만들고, 멤버를 관리하고, 연습 일정과 출석을 한 곳에서 관리하세요.",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -36,6 +39,14 @@ export const metadata: Metadata = {
   },
   icons: {
     apple: "/icons/icon-192.svg",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
   },
   openGraph: {
     title: "Groop - 댄서를 위한 그룹 관리 서비스",

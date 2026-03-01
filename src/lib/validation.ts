@@ -3,6 +3,13 @@
  * 각 함수는 에러 메시지(string) 또는 null(유효)을 반환합니다.
  */
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** UUID v4 형식 검증 */
+export function isValidUUID(value: string): boolean {
+  return UUID_REGEX.test(value);
+}
+
 /** 필수 입력 검증 */
 export function validateRequired(value: string, fieldName: string): string | null {
   if (!value || !value.trim()) {

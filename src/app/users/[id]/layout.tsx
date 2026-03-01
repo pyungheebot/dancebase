@@ -41,6 +41,11 @@ export async function generateMetadata({
       siteName: "Groop",
       locale: "ko_KR",
     },
+    twitter: {
+      card: "summary",
+      title: `${userName} - Groop`,
+      description,
+    },
   };
 }
 

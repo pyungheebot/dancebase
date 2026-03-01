@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { sanitizeText } from "@/lib/sanitize";
 
 interface SendMessageDialogProps {
   receiverId: string;
@@ -46,7 +47,7 @@ export function SendMessageDialog({
     const { error } = await supabase.from("messages").insert({
       sender_id: user.id,
       receiver_id: receiverId,
-      content: content.trim(),
+      content: sanitizeText(content),
     });
 
     setSending(false);
@@ -85,13 +86,18 @@ export function SendMessageDialog({
           </div>
         ) : (
           <div className="space-y-3">
-            <Textarea
-              placeholder="메시지 내용을 입력하세요"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              maxLength={5000}
-              rows={4}
-            />
+            <div className="space-y-1">
+              <Textarea
+                placeholder="메시지 내용을 입력하세요"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                maxLength={2000}
+                rows={4}
+              />
+              <p className="text-right text-[11px] text-muted-foreground tabular-nums">
+                {content.length} / 2000
+              </p>
+            </div>
             <Button
               className="w-full"
               onClick={handleSend}

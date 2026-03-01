@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, MessageCircle, Send, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 import { ChatSkeleton } from "@/components/messages/chat-skeleton";
+import { sanitizeText } from "@/lib/sanitize";
 import type { Message } from "@/types";
 
 function formatDateSeparator(date: Date): string {
@@ -229,7 +230,7 @@ export function ChatView({ partnerId }: ChatViewProps) {
   const handleSend = useCallback(async () => {
     if (!content.trim() || sending || !user) return;
 
-    const trimmed = content.trim();
+    const trimmed = sanitizeText(content);
     setContent("");
     setSending(true);
 
@@ -390,22 +391,29 @@ export function ChatView({ partnerId }: ChatViewProps) {
       {/* 입력 영역 */}
       <div className="px-4 py-3 shrink-0">
         <div className="flex items-end gap-2">
-          <textarea
-            ref={inputRef}
-            placeholder="메시지 입력..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            maxLength={5000}
-            aria-label="메시지 입력"
-            className="flex-1 min-h-[40px] max-h-[120px] resize-none rounded-full border bg-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            rows={1}
-          />
+          <div className="flex-1 flex flex-col gap-0.5">
+            <textarea
+              ref={inputRef}
+              placeholder="메시지 입력..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              maxLength={2000}
+              aria-label="메시지 입력"
+              className="min-h-[40px] max-h-[120px] resize-none rounded-2xl border bg-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-full"
+              rows={1}
+            />
+            {content.length > 1800 && (
+              <p className="text-right text-[10px] text-muted-foreground tabular-nums pr-1">
+                {content.length} / 2000
+              </p>
+            )}
+          </div>
           <Button
             size="icon"
             className="h-10 w-10 rounded-full shrink-0"

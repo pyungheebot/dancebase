@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from "react";
 import { loadFromStorage } from "@/lib/local-storage";
 
 export type Theme = "light" | "dark" | "high-contrast";
@@ -99,8 +99,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
+  const value = useMemo(
+    () => ({ theme, fontScale, setTheme, setFontScale }),
+    [theme, fontScale, setTheme, setFontScale]
+  );
+
   return (
-    <SettingsContext.Provider value={{ theme, fontScale, setTheme, setFontScale }}>
+    <SettingsContext.Provider value={value}>
       {children}
     </SettingsContext.Provider>
   );

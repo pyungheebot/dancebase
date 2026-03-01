@@ -13,6 +13,7 @@ import { Users, Search, Loader2, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import type { Group } from "@/types";
 import { createNotification } from "@/lib/notifications";
+import { isValidUUID } from "@/lib/validation";
 
 type PublicGroup = Group & { member_count: number };
 type PublicProject = {
@@ -99,6 +100,11 @@ export default function ExplorePage() {
   }, [fetchPublicProjects, tab]);
 
   const handleJoin = async (group: PublicGroup) => {
+    if (!isValidUUID(group.id)) {
+      toast.error("유효하지 않은 그룹 ID입니다.");
+      return;
+    }
+
     setJoining(group.id);
 
     const {
