@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DressRehearsalSession,
   DressRehearsalIssue,
@@ -16,28 +17,6 @@ import type {
 
 function storageKey(projectId: string): string {
   return swrKeys.dressRehearsal(projectId);
-}
-
-function loadData(projectId: string): DressRehearsalData {
-  if (typeof window === "undefined") {
-    return { projectId, sessions: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw) return { projectId, sessions: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as DressRehearsalData;
-  } catch {
-    return { projectId, sessions: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: DressRehearsalData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -64,12 +43,12 @@ export type DressRehearsalStats = {
 // ============================================================
 
 export function useDressRehearsal(projectId: string) {
-  const [sessions, setSessions] = useState<DressRehearsalSession[]>(() => loadData(projectId).sessions);
+  const [sessions, setSessions] = useState<DressRehearsalSession[]>(() => loadFromStorage<DressRehearsalData>(storageKey(projectId), {} as DressRehearsalData).sessions);
 
   // localStorage에서 데이터 불러오기
   const reload = useCallback(() => {
     if (!projectId) return;
-    const data = loadData(projectId);
+    const data = loadFromStorage<DressRehearsalData>(storageKey(projectId), {} as DressRehearsalData);
     setSessions(data.sessions);
   }, [projectId]);
 
@@ -81,7 +60,7 @@ export function useDressRehearsal(projectId: string) {
         sessions: updated,
         updatedAt: new Date().toISOString(),
       };
-      saveData(data);
+      saveToStorage(storageKey(projectId), data);
       setSessions(updated);
     },
     [projectId]

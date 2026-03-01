@@ -4,6 +4,7 @@ import {useCallback, useMemo} from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MilestoneTask, ProjectMilestoneCard } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const MAX_MILESTONES = 10;
 const MAX_TASKS = 10;
@@ -12,31 +13,12 @@ function getStorageKey(groupId: string, projectId: string): string {
   return `dancebase:milestones:${groupId}:${projectId}`;
 }
 
-function loadFromStorage(groupId: string, projectId: string): ProjectMilestoneCard[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as ProjectMilestoneCard[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(groupId: string, projectId: string, data: ProjectMilestoneCard[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId, projectId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 export function useProjectMilestoneCard(groupId: string, projectId: string) {
   const swrKey = swrKeys.projectMilestones(groupId, projectId);
 
   const { data: milestones = [], mutate } = useSWR<ProjectMilestoneCard[]>(
     swrKey,
-    () => loadFromStorage(groupId, projectId),
+    () => loadFromStorage<ProjectMilestoneCard[]>(getStorageKey(groupId, projectId), []),
     { revalidateOnFocus: false }
   );
 
@@ -53,7 +35,7 @@ export function useProjectMilestoneCard(groupId: string, projectId: string) {
         createdAt: new Date().toISOString(),
       };
       const next = [...milestones, newMilestone];
-      saveToStorage(groupId, projectId, next);
+      saveToStorage(getStorageKey(groupId, projectId), next);
       mutate(next, false);
       return true;
     },
@@ -64,7 +46,7 @@ export function useProjectMilestoneCard(groupId: string, projectId: string) {
   const deleteMilestone = useCallback(
     (milestoneId: string) => {
       const next = milestones.filter((m) => m.id !== milestoneId);
-      saveToStorage(groupId, projectId, next);
+      saveToStorage(getStorageKey(groupId, projectId), next);
       mutate(next, false);
     },
     [groupId, projectId, milestones, mutate]
@@ -84,7 +66,7 @@ export function useProjectMilestoneCard(groupId: string, projectId: string) {
       const next = milestones.map((m) =>
         m.id === milestoneId ? { ...m, tasks: [...m.tasks, newTask] } : m
       );
-      saveToStorage(groupId, projectId, next);
+      saveToStorage(getStorageKey(groupId, projectId), next);
       mutate(next, false);
       return true;
     },
@@ -103,7 +85,7 @@ export function useProjectMilestoneCard(groupId: string, projectId: string) {
           ),
         };
       });
-      saveToStorage(groupId, projectId, next);
+      saveToStorage(getStorageKey(groupId, projectId), next);
       mutate(next, false);
     },
     [groupId, projectId, milestones, mutate]

@@ -48,6 +48,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useEncorePlan } from "@/hooks/use-encore-plan";
 import type { EncorePlan, EncoreSong, EncoreTriggerCondition } from "@/types";
 
@@ -227,7 +228,7 @@ export function EncorePlanCard({
       }
       setPlanDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setPlanSaving(false);
     }
@@ -242,7 +243,7 @@ export function EncorePlanCard({
       }
       toast.success(`'${plan.planName}' 플랜이 삭제되었습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -295,7 +296,7 @@ export function EncorePlanCard({
       }
       setSongDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setSongSaving(false);
     }
@@ -308,7 +309,7 @@ export function EncorePlanCard({
       await deleteSong(currentPlan.id, song.id);
       toast.success("곡이 삭제되었습니다.");
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

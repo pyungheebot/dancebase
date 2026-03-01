@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   ShowRiderData,
   ShowRiderItem,
@@ -22,22 +23,6 @@ function buildDefaultData(projectId: string): ShowRiderData {
 
 function getStorageKey(projectId: string) {
   return `artist-rider-${projectId}`;
-}
-
-function loadFromStorage(projectId: string): ShowRiderData {
-  if (typeof window === "undefined") return buildDefaultData(projectId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    if (!raw) return buildDefaultData(projectId);
-    return JSON.parse(raw) as ShowRiderData;
-  } catch {
-    return buildDefaultData(projectId);
-  }
-}
-
-function saveToStorage(data: ShowRiderData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
 }
 
 // ─── 통계 계산 ──────────────────────────────────────────────
@@ -83,7 +68,7 @@ export function calcRiderStats(items: ShowRiderItem[]): ShowRiderStats {
 export function useArtistRider(projectId: string) {
   const { data, mutate } = useSWR(
     swrKeys.artistRider(projectId),
-    () => loadFromStorage(projectId),
+    () => loadFromStorage<ShowRiderData>(getStorageKey(projectId), {} as ShowRiderData),
     { revalidateOnFocus: false }
   );
 
@@ -101,7 +86,7 @@ export function useArtistRider(projectId: string) {
       ],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -117,7 +102,7 @@ export function useArtistRider(projectId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -128,7 +113,7 @@ export function useArtistRider(projectId: string) {
       items: riderData.items.filter((i) => i.id !== itemId),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 

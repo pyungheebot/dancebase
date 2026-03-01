@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupEquipmentData,
   GroupEquipmentItem,
@@ -10,35 +11,6 @@ import type {
   EquipmentCategory,
   GroupEquipmentCondition,
 } from "@/types";
-
-// ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(groupId: string): GroupEquipmentData {
-  if (typeof window === "undefined") {
-    return { groupId, items: [], loans: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`group-equipment-${groupId}`);
-    if (!raw) return { groupId, items: [], loans: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as GroupEquipmentData;
-  } catch {
-    return { groupId, items: [], loans: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function persistData(data: GroupEquipmentData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `group-equipment-${data.groupId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
 
 // ——————————————————————————————
 // 훅
@@ -62,10 +34,12 @@ export type BorrowItemParams = {
   notes: string;
 };
 
+const STORAGE_KEY = (groupId: string) => `group-equipment-${groupId}`;
+
 export function useGroupEquipment(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.groupEquipment(groupId),
-    () => loadData(groupId),
+    () => loadFromStorage<GroupEquipmentData>(STORAGE_KEY(groupId), {} as GroupEquipmentData),
     { revalidateOnFocus: false }
   );
 
@@ -79,7 +53,7 @@ export function useGroupEquipment(groupId: string) {
   // ——— 장비 추가 ———
   const addItem = useCallback(
     (params: AddItemParams) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupEquipmentData>(STORAGE_KEY(groupId), {} as GroupEquipmentData);
       const newItem: GroupEquipmentItem = {
         id: crypto.randomUUID(),
         name: params.name,
@@ -95,7 +69,7 @@ export function useGroupEquipment(groupId: string) {
         items: [newItem, ...current.items],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -104,7 +78,7 @@ export function useGroupEquipment(groupId: string) {
   // ——— 장비 수정 ———
   const updateItem = useCallback(
     (itemId: string, params: UpdateItemParams) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupEquipmentData>(STORAGE_KEY(groupId), {} as GroupEquipmentData);
       const updated: GroupEquipmentData = {
         ...current,
         items: current.items.map((item) =>
@@ -112,7 +86,7 @@ export function useGroupEquipment(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -121,7 +95,7 @@ export function useGroupEquipment(groupId: string) {
   // ——— 장비 삭제 ———
   const deleteItem = useCallback(
     (itemId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupEquipmentData>(STORAGE_KEY(groupId), {} as GroupEquipmentData);
       const updated: GroupEquipmentData = {
         ...current,
         items: current.items.filter((item) => item.id !== itemId),
@@ -129,7 +103,7 @@ export function useGroupEquipment(groupId: string) {
         loans: current.loans.filter((loan) => loan.equipmentId !== itemId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -138,7 +112,7 @@ export function useGroupEquipment(groupId: string) {
   // ——— 장비 대여 ———
   const borrowItem = useCallback(
     (params: BorrowItemParams) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupEquipmentData>(STORAGE_KEY(groupId), {} as GroupEquipmentData);
       const newLoan: EquipmentLoanRecord = {
         id: crypto.randomUUID(),
         equipmentId: params.equipmentId,
@@ -153,7 +127,7 @@ export function useGroupEquipment(groupId: string) {
         loans: [newLoan, ...current.loans],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -162,7 +136,7 @@ export function useGroupEquipment(groupId: string) {
   // ——— 장비 반납 ———
   const returnItem = useCallback(
     (loanId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupEquipmentData>(STORAGE_KEY(groupId), {} as GroupEquipmentData);
       const updated: GroupEquipmentData = {
         ...current,
         loans: current.loans.map((loan) =>
@@ -172,7 +146,7 @@ export function useGroupEquipment(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -181,13 +155,13 @@ export function useGroupEquipment(groupId: string) {
   // ——— 대여 기록 삭제 ———
   const deleteLoan = useCallback(
     (loanId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupEquipmentData>(STORAGE_KEY(groupId), {} as GroupEquipmentData);
       const updated: GroupEquipmentData = {
         ...current,
         loans: current.loans.filter((loan) => loan.id !== loanId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]

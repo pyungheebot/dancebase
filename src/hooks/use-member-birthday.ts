@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MemberBirthdayData,
   MemberBirthdayEntry,
@@ -16,23 +17,6 @@ const STORAGE_PREFIX = "dancebase:member-birthday-calendar";
 
 function getStorageKey(groupId: string): string {
   return `${STORAGE_PREFIX}:${groupId}`;
-}
-
-function loadData(groupId: string): MemberBirthdayData {
-  if (typeof window === "undefined") {
-    return createEmptyData(groupId);
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as MemberBirthdayData) : createEmptyData(groupId);
-  } catch {
-    return createEmptyData(groupId);
-  }
-}
-
-function saveData(data: MemberBirthdayData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.groupId), JSON.stringify(data));
 }
 
 function createEmptyData(groupId: string): MemberBirthdayData {
@@ -77,7 +61,7 @@ export function calcMemberBirthdayDDay(month: number, day: number): number {
 export function useMemberBirthday(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     groupId ? swrKeys.memberBirthdayCalendar(groupId) : null,
-    async () => loadData(groupId)
+    async () => loadFromStorage<MemberBirthdayData>(getStorageKey(groupId), {} as MemberBirthdayData)
   );
 
   const store = data ?? createEmptyData(groupId);
@@ -88,7 +72,7 @@ export function useMemberBirthday(groupId: string) {
       ...updated,
       updatedAt: new Date().toISOString(),
     };
-    saveData(withTimestamp);
+    saveToStorage(getStorageKey(groupId), withTimestamp);
     mutate(withTimestamp, false);
   }
 

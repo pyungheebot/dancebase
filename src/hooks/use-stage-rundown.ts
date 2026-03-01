@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { ShowRundownData, ShowRundownItem } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── 기본값 ───────────────────────────────────────────────────
 
@@ -16,22 +17,6 @@ function buildDefaultData(projectId: string): ShowRundownData {
 
 function getStorageKey(projectId: string) {
   return `show-rundown-${projectId}`;
-}
-
-function loadFromStorage(projectId: string): ShowRundownData {
-  if (typeof window === "undefined") return buildDefaultData(projectId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    if (!raw) return buildDefaultData(projectId);
-    return JSON.parse(raw) as ShowRundownData;
-  } catch {
-    return buildDefaultData(projectId);
-  }
-}
-
-function saveToStorage(data: ShowRundownData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
 }
 
 // ─── 시간 비교 헬퍼 ───────────────────────────────────────────
@@ -54,7 +39,7 @@ function sortItems(items: ShowRundownItem[]): ShowRundownItem[] {
 export function useStageRundown(projectId: string) {
   const { data, mutate } = useSWR(
     swrKeys.showRundown(projectId),
-    () => loadFromStorage(projectId),
+    () => loadFromStorage<ShowRundownData>(getStorageKey(projectId), {} as ShowRundownData),
     { revalidateOnFocus: false }
   );
 
@@ -72,7 +57,7 @@ export function useStageRundown(projectId: string) {
       items: sortItems([...rundownData.items, newItem]),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -90,7 +75,7 @@ export function useStageRundown(projectId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -101,7 +86,7 @@ export function useStageRundown(projectId: string) {
       items: rundownData.items.filter((item) => item.id !== itemId),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -114,7 +99,7 @@ export function useStageRundown(projectId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 

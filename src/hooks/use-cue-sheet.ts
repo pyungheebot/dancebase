@@ -3,32 +3,11 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { ShowCueItem, ShowCueSheet, ShowCueStatus } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // localStorage 키 생성
 function localKey(projectId: string) {
   return swrKeys.showCueSheet(projectId);
-}
-
-// localStorage에서 큐시트 로드
-function loadFromStorage(projectId: string): ShowCueSheet {
-  if (typeof window === "undefined") {
-    return { projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(localKey(projectId));
-    if (raw) {
-      return JSON.parse(raw) as ShowCueSheet;
-    }
-  } catch {
-    // 파싱 실패 시 기본값 반환
-  }
-  return { projectId, items: [], updatedAt: new Date().toISOString() };
-}
-
-// localStorage에 큐시트 저장
-function saveToStorage(sheet: ShowCueSheet): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(localKey(sheet.projectId), JSON.stringify(sheet));
 }
 
 // 고유 ID 생성 (crypto 우선, 폴백으로 timestamp)
@@ -42,7 +21,7 @@ function generateId(): string {
 export function useCueSheet(projectId: string) {
   const { data, mutate, isLoading } = useSWR(
     swrKeys.showCueSheet(projectId),
-    () => loadFromStorage(projectId),
+    () => loadFromStorage<ShowCueSheet>(localKey(projectId), {} as ShowCueSheet),
     { revalidateOnFocus: false }
   );
 
@@ -50,7 +29,7 @@ export function useCueSheet(projectId: string) {
 
   // 저장 후 SWR 캐시 갱신
   async function persist(nextSheet: ShowCueSheet) {
-    saveToStorage(nextSheet);
+    saveToStorage(localKey(projectId), nextSheet);
     await mutate(nextSheet, { revalidate: false });
   }
 

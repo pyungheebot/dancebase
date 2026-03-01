@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { ScheduleRetro } from "@/types";
+import { removeFromStorage } from "@/lib/local-storage";
 
 function getStorageKey(scheduleId: string): string {
   return `schedule-retro-${scheduleId}`;
@@ -29,7 +30,7 @@ function saveRetro(scheduleId: string, retro: ScheduleRetro): void {
 function removeRetro(scheduleId: string): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.removeItem(getStorageKey(scheduleId));
+    removeFromStorage(getStorageKey(scheduleId));
   } catch {
     // localStorage 접근 실패 시 무시
   }

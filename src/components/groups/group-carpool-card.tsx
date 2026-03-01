@@ -34,6 +34,7 @@ import {
   Filter,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupCarPool } from "@/hooks/use-group-carpool";
 import type { CarPoolItem, CarPoolStatus } from "@/types";
 
@@ -430,7 +431,7 @@ export function GroupCarPoolCard({ groupId }: { groupId: string }) {
   function handleDelete(carpoolId: string) {
     const ok = deleteCarPool(carpoolId);
     if (ok) toast.success("카풀이 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   }
 
   function handleStatusChange(carpoolId: string, status: CarPoolStatus) {

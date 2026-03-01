@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   AnonFeedbackData,
   AnonFeedbackItem,
@@ -17,30 +18,6 @@ function storageKey(groupId: string): string {
   return `dancebase:group-feedback-box:${groupId}`;
 }
 
-function loadData(groupId: string): AnonFeedbackData {
-  if (typeof window === "undefined") {
-    return { groupId, feedbacks: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) {
-      return { groupId, feedbacks: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as AnonFeedbackData;
-  } catch {
-    return { groupId, feedbacks: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(groupId: string, data: AnonFeedbackData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -48,7 +25,7 @@ function saveData(groupId: string, data: AnonFeedbackData): void {
 export function useGroupFeedbackBox(groupId: string) {
   const { data, mutate, isLoading } = useSWR(
     groupId ? swrKeys.groupFeedbackBox(groupId) : null,
-    () => loadData(groupId)
+    () => loadFromStorage<AnonFeedbackData>(storageKey(groupId), {} as AnonFeedbackData)
   );
 
   const current: AnonFeedbackData = useMemo(() => data ?? {
@@ -59,7 +36,7 @@ export function useGroupFeedbackBox(groupId: string) {
 
   const persist = useCallback(
     (next: AnonFeedbackData) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       mutate(next, false);
     },
     [groupId, mutate]

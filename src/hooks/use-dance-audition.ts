@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { saveToStorage } from "@/lib/local-storage";
 import type {
   DanceAuditionEntry,
   DanceAuditionRecord,
@@ -79,10 +80,6 @@ function makeEmpty(memberId: string): DanceAuditionEntry {
   };
 }
 
-function saveData(entry: DanceAuditionEntry): void {
-  localStorage.setItem(getStorageKey(entry.memberId), JSON.stringify(entry));
-}
-
 // ============================================================
 // 통계 타입
 // ============================================================
@@ -111,7 +108,7 @@ export function useDanceAudition(memberId: string) {
     (updater: (prev: DanceAuditionEntry) => DanceAuditionEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveData(next);
+        saveToStorage(getStorageKey(entry.memberId), next);
         return next;
       });
     },

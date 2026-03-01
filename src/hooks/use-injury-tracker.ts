@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { InjuryTrackerEntry, InjuryBodyPart, InjuryTrackerSeverity } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -9,26 +10,6 @@ import type { InjuryTrackerEntry, InjuryBodyPart, InjuryTrackerSeverity } from "
 
 function storageKey(groupId: string): string {
   return `dancebase:injury-tracker:${groupId}`;
-}
-
-function loadData(groupId: string): InjuryTrackerEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as InjuryTrackerEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: InjuryTrackerEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -48,17 +29,17 @@ export type InjuryTrackerStats = {
 // ============================================================
 
 export function useInjuryTracker(groupId: string) {
-  const [entries, setEntries] = useState<InjuryTrackerEntry[]>(() => loadData(groupId));
+  const [entries, setEntries] = useState<InjuryTrackerEntry[]>(() => loadFromStorage<InjuryTrackerEntry[]>(storageKey(groupId), []));
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<InjuryTrackerEntry[]>(storageKey(groupId), []);
     setEntries(data);
   }, [groupId]);
 
   const persist = useCallback(
     (next: InjuryTrackerEntry[]) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       setEntries(next);
     },
     [groupId]

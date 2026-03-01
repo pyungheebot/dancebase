@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import {
   DanceNutritionData,
   DanceNutritionEntry,
@@ -14,47 +15,12 @@ const DEFAULT_GOAL: DanceNutritionGoal = {
   targetWater: 2000,
 };
 
-function loadData(memberId: string): DanceNutritionData {
-  if (typeof window === "undefined") {
-    return {
-      memberId,
-      entries: [],
-      goal: DEFAULT_GOAL,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  const raw = localStorage.getItem(`dance-nutrition-${memberId}`);
-  if (!raw) {
-    return {
-      memberId,
-      entries: [],
-      goal: DEFAULT_GOAL,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    return JSON.parse(raw) as DanceNutritionData;
-  } catch {
-    return {
-      memberId,
-      entries: [],
-      goal: DEFAULT_GOAL,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function saveData(data: DanceNutritionData): void {
-  localStorage.setItem(
-    `dance-nutrition-${data.memberId}`,
-    JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-  );
-}
+const STORAGE_KEY = (memberId: string) => `dance-nutrition-${memberId}`;
 
 export function useDanceNutrition(memberId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.danceNutrition(memberId),
-    () => loadData(memberId)
+    () => loadFromStorage<DanceNutritionData>(STORAGE_KEY(memberId), {} as DanceNutritionData)
   );
 
   const current: DanceNutritionData = data ?? {
@@ -78,7 +44,7 @@ export function useDanceNutrition(memberId: string) {
         },
       ],
     };
-    saveData(next);
+    saveToStorage(STORAGE_KEY(memberId), next);
     mutate(next, false);
   }
 
@@ -92,7 +58,7 @@ export function useDanceNutrition(memberId: string) {
         e.id === id ? { ...e, ...patch } : e
       ),
     };
-    saveData(next);
+    saveToStorage(STORAGE_KEY(memberId), next);
     mutate(next, false);
   }
 
@@ -101,13 +67,13 @@ export function useDanceNutrition(memberId: string) {
       ...current,
       entries: current.entries.filter((e) => e.id !== id),
     };
-    saveData(next);
+    saveToStorage(STORAGE_KEY(memberId), next);
     mutate(next, false);
   }
 
   function updateGoal(goal: DanceNutritionGoal): void {
     const next: DanceNutritionData = { ...current, goal };
-    saveData(next);
+    saveToStorage(STORAGE_KEY(memberId), next);
     mutate(next, false);
   }
 

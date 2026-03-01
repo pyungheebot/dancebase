@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type {
   PracticePartnerEntry,
   PracticePartnerMember,
@@ -36,10 +37,6 @@ function getStorageKey(groupId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}`;
 }
 
-function saveData(entry: PracticePartnerEntry): void {
-  localStorage.setItem(getStorageKey(entry.groupId), JSON.stringify(entry));
-}
-
 function makeEmpty(groupId: string): PracticePartnerEntry {
   return {
     id: crypto.randomUUID(),
@@ -65,7 +62,7 @@ export function usePracticePartner(groupId: string) {
     (updater: (prev: PracticePartnerEntry) => PracticePartnerEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveData(next);
+        saveToStorage(getStorageKey(entry.groupId), next);
         return next;
       });
     },

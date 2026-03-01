@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupVotingCardData,
   GroupVoteCardItem,
@@ -17,30 +18,6 @@ function storageKey(groupId: string): string {
   return `dancebase:group-voting:${groupId}`;
 }
 
-function loadData(groupId: string): GroupVotingCardData {
-  if (typeof window === "undefined") {
-    return { groupId, votes: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) {
-      return { groupId, votes: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as GroupVotingCardData;
-  } catch {
-    return { groupId, votes: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(groupId: string, data: GroupVotingCardData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -48,7 +25,7 @@ function saveData(groupId: string, data: GroupVotingCardData): void {
 export function useGroupVoting(groupId: string) {
   const { data, mutate, isLoading } = useSWR(
     groupId ? swrKeys.groupVoting(groupId) : null,
-    () => loadData(groupId)
+    () => loadFromStorage<GroupVotingCardData>(storageKey(groupId), {} as GroupVotingCardData)
   );
 
   const current: GroupVotingCardData = useMemo(() => data ?? {
@@ -59,7 +36,7 @@ export function useGroupVoting(groupId: string) {
 
   const persist = useCallback(
     (next: GroupVotingCardData) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       mutate(next, false);
     },
     [groupId, mutate]

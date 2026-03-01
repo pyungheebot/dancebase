@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   SocialCalendarPost,
   SocialPlatformType,
@@ -13,26 +14,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return `dancebase:social-calendar:${groupId}`;
-}
-
-function loadData(groupId: string): SocialCalendarPost[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as SocialCalendarPost[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: SocialCalendarPost[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -53,17 +34,17 @@ export type SocialCalendarStats = {
 // ============================================================
 
 export function useSocialCalendar(groupId: string) {
-  const [posts, setPosts] = useState<SocialCalendarPost[]>(() => loadData(groupId));
+  const [posts, setPosts] = useState<SocialCalendarPost[]>(() => loadFromStorage<SocialCalendarPost[]>(storageKey(groupId), []));
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<SocialCalendarPost[]>(storageKey(groupId), []);
     setPosts(data);
   }, [groupId]);
 
   const persist = useCallback(
     (next: SocialCalendarPost[]) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       setPosts(next);
     },
     [groupId]

@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { formatShortDateTime } from "@/lib/date-utils";
+import { formatShortDateTime, formatTime } from "@/lib/date-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { AttendanceTable } from "@/components/attendance/attendance-table";
@@ -429,8 +429,8 @@ export function AttendanceContent({
               <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {format(new Date(selectedSchedule.starts_at), "HH:mm")} -{" "}
-                  {format(new Date(selectedSchedule.ends_at), "HH:mm")}
+                  {formatTime(new Date(selectedSchedule.starts_at))} -{" "}
+                  {formatTime(new Date(selectedSchedule.ends_at))}
                 </span>
                 {selectedSchedule.location && (
                   <span className="flex items-center gap-1">

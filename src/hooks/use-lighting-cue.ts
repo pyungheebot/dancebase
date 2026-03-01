@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   LightingCueEntry,
   LightingCueAction,
@@ -15,32 +16,6 @@ import type {
 
 function getStorageKey(groupId: string, projectId: string): string {
   return `dancebase:lighting-cue:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): LightingCueEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as LightingCueEntry[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function persistData(
-  groupId: string,
-  projectId: string,
-  data: LightingCueEntry[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      getStorageKey(groupId, projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 // ============================================
@@ -71,7 +46,7 @@ export function useLightingCue(groupId: string, projectId: string) {
   const key = swrKeys.lightingCue(groupId, projectId);
 
   const { data, mutate } = useSWR<LightingCueEntry[]>(key, () =>
-    loadData(groupId, projectId)
+    loadFromStorage<LightingCueEntry[]>(getStorageKey(groupId, projectId), [])
   );
 
   const cues: LightingCueEntry[] = useMemo(() => data ?? [], [data]);
@@ -79,7 +54,7 @@ export function useLightingCue(groupId: string, projectId: string) {
   /** 내부 상태 + localStorage 동기 업데이트 */
   const update = useCallback(
     (next: LightingCueEntry[]) => {
-      persistData(groupId, projectId, next);
+      saveToStorage(getStorageKey(groupId, projectId), next);
       mutate(next, false);
     },
     [groupId, projectId, mutate]

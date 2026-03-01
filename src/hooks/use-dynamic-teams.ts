@@ -2,16 +2,12 @@
 
 import { useState, useCallback } from "react";
 import type { DynamicTeam, DynamicTeamsData, TeamColor } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 const MAX_TEAMS = 8;
 const MAX_TEAM_NAME_LENGTH = 20;
 const STORAGE_KEY = (groupId: string) =>
   `dancebase:dynamic-teams:${groupId}`;
-
-function saveToStorage(groupId: string, data: DynamicTeamsData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY(groupId), JSON.stringify(data));
-}
 
 export function useDynamicTeams(groupId: string) {
   const [data, setData] = useState<DynamicTeamsData>({ teams: [] });
@@ -19,7 +15,7 @@ export function useDynamicTeams(groupId: string) {
   // 저장 및 상태 갱신
   const persist = useCallback(
     (next: DynamicTeamsData) => {
-      saveToStorage(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       setData(next);
     },
     [groupId]

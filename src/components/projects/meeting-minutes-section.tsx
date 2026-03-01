@@ -52,6 +52,7 @@ import {
   Bell,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 /** action_item 알림 발송 이력 localStorage 복합 ID 생성 */
 function buildActionItemNotifId(minuteId: string, itemIdx: number): string {
@@ -726,7 +727,7 @@ export function MeetingMinutesSection({ ctx }: MeetingMinutesSectionProps) {
       .eq("id", minuteId);
 
     if (error) {
-      toast.error("삭제에 실패했습니다");
+      toast.error(TOAST.DELETE_ERROR);
       return;
     }
 

@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   LiveShowFeedData,
   LiveShowFeedEntry,
@@ -18,33 +19,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:live-show-feed:${groupId}:${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): LiveShowFeedData {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) {
-      return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as LiveShowFeedData;
-  } catch {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: LiveShowFeedData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(data.groupId, data.projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -52,7 +26,7 @@ function saveData(data: LiveShowFeedData): void {
 export function useLiveShowFeed(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.liveShowFeed(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<LiveShowFeedData>(storageKey(groupId, projectId), {} as LiveShowFeedData),
     {
       fallbackData: {
         groupId,
@@ -75,7 +49,7 @@ export function useLiveShowFeed(groupId: string, projectId: string) {
       priority: LiveShowFeedPriority;
       imageUrl?: string;
     }): LiveShowFeedEntry => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<LiveShowFeedData>(storageKey(groupId, projectId), {} as LiveShowFeedData);
       const now = new Date().toISOString();
       const newEntry: LiveShowFeedEntry = {
         id: crypto.randomUUID(),
@@ -93,7 +67,7 @@ export function useLiveShowFeed(groupId: string, projectId: string) {
         entries: [newEntry, ...current.entries],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newEntry;
     },
@@ -113,7 +87,7 @@ export function useLiveShowFeed(groupId: string, projectId: string) {
         imageUrl: string;
       }>
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<LiveShowFeedData>(storageKey(groupId, projectId), {} as LiveShowFeedData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -139,7 +113,7 @@ export function useLiveShowFeed(groupId: string, projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -149,7 +123,7 @@ export function useLiveShowFeed(groupId: string, projectId: string) {
   /** 피드 엔트리 삭제 */
   const deleteEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<LiveShowFeedData>(storageKey(groupId, projectId), {} as LiveShowFeedData);
       const exists = current.entries.some((e) => e.id === entryId);
       if (!exists) return false;
 
@@ -158,7 +132,7 @@ export function useLiveShowFeed(groupId: string, projectId: string) {
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },

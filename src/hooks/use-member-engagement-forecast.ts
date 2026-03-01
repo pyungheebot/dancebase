@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { removeFromStorage } from "@/lib/local-storage";
 import type {
   MemberEngagementForecast,
   MemberEngagementForecastResult,
@@ -27,7 +28,7 @@ function loadCache(groupId: string): MemberEngagementForecastResult | null {
     const entry: CacheEntry = JSON.parse(raw);
     const isExpired = Date.now() - entry.cachedAt > CACHE_TTL_MS;
     if (isExpired) {
-      localStorage.removeItem(CACHE_KEY(groupId));
+      removeFromStorage(CACHE_KEY(groupId));
       return null;
     }
     return entry.data;

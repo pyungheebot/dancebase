@@ -40,6 +40,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMentalCoaching } from "@/hooks/use-mental-coaching";
 import type {
   MentalCoachingNote,
@@ -734,14 +735,14 @@ export function MentalCoachingCard({
       actionItems: actionItemsWithId,
     });
     if (ok) toast.success("코칭 노트가 수정되었습니다.");
-    else toast.error("수정에 실패했습니다.");
+    else toast.error(TOAST.UPDATE_ERROR);
     setEditTarget(null);
   }
 
   function handleDelete(noteId: string) {
     const ok = deleteNote(noteId);
     if (ok) toast.success("코칭 노트가 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   }
 
   function handleToggleAction(noteId: string, actionId: string) {

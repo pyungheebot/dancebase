@@ -3,31 +3,16 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { SetChangeLogData, SetChangeItem } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_PREFIX = "set-change-log-";
 
-function loadFromStorage(projectId: string): SetChangeLogData {
-  if (typeof window === "undefined") {
-    return { projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}${projectId}`);
-    if (raw) return JSON.parse(raw) as SetChangeLogData;
-  } catch {
-    // 파싱 오류 무시
-  }
-  return { projectId, items: [], updatedAt: new Date().toISOString() };
-}
-
-function saveToStorage(data: SetChangeLogData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(`${STORAGE_PREFIX}${data.projectId}`, JSON.stringify(data));
-}
+const STORAGE_KEY = (projectId: string) => `${projectId}${projectId}`;
 
 export function useSetChangeLog(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.setChangeLog(projectId),
-    () => loadFromStorage(projectId),
+    () => loadFromStorage<SetChangeLogData>(STORAGE_KEY(projectId), {} as SetChangeLogData),
     { revalidateOnFocus: false }
   );
 
@@ -56,7 +41,7 @@ export function useSetChangeLog(projectId: string) {
       items: [...current.items, newItem],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(projectId), next);
     await mutate(next, false);
   }
 
@@ -72,7 +57,7 @@ export function useSetChangeLog(projectId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(projectId), next);
     await mutate(next, false);
   }
 
@@ -87,7 +72,7 @@ export function useSetChangeLog(projectId: string) {
       items: filtered,
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(projectId), next);
     await mutate(next, false);
   }
 

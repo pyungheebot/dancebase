@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type {
   MemberSchedulePreference,
   TimeSlotEntry,
@@ -27,10 +28,6 @@ type StorageData = {
   preferences: MemberSchedulePreference[];
 };
 
-function saveData(groupId: string, data: StorageData): void {
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(data));
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -46,7 +43,7 @@ export function useSchedulePreference(
     (updater: (prev: StorageData) => StorageData) => {
       setData((prev) => {
         const next = updater(prev);
-        saveData(groupId, next);
+        saveToStorage(getStorageKey(groupId), next);
         return next;
       });
     },

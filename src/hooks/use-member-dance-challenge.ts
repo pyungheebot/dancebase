@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceChallengeData,
   DanceChallengeEntry,
@@ -18,30 +19,6 @@ function storageKey(memberId: string): string {
   return `dancebase:member-dance-challenge:${memberId}`;
 }
 
-function loadData(memberId: string): DanceChallengeData {
-  if (typeof window === "undefined") {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw) {
-      return { memberId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as DanceChallengeData;
-  } catch {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: DanceChallengeData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.memberId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -49,7 +26,7 @@ function saveData(data: DanceChallengeData): void {
 export function useMemberDanceChallenge(memberId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.memberDanceChallenge(memberId),
-    () => loadData(memberId),
+    () => loadFromStorage<DanceChallengeData>(storageKey(memberId), {} as DanceChallengeData),
     {
       fallbackData: {
         memberId,
@@ -74,7 +51,7 @@ export function useMemberDanceChallenge(memberId: string) {
       result: DanceChallengeResult;
       notes?: string;
     }): DanceChallengeEntry => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<DanceChallengeData>(storageKey(memberId), {} as DanceChallengeData);
       const now = new Date().toISOString();
       const newEntry: DanceChallengeEntry = {
         id: crypto.randomUUID(),
@@ -95,7 +72,7 @@ export function useMemberDanceChallenge(memberId: string) {
         entries: [newEntry, ...current.entries],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(memberId), updated);
       mutate(updated, false);
       return newEntry;
     },
@@ -118,7 +95,7 @@ export function useMemberDanceChallenge(memberId: string) {
         notes: string;
       }>
     ): boolean => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<DanceChallengeData>(storageKey(memberId), {} as DanceChallengeData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -151,7 +128,7 @@ export function useMemberDanceChallenge(memberId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(memberId), updated);
       mutate(updated, false);
       return true;
     },
@@ -161,7 +138,7 @@ export function useMemberDanceChallenge(memberId: string) {
   // 기록 삭제
   const deleteEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<DanceChallengeData>(storageKey(memberId), {} as DanceChallengeData);
       const exists = current.entries.some((e) => e.id === entryId);
       if (!exists) return false;
 
@@ -170,7 +147,7 @@ export function useMemberDanceChallenge(memberId: string) {
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(memberId), updated);
       mutate(updated, false);
       return true;
     },

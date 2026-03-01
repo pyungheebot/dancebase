@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { MemberNoteV2, MemberNoteCategory } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키
@@ -9,19 +10,6 @@ import type { MemberNoteV2, MemberNoteCategory } from "@/types";
 
 function storageKey(groupId: string, writerId: string): string {
   return `dancebase:member-notes:${groupId}:${writerId}`;
-}
-
-// ============================================
-// 내부 유틸
-// ============================================
-
-function saveToStorage(groupId: string, writerId: string, notes: MemberNoteV2[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, writerId), JSON.stringify(notes));
-  } catch {
-    // 무시
-  }
 }
 
 // 최근 수정순 정렬
@@ -52,7 +40,7 @@ export function useMemberNotes(groupId: string, writerId: string) {
       };
       setNotes((prev) => {
         const updated = sortByUpdated([...prev, newNote]);
-        saveToStorage(groupId, writerId, updated);
+        saveToStorage(storageKey(groupId, writerId), updated);
         return updated;
       });
       return newNote;
@@ -71,7 +59,7 @@ export function useMemberNotes(groupId: string, writerId: string) {
               : n
           )
         );
-        saveToStorage(groupId, writerId, updated);
+        saveToStorage(storageKey(groupId, writerId), updated);
         return updated;
       });
     },
@@ -83,7 +71,7 @@ export function useMemberNotes(groupId: string, writerId: string) {
     (noteId: string): void => {
       setNotes((prev) => {
         const updated = prev.filter((n) => n.id !== noteId);
-        saveToStorage(groupId, writerId, updated);
+        saveToStorage(storageKey(groupId, writerId), updated);
         return updated;
       });
     },

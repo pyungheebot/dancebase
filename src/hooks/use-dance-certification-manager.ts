@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceCertificationEntry,
   DanceCertificationData,
@@ -87,30 +88,6 @@ function storageKey(memberId: string): string {
   return `dancebase:dance-cert-manager:${memberId}`;
 }
 
-function loadData(memberId: string): DanceCertificationData {
-  if (typeof window === "undefined") {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw) {
-      return { memberId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as DanceCertificationData;
-  } catch {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(memberId: string, data: DanceCertificationData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -118,7 +95,7 @@ function saveData(memberId: string, data: DanceCertificationData): void {
 export function useDanceCertificationManager(memberId: string) {
   const { data, isLoading, mutate } = useSWR(
     memberId ? swrKeys.danceCertificationManager(memberId) : null,
-    () => loadData(memberId),
+    () => loadFromStorage<DanceCertificationData>(storageKey(memberId), {} as DanceCertificationData),
     { revalidateOnFocus: false }
   );
 
@@ -128,7 +105,7 @@ export function useDanceCertificationManager(memberId: string) {
   async function addEntry(
     input: Omit<DanceCertificationEntry, "id" | "createdAt" | "status">
   ): Promise<void> {
-    const current = loadData(memberId);
+    const current = loadFromStorage<DanceCertificationData>(storageKey(memberId), {} as DanceCertificationData);
     const status = computeCertStatus(input.expiresAt);
     const newEntry: DanceCertificationEntry = {
       ...input,
@@ -141,7 +118,7 @@ export function useDanceCertificationManager(memberId: string) {
       entries: [...current.entries, newEntry],
       updatedAt: new Date().toISOString(),
     };
-    saveData(memberId, updated);
+    saveToStorage(storageKey(memberId), updated);
     await mutate(updated, false);
   }
 
@@ -150,7 +127,7 @@ export function useDanceCertificationManager(memberId: string) {
     entryId: string,
     patch: Partial<Omit<DanceCertificationEntry, "id" | "createdAt">>
   ): Promise<void> {
-    const current = loadData(memberId);
+    const current = loadFromStorage<DanceCertificationData>(storageKey(memberId), {} as DanceCertificationData);
     const updatedEntries = current.entries.map((e) => {
       if (e.id !== entryId) return e;
       const merged = { ...e, ...patch };
@@ -165,19 +142,19 @@ export function useDanceCertificationManager(memberId: string) {
       entries: updatedEntries,
       updatedAt: new Date().toISOString(),
     };
-    saveData(memberId, updated);
+    saveToStorage(storageKey(memberId), updated);
     await mutate(updated, false);
   }
 
   // 인증서 삭제
   async function deleteEntry(entryId: string): Promise<void> {
-    const current = loadData(memberId);
+    const current = loadFromStorage<DanceCertificationData>(storageKey(memberId), {} as DanceCertificationData);
     const updated: DanceCertificationData = {
       memberId,
       entries: current.entries.filter((e) => e.id !== entryId),
       updatedAt: new Date().toISOString(),
     };
-    saveData(memberId, updated);
+    saveToStorage(storageKey(memberId), updated);
     await mutate(updated, false);
   }
 
@@ -210,7 +187,7 @@ export function useDanceCertificationManager(memberId: string) {
 
   // 상태 일괄 동기화 (저장된 상태를 최신 날짜 기준으로 재계산)
   async function syncStatuses(): Promise<void> {
-    const current = loadData(memberId);
+    const current = loadFromStorage<DanceCertificationData>(storageKey(memberId), {} as DanceCertificationData);
     const synced = current.entries.map((e) => ({
       ...e,
       status: computeCertStatus(e.expiresAt),
@@ -220,7 +197,7 @@ export function useDanceCertificationManager(memberId: string) {
       entries: synced,
       updatedAt: new Date().toISOString(),
     };
-    saveData(memberId, updated);
+    saveToStorage(storageKey(memberId), updated);
     await mutate(updated, false);
   }
 

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { FinanceGoal } from "@/types";
+import { removeFromStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY_PREFIX = "finance-goal-";
 
@@ -26,7 +27,7 @@ function saveGoal(groupId: string, goal: FinanceGoal): void {
 }
 
 function removeGoal(groupId: string): void {
-  localStorage.removeItem(getStorageKey(groupId));
+  removeFromStorage(getStorageKey(groupId));
 }
 
 export function useFinanceGoal(groupId: string, projectId?: string | null) {

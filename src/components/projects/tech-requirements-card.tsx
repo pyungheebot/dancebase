@@ -50,6 +50,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useTechRequirements } from "@/hooks/use-tech-requirements";
 import type {
   TechRequirementItem,
@@ -279,7 +280,7 @@ export function TechRequirementsCard({
       }
       setItemDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setItemSaving(false);
     }
@@ -291,7 +292,7 @@ export function TechRequirementsCard({
       await deleteItem(item.id);
       toast.success(`'${item.title}' 장비가 삭제되었습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

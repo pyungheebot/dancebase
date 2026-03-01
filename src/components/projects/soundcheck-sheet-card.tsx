@@ -48,6 +48,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSoundcheckSheet } from "@/hooks/use-soundcheck-sheet";
 import type { SoundcheckSheet, SoundcheckChannel } from "@/types";
 
@@ -224,7 +225,7 @@ export function SoundcheckSheetCard({
       }
       setSheetDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setSheetSaving(false);
     }
@@ -239,7 +240,7 @@ export function SoundcheckSheetCard({
       }
       toast.success(`'${sheet.sheetName}' 시트가 삭제되었습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -312,7 +313,7 @@ export function SoundcheckSheetCard({
       }
       setChannelDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setChannelSaving(false);
     }
@@ -325,7 +326,7 @@ export function SoundcheckSheetCard({
       await deleteChannel(currentSheet.id, channel.id);
       toast.success("채널이 삭제되었습니다.");
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

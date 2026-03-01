@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { ShowReviewEntry, ShowReviewSource } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키
@@ -11,30 +12,6 @@ import type { ShowReviewEntry, ShowReviewSource } from "@/types";
 
 function storageKey(groupId: string, projectId: string): string {
   return `dancebase:show-review:${groupId}:${projectId}`;
-}
-
-// ============================================
-// localStorage 헬퍼
-// ============================================
-
-function loadFromStorage(groupId: string, projectId: string): ShowReviewEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ShowReviewEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(groupId: string, projectId: string, entries: ShowReviewEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(entries));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================
@@ -74,7 +51,7 @@ export function useShowReview(groupId: string, projectId: string) {
   const swrKey = swrKeys.showReview(groupId, projectId);
 
   const { data: reviews = [], mutate } = useSWR(swrKey, () =>
-    loadFromStorage(groupId, projectId)
+    loadFromStorage<ShowReviewEntry[]>(storageKey(groupId, projectId), [])
   );
 
   // 리뷰 추가
@@ -105,7 +82,7 @@ export function useShowReview(groupId: string, projectId: string) {
       };
 
       const updated = [newEntry, ...reviews];
-      saveToStorage(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -116,7 +93,7 @@ export function useShowReview(groupId: string, projectId: string) {
   const deleteReview = useCallback(
     (id: string) => {
       const updated = reviews.filter((r) => r.id !== id);
-      saveToStorage(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, reviews, mutate]

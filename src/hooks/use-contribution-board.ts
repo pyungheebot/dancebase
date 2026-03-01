@@ -4,31 +4,12 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
 import type { ContributionRecord, ContributionSummary, ContributionType } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 
 const STORAGE_KEY = (groupId: string) =>
   `dancebase:contributions:${groupId}`;
-
-function loadData(groupId: string): ContributionRecord[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ContributionRecord[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: ContributionRecord[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 기본 typeBreakdown 생성 헬퍼 ───────────────────────────
 
@@ -49,7 +30,7 @@ function emptyTypeBreakdown(): Record<ContributionType, number> {
 export function useContributionBoard(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.contributionBoard(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<ContributionRecord[]>(STORAGE_KEY(groupId), []),
     { revalidateOnFocus: false }
   );
 
@@ -86,7 +67,7 @@ export function useContributionBoard(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<ContributionRecord[]>(STORAGE_KEY(groupId), []);
       const newRecord: ContributionRecord = {
         id: crypto.randomUUID(),
         memberName: input.memberName.trim(),
@@ -98,7 +79,7 @@ export function useContributionBoard(groupId: string) {
         createdAt: new Date().toISOString(),
       };
       const next = [newRecord, ...stored];
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success(`${input.memberName}님의 기여가 기록되었습니다.`);
       return true;
@@ -112,10 +93,10 @@ export function useContributionBoard(groupId: string) {
 
   function deleteRecord(id: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<ContributionRecord[]>(STORAGE_KEY(groupId), []);
       const next = stored.filter((r) => r.id !== id);
       if (next.length === stored.length) return false;
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("기여 기록이 삭제되었습니다.");
       return true;

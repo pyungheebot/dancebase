@@ -38,6 +38,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useAudienceSurvey } from "@/hooks/use-audience-survey";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
 import type {
@@ -534,7 +535,7 @@ export function AudienceSurveyCard({
     if (ok) {
       toast.success("설문 결과가 수정되었습니다.");
     } else {
-      toast.error("수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
     setEditTarget(null);
   }
@@ -546,7 +547,7 @@ export function AudienceSurveyCard({
     if (ok) {
       toast.success("설문 결과가 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

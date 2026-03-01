@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   FlexTrackData,
   FlexTrackPart,
@@ -80,32 +81,6 @@ function getStorageKey(memberId: string) {
   return `dance-flexibility-${memberId}`;
 }
 
-function loadFromStorage(memberId: string): FlexTrackData {
-  if (typeof window === "undefined") return buildDefaultData(memberId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) return buildDefaultData(memberId);
-    const parsed = JSON.parse(raw) as FlexTrackData;
-    // 새로 추가된 부위가 없으면 기본값으로 채워넣기
-    const existingParts = new Set(parsed.parts.map((p) => p.part));
-    const missingParts = FLEX_PARTS.filter((p) => !existingParts.has(p));
-    if (missingParts.length > 0) {
-      parsed.parts = [
-        ...parsed.parts,
-        ...missingParts.map(buildDefaultPart),
-      ];
-    }
-    return parsed;
-  } catch {
-    return buildDefaultData(memberId);
-  }
-}
-
-function saveToStorage(data: FlexTrackData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.memberId), JSON.stringify(data));
-}
-
 // ─── 달성률 계산 ──────────────────────────────────────────────
 
 /** 최근 측정값 기준 목표 달성률 (0~100) */
@@ -128,7 +103,7 @@ export function calcOverallProgress(data: FlexTrackData): number {
 export function useDanceFlexibility(memberId: string) {
   const { data, mutate } = useSWR(
     swrKeys.danceFlexibility(memberId),
-    () => loadFromStorage(memberId),
+    () => loadFromStorage<FlexTrackData>(getStorageKey(memberId), {} as FlexTrackData),
     { revalidateOnFocus: false }
   );
 
@@ -155,7 +130,7 @@ export function useDanceFlexibility(memberId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(memberId), next);
     mutate(next, false);
   }
 
@@ -170,7 +145,7 @@ export function useDanceFlexibility(memberId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(memberId), next);
     mutate(next, false);
   }
 
@@ -183,7 +158,7 @@ export function useDanceFlexibility(memberId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(memberId), next);
     mutate(next, false);
   }
 

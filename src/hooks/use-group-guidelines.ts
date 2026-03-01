@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { saveToStorage } from "@/lib/local-storage";
 import {
   type GroupGuidelineItem,
   type GroupGuidelineCategory,
@@ -15,16 +16,6 @@ import {
 
 function getStorageKey(groupId: string): string {
   return `dancebase:guidelines:${groupId}`;
-}
-
-// ============================================
-// localStorage 읽기/쓰기 유틸
-// ============================================
-
-function saveToStorage(groupId: string, items: GroupGuidelineItem[]): void {
-  if (typeof window === "undefined") return;
-  const data: GroupGuidelinesData = { items };
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(data));
 }
 
 // ============================================
@@ -65,7 +56,7 @@ export function useGroupGuidelines(groupId: string) {
 
       const next = [...items, newItem];
       setItems(next);
-      saveToStorage(groupId, next);
+      saveToStorage(getStorageKey(groupId), next);
       toast.success("규칙이 추가되었습니다");
       return true;
     },
@@ -77,7 +68,7 @@ export function useGroupGuidelines(groupId: string) {
     (id: string): void => {
       const next = items.filter((i) => i.id !== id);
       setItems(next);
-      saveToStorage(groupId, next);
+      saveToStorage(getStorageKey(groupId), next);
       toast.success("규칙이 삭제되었습니다");
     },
     [groupId, items]
@@ -105,7 +96,7 @@ export function useGroupGuidelines(groupId: string) {
       });
 
       setItems(updatedItems);
-      saveToStorage(groupId, updatedItems);
+      saveToStorage(getStorageKey(groupId), updatedItems);
     },
     [groupId, items]
   );

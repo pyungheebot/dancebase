@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   BudgetPlannerCategory,
   BudgetPlannerItem,
@@ -13,26 +14,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return `dancebase:budget-planner:${groupId}`;
-}
-
-function loadData(groupId: string): BudgetPlannerPlan[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as BudgetPlannerPlan[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: BudgetPlannerPlan[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -60,17 +41,17 @@ export type BudgetPlannerStats = {
 // ============================================================
 
 export function useBudgetPlanner(groupId: string) {
-  const [plans, setPlans] = useState<BudgetPlannerPlan[]>(() => loadData(groupId));
+  const [plans, setPlans] = useState<BudgetPlannerPlan[]>(() => loadFromStorage<BudgetPlannerPlan[]>(storageKey(groupId), []));
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<BudgetPlannerPlan[]>(storageKey(groupId), []);
     setPlans(data);
   }, [groupId]);
 
   const persist = useCallback(
     (next: BudgetPlannerPlan[]) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       setPlans(next);
     },
     [groupId]

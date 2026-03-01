@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StageRiskItem,
   StageRiskData,
@@ -27,29 +28,6 @@ export function calcRiskLevel(score: number): StageRiskLevel {
 
 function storageKey(projectId: string): string {
   return swrKeys.stageRiskAssessment(projectId);
-}
-
-function loadData(projectId: string): StageRiskData {
-  if (typeof window === "undefined") {
-    return { projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw)
-      return { projectId, items: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as StageRiskData;
-  } catch {
-    return { projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: StageRiskData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -78,11 +56,11 @@ export type StageRiskStats = {
 // ============================================================
 
 export function useStageRisk(projectId: string) {
-  const [items, setItems] = useState<StageRiskItem[]>(() => loadData(projectId).items);
+  const [items, setItems] = useState<StageRiskItem[]>(() => loadFromStorage<StageRiskData>(storageKey(projectId), {} as StageRiskData).items);
 
   const reload = useCallback(() => {
     if (!projectId) return;
-    const data = loadData(projectId);
+    const data = loadFromStorage<StageRiskData>(storageKey(projectId), {} as StageRiskData);
     setItems(data.items);
   }, [projectId]);
 
@@ -93,7 +71,7 @@ export function useStageRisk(projectId: string) {
         items: updated,
         updatedAt: new Date().toISOString(),
       };
-      saveData(data);
+      saveToStorage(storageKey(projectId), data);
       setItems(updated);
     },
     [projectId]

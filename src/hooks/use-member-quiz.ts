@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MemberQuizData, QuizQuestion, QuizAttempt } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키
@@ -11,41 +12,13 @@ import type { MemberQuizData, QuizQuestion, QuizAttempt } from "@/types";
 const LS_KEY = (groupId: string) => `dancebase:member-quiz:${groupId}`;
 
 // ============================================
-// localStorage 헬퍼
-// ============================================
-
-function loadData(groupId: string): MemberQuizData {
-  if (typeof window === "undefined") {
-    return { questions: [], attempts: [], createdAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) {
-      return { questions: [], attempts: [], createdAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as MemberQuizData;
-  } catch {
-    return { questions: [], attempts: [], createdAt: new Date().toISOString() };
-  }
-}
-
-function saveData(groupId: string, data: MemberQuizData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
-// ============================================
 // 훅
 // ============================================
 
 export function useMemberQuiz(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.memberQuiz(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<MemberQuizData>(LS_KEY(groupId), {} as MemberQuizData),
     { revalidateOnFocus: false }
   );
 
@@ -68,7 +41,7 @@ export function useMemberQuiz(groupId: string) {
       ...quizData,
       questions: [...quizData.questions, newQuestion],
     };
-    saveData(groupId, next);
+    saveToStorage(LS_KEY(groupId), next);
     mutate(next, false);
   }
 
@@ -79,7 +52,7 @@ export function useMemberQuiz(groupId: string) {
       ...quizData,
       questions: quizData.questions.filter((q) => q.id !== questionId),
     };
-    saveData(groupId, next);
+    saveToStorage(LS_KEY(groupId), next);
     mutate(next, false);
   }
 
@@ -115,7 +88,7 @@ export function useMemberQuiz(groupId: string) {
       ...quizData,
       attempts: [...quizData.attempts, attempt],
     };
-    saveData(groupId, next);
+    saveToStorage(LS_KEY(groupId), next);
     mutate(next, false);
 
     return attempt;

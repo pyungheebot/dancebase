@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useCarpoolManagement } from "@/hooks/use-carpool-management";
 import type { CarpoolRide, CarpoolRideStatus } from "@/types";
 
@@ -604,7 +605,7 @@ export function CarpoolManagementCard({
   function handleDelete(id: string) {
     const ok = deleteRide(id);
     if (ok) toast.success("카풀이 삭제되었습니다");
-    else toast.error("삭제에 실패했습니다");
+    else toast.error(TOAST.DELETE_ERROR);
   }
 
   function handleJoin(rideId: string, passengerName: string) {

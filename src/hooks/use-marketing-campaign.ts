@@ -3,63 +3,12 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MarketingCampaignData,
   MarketingCampaignTask,
   MarketingChannel,
 } from "@/types";
-
-// ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(projectId: string): MarketingCampaignData {
-  if (typeof window === "undefined") {
-    return {
-      projectId,
-      tasks: [],
-      campaignName: "",
-      targetAudience: null,
-      budget: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(`marketing-campaign-${projectId}`);
-    if (!raw) {
-      return {
-        projectId,
-        tasks: [],
-        campaignName: "",
-        targetAudience: null,
-        budget: null,
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as MarketingCampaignData;
-  } catch {
-    return {
-      projectId,
-      tasks: [],
-      campaignName: "",
-      targetAudience: null,
-      budget: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function persistData(data: MarketingCampaignData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `marketing-campaign-${data.projectId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
 
 // ——————————————————————————————
 // 파라미터 타입
@@ -99,10 +48,12 @@ export type ChannelBreakdown = {
 // 훅
 // ——————————————————————————————
 
+const STORAGE_KEY = (projectId: string) => `marketing-campaign-${projectId}`;
+
 export function useMarketingCampaign(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.marketingCampaign(projectId),
-    () => loadData(projectId),
+    () => loadFromStorage<MarketingCampaignData>(STORAGE_KEY(projectId), {} as MarketingCampaignData),
     { revalidateOnFocus: false }
   );
 
@@ -118,7 +69,7 @@ export function useMarketingCampaign(projectId: string) {
   // ——— 태스크 추가 ———
   const addTask = useCallback(
     (params: AddTaskParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<MarketingCampaignData>(STORAGE_KEY(projectId), {} as MarketingCampaignData);
       const newTask: MarketingCampaignTask = {
         id: crypto.randomUUID(),
         title: params.title,
@@ -135,7 +86,7 @@ export function useMarketingCampaign(projectId: string) {
         tasks: [newTask, ...current.tasks],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -144,7 +95,7 @@ export function useMarketingCampaign(projectId: string) {
   // ——— 태스크 수정 ———
   const updateTask = useCallback(
     (taskId: string, params: UpdateTaskParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<MarketingCampaignData>(STORAGE_KEY(projectId), {} as MarketingCampaignData);
       const updated: MarketingCampaignData = {
         ...current,
         tasks: current.tasks.map((task) =>
@@ -152,7 +103,7 @@ export function useMarketingCampaign(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -161,13 +112,13 @@ export function useMarketingCampaign(projectId: string) {
   // ——— 태스크 삭제 ———
   const deleteTask = useCallback(
     (taskId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<MarketingCampaignData>(STORAGE_KEY(projectId), {} as MarketingCampaignData);
       const updated: MarketingCampaignData = {
         ...current,
         tasks: current.tasks.filter((task) => task.id !== taskId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -176,7 +127,7 @@ export function useMarketingCampaign(projectId: string) {
   // ——— 캠페인 정보 수정 ———
   const setCampaignInfo = useCallback(
     (params: CampaignInfoParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<MarketingCampaignData>(STORAGE_KEY(projectId), {} as MarketingCampaignData);
       const updated: MarketingCampaignData = {
         ...current,
         campaignName: params.campaignName,
@@ -184,7 +135,7 @@ export function useMarketingCampaign(projectId: string) {
         budget: params.budget,
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]

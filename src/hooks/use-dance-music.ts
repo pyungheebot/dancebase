@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceMusicData,
   DanceMusicPlaylist,
@@ -37,34 +38,12 @@ function getStorageKey(memberId: string): string {
   return swrKeys.danceMusicPlaylist(memberId);
 }
 
-function loadData(memberId: string): DanceMusicData {
-  if (typeof window === "undefined")
-    return { memberId, playlists: [], updatedAt: new Date().toISOString() };
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw)
-      return { memberId, playlists: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as DanceMusicData;
-  } catch {
-    return { memberId, playlists: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(memberId: string, data: DanceMusicData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
 
 export function useDanceMusic(memberId: string) {
-  const [playlists, setPlaylists] = useState<DanceMusicPlaylist[]>(() => loadData(memberId).playlists);
+  const [playlists, setPlaylists] = useState<DanceMusicPlaylist[]>(() => loadFromStorage<DanceMusicData>(getStorageKey(memberId), {} as DanceMusicData).playlists);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
@@ -72,7 +51,7 @@ export function useDanceMusic(memberId: string) {
       setLoading(false);
       return;
     }
-    const data = loadData(memberId);
+    const data = loadFromStorage<DanceMusicData>(getStorageKey(memberId), {} as DanceMusicData);
     setPlaylists(data.playlists);
   }, [memberId]);
 
@@ -80,7 +59,7 @@ export function useDanceMusic(memberId: string) {
   const persist = useCallback(
     (nextPlaylists: DanceMusicPlaylist[]) => {
       const now = new Date().toISOString();
-      saveData(memberId, { memberId, playlists: nextPlaylists, updatedAt: now });
+      saveToStorage(getStorageKey(memberId), { memberId, playlists: nextPlaylists, updatedAt: now });
       setPlaylists(nextPlaylists);
     },
     [memberId]

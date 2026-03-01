@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { SKILL_CATEGORIES } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   SkillCategory,
   SkillEvolutionData,
@@ -25,30 +26,6 @@ const MAX_SNAPSHOTS = 12;
 
 function storageKey(groupId: string, userId: string): string {
   return `${STORAGE_PREFIX}:${groupId}:${userId}`;
-}
-
-function loadData(groupId: string, userId: string): SkillEvolutionData {
-  if (typeof window === "undefined") return { snapshots: [] };
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, userId));
-    if (!raw) return { snapshots: [] };
-    return JSON.parse(raw) as SkillEvolutionData;
-  } catch {
-    return { snapshots: [] };
-  }
-}
-
-function persistData(
-  groupId: string,
-  userId: string,
-  data: SkillEvolutionData
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, userId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================
@@ -128,7 +105,7 @@ export function useSkillEvolutionTracker(
 
   const { data: rawData, isLoading, mutate } = useSWR(
     swrKey,
-    () => loadData(groupId, userId)
+    () => loadFromStorage<SkillEvolutionData>(storageKey(groupId, userId), { snapshots: [] })
   );
 
   const data: SkillEvolutionData = rawData ?? { snapshots: [] };
@@ -165,7 +142,7 @@ export function useSkillEvolutionTracker(
         recordedAt: new Date().toISOString(),
       };
 
-      const current = loadData(groupId, userId);
+      const current = loadFromStorage<SkillEvolutionData>(storageKey(groupId, userId), { snapshots: [] });
 
       // 같은 달 스냅샷이 이미 있으면 교체, 없으면 추가
       const filtered = current.snapshots.filter((s) => s.month !== month);
@@ -175,7 +152,7 @@ export function useSkillEvolutionTracker(
           .slice(0, MAX_SNAPSHOTS),
       };
 
-      persistData(groupId, userId, updated);
+      saveToStorage(storageKey(groupId, userId), updated);
       mutate(updated);
 
       return snapshot;

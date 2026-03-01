@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceRoutine,
   DanceRoutineData,
@@ -15,29 +16,6 @@ import type {
 
 function storageKey(memberId: string): string {
   return swrKeys.danceRoutineBuilder(memberId);
-}
-
-function loadData(memberId: string): DanceRoutineData {
-  if (typeof window === "undefined") {
-    return { memberId, routines: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw)
-      return { memberId, routines: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as DanceRoutineData;
-  } catch {
-    return { memberId, routines: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: DanceRoutineData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.memberId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -60,12 +38,12 @@ export type DanceRoutineStats = {
 // ============================================================
 
 export function useDanceRoutineBuilder(memberId: string) {
-  const [routines, setRoutines] = useState<DanceRoutine[]>(() => loadData(memberId).routines);
+  const [routines, setRoutines] = useState<DanceRoutine[]>(() => loadFromStorage<DanceRoutineData>(storageKey(memberId), {} as DanceRoutineData).routines);
 
   // localStorage에서 데이터 불러오기
   const reload = useCallback(() => {
     if (!memberId) return;
-    const data = loadData(memberId);
+    const data = loadFromStorage<DanceRoutineData>(storageKey(memberId), {} as DanceRoutineData);
     setRoutines(data.routines);
   }, [memberId]);
 
@@ -77,7 +55,7 @@ export function useDanceRoutineBuilder(memberId: string) {
         routines: updated,
         updatedAt: new Date().toISOString(),
       };
-      saveData(data);
+      saveToStorage(storageKey(memberId), data);
       setRoutines(updated);
     },
     [memberId]

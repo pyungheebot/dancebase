@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupCalendarEvent,
   GroupEventCalendarData,
@@ -122,31 +123,6 @@ function storageKey(groupId: string): string {
   return swrKeys.groupEventCalendar(groupId);
 }
 
-function loadData(groupId: string): GroupEventCalendarData {
-  const empty: GroupEventCalendarData = {
-    groupId,
-    events: [],
-    updatedAt: new Date().toISOString(),
-  };
-  if (typeof window === "undefined") return empty;
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return empty;
-    return JSON.parse(raw) as GroupEventCalendarData;
-  } catch {
-    return empty;
-  }
-}
-
-function saveData(data: GroupEventCalendarData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 날짜 헬퍼
 // ============================================================
@@ -197,12 +173,12 @@ export type GroupEventCalendarStats = {
 // ============================================================
 
 export function useGroupEventCalendar(groupId: string) {
-  const [events, setEvents] = useState<GroupCalendarEvent[]>(() => loadData(groupId).events);
+  const [events, setEvents] = useState<GroupCalendarEvent[]>(() => loadFromStorage<GroupEventCalendarData>(storageKey(groupId), {} as GroupEventCalendarData).events);
   const [userId] = useState<string>(() => getOrCreateUserId());
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<GroupEventCalendarData>(storageKey(groupId), {} as GroupEventCalendarData);
     setEvents(data.events);
   }, [groupId]);
 
@@ -213,7 +189,7 @@ export function useGroupEventCalendar(groupId: string) {
         events: updated,
         updatedAt: new Date().toISOString(),
       };
-      saveData(data);
+      saveToStorage(storageKey(groupId), data);
       setEvents(updated);
     },
     [groupId]

@@ -27,6 +27,7 @@ import {
   Filter,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   usePeerScoring,
   PEER_SCORE_DIMENSIONS,
@@ -411,7 +412,7 @@ export function PeerScoringCard({ groupId }: PeerScoringCardProps) {
     if (ok) {
       toast.success("점수가 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 

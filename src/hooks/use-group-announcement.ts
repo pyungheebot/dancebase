@@ -4,36 +4,7 @@ import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { GroupAnnouncementItem, GroupAnnouncementData, GroupAnnouncementPriority } from "@/types";
-
-// ─── localStorage 헬퍼 ────────────────────────────────────────
-
-function loadData(groupId: string): GroupAnnouncementData {
-  if (typeof window === "undefined") {
-    return { groupId, announcements: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(
-      swrKeys.groupAnnouncementBoard(groupId)
-    );
-    if (!raw) return { groupId, announcements: [], updatedAt: new Date().toISOString() };
-    const parsed = JSON.parse(raw) as GroupAnnouncementData;
-    return parsed;
-  } catch {
-    return { groupId, announcements: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: GroupAnnouncementData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      swrKeys.groupAnnouncementBoard(data.groupId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 용량 초과 등 무시
-  }
-}
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── 만료 여부 판별 ───────────────────────────────────────────
 
@@ -47,7 +18,7 @@ function isExpired(item: GroupAnnouncementItem): boolean {
 export function useGroupAnnouncement(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.groupAnnouncementBoard(groupId),
-    () => loadData(groupId)
+    () => loadFromStorage<GroupAnnouncementData>(swrKeys.groupAnnouncementBoard(groupId), {} as GroupAnnouncementData)
   );
 
   const allAnnouncements: GroupAnnouncementItem[] = data?.announcements ?? [];
@@ -68,7 +39,7 @@ export function useGroupAnnouncement(groupId: string) {
       expiresAt: string | null;
       attachmentUrl: string | null;
     }): GroupAnnouncementItem => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupAnnouncementData>(swrKeys.groupAnnouncementBoard(groupId), {} as GroupAnnouncementData);
       const now = new Date().toISOString();
       const newItem: GroupAnnouncementItem = {
         id: crypto.randomUUID(),
@@ -87,7 +58,7 @@ export function useGroupAnnouncement(groupId: string) {
         announcements: [newItem, ...current.announcements],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(swrKeys.groupAnnouncementBoard(groupId), updated);
       mutate(updated);
       return newItem;
     },
@@ -100,7 +71,7 @@ export function useGroupAnnouncement(groupId: string) {
       id: string,
       patch: Partial<Omit<GroupAnnouncementItem, "id" | "createdAt">>
     ): boolean => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupAnnouncementData>(swrKeys.groupAnnouncementBoard(groupId), {} as GroupAnnouncementData);
       const target = current.announcements.find((a) => a.id === id);
       if (!target) return false;
       const now = new Date().toISOString();
@@ -111,7 +82,7 @@ export function useGroupAnnouncement(groupId: string) {
         ),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(swrKeys.groupAnnouncementBoard(groupId), updated);
       mutate(updated);
       return true;
     },
@@ -121,14 +92,14 @@ export function useGroupAnnouncement(groupId: string) {
   // 공지 삭제
   const deleteAnnouncement = useCallback(
     (id: string): void => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupAnnouncementData>(swrKeys.groupAnnouncementBoard(groupId), {} as GroupAnnouncementData);
       const now = new Date().toISOString();
       const updated: GroupAnnouncementData = {
         ...current,
         announcements: current.announcements.filter((a) => a.id !== id),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(swrKeys.groupAnnouncementBoard(groupId), updated);
       mutate(updated);
     },
     [groupId, mutate]
@@ -137,7 +108,7 @@ export function useGroupAnnouncement(groupId: string) {
   // 고정/해제 토글
   const togglePin = useCallback(
     (id: string): void => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GroupAnnouncementData>(swrKeys.groupAnnouncementBoard(groupId), {} as GroupAnnouncementData);
       const now = new Date().toISOString();
       const updated: GroupAnnouncementData = {
         ...current,
@@ -148,7 +119,7 @@ export function useGroupAnnouncement(groupId: string) {
         ),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(swrKeys.groupAnnouncementBoard(groupId), updated);
       mutate(updated);
     },
     [groupId, mutate]

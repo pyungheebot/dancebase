@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MakeupSheetLook,
   MakeupSheetProduct,
@@ -13,30 +14,6 @@ import type {
 
 function storageKey(groupId: string, projectId: string): string {
   return `dancebase:makeup-sheet:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): MakeupSheetLook[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MakeupSheetLook[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: MakeupSheetLook[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -54,17 +31,17 @@ export type MakeupSheetStats = {
 // ============================================================
 
 export function useMakeupSheet(groupId: string, projectId: string) {
-  const [looks, setLooks] = useState<MakeupSheetLook[]>(() => loadData(groupId, projectId));
+  const [looks, setLooks] = useState<MakeupSheetLook[]>(() => loadFromStorage<MakeupSheetLook[]>(storageKey(groupId, projectId), []));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
-    const data = loadData(groupId, projectId);
+    const data = loadFromStorage<MakeupSheetLook[]>(storageKey(groupId, projectId), []);
     setLooks(data);
   }, [groupId, projectId]);
 
   const persist = useCallback(
     (next: MakeupSheetLook[]) => {
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       setLooks(next);
     },
     [groupId, projectId]

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { PeerScoreEntry, PeerScoreDimension, PeerScoreSummary } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── 상수 ────────────────────────────────────────────────────
 
@@ -25,26 +26,6 @@ export const PEER_SCORE_DIMENSION_LABELS: Record<PeerScoreDimension, string> = {
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 
 const LS_KEY = (groupId: string) => `dancebase:peer-scoring:${groupId}`;
-
-function loadData(groupId: string): PeerScoreEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as PeerScoreEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: PeerScoreEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 통계 헬퍼 ───────────────────────────────────────────────
 
@@ -86,7 +67,7 @@ function buildSummary(
 export function usePeerScoring(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.peerScoring(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<PeerScoreEntry[]>(LS_KEY(groupId), []),
     { revalidateOnFocus: false }
   );
 
@@ -98,14 +79,14 @@ export function usePeerScoring(groupId: string) {
     entry: Omit<PeerScoreEntry, "id" | "createdAt">
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PeerScoreEntry[]>(LS_KEY(groupId), []);
       const newEntry: PeerScoreEntry = {
         ...entry,
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
       };
       const next = [...stored, newEntry];
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       return true;
     } catch {
@@ -117,10 +98,10 @@ export function usePeerScoring(groupId: string) {
 
   function deleteScore(id: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PeerScoreEntry[]>(LS_KEY(groupId), []);
       const next = stored.filter((e) => e.id !== id);
       if (next.length === stored.length) return false;
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       return true;
     } catch {

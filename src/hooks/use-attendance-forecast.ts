@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   AttendanceForecastData,
   AttendanceMemberForecast,
@@ -20,33 +21,6 @@ const DAYS_OF_WEEK: DayOfWeek[] = [
   "sat",
   "sun",
 ];
-
-// ─── localStorage 헬퍼 ─────────────────────────────────────────
-
-function loadData(groupId: string): AttendanceForecastData | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(
-      `dancebase:attendance-forecast:${groupId}`
-    );
-    if (!raw) return null;
-    return JSON.parse(raw) as AttendanceForecastData;
-  } catch {
-    return null;
-  }
-}
-
-function saveData(groupId: string, data: AttendanceForecastData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `dancebase:attendance-forecast:${groupId}`,
-      JSON.stringify(data)
-    );
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 시뮬레이션 데이터 생성 ───────────────────────────────────
 
@@ -132,6 +106,8 @@ function calcPredictedNextRate(
 /**
  * 멤버 목록 기반 시뮬레이션 데이터 생성
  */
+const STORAGE_KEY = (groupId: string) => `dancebase:attendance-forecast:${groupId}`;
+
 export function generateForecast(
   groupId: string,
   members: { id: string; name: string }[]
@@ -225,12 +201,12 @@ export function useAttendanceForecast(groupId: string) {
     groupId ? swrKeys.attendanceForecast(groupId) : null,
     (): AttendanceForecastData => {
       // localStorage에서 기존 데이터 로드
-      const cached = loadData(groupId);
+      const cached = loadFromStorage<AttendanceForecastData | null>(STORAGE_KEY(groupId), {} as AttendanceForecastData | null);
       if (cached) return cached;
 
       // 없으면 데모 데이터 생성 후 저장
       const fresh = generateForecast(groupId, DEMO_MEMBERS);
-      saveData(groupId, fresh);
+      saveToStorage(STORAGE_KEY(groupId), fresh);
       return fresh;
     }
   );
@@ -243,7 +219,7 @@ export function useAttendanceForecast(groupId: string) {
   ): void {
     const list = members && members.length > 0 ? members : DEMO_MEMBERS;
     const fresh = generateForecast(groupId, list);
-    saveData(groupId, fresh);
+    saveToStorage(STORAGE_KEY(groupId), fresh);
     mutate(fresh, false);
   }
 

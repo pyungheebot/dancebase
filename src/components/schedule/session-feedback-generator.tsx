@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   ChevronDown,
   ChevronUp,
@@ -234,7 +235,7 @@ export function SessionFeedbackGenerator({
         setDraft(null);
         setCustomNote("");
       } catch {
-        toast.error("저장에 실패했습니다.");
+        toast.error(TOAST.SAVE_ERROR);
       }
     });
   };

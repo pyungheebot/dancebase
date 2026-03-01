@@ -41,6 +41,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupBudget } from "@/hooks/use-group-budget";
 import type { GroupBudgetTransaction, GroupBudgetCategory } from "@/types";
 
@@ -152,7 +153,7 @@ function TransactionDialog({
         toast.success(isEdit ? "거래가 수정되었습니다" : "거래가 추가되었습니다");
         onClose();
       } catch {
-        toast.error("저장에 실패했습니다");
+        toast.error(TOAST.SAVE_ERROR);
       }
     });
   }
@@ -630,7 +631,7 @@ export function GroupBudgetCard({ groupId }: { groupId: string }) {
     if (ok) {
       toast.success("거래가 삭제되었습니다");
     } else {
-      toast.error("삭제에 실패했습니다");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

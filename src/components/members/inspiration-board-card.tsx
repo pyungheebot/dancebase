@@ -21,6 +21,7 @@ import {
   BarChart2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -529,7 +530,7 @@ export function InspirationBoardCard({ memberId }: { memberId: string }) {
       await deleteItem(id);
       toast.success("아이템이 삭제되었습니다.");
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

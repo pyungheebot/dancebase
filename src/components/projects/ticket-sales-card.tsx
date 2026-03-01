@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Collapsible,
   CollapsibleContent,
@@ -534,7 +535,7 @@ export function TicketSalesCard({ projectId }: { projectId: string }) {
                                 variant="ghost"
                                 className="h-5 w-5 p-0 text-gray-400 hover:text-red-500"
                                 onClick={() => {
-                                  removeRecord(record.id).catch(() => toast.error("삭제에 실패했습니다."));
+                                  removeRecord(record.id).catch(() => toast.error(TOAST.DELETE_ERROR));
                                   toast.success("기록이 삭제되었습니다.");
                                 }}
                               >
@@ -623,7 +624,7 @@ export function TicketSalesCard({ projectId }: { projectId: string }) {
         description={deleteTierTarget ? `"${deleteTierTarget.name}" 등급을 삭제하시겠습니까? 관련 판매 기록도 모두 삭제됩니다.` : ""}
         onConfirm={() => {
           if (!deleteTierTarget) return;
-          removeTier(deleteTierTarget.id).catch(() => toast.error("삭제에 실패했습니다."));
+          removeTier(deleteTierTarget.id).catch(() => toast.error(TOAST.DELETE_ERROR));
           toast.success("등급이 삭제되었습니다.");
           setDeleteTierTarget(null);
         }}

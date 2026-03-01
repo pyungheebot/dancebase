@@ -49,6 +49,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useStageRisk } from "@/hooks/use-stage-risk";
 import type {
   StageRiskItem,
@@ -698,7 +699,7 @@ export function StageRiskCard({ projectId }: StageRiskCardProps) {
       if (ok) {
         toast.success("리스크가 수정되었습니다.");
       } else {
-        toast.error("수정에 실패했습니다.");
+        toast.error(TOAST.UPDATE_ERROR);
       }
     } else {
       addItem(params);
@@ -713,7 +714,7 @@ export function StageRiskCard({ projectId }: StageRiskCardProps) {
     if (ok) {
       toast.success("리스크가 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 

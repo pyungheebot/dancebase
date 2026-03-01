@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   CostumeDesignEntry,
   CostumeDesignStatus,
@@ -12,33 +13,6 @@ import type {
 
 function storageKey(groupId: string, projectId: string): string {
   return `dancebase:costume-design:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): CostumeDesignEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as CostumeDesignEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: CostumeDesignEntry[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(groupId, projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -57,17 +31,17 @@ export type CostumeDesignStats = {
 // ============================================================
 
 export function useCostumeDesign(groupId: string, projectId: string) {
-  const [designs, setDesigns] = useState<CostumeDesignEntry[]>(() => loadData(groupId, projectId));
+  const [designs, setDesigns] = useState<CostumeDesignEntry[]>(() => loadFromStorage<CostumeDesignEntry[]>(storageKey(groupId, projectId), []));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
-    const data = loadData(groupId, projectId);
+    const data = loadFromStorage<CostumeDesignEntry[]>(storageKey(groupId, projectId), []);
     setDesigns(data);
   }, [groupId, projectId]);
 
   const persist = useCallback(
     (next: CostumeDesignEntry[]) => {
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       setDesigns(next);
     },
     [groupId, projectId]

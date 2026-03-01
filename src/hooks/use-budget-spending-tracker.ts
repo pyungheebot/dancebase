@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
+import { removeFromStorage } from "@/lib/local-storage";
 import type {
   BudgetAlertLevel,
   MonthlyBudgetStatus,
@@ -37,7 +38,7 @@ function saveBudgetTarget(groupId: string, amount: number): void {
 
 // localStorage에서 예산 목표 삭제
 function removeBudgetTarget(groupId: string): void {
-  localStorage.removeItem(getStorageKey(groupId));
+  removeFromStorage(getStorageKey(groupId));
 }
 
 // 지출률로 경고 수준 결정

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Medal,
   ChevronDown,
@@ -478,7 +479,7 @@ function EventPanel({
       await onDeleteEvent(event.id);
       toast.success("대회가 삭제되었습니다.");
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -487,7 +488,7 @@ function EventPanel({
       await onDeleteItem(event.id, itemId);
       toast.success("항목이 삭제되었습니다.");
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

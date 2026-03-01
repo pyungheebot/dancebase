@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StageAccessData,
   StageAccessPass,
@@ -21,22 +22,6 @@ function buildDefaultData(projectId: string): StageAccessData {
 
 function getStorageKey(projectId: string) {
   return `stage-access-${projectId}`;
-}
-
-function loadFromStorage(projectId: string): StageAccessData {
-  if (typeof window === "undefined") return buildDefaultData(projectId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    if (!raw) return buildDefaultData(projectId);
-    return JSON.parse(raw) as StageAccessData;
-  } catch {
-    return buildDefaultData(projectId);
-  }
-}
-
-function saveToStorage(data: StageAccessData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
 }
 
 // ─── 통계 계산 ──────────────────────────────────────────────
@@ -84,7 +69,7 @@ export function calcStageAccessStats(
 export function useStageAccess(projectId: string) {
   const { data, mutate } = useSWR(
     swrKeys.stageAccess(projectId),
-    () => loadFromStorage(projectId),
+    () => loadFromStorage<StageAccessData>(getStorageKey(projectId), {} as StageAccessData),
     { revalidateOnFocus: false }
   );
 
@@ -104,7 +89,7 @@ export function useStageAccess(projectId: string) {
       ],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -120,7 +105,7 @@ export function useStageAccess(projectId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -131,7 +116,7 @@ export function useStageAccess(projectId: string) {
       passes: accessData.passes.filter((p) => p.id !== passId),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 

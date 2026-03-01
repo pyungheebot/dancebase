@@ -6,36 +6,13 @@ import { startOfWeek, endOfWeek, subWeeks, format } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import type { WeeklyCheckinData, WeeklyCheckinRecord } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const HISTORY_WEEKS = 8;
 
 // 주어진 날짜 기준으로 해당 주의 월요일(ISO) 반환
 function getWeekStart(date: Date): string {
   return format(startOfWeek(date, { weekStartsOn: 1 }), "yyyy-MM-dd");
-}
-
-// localStorage에서 데이터 로드
-function loadFromStorage(key: string): WeeklyCheckinData {
-  if (typeof window === "undefined") {
-    return { currentGoal: null, history: [] };
-  }
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return { currentGoal: null, history: [] };
-    return JSON.parse(raw) as WeeklyCheckinData;
-  } catch {
-    return { currentGoal: null, history: [] };
-  }
-}
-
-// localStorage에 데이터 저장
-function saveToStorage(key: string, data: WeeklyCheckinData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
 }
 
 // 연속 달성 주 수(streak) 계산: 최근 기록부터 역순으로 확인
@@ -110,7 +87,7 @@ export function useWeeklyAttendanceCheckin(
       currentActual: number;
       currentWeekStart: string;
     }> => {
-      const stored = loadFromStorage(storageKey);
+      const stored = loadFromStorage<WeeklyCheckinData>(storageKey, { currentGoal: null, history: [] });
       const now = new Date();
       const currentWeekStart = getWeekStart(now);
 
@@ -196,7 +173,7 @@ export function useWeeklyAttendanceCheckin(
     async (goal: number) => {
       const now = new Date();
       const weekStart = getWeekStart(now);
-      const current = loadFromStorage(storageKey);
+      const current = loadFromStorage<WeeklyCheckinData>(storageKey, { currentGoal: null, history: [] });
 
       // 이번 주 레코드 업데이트 또는 추가
       let newHistory = current.history ?? [];
@@ -236,7 +213,7 @@ export function useWeeklyAttendanceCheckin(
 
   // 목표 초기화
   const resetGoal = useCallback(() => {
-    const current = loadFromStorage(storageKey);
+    const current = loadFromStorage<WeeklyCheckinData>(storageKey, { currentGoal: null, history: [] });
     const next: WeeklyCheckinData = {
       currentGoal: null,
       history: current.history,

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Trophy, ChevronDown, ChevronUp, Plus, Trash2, Loader2 } from "lucide-react";
-import { format, differenceInDays, parseISO } from "date-fns";
+import { differenceInDays, parseISO } from "date-fns";
+import { formatKo } from "@/lib/date-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -141,8 +142,8 @@ export function TeamChallengeCard({ groupId, canEdit }: TeamChallengeCardProps) 
               {/* 기간 및 목표 */}
               <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                 <span>
-                  {format(parseISO(activeChallenge.starts_at), "M/d")} ~{" "}
-                  {format(parseISO(activeChallenge.ends_at), "M/d")}
+                  {formatKo(parseISO(activeChallenge.starts_at), "M/d")} ~{" "}
+                  {formatKo(parseISO(activeChallenge.ends_at), "M/d")}
                 </span>
                 <span className="text-muted-foreground/50">|</span>
                 <span>목표: {activeChallenge.target_rate}%</span>
@@ -252,8 +253,8 @@ export function TeamChallengeCard({ groupId, canEdit }: TeamChallengeCardProps) 
                           )}
                         </div>
                         <p className="text-[10px] text-muted-foreground">
-                          {format(parseISO(c.starts_at), "M/d")} ~{" "}
-                          {format(parseISO(c.ends_at), "M/d")} | 목표 {c.target_rate}%
+                          {formatKo(parseISO(c.starts_at), "M/d")} ~{" "}
+                          {formatKo(parseISO(c.ends_at), "M/d")} | 목표 {c.target_rate}%
                         </p>
                       </div>
                       {canEdit && (

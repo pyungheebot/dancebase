@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PostShowReportData,
   PostShowReportEntry,
@@ -39,30 +40,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:post-show-report:${groupId}:${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): PostShowReportData {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) {
-      return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as PostShowReportData;
-  } catch {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: PostShowReportData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId, data.projectId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -70,7 +47,7 @@ function saveData(data: PostShowReportData): void {
 export function usePostShowReport(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.postShowReport(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<PostShowReportData>(storageKey(groupId, projectId), {} as PostShowReportData),
     {
       fallbackData: {
         groupId,
@@ -98,7 +75,7 @@ export function usePostShowReport(groupId: string, projectId: string) {
       author: string;
       notes?: string;
     }): PostShowReportEntry => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PostShowReportData>(storageKey(groupId, projectId), {} as PostShowReportData);
       const now = new Date().toISOString();
       const newEntry: PostShowReportEntry = {
         id: crypto.randomUUID(),
@@ -121,7 +98,7 @@ export function usePostShowReport(groupId: string, projectId: string) {
         entries: [newEntry, ...current.entries],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newEntry;
     },
@@ -146,7 +123,7 @@ export function usePostShowReport(groupId: string, projectId: string) {
         notes: string;
       }>
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PostShowReportData>(storageKey(groupId, projectId), {} as PostShowReportData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -181,7 +158,7 @@ export function usePostShowReport(groupId: string, projectId: string) {
         entries: current.entries.map((e) => (e.id === entryId ? updatedEntry : e)),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -191,7 +168,7 @@ export function usePostShowReport(groupId: string, projectId: string) {
   /** 보고서 삭제 */
   const deleteEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PostShowReportData>(storageKey(groupId, projectId), {} as PostShowReportData);
       const exists = current.entries.some((e) => e.id === entryId);
       if (!exists) return false;
 
@@ -200,7 +177,7 @@ export function usePostShowReport(groupId: string, projectId: string) {
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },

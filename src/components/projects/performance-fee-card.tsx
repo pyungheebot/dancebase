@@ -43,6 +43,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePerformanceFee } from "@/hooks/use-performance-fee";
 import type {
   PerformanceFeeRole,
@@ -668,7 +669,7 @@ export function PerformanceFeeCard({
     if (ok) {
       toast.success("정보가 수정되었습니다.");
     } else {
-      toast.error("수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
     setEditTarget(null);
   }
@@ -679,7 +680,7 @@ export function PerformanceFeeCard({
     if (ok) {
       toast.success(`"${memberName}" 항목이 삭제되었습니다.`);
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

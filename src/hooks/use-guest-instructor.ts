@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GuestInstructorData,
   GuestInstructorEntry,
@@ -16,28 +17,6 @@ import type {
 
 function getStorageKey(groupId: string): string {
   return `dancebase:guest-instructor:${groupId}`;
-}
-
-function loadData(groupId: string): GuestInstructorData {
-  if (typeof window === "undefined") {
-    return { groupId, instructors: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (raw) return JSON.parse(raw) as GuestInstructorData;
-  } catch {
-    // 파싱 실패 시 빈 데이터 반환
-  }
-  return { groupId, instructors: [], updatedAt: new Date().toISOString() };
-}
-
-function saveData(data: GuestInstructorData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
 }
 
 // ============================================================
@@ -88,7 +67,7 @@ export type AddGuestLessonInput = {
 export function useGuestInstructor(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     groupId ? swrKeys.guestInstructor(groupId) : null,
-    async () => loadData(groupId)
+    async () => loadFromStorage<GuestInstructorData>(getStorageKey(groupId), {} as GuestInstructorData)
   );
 
   const storeData = data ?? {
@@ -114,7 +93,7 @@ export function useGuestInstructor(groupId: string) {
         return false;
       }
 
-      const current = loadData(groupId);
+      const current = loadFromStorage<GuestInstructorData>(getStorageKey(groupId), {} as GuestInstructorData);
       const now = new Date().toISOString();
 
       const newEntry: GuestInstructorEntry = {
@@ -139,7 +118,7 @@ export function useGuestInstructor(groupId: string) {
         instructors: [...current.instructors, newEntry],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
       toast.success("강사가 등록되었습니다");
       return true;
@@ -153,7 +132,7 @@ export function useGuestInstructor(groupId: string) {
       id: string,
       changes: UpdateGuestInstructorInput
     ): Promise<boolean> => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GuestInstructorData>(getStorageKey(groupId), {} as GuestInstructorData);
       const target = current.instructors.find((i) => i.id === id);
       if (!target) {
         toast.error("강사 정보를 찾을 수 없습니다");
@@ -199,7 +178,7 @@ export function useGuestInstructor(groupId: string) {
         ),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
       toast.success("강사 정보가 수정되었습니다");
       return true;
@@ -210,14 +189,14 @@ export function useGuestInstructor(groupId: string) {
   // ── 강사 삭제 ──
   const deleteInstructor = useCallback(
     async (id: string): Promise<boolean> => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GuestInstructorData>(getStorageKey(groupId), {} as GuestInstructorData);
       const now = new Date().toISOString();
       const updated: GuestInstructorData = {
         ...current,
         instructors: current.instructors.filter((i) => i.id !== id),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
       toast.success("강사가 삭제되었습니다");
       return true;
@@ -241,7 +220,7 @@ export function useGuestInstructor(groupId: string) {
         return false;
       }
 
-      const current = loadData(groupId);
+      const current = loadFromStorage<GuestInstructorData>(getStorageKey(groupId), {} as GuestInstructorData);
       const target = current.instructors.find((i) => i.id === instructorId);
       if (!target) {
         toast.error("강사 정보를 찾을 수 없습니다");
@@ -273,7 +252,7 @@ export function useGuestInstructor(groupId: string) {
         ),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
       toast.success("수업 이력이 추가되었습니다");
       return true;
@@ -284,7 +263,7 @@ export function useGuestInstructor(groupId: string) {
   // ── 수업 이력 삭제 ──
   const deleteLesson = useCallback(
     async (instructorId: string, lessonId: string): Promise<boolean> => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<GuestInstructorData>(getStorageKey(groupId), {} as GuestInstructorData);
       const now = new Date().toISOString();
       const updated: GuestInstructorData = {
         ...current,
@@ -299,7 +278,7 @@ export function useGuestInstructor(groupId: string) {
         ),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(getStorageKey(groupId), updated);
       await mutate(updated, false);
       toast.success("수업 이력이 삭제되었습니다");
       return true;

@@ -3,41 +3,13 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   SharedFileData,
   SharedFileItem,
   SharedFileFolderItem,
   SharedFileCategory,
 } from "@/types";
-
-// ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(groupId: string): SharedFileData {
-  if (typeof window === "undefined") {
-    return { groupId, files: [], folders: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`group-shared-files-${groupId}`);
-    if (!raw) return { groupId, files: [], folders: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as SharedFileData;
-  } catch {
-    return { groupId, files: [], folders: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function persistData(data: SharedFileData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `group-shared-files-${data.groupId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
 
 // ——————————————————————————————
 // 파라미터 타입
@@ -62,10 +34,12 @@ export type UpdateFileParams = Partial<
 // 훅
 // ——————————————————————————————
 
+const STORAGE_KEY = (groupId: string) => `group-shared-files-${groupId}`;
+
 export function useSharedFiles(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.groupSharedFiles(groupId),
-    () => loadData(groupId),
+    () => loadFromStorage<SharedFileData>(STORAGE_KEY(groupId), {} as SharedFileData),
     { revalidateOnFocus: false }
   );
 
@@ -79,7 +53,7 @@ export function useSharedFiles(groupId: string) {
   // ——— 파일 추가 ———
   const addFile = useCallback(
     (params: AddFileParams) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<SharedFileData>(STORAGE_KEY(groupId), {} as SharedFileData);
       const newFile: SharedFileItem = {
         id: crypto.randomUUID(),
         name: params.name,
@@ -97,7 +71,7 @@ export function useSharedFiles(groupId: string) {
         files: [newFile, ...current.files],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -106,7 +80,7 @@ export function useSharedFiles(groupId: string) {
   // ——— 파일 수정 ———
   const updateFile = useCallback(
     (fileId: string, params: UpdateFileParams) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<SharedFileData>(STORAGE_KEY(groupId), {} as SharedFileData);
       const updated: SharedFileData = {
         ...current,
         files: current.files.map((f) =>
@@ -114,7 +88,7 @@ export function useSharedFiles(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -123,13 +97,13 @@ export function useSharedFiles(groupId: string) {
   // ——— 파일 삭제 ———
   const deleteFile = useCallback(
     (fileId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<SharedFileData>(STORAGE_KEY(groupId), {} as SharedFileData);
       const updated: SharedFileData = {
         ...current,
         files: current.files.filter((f) => f.id !== fileId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -138,7 +112,7 @@ export function useSharedFiles(groupId: string) {
   // ——— 폴더 추가 ———
   const addFolder = useCallback(
     (name: string, parentId: string | null) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<SharedFileData>(STORAGE_KEY(groupId), {} as SharedFileData);
       const newFolder: SharedFileFolderItem = {
         id: crypto.randomUUID(),
         name,
@@ -149,7 +123,7 @@ export function useSharedFiles(groupId: string) {
         folders: [...current.folders, newFolder],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -158,7 +132,7 @@ export function useSharedFiles(groupId: string) {
   // ——— 폴더 이름 변경 ———
   const renameFolder = useCallback(
     (folderId: string, newName: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<SharedFileData>(STORAGE_KEY(groupId), {} as SharedFileData);
       const updated: SharedFileData = {
         ...current,
         folders: current.folders.map((folder) =>
@@ -166,7 +140,7 @@ export function useSharedFiles(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -175,7 +149,7 @@ export function useSharedFiles(groupId: string) {
   // ——— 폴더 삭제 (하위 파일/폴더 포함) ———
   const deleteFolder = useCallback(
     (folderId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<SharedFileData>(STORAGE_KEY(groupId), {} as SharedFileData);
 
       // 재귀적으로 하위 폴더 ID 모두 수집
       function collectDescendantIds(id: string): string[] {
@@ -193,7 +167,7 @@ export function useSharedFiles(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]

@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import {
   type GroupMusicTrack,
   type GroupMusicLibraryData,
@@ -18,26 +19,6 @@ function getStorageKey(groupId: string): string {
   return `dancebase:music-library:${groupId}`;
 }
 
-function loadFromStorage(groupId: string): GroupMusicLibraryData {
-  if (typeof window === "undefined") {
-    return { groupId, tracks: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) {
-      return { groupId, tracks: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as GroupMusicLibraryData;
-  } catch {
-    return { groupId, tracks: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveToStorage(data: GroupMusicLibraryData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.groupId), JSON.stringify(data));
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -45,14 +26,14 @@ function saveToStorage(data: GroupMusicLibraryData): void {
 export function useGroupMusicLibrary(groupId: string) {
   const { data, mutate } = useSWR(
     swrKeys.groupMusicLibrary(groupId),
-    () => loadFromStorage(groupId),
+    () => loadFromStorage<GroupMusicLibraryData>(getStorageKey(groupId), {} as GroupMusicLibraryData),
     { revalidateOnFocus: false }
   );
 
   // 내부 저장 헬퍼
   const persist = useCallback(
     (next: GroupMusicLibraryData) => {
-      saveToStorage(next);
+      saveToStorage(getStorageKey(groupId), next);
       mutate(next, false);
     },
     [mutate]

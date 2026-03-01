@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
+import { removeFromStorage } from "@/lib/local-storage";
 
 export interface FormDraftData {
   title: string;
@@ -33,7 +34,6 @@ export function useFormDraft({
   const hasUnsavedChanges = useRef(false);
 
   // 마운트 시 드래프트 존재 여부 확인
-
 
   // 페이지 이탈 경고
   useEffect(() => {
@@ -109,7 +109,7 @@ export function useFormDraft({
     if (!enabled) return;
 
     try {
-      localStorage.removeItem(key);
+      removeFromStorage(key);
       setHasDraft(false);
       setIsDraftRestored(false);
       hasUnsavedChanges.current = false;

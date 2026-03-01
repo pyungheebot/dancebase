@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PracticeFeedbackData,
   PracticeFeedbackSession,
@@ -17,28 +18,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return `dancebase:practice-feedback-session:${groupId}`;
-}
-
-function loadData(groupId: string): PracticeFeedbackData {
-  if (typeof window === "undefined") {
-    return { groupId, sessions: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return { groupId, sessions: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as PracticeFeedbackData;
-  } catch {
-    return { groupId, sessions: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: PracticeFeedbackData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 // ============================================
@@ -110,7 +89,7 @@ function aggregateSession(session: PracticeFeedbackSession): PracticeFeedbackAgg
 export function usePracticeFeedbackSession(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.practiceFeedbackSession(groupId),
-    () => loadData(groupId),
+    () => loadFromStorage<PracticeFeedbackData>(storageKey(groupId), {} as PracticeFeedbackData),
     {
       fallbackData: {
         groupId,
@@ -125,7 +104,7 @@ export function usePracticeFeedbackSession(groupId: string) {
   // 세션 생성
   const createSession = useCallback(
     (params: { practiceDate: string; title?: string }): PracticeFeedbackSession => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<PracticeFeedbackData>(storageKey(groupId), {} as PracticeFeedbackData);
       const newSession: PracticeFeedbackSession = {
         id: crypto.randomUUID(),
         groupId,
@@ -139,7 +118,7 @@ export function usePracticeFeedbackSession(groupId: string) {
         sessions: [newSession, ...current.sessions],
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       return newSession;
     },
@@ -149,13 +128,13 @@ export function usePracticeFeedbackSession(groupId: string) {
   // 세션 삭제
   const deleteSession = useCallback(
     (sessionId: string): void => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<PracticeFeedbackData>(storageKey(groupId), {} as PracticeFeedbackData);
       const updated: PracticeFeedbackData = {
         ...current,
         sessions: current.sessions.filter((s) => s.id !== sessionId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -174,7 +153,7 @@ export function usePracticeFeedbackSession(groupId: string) {
         improvements?: string;
       }
     ): boolean => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<PracticeFeedbackData>(storageKey(groupId), {} as PracticeFeedbackData);
       const sessionIndex = current.sessions.findIndex((s) => s.id === sessionId);
       if (sessionIndex === -1) return false;
 
@@ -201,7 +180,7 @@ export function usePracticeFeedbackSession(groupId: string) {
         sessions: updatedSessions,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       return true;
     },
@@ -211,7 +190,7 @@ export function usePracticeFeedbackSession(groupId: string) {
   // 피드백 응답 삭제
   const deleteResponse = useCallback(
     (sessionId: string, responseId: string): void => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<PracticeFeedbackData>(storageKey(groupId), {} as PracticeFeedbackData);
       const sessionIndex = current.sessions.findIndex((s) => s.id === sessionId);
       if (sessionIndex === -1) return;
 
@@ -228,7 +207,7 @@ export function usePracticeFeedbackSession(groupId: string) {
         sessions: updatedSessions,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]

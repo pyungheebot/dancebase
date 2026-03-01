@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   RehearsalScheduleData,
   RehearsalScheduleItem,
@@ -10,49 +11,6 @@ import type {
   RehearsalScheduleType as RehearsalType,
   RehearsalScheduleStatus as RehearsalStatus,
 } from "@/types";
-
-// ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(projectId: string): RehearsalScheduleData {
-  if (typeof window === "undefined") {
-    return {
-      projectId,
-      rehearsals: [],
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(`rehearsal-schedule-${projectId}`);
-    if (!raw) {
-      return {
-        projectId,
-        rehearsals: [],
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as RehearsalScheduleData;
-  } catch {
-    return {
-      projectId,
-      rehearsals: [],
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function persistData(data: RehearsalScheduleData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `rehearsal-schedule-${data.projectId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
 
 // ——————————————————————————————
 // 파라미터 타입
@@ -77,10 +35,12 @@ export type UpdateRehearsalParams = Partial<
 // 훅
 // ——————————————————————————————
 
+const STORAGE_KEY = (projectId: string) => `rehearsal-schedule-${projectId}`;
+
 export function useRehearsalSchedule(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.rehearsalSchedule(projectId),
-    () => loadData(projectId),
+    () => loadFromStorage<RehearsalScheduleData>(STORAGE_KEY(projectId), {} as RehearsalScheduleData),
     { revalidateOnFocus: false }
   );
 
@@ -93,7 +53,7 @@ export function useRehearsalSchedule(projectId: string) {
   // ——— 리허설 추가 ———
   const addRehearsal = useCallback(
     (params: AddRehearsalParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<RehearsalScheduleData>(STORAGE_KEY(projectId), {} as RehearsalScheduleData);
       const newRehearsal: RehearsalScheduleItem = {
         id: crypto.randomUUID(),
         title: params.title,
@@ -113,7 +73,7 @@ export function useRehearsalSchedule(projectId: string) {
         rehearsals: [...current.rehearsals, newRehearsal],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -122,7 +82,7 @@ export function useRehearsalSchedule(projectId: string) {
   // ——— 리허설 수정 ———
   const updateRehearsal = useCallback(
     (rehearsalId: string, params: UpdateRehearsalParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<RehearsalScheduleData>(STORAGE_KEY(projectId), {} as RehearsalScheduleData);
       const updated: RehearsalScheduleData = {
         ...current,
         rehearsals: current.rehearsals.map((r) =>
@@ -130,7 +90,7 @@ export function useRehearsalSchedule(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -139,13 +99,13 @@ export function useRehearsalSchedule(projectId: string) {
   // ——— 리허설 삭제 ———
   const deleteRehearsal = useCallback(
     (rehearsalId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<RehearsalScheduleData>(STORAGE_KEY(projectId), {} as RehearsalScheduleData);
       const updated: RehearsalScheduleData = {
         ...current,
         rehearsals: current.rehearsals.filter((r) => r.id !== rehearsalId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -154,7 +114,7 @@ export function useRehearsalSchedule(projectId: string) {
   // ——— 체크리스트 항목 토글 ———
   const toggleCheckItem = useCallback(
     (rehearsalId: string, itemId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<RehearsalScheduleData>(STORAGE_KEY(projectId), {} as RehearsalScheduleData);
       const updated: RehearsalScheduleData = {
         ...current,
         rehearsals: current.rehearsals.map((r) => {
@@ -170,7 +130,7 @@ export function useRehearsalSchedule(projectId: string) {
         }),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -179,7 +139,7 @@ export function useRehearsalSchedule(projectId: string) {
   // ——— 체크리스트 항목 추가 ———
   const addCheckItem = useCallback(
     (rehearsalId: string, title: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<RehearsalScheduleData>(STORAGE_KEY(projectId), {} as RehearsalScheduleData);
       const newItem: RehearsalCheckItem = {
         id: crypto.randomUUID(),
         title,
@@ -193,7 +153,7 @@ export function useRehearsalSchedule(projectId: string) {
         }),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -202,7 +162,7 @@ export function useRehearsalSchedule(projectId: string) {
   // ——— 체크리스트 항목 삭제 ———
   const removeCheckItem = useCallback(
     (rehearsalId: string, itemId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<RehearsalScheduleData>(STORAGE_KEY(projectId), {} as RehearsalScheduleData);
       const updated: RehearsalScheduleData = {
         ...current,
         rehearsals: current.rehearsals.map((r) => {
@@ -214,7 +174,7 @@ export function useRehearsalSchedule(projectId: string) {
         }),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -223,7 +183,7 @@ export function useRehearsalSchedule(projectId: string) {
   // ——— 리허설 완료 처리 ———
   const completeRehearsal = useCallback(
     (rehearsalId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<RehearsalScheduleData>(STORAGE_KEY(projectId), {} as RehearsalScheduleData);
       const updated: RehearsalScheduleData = {
         ...current,
         rehearsals: current.rehearsals.map((r) =>
@@ -233,7 +193,7 @@ export function useRehearsalSchedule(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -242,7 +202,7 @@ export function useRehearsalSchedule(projectId: string) {
   // ——— 리허설 취소 처리 ———
   const cancelRehearsal = useCallback(
     (rehearsalId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<RehearsalScheduleData>(STORAGE_KEY(projectId), {} as RehearsalScheduleData);
       const updated: RehearsalScheduleData = {
         ...current,
         rehearsals: current.rehearsals.map((r) =>
@@ -252,7 +212,7 @@ export function useRehearsalSchedule(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]

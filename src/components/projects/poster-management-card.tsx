@@ -47,6 +47,7 @@ import {
   Award,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 // ============================================================
 // 상수 및 헬퍼
@@ -679,7 +680,7 @@ function PosterProjectRow({
     if (ok) {
       toast.success("포스터 프로젝트가 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

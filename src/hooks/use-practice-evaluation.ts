@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PracticeEvalSession,
   PracticeEvalCriteria,
@@ -15,26 +16,6 @@ import type {
 const LS_KEY = (groupId: string) =>
   `dancebase:practice-evaluation:${groupId}`;
 
-function loadData(groupId: string): PracticeEvalSession[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as PracticeEvalSession[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: PracticeEvalSession[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
-
 // ─── 총점 계산 헬퍼 ──────────────────────────────────────────
 
 function calcTotal(scores: PracticeEvalScore[]): number {
@@ -46,7 +27,7 @@ function calcTotal(scores: PracticeEvalScore[]): number {
 export function usePracticeEvaluation(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.practiceEvaluation(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<PracticeEvalSession[]>(LS_KEY(groupId), []),
     { revalidateOnFocus: false }
   );
 
@@ -78,7 +59,7 @@ export function usePracticeEvaluation(groupId: string) {
       return null;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeEvalSession[]>(LS_KEY(groupId), []);
       const newSession: PracticeEvalSession = {
         id: crypto.randomUUID(),
         date: input.date,
@@ -90,7 +71,7 @@ export function usePracticeEvaluation(groupId: string) {
         createdAt: new Date().toISOString(),
       };
       const next = [newSession, ...stored];
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("평가 세션이 생성되었습니다.");
       return newSession.id;
@@ -109,7 +90,7 @@ export function usePracticeEvaluation(groupId: string) {
     >
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeEvalSession[]>(LS_KEY(groupId), []);
       const idx = stored.findIndex((s) => s.id === sessionId);
       if (idx === -1) {
         toast.error("평가 세션을 찾을 수 없습니다.");
@@ -120,7 +101,7 @@ export function usePracticeEvaluation(groupId: string) {
         { ...stored[idx], ...patch },
         ...stored.slice(idx + 1),
       ];
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("평가 세션이 수정되었습니다.");
       return true;
@@ -134,10 +115,10 @@ export function usePracticeEvaluation(groupId: string) {
 
   function deleteSession(sessionId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeEvalSession[]>(LS_KEY(groupId), []);
       const next = stored.filter((s) => s.id !== sessionId);
       if (next.length === stored.length) return false;
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("평가 세션이 삭제되었습니다.");
       return true;
@@ -162,7 +143,7 @@ export function usePracticeEvaluation(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeEvalSession[]>(LS_KEY(groupId), []);
       const next = stored.map((s) => {
         if (s.id !== sessionId) return s;
         const newCriteria: PracticeEvalCriteria = {
@@ -172,7 +153,7 @@ export function usePracticeEvaluation(groupId: string) {
         };
         return { ...s, criteria: [...s.criteria, newCriteria] };
       });
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       return true;
     } catch {
@@ -185,7 +166,7 @@ export function usePracticeEvaluation(groupId: string) {
 
   function deleteCriteria(sessionId: string, criteriaId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeEvalSession[]>(LS_KEY(groupId), []);
       const next = stored.map((s) => {
         if (s.id !== sessionId) return s;
         return {
@@ -201,7 +182,7 @@ export function usePracticeEvaluation(groupId: string) {
           })),
         };
       });
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       return true;
     } catch {
@@ -223,7 +204,7 @@ export function usePracticeEvaluation(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeEvalSession[]>(LS_KEY(groupId), []);
       const next = stored.map((s) => {
         if (s.id !== sessionId) return s;
         const totalScore = calcTotal(scores);
@@ -247,7 +228,7 @@ export function usePracticeEvaluation(groupId: string) {
             : [...s.results, newResult];
         return { ...s, results: updatedResults };
       });
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success(`${memberName.trim()}님의 평가가 저장되었습니다.`);
       return true;
@@ -261,7 +242,7 @@ export function usePracticeEvaluation(groupId: string) {
 
   function deleteMemberResult(sessionId: string, memberName: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeEvalSession[]>(LS_KEY(groupId), []);
       const next = stored.map((s) => {
         if (s.id !== sessionId) return s;
         return {
@@ -272,7 +253,7 @@ export function usePracticeEvaluation(groupId: string) {
           ),
         };
       });
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("평가 결과가 삭제되었습니다.");
       return true;

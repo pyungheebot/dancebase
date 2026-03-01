@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceNetworkingData,
   DanceNetworkingEntry,
@@ -76,30 +77,6 @@ function storageKey(memberId: string): string {
   return `dancebase:dance-networking:${memberId}`;
 }
 
-function loadData(memberId: string): DanceNetworkingData {
-  if (typeof window === "undefined") {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw) {
-      return { memberId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as DanceNetworkingData;
-  } catch {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: DanceNetworkingData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.memberId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -107,7 +84,7 @@ function saveData(data: DanceNetworkingData): void {
 export function useDanceNetworking(memberId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.danceNetworking(memberId),
-    () => loadData(memberId),
+    () => loadFromStorage<DanceNetworkingData>(storageKey(memberId), {} as DanceNetworkingData),
     {
       fallbackData: {
         memberId,
@@ -133,7 +110,7 @@ export function useDanceNetworking(memberId: string) {
       role: DanceNetworkingRole;
       notes?: string;
     }): DanceNetworkingEntry => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<DanceNetworkingData>(storageKey(memberId), {} as DanceNetworkingData);
       const now = new Date().toISOString();
       const newEntry: DanceNetworkingEntry = {
         id: crypto.randomUUID(),
@@ -156,7 +133,7 @@ export function useDanceNetworking(memberId: string) {
         entries: [newEntry, ...current.entries],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(memberId), updated);
       mutate(updated, false);
       return newEntry;
     },
@@ -181,7 +158,7 @@ export function useDanceNetworking(memberId: string) {
         isFavorite: boolean;
       }>
     ): boolean => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<DanceNetworkingData>(storageKey(memberId), {} as DanceNetworkingData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -228,7 +205,7 @@ export function useDanceNetworking(memberId: string) {
         ),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(memberId), updated);
       mutate(updated, false);
       return true;
     },
@@ -238,7 +215,7 @@ export function useDanceNetworking(memberId: string) {
   /** 즐겨찾기 토글 */
   const toggleFavorite = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<DanceNetworkingData>(storageKey(memberId), {} as DanceNetworkingData);
       const entry = current.entries.find((e) => e.id === entryId);
       if (!entry) return false;
       return updateEntry(entryId, { isFavorite: !entry.isFavorite });
@@ -249,7 +226,7 @@ export function useDanceNetworking(memberId: string) {
   /** 연락처 삭제 */
   const deleteEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<DanceNetworkingData>(storageKey(memberId), {} as DanceNetworkingData);
       const exists = current.entries.some((e) => e.id === entryId);
       if (!exists) return false;
 
@@ -258,7 +235,7 @@ export function useDanceNetworking(memberId: string) {
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(memberId), updated);
       mutate(updated, false);
       return true;
     },

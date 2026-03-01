@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { loadFromStorage } from "@/lib/local-storage";
 import type {
   StretchingRoutine,
   StretchingExercise,
@@ -21,20 +22,6 @@ const LS_LOGS_KEY = (memberId: string) =>
 interface StoredData {
   routines: StretchingRoutine[];
   logs: StretchingLog[];
-}
-
-function loadData(memberId: string): StoredData {
-  if (typeof window === "undefined") return { routines: [], logs: [] };
-  try {
-    const rawRoutines = localStorage.getItem(LS_ROUTINES_KEY(memberId));
-    const rawLogs = localStorage.getItem(LS_LOGS_KEY(memberId));
-    return {
-      routines: rawRoutines ? (JSON.parse(rawRoutines) as StretchingRoutine[]) : [],
-      logs: rawLogs ? (JSON.parse(rawLogs) as StretchingLog[]) : [],
-    };
-  } catch {
-    return { routines: [], logs: [] };
-  }
 }
 
 function saveRoutines(memberId: string, routines: StretchingRoutine[]): void {
@@ -91,7 +78,7 @@ function calcStreakDays(logs: StretchingLog[]): number {
 export function useStretchingRoutine(memberId: string) {
   const { data, mutate } = useSWR(
     memberId ? swrKeys.stretchingRoutine(memberId) : null,
-    () => loadData(memberId),
+    () => loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] }),
     { revalidateOnFocus: false }
   );
 
@@ -106,7 +93,7 @@ export function useStretchingRoutine(memberId: string) {
       return false;
     }
     try {
-      const stored = loadData(memberId);
+      const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const newRoutine: StretchingRoutine = {
         id: crypto.randomUUID(),
         routineName: input.routineName.trim(),
@@ -132,7 +119,7 @@ export function useStretchingRoutine(memberId: string) {
     patch: Partial<Pick<StretchingRoutine, "routineName">>
   ): boolean {
     try {
-      const stored = loadData(memberId);
+      const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const idx = stored.routines.findIndex((r) => r.id === routineId);
       if (idx === -1) {
         toast.error("루틴을 찾을 수 없습니다.");
@@ -158,7 +145,7 @@ export function useStretchingRoutine(memberId: string) {
 
   function deleteRoutine(routineId: string): boolean {
     try {
-      const stored = loadData(memberId);
+      const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const nextRoutines = stored.routines.filter((r) => r.id !== routineId);
       if (nextRoutines.length === stored.routines.length) return false;
       const nextLogs = stored.logs.filter((l) => l.routineId !== routineId);
@@ -198,7 +185,7 @@ export function useStretchingRoutine(memberId: string) {
       return false;
     }
     try {
-      const stored = loadData(memberId);
+      const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const idx = stored.routines.findIndex((r) => r.id === routineId);
       if (idx === -1) {
         toast.error("루틴을 찾을 수 없습니다.");
@@ -244,7 +231,7 @@ export function useStretchingRoutine(memberId: string) {
     patch: Partial<Omit<StretchingExercise, "id">>
   ): boolean {
     try {
-      const stored = loadData(memberId);
+      const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const routineIdx = stored.routines.findIndex((r) => r.id === routineId);
       if (routineIdx === -1) {
         toast.error("루틴을 찾을 수 없습니다.");
@@ -285,7 +272,7 @@ export function useStretchingRoutine(memberId: string) {
 
   function deleteExercise(routineId: string, exerciseId: string): boolean {
     try {
-      const stored = loadData(memberId);
+      const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const routineIdx = stored.routines.findIndex((r) => r.id === routineId);
       if (routineIdx === -1) return false;
       const routine = stored.routines[routineIdx];
@@ -338,7 +325,7 @@ export function useStretchingRoutine(memberId: string) {
       return false;
     }
     try {
-      const stored = loadData(memberId);
+      const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const newLog: StretchingLog = {
         id: crypto.randomUUID(),
         routineId: input.routineId,
@@ -363,7 +350,7 @@ export function useStretchingRoutine(memberId: string) {
 
   function deleteLog(logId: string): boolean {
     try {
-      const stored = loadData(memberId);
+      const stored = loadFromStorage<StoredData>(LS_ROUTINES_KEY(memberId), { routines: [], logs: [] });
       const nextLogs = stored.logs.filter((l) => l.id !== logId);
       if (nextLogs.length === stored.logs.length) return false;
       saveLogs(memberId, nextLogs);

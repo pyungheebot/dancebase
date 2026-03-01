@@ -47,6 +47,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useCurtainCall } from "@/hooks/use-curtain-call";
 import type { CurtainCallPlan, CurtainCallStep } from "@/types";
 
@@ -212,7 +213,7 @@ export function CurtainCallCard({
       }
       setPlanDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setPlanSaving(false);
     }
@@ -227,7 +228,7 @@ export function CurtainCallCard({
       }
       toast.success(`'${plan.planName}' 플랜이 삭제되었습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -284,7 +285,7 @@ export function CurtainCallCard({
       }
       setStepDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setStepSaving(false);
     }
@@ -297,7 +298,7 @@ export function CurtainCallCard({
       await deleteStep(currentPlan.id, step.id);
       toast.success("스텝이 삭제되었습니다.");
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

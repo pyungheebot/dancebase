@@ -4,31 +4,12 @@ import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
 import type { AttendanceDashRecord, AttendanceDashStatus, AttendanceDashSummary } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── localStorage 헬퍼 ───────────────────────────────────────
 
 const LS_KEY = (groupId: string) =>
   `dancebase:attendance-dashboard:${groupId}`;
-
-function loadData(groupId: string): AttendanceDashRecord[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as AttendanceDashRecord[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: AttendanceDashRecord[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 유틸 ────────────────────────────────────────────────────
 
@@ -46,7 +27,7 @@ function calcAttendanceRate(
 export function useAttendanceDashboard(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.attendanceDashboard(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<AttendanceDashRecord[]>(LS_KEY(groupId), []),
     { revalidateOnFocus: false }
   );
 
@@ -77,7 +58,7 @@ export function useAttendanceDashboard(groupId: string) {
         notes: input.notes?.trim() || undefined,
       };
       const updated = [...records, newRecord];
-      saveData(groupId, updated);
+      saveToStorage(LS_KEY(groupId), updated);
       mutate(updated, false);
       toast.success("출석 기록이 추가되었습니다.");
       return true;
@@ -97,7 +78,7 @@ export function useAttendanceDashboard(groupId: string) {
       const updated = records.map((r) =>
         r.id === id ? { ...r, ...updates } : r
       );
-      saveData(groupId, updated);
+      saveToStorage(LS_KEY(groupId), updated);
       mutate(updated, false);
       toast.success("출석 기록이 수정되었습니다.");
       return true;
@@ -112,7 +93,7 @@ export function useAttendanceDashboard(groupId: string) {
   function deleteRecord(id: string): boolean {
     try {
       const updated = records.filter((r) => r.id !== id);
-      saveData(groupId, updated);
+      saveToStorage(LS_KEY(groupId), updated);
       mutate(updated, false);
       toast.success("출석 기록이 삭제되었습니다.");
       return true;

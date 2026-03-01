@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { saveToStorage } from "@/lib/local-storage";
 import type {
   DanceStyleAnalysisData,
   DanceStyleSnapshot,
@@ -122,11 +123,6 @@ function makeEmpty(memberId: string): DanceStyleAnalysisData {
   };
 }
 
-function saveData(data: DanceStyleAnalysisData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.memberId), JSON.stringify(data));
-}
-
 // ============================================================
 // 날짜 유틸
 // ============================================================
@@ -187,7 +183,7 @@ export function useDanceStyleAnalysis(memberId: string) {
     (updater: (prev: DanceStyleAnalysisData) => DanceStyleAnalysisData) => {
       setData((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveData(next);
+        saveToStorage(getStorageKey(data.memberId), next);
         return next;
       });
     },

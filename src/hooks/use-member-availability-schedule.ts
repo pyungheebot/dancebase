@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MemberAvailabilityData,
   MemberAvailabilityEntry,
@@ -58,30 +59,6 @@ export const AVAILABILITY_LEVEL_LABELS: Record<MemberAvailabilityLevel, string> 
 
 function storageKey(groupId: string): string {
   return `dancebase:member-availability:${groupId}`;
-}
-
-function loadData(groupId: string): MemberAvailabilityData {
-  if (typeof window === "undefined") {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) {
-      return { groupId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as MemberAvailabilityData;
-  } catch {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: MemberAvailabilityData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 function defaultData(groupId: string): MemberAvailabilityData {
@@ -214,7 +191,7 @@ export function useMemberAvailabilitySchedule(groupId: string) {
 
   const { data, isLoading, mutate } = useSWR(
     groupId ? swrKeys.memberAvailabilitySchedule(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<MemberAvailabilityData>(storageKey(groupId), {} as MemberAvailabilityData),
     { fallbackData: fallback, revalidateOnFocus: false }
   );
 
@@ -228,7 +205,7 @@ export function useMemberAvailabilitySchedule(groupId: string) {
         ...next,
         updatedAt: new Date().toISOString(),
       };
-      saveData(withTs);
+      saveToStorage(storageKey(groupId), withTs);
       mutate(withTs, false);
     },
     [mutate]

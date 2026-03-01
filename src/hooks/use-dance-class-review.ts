@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceClassReview,
   DanceClassReviewData,
@@ -69,34 +70,12 @@ function getStorageKey(memberId: string): string {
   return swrKeys.danceClassReview(memberId);
 }
 
-function loadData(memberId: string): DanceClassReviewData {
-  if (typeof window === "undefined") {
-    return { memberId, reviews: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) return { memberId, reviews: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as DanceClassReviewData;
-  } catch {
-    return { memberId, reviews: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(memberId: string, data: DanceClassReviewData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
 
 export function useDanceClassReview(memberId: string) {
-  const [reviews, setReviews] = useState<DanceClassReview[]>(() => loadData(memberId).reviews);
+  const [reviews, setReviews] = useState<DanceClassReview[]>(() => loadFromStorage<DanceClassReviewData>(getStorageKey(memberId), {} as DanceClassReviewData).reviews);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
@@ -104,7 +83,7 @@ export function useDanceClassReview(memberId: string) {
       setLoading(false);
       return;
     }
-    const data = loadData(memberId);
+    const data = loadFromStorage<DanceClassReviewData>(getStorageKey(memberId), {} as DanceClassReviewData);
     setReviews(data.reviews);
   }, [memberId]);
 
@@ -116,7 +95,7 @@ export function useDanceClassReview(memberId: string) {
         reviews: nextReviews,
         updatedAt: new Date().toISOString(),
       };
-      saveData(memberId, data);
+      saveToStorage(getStorageKey(memberId), data);
       setReviews(nextReviews);
     },
     [memberId]

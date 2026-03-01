@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type {DietTrackerMeal, DietTrackerWater, DietTrackerDayLog} from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -14,26 +15,6 @@ type DietTrackerStorage = {
 
 function storageKey(memberId: string): string {
   return `dancebase:diet-tracker:${memberId}`;
-}
-
-function loadData(memberId: string): DietTrackerStorage {
-  if (typeof window === "undefined") return { meals: [], waterLogs: [] };
-  try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw) return { meals: [], waterLogs: [] };
-    return JSON.parse(raw) as DietTrackerStorage;
-  } catch {
-    return { meals: [], waterLogs: [] };
-  }
-}
-
-function saveData(memberId: string, data: DietTrackerStorage): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -90,19 +71,19 @@ function calcStats(
 // ============================================================
 
 export function useDietTracker(memberId: string) {
-  const [meals, setMeals] = useState<DietTrackerMeal[]>(() => loadData(memberId).meals);
+  const [meals, setMeals] = useState<DietTrackerMeal[]>(() => loadFromStorage<DietTrackerStorage>(storageKey(memberId), { meals: [], waterLogs: [] }).meals);
   const [waterLogs, setWaterLogs] = useState<DietTrackerWater[]>([]);
 
   const reload = useCallback(() => {
     if (!memberId) return;
-    const data = loadData(memberId);
+    const data = loadFromStorage<DietTrackerStorage>(storageKey(memberId), { meals: [], waterLogs: [] });
     setMeals(data.meals);
     setWaterLogs(data.waterLogs);
   }, [memberId]);
 
   const persist = useCallback(
     (nextMeals: DietTrackerMeal[], nextWaterLogs: DietTrackerWater[]) => {
-      saveData(memberId, { meals: nextMeals, waterLogs: nextWaterLogs });
+      saveToStorage(storageKey(memberId), { meals: nextMeals, waterLogs: nextWaterLogs });
       setMeals(nextMeals);
       setWaterLogs(nextWaterLogs);
     },

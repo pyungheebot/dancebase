@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   ProgramBookData,
   ProgramBookSection,
@@ -27,36 +28,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:program-book:${groupId}:${projectId}`;
 }
 
-function loadData(
-  groupId: string,
-  projectId: string
-): ProgramBookData | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return null;
-    return JSON.parse(raw) as ProgramBookData;
-  } catch {
-    return null;
-  }
-}
-
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: ProgramBookData
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(groupId, projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -64,7 +35,7 @@ function saveData(
 export function useProgramBook(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.programBook(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<ProgramBookData | null>(storageKey(groupId, projectId), {} as ProgramBookData | null),
     { fallbackData: null }
   );
 
@@ -72,7 +43,7 @@ export function useProgramBook(groupId: string, projectId: string) {
   const initBook = useCallback(
     (showTitle: string, showDate: string, venue: string): boolean => {
       if (!showTitle.trim()) return false;
-      const existing = loadData(groupId, projectId);
+      const existing = loadFromStorage<ProgramBookData | null>(storageKey(groupId, projectId), {} as ProgramBookData | null);
       const newData: ProgramBookData = {
         id: existing?.id ?? crypto.randomUUID(),
         showTitle: showTitle.trim(),
@@ -81,7 +52,7 @@ export function useProgramBook(groupId: string, projectId: string) {
         sections: existing?.sections ?? [],
         createdAt: existing?.createdAt ?? new Date().toISOString(),
       };
-      saveData(groupId, projectId, newData);
+      saveToStorage(storageKey(groupId, projectId), newData);
       mutate(newData, false);
       return true;
     },
@@ -96,7 +67,7 @@ export function useProgramBook(groupId: string, projectId: string) {
       content: string
     ): boolean => {
       if (!title.trim()) return false;
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ProgramBookData | null>(storageKey(groupId, projectId), {} as ProgramBookData | null);
       if (!current) return false;
       const maxOrder =
         current.sections.length > 0
@@ -114,7 +85,7 @@ export function useProgramBook(groupId: string, projectId: string) {
         ...current,
         sections: [...current.sections, newSection],
       };
-      saveData(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -127,7 +98,7 @@ export function useProgramBook(groupId: string, projectId: string) {
       sectionId: string,
       patch: Partial<Omit<ProgramBookSection, "id" | "createdAt">>
     ): void => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ProgramBookData | null>(storageKey(groupId, projectId), {} as ProgramBookData | null);
       if (!current) return;
       const updated: ProgramBookData = {
         ...current,
@@ -135,7 +106,7 @@ export function useProgramBook(groupId: string, projectId: string) {
           s.id === sectionId ? { ...s, ...patch } : s
         ),
       };
-      saveData(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, mutate]
@@ -144,7 +115,7 @@ export function useProgramBook(groupId: string, projectId: string) {
   /** 섹션 삭제 */
   const deleteSection = useCallback(
     (sectionId: string): void => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ProgramBookData | null>(storageKey(groupId, projectId), {} as ProgramBookData | null);
       if (!current) return;
       const remaining = current.sections.filter((s) => s.id !== sectionId);
       // order 재정렬
@@ -155,7 +126,7 @@ export function useProgramBook(groupId: string, projectId: string) {
         ...current,
         sections: reordered,
       };
-      saveData(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, mutate]
@@ -164,7 +135,7 @@ export function useProgramBook(groupId: string, projectId: string) {
   /** 섹션 순서 변경 */
   const moveSection = useCallback(
     (sectionId: string, direction: "up" | "down"): void => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ProgramBookData | null>(storageKey(groupId, projectId), {} as ProgramBookData | null);
       if (!current) return;
       const sorted = [...current.sections].sort((a, b) => a.order - b.order);
       const idx = sorted.findIndex((s) => s.id === sectionId);
@@ -181,7 +152,7 @@ export function useProgramBook(groupId: string, projectId: string) {
         ...current,
         sections: sorted,
       };
-      saveData(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, mutate]

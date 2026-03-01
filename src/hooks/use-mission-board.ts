@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { MissionBoardEntry, MissionDifficulty } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -9,26 +10,6 @@ import type { MissionBoardEntry, MissionDifficulty } from "@/types";
 
 function storageKey(groupId: string): string {
   return `dancebase:mission-board:${groupId}`;
-}
-
-function loadData(groupId: string): MissionBoardEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MissionBoardEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: MissionBoardEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -57,17 +38,17 @@ export type MissionBoardStats = {
 // ============================================================
 
 export function useMissionBoard(groupId: string) {
-  const [missions, setMissions] = useState<MissionBoardEntry[]>(() => loadData(groupId));
+  const [missions, setMissions] = useState<MissionBoardEntry[]>(() => loadFromStorage<MissionBoardEntry[]>(storageKey(groupId), []));
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<MissionBoardEntry[]>(storageKey(groupId), []);
     setMissions(data);
   }, [groupId]);
 
   const persist = useCallback(
     (next: MissionBoardEntry[]) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       setMissions(next);
     },
     [groupId]

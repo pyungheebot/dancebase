@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { CountdownEvent } from "@/types";
+import { loadFromStorage } from "@/lib/local-storage";
 
 // ============================================
 // 상수
@@ -16,16 +17,6 @@ const MAX_EVENTS = 10;
 
 function getStorageKey(groupId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}`;
-}
-
-function loadFromStorage(groupId: string): CountdownEvent[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as CountdownEvent[]) : [];
-  } catch {
-    return [];
-  }
 }
 
 function persistToStorage(groupId: string, events: CountdownEvent[]): void {
@@ -97,7 +88,7 @@ export type UseEventCountdownResult = {
 
 export function useEventCountdown(groupId: string): UseEventCountdownResult {
   const [events, setEvents] = useState<CountdownEvent[]>(() =>
-    loadFromStorage(groupId)
+    loadFromStorage<CountdownEvent[]>(getStorageKey(groupId), [])
   );
 
   /** 이벤트 추가. 최대 10개 초과 시 false 반환 */

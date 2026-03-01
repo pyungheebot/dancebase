@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   AppreciationCardCategory,
   AppreciationCardData,
@@ -16,35 +17,12 @@ function storageKey(groupId: string): string {
   return swrKeys.appreciationCard(groupId);
 }
 
-function loadData(groupId: string): AppreciationCardData {
-  if (typeof window === "undefined") {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return { groupId, entries: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as AppreciationCardData;
-  } catch {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: AppreciationCardData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
 
 export function useAppreciationCard(groupId: string) {
   const [entries, setEntries] = useState<AppreciationCardEntry[]>([]);
-
 
   // 감사 카드 보내기
   const sendCard = useCallback(
@@ -70,8 +48,8 @@ export function useAppreciationCard(groupId: string) {
 
       setEntries((prev) => {
         const updated = [newEntry, ...prev];
-        const data = loadData(groupId);
-        saveData({
+        const data = loadFromStorage<AppreciationCardData>(storageKey(groupId), {} as AppreciationCardData);
+        saveToStorage(storageKey(groupId), {
           ...data,
           entries: updated,
           updatedAt: new Date().toISOString(),
@@ -87,8 +65,8 @@ export function useAppreciationCard(groupId: string) {
     (entryId: string) => {
       setEntries((prev) => {
         const updated = prev.filter((e) => e.id !== entryId);
-        const data = loadData(groupId);
-        saveData({
+        const data = loadFromStorage<AppreciationCardData>(storageKey(groupId), {} as AppreciationCardData);
+        saveToStorage(storageKey(groupId), {
           ...data,
           entries: updated,
           updatedAt: new Date().toISOString(),
@@ -113,8 +91,8 @@ export function useAppreciationCard(groupId: string) {
               : [...e.likes, memberName],
           };
         });
-        const data = loadData(groupId);
-        saveData({
+        const data = loadFromStorage<AppreciationCardData>(storageKey(groupId), {} as AppreciationCardData);
+        saveToStorage(storageKey(groupId), {
           ...data,
           entries: updated,
           updatedAt: new Date().toISOString(),

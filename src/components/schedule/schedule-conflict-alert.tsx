@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
-import { formatKo } from "@/lib/date-utils";
+import { formatKo, formatTime } from "@/lib/date-utils";
 import {
   CheckCircle2,
   ChevronDown,
@@ -53,7 +52,7 @@ function ScheduleInfo({ title, startsAt, endsAt, location }: ScheduleInfoProps) 
         <span>
           {formatKo(new Date(startsAt), "M/d(EEE) HH:mm")}
           {" ~ "}
-          {format(new Date(endsAt), "HH:mm")}
+          {formatTime(new Date(endsAt))}
         </span>
       </div>
       {location && (

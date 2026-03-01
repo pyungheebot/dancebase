@@ -3,31 +3,16 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { SponsorEntry, SponsorType, SponsorStatus } from "@/types";
-
-// ─── localStorage 헬퍼 ────────────────────────────────────────
-
-function loadData(groupId: string): SponsorEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(`dancebase:sponsors:${groupId}`);
-    if (!raw) return [];
-    return JSON.parse(raw) as SponsorEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: SponsorEntry[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(`dancebase:sponsors:${groupId}`, JSON.stringify(data));
-}
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── 훅 ─────────────────────────────────────────────────────
+
+const STORAGE_KEY = (groupId: string) => `dancebase:sponsors:${groupId}`;
 
 export function useEventSponsorship(groupId: string) {
   const key = swrKeys.eventSponsorship(groupId);
 
-  const { data, mutate } = useSWR(key, () => loadData(groupId), {
+  const { data, mutate } = useSWR(key, () => loadFromStorage<SponsorEntry[]>(STORAGE_KEY(groupId), []), {
     revalidateOnFocus: false,
   });
 
@@ -39,14 +24,14 @@ export function useEventSponsorship(groupId: string) {
     input: Omit<SponsorEntry, "id" | "createdAt">
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<SponsorEntry[]>(STORAGE_KEY(groupId), []);
       const newEntry: SponsorEntry = {
         ...input,
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
       };
       const next = [...stored, newEntry];
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       return true;
     } catch {
@@ -59,11 +44,11 @@ export function useEventSponsorship(groupId: string) {
     patch: Partial<Omit<SponsorEntry, "id" | "createdAt">>
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<SponsorEntry[]>(STORAGE_KEY(groupId), []);
       const idx = stored.findIndex((s) => s.id === id);
       if (idx === -1) return false;
       stored[idx] = { ...stored[idx], ...patch };
-      saveData(groupId, stored);
+      saveToStorage(STORAGE_KEY(groupId), stored);
       mutate(stored, false);
       return true;
     } catch {
@@ -73,9 +58,9 @@ export function useEventSponsorship(groupId: string) {
 
   function deleteSponsor(id: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<SponsorEntry[]>(STORAGE_KEY(groupId), []);
       const next = stored.filter((s) => s.id !== id);
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       return true;
     } catch {

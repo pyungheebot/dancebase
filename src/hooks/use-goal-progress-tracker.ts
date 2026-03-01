@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { format, startOfMonth, endOfMonth, parseISO, isValid } from "date-fns";
+import { removeFromStorage } from "@/lib/local-storage";
 import type {
   GoalProgressSetting,
   GoalProgressTrackerData,
@@ -177,7 +178,7 @@ export function useGoalProgressTracker(groupId: string, userId: string) {
 
   const clearGoal = useCallback(() => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem(getStorageKey(groupId, userId));
+      removeFromStorage(getStorageKey(groupId, userId));
     }
     mutate();
   }, [groupId, userId, mutate]);

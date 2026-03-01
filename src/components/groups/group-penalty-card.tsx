@@ -52,6 +52,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupPenalty } from "@/hooks/use-group-penalty";
 import type {
   GroupPenaltyViolationType,
@@ -434,7 +435,7 @@ function RuleItem({
     if (ok) {
       toast.success("규칙이 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 
@@ -482,7 +483,7 @@ function RecordItem({
     if (ok) {
       toast.success("기록이 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 

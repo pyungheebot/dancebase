@@ -3,41 +3,11 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupPracticeFeedbackEntry,
   GroupPracticeFeedbackData,
 } from "@/types";
-
-// ============================================================
-// localStorage 헬퍼
-// ============================================================
-
-function loadData(groupId: string): GroupPracticeFeedbackData {
-  if (typeof window === "undefined") {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(swrKeys.groupPracticeFeedback(groupId));
-    if (!raw) {
-      return { groupId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as GroupPracticeFeedbackData;
-  } catch {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(groupId: string, data: GroupPracticeFeedbackData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      swrKeys.groupPracticeFeedback(groupId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
 
 // ============================================================
 // 통계 타입
@@ -102,7 +72,7 @@ function calcStats(
 export function useGroupPracticeFeedback(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.groupPracticeFeedback(groupId),
-    () => loadData(groupId),
+    () => loadFromStorage<GroupPracticeFeedbackData>(swrKeys.groupPracticeFeedback(groupId), {} as GroupPracticeFeedbackData),
     { fallbackData: { groupId, entries: [], updatedAt: "" } }
   );
 
@@ -116,7 +86,7 @@ export function useGroupPracticeFeedback(groupId: string) {
         entries: nextEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(groupId, next);
+      saveToStorage(swrKeys.groupPracticeFeedback(groupId), next);
       mutate(next, false);
     },
     [groupId, mutate]
@@ -136,7 +106,7 @@ export function useGroupPracticeFeedback(groupId: string) {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
       };
-      const current = loadData(groupId).entries;
+      const current = loadFromStorage<GroupPracticeFeedbackData>(swrKeys.groupPracticeFeedback(groupId), {} as GroupPracticeFeedbackData).entries;
       persist([newEntry, ...current]);
       return newEntry;
     },
@@ -149,7 +119,7 @@ export function useGroupPracticeFeedback(groupId: string) {
       entryId: string,
       patch: Partial<Omit<GroupPracticeFeedbackEntry, "id" | "createdAt">>
     ): void => {
-      const current = loadData(groupId).entries;
+      const current = loadFromStorage<GroupPracticeFeedbackData>(swrKeys.groupPracticeFeedback(groupId), {} as GroupPracticeFeedbackData).entries;
       const next = current.map((e) =>
         e.id === entryId ? { ...e, ...patch } : e
       );
@@ -161,7 +131,7 @@ export function useGroupPracticeFeedback(groupId: string) {
   /** 피드백 삭제 */
   const deleteEntry = useCallback(
     (entryId: string): void => {
-      const current = loadData(groupId).entries;
+      const current = loadFromStorage<GroupPracticeFeedbackData>(swrKeys.groupPracticeFeedback(groupId), {} as GroupPracticeFeedbackData).entries;
       persist(current.filter((e) => e.id !== entryId));
     },
     [groupId, persist]

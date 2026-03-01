@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   BackstageLogData,
   BackstageLogSession,
@@ -17,50 +18,24 @@ function getStorageKey(projectId: string): string {
   return swrKeys.backstageLog(projectId);
 }
 
-function loadData(projectId: string): BackstageLogData {
-  if (typeof window === "undefined") {
-    return { projectId, sessions: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    if (!raw) {
-      return { projectId, sessions: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as BackstageLogData;
-  } catch {
-    return { projectId, sessions: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(projectId: string, data: BackstageLogData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(projectId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
 
 export function useBackstageLog(projectId: string) {
   const [sessions, setSessions] = useState<BackstageLogSession[]>(() =>
-    projectId ? loadData(projectId).sessions : []
+    projectId ? loadFromStorage<BackstageLogData>(getStorageKey(projectId), {} as BackstageLogData).sessions : []
   );
 
   const reload = useCallback(() => {
-    setSessions(projectId ? loadData(projectId).sessions : []);
+    setSessions(projectId ? loadFromStorage<BackstageLogData>(getStorageKey(projectId), {} as BackstageLogData).sessions : []);
   }, [projectId]);
-
-
 
   // 내부 persist 헬퍼
   const persist = useCallback(
     (nextSessions: BackstageLogSession[]) => {
       const now = new Date().toISOString();
-      saveData(projectId, { projectId, sessions: nextSessions, updatedAt: now });
+      saveToStorage(getStorageKey(projectId), { projectId, sessions: nextSessions, updatedAt: now });
       setSessions(nextSessions);
     },
     [projectId]

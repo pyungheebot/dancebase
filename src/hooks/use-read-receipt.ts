@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   ReadReceiptData,
   ReadReceiptAnnouncement,
@@ -17,30 +18,6 @@ function storageKey(groupId: string): string {
   return `dancebase:read-receipt:${groupId}`;
 }
 
-function loadData(groupId: string): ReadReceiptData {
-  if (typeof window === "undefined") {
-    return { groupId, announcements: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) {
-      return { groupId, announcements: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as ReadReceiptData;
-  } catch {
-    return { groupId, announcements: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: ReadReceiptData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -48,7 +25,7 @@ function saveData(data: ReadReceiptData): void {
 export function useReadReceipt(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.readReceipt(groupId),
-    () => loadData(groupId),
+    () => loadFromStorage<ReadReceiptData>(storageKey(groupId), {} as ReadReceiptData),
     {
       fallbackData: {
         groupId,
@@ -69,7 +46,7 @@ export function useReadReceipt(groupId: string) {
       priority: ReadReceiptPriority;
       targetMembers: string[];
     }): ReadReceiptAnnouncement => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<ReadReceiptData>(storageKey(groupId), {} as ReadReceiptData);
       const now = new Date().toISOString();
       const newItem: ReadReceiptAnnouncement = {
         id: crypto.randomUUID(),
@@ -87,7 +64,7 @@ export function useReadReceipt(groupId: string) {
         announcements: [newItem, ...current.announcements],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       return newItem;
     },
@@ -105,7 +82,7 @@ export function useReadReceipt(groupId: string) {
         targetMembers: string[];
       }>
     ): boolean => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<ReadReceiptData>(storageKey(groupId), {} as ReadReceiptData);
       const idx = current.announcements.findIndex((a) => a.id === announcementId);
       if (idx === -1) return false;
 
@@ -127,7 +104,7 @@ export function useReadReceipt(groupId: string) {
         announcements: updatedList,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       return true;
     },
@@ -137,7 +114,7 @@ export function useReadReceipt(groupId: string) {
   // 공지 삭제
   const deleteAnnouncement = useCallback(
     (announcementId: string): boolean => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<ReadReceiptData>(storageKey(groupId), {} as ReadReceiptData);
       const exists = current.announcements.some((a) => a.id === announcementId);
       if (!exists) return false;
 
@@ -146,7 +123,7 @@ export function useReadReceipt(groupId: string) {
         announcements: current.announcements.filter((a) => a.id !== announcementId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       return true;
     },
@@ -156,7 +133,7 @@ export function useReadReceipt(groupId: string) {
   // 읽음 처리
   const markAsRead = useCallback(
     (announcementId: string, memberName: string): boolean => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<ReadReceiptData>(storageKey(groupId), {} as ReadReceiptData);
       const idx = current.announcements.findIndex((a) => a.id === announcementId);
       if (idx === -1) return false;
 
@@ -180,7 +157,7 @@ export function useReadReceipt(groupId: string) {
         announcements: updatedList,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       return true;
     },
@@ -190,7 +167,7 @@ export function useReadReceipt(groupId: string) {
   // 읽음 취소
   const unmarkAsRead = useCallback(
     (announcementId: string, memberName: string): boolean => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<ReadReceiptData>(storageKey(groupId), {} as ReadReceiptData);
       const idx = current.announcements.findIndex((a) => a.id === announcementId);
       if (idx === -1) return false;
 
@@ -208,7 +185,7 @@ export function useReadReceipt(groupId: string) {
         announcements: updatedList,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       return true;
     },

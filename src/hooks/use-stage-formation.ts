@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StageFormationPosition,
   StageFormationScene,
@@ -23,51 +24,6 @@ function storageKey(projectId: string): string {
   return swrKeys.stageFormation(projectId);
 }
 
-function loadData(projectId: string): StageFormationData {
-  if (typeof window === "undefined") {
-    return {
-      projectId,
-      scenes: [],
-      stageWidth: DEFAULT_STAGE_WIDTH,
-      stageDepth: DEFAULT_STAGE_DEPTH,
-      notes: "",
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw) {
-      return {
-        projectId,
-        scenes: [],
-        stageWidth: DEFAULT_STAGE_WIDTH,
-        stageDepth: DEFAULT_STAGE_DEPTH,
-        notes: "",
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as StageFormationData;
-  } catch {
-    return {
-      projectId,
-      scenes: [],
-      stageWidth: DEFAULT_STAGE_WIDTH,
-      stageDepth: DEFAULT_STAGE_DEPTH,
-      notes: "",
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function saveData(data: StageFormationData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 통계 타입
 // ============================================================
@@ -87,12 +43,12 @@ export type StageFormationStats = {
 
 export function useStageFormation(projectId: string) {
   const [data, setData] = useState<StageFormationData>(() =>
-    loadData(projectId)
+    loadFromStorage<StageFormationData>(storageKey(projectId), {} as StageFormationData)
   );
 
   const reload = useCallback(() => {
     if (!projectId) return;
-    const loaded = loadData(projectId);
+    const loaded = loadFromStorage<StageFormationData>(storageKey(projectId), {} as StageFormationData);
     setData(loaded);
   }, [projectId]);
 
@@ -102,7 +58,7 @@ export function useStageFormation(projectId: string) {
         ...updated,
         updatedAt: new Date().toISOString(),
       };
-      saveData(next);
+      saveToStorage(storageKey(projectId), next);
       setData(next);
     },
     []

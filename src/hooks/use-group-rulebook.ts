@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
 import { type GroupRuleSection, type GroupRulebookData } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키 및 유틸
@@ -12,44 +13,6 @@ import { type GroupRuleSection, type GroupRulebookData } from "@/types";
 
 function getStorageKey(groupId: string): string {
   return `dancebase:rulebook:${groupId}`;
-}
-
-function loadFromStorage(groupId: string): GroupRulebookData {
-  if (typeof window === "undefined") {
-    return {
-      groupId,
-      sections: [],
-      version: "v1.0",
-      effectiveDate: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) {
-      return {
-        groupId,
-        sections: [],
-        version: "v1.0",
-        effectiveDate: null,
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as GroupRulebookData;
-  } catch {
-    return {
-      groupId,
-      sections: [],
-      version: "v1.0",
-      effectiveDate: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function saveToStorage(data: GroupRulebookData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.groupId), JSON.stringify(data));
 }
 
 // ============================================
@@ -60,14 +23,14 @@ export function useGroupRulebook(groupId: string) {
   // SWR을 통한 캐시 관리 (fetcher는 localStorage에서 읽음)
   const { data, mutate } = useSWR(
     swrKeys.groupRulebook(groupId),
-    () => loadFromStorage(groupId),
+    () => loadFromStorage<GroupRulebookData>(getStorageKey(groupId), {} as GroupRulebookData),
     { revalidateOnFocus: false }
   );
 
   // 내부 저장 헬퍼
   const persist = useCallback(
     (next: GroupRulebookData) => {
-      saveToStorage(next);
+      saveToStorage(getStorageKey(groupId), next);
       mutate(next, false);
     },
     [mutate]

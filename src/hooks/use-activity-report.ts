@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupActivityReport,
   GroupReportPeriod,
@@ -12,33 +13,6 @@ import type {
 // ─── 상수 ─────────────────────────────────────────────────────
 
 const MAX_REPORTS = 12;
-
-// ─── localStorage 헬퍼 ────────────────────────────────────────
-
-function loadData(groupId: string): GroupActivityReport[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(
-      `dancebase:activity-reports:${groupId}`
-    );
-    if (!raw) return [];
-    return JSON.parse(raw) as GroupActivityReport[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: GroupActivityReport[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `dancebase:activity-reports:${groupId}`,
-      JSON.stringify(data)
-    );
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 시뮬레이션 데이터 생성 ───────────────────────────────────
 
@@ -137,10 +111,12 @@ export interface GenerateReportInput {
   concerns: string[];
 }
 
+const STORAGE_KEY = (groupId: string) => `dancebase:activity-reports:${groupId}`;
+
 export function useActivityReport(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.activityReport(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<GroupActivityReport[]>(STORAGE_KEY(groupId), []),
     { revalidateOnFocus: false }
   );
 
@@ -150,7 +126,7 @@ export function useActivityReport(groupId: string) {
 
   function generateReport(input: GenerateReportInput): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<GroupActivityReport[]>(STORAGE_KEY(groupId), []);
 
       // 직전 리포트의 섹션을 참고해 변화율 계산
       const prevSections =
@@ -168,7 +144,7 @@ export function useActivityReport(groupId: string) {
 
       // 최신순 prepend, 최대 MAX_REPORTS 유지
       const next = [newReport, ...stored].slice(0, MAX_REPORTS);
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("활동 리포트가 생성되었습니다.");
       return true;
@@ -182,10 +158,10 @@ export function useActivityReport(groupId: string) {
 
   function deleteReport(reportId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<GroupActivityReport[]>(STORAGE_KEY(groupId), []);
       const next = stored.filter((r) => r.id !== reportId);
       if (next.length === stored.length) return false;
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("리포트가 삭제되었습니다.");
       return true;

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MembershipFeeData, MembershipFeePayment } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 유틸
@@ -12,23 +13,6 @@ const STORAGE_PREFIX = "dancebase:membership-fee";
 
 function getStorageKey(groupId: string): string {
   return `${STORAGE_PREFIX}:${groupId}`;
-}
-
-function loadData(groupId: string): MembershipFeeData {
-  if (typeof window === "undefined") {
-    return createEmptyData(groupId);
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as MembershipFeeData) : createEmptyData(groupId);
-  } catch {
-    return createEmptyData(groupId);
-  }
-}
-
-function saveData(data: MembershipFeeData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.groupId), JSON.stringify(data));
 }
 
 function createEmptyData(groupId: string): MembershipFeeData {
@@ -65,7 +49,7 @@ export function formatMonth(month: string): string {
 export function useMembershipFee(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     groupId ? swrKeys.membershipFee(groupId) : null,
-    async () => loadData(groupId)
+    async () => loadFromStorage<MembershipFeeData>(getStorageKey(groupId), {} as MembershipFeeData)
   );
 
   const store = data ?? createEmptyData(groupId);
@@ -76,7 +60,7 @@ export function useMembershipFee(groupId: string) {
       ...updated,
       updatedAt: new Date().toISOString(),
     };
-    saveData(withTimestamp);
+    saveToStorage(getStorageKey(groupId), withTimestamp);
     mutate(withTimestamp, false);
   }
 

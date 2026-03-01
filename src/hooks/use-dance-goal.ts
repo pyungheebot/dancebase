@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceGoal,
   DanceGoalCategory,
@@ -19,36 +20,12 @@ function getStorageKey(memberId: string): string {
   return swrKeys.danceGoalTracker(memberId);
 }
 
-function loadData(memberId: string): DanceGoalTrackerData {
-  if (typeof window === "undefined") {
-    return { memberId, goals: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) {
-      return { memberId, goals: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as DanceGoalTrackerData;
-  } catch {
-    return { memberId, goals: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(memberId: string, data: DanceGoalTrackerData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
 
 export function useDanceGoal(memberId: string) {
-  const [goals, setGoals] = useState<DanceGoal[]>(() => loadData(memberId).goals);
+  const [goals, setGoals] = useState<DanceGoal[]>(() => loadFromStorage<DanceGoalTrackerData>(getStorageKey(memberId), {} as DanceGoalTrackerData).goals);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
@@ -56,7 +33,7 @@ export function useDanceGoal(memberId: string) {
       setLoading(false);
       return;
     }
-    const data = loadData(memberId);
+    const data = loadFromStorage<DanceGoalTrackerData>(getStorageKey(memberId), {} as DanceGoalTrackerData);
     setGoals(data.goals);
   }, [memberId]);
 
@@ -64,7 +41,7 @@ export function useDanceGoal(memberId: string) {
   const persist = useCallback(
     (nextGoals: DanceGoal[]) => {
       const now = new Date().toISOString();
-      saveData(memberId, { memberId, goals: nextGoals, updatedAt: now });
+      saveToStorage(getStorageKey(memberId), { memberId, goals: nextGoals, updatedAt: now });
       setGoals(nextGoals);
     },
     [memberId]

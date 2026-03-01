@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StageSetupChecklistData,
   StageSetupChecklistItem,
@@ -17,33 +18,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:stage-setup-checklist:${groupId}:${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): StageSetupChecklistData {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) {
-      return { groupId, projectId, items: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as StageSetupChecklistData;
-  } catch {
-    return { groupId, projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: StageSetupChecklistData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(data.groupId, data.projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -51,7 +25,7 @@ function saveData(data: StageSetupChecklistData): void {
 export function useStageSetupChecklist(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.stageSetupChecklist(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<StageSetupChecklistData>(storageKey(groupId, projectId), {} as StageSetupChecklistData),
     {
       fallbackData: {
         groupId,
@@ -72,7 +46,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
       assignee?: string;
       notes?: string;
     }): StageSetupChecklistItem => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<StageSetupChecklistData>(storageKey(groupId, projectId), {} as StageSetupChecklistData);
       const now = new Date().toISOString();
       const newItem: StageSetupChecklistItem = {
         id: crypto.randomUUID(),
@@ -89,7 +63,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
         items: [...current.items, newItem],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newItem;
     },
@@ -107,7 +81,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
         notes: string;
       }>
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<StageSetupChecklistData>(storageKey(groupId, projectId), {} as StageSetupChecklistData);
       const idx = current.items.findIndex((i) => i.id === itemId);
       if (idx === -1) return false;
 
@@ -132,7 +106,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
         items: current.items.map((i) => (i.id === itemId ? updatedItem : i)),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -142,7 +116,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
   // 완료 토글
   const toggleItem = useCallback(
     (itemId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<StageSetupChecklistData>(storageKey(groupId, projectId), {} as StageSetupChecklistData);
       const idx = current.items.findIndex((i) => i.id === itemId);
       if (idx === -1) return false;
 
@@ -161,7 +135,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
         items: current.items.map((i) => (i.id === itemId ? updatedItem : i)),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -171,7 +145,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
   // 항목 삭제
   const deleteItem = useCallback(
     (itemId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<StageSetupChecklistData>(storageKey(groupId, projectId), {} as StageSetupChecklistData);
       const exists = current.items.some((i) => i.id === itemId);
       if (!exists) return false;
 
@@ -180,7 +154,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
         items: current.items.filter((i) => i.id !== itemId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -189,7 +163,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
 
   // 전체 초기화 (완료 상태만 리셋)
   const resetAll = useCallback((): void => {
-    const current = loadData(groupId, projectId);
+    const current = loadFromStorage<StageSetupChecklistData>(storageKey(groupId, projectId), {} as StageSetupChecklistData);
     const now = new Date().toISOString();
     const updated: StageSetupChecklistData = {
       ...current,
@@ -201,7 +175,7 @@ export function useStageSetupChecklist(groupId: string, projectId: string) {
       })),
       updatedAt: now,
     };
-    saveData(updated);
+    saveToStorage(storageKey(groupId, projectId), updated);
     mutate(updated, false);
   }, [groupId, projectId, mutate]);
 

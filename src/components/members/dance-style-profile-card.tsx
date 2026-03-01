@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -463,7 +464,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
       toast.success("자기소개가 저장되었습니다.");
       setBioEditing(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     }
   }
 
@@ -479,7 +480,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
       toast.success("BPM 범위가 저장되었습니다.");
       setBpmEditing(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     }
   }
 
@@ -489,7 +490,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
       await setPosition(pos === "none" ? null : (pos as DanceProfilePosition));
       toast.success("포지션이 저장되었습니다.");
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     }
   }
 
@@ -499,7 +500,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
       await removeGenre(genreName);
       toast.success(`"${genreName}" 장르를 삭제했습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -509,7 +510,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
       await removeInspiration(name);
       toast.success(`"${name}"을 삭제했습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -518,7 +519,7 @@ export function DanceStyleProfileCard({ memberId }: { memberId: string }) {
     try {
       await togglePracticeTime(time);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     }
   }
 

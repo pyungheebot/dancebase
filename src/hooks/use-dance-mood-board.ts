@@ -3,34 +3,14 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MoodBoardData, MoodBoardItem, MoodBoardCategory } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY = (memberId: string) => `dance-mood-board-${memberId}`;
-
-function loadFromStorage(memberId: string): MoodBoardData {
-  if (typeof window === "undefined") {
-    return { memberId, items: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(memberId));
-    if (!raw) return { memberId, items: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as MoodBoardData;
-  } catch {
-    return { memberId, items: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveToStorage(data: MoodBoardData): void {
-  try {
-    localStorage.setItem(STORAGE_KEY(data.memberId), JSON.stringify(data));
-  } catch {
-    // localStorage 저장 실패 시 무시
-  }
-}
 
 export function useDanceMoodBoard(memberId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.danceMoodBoard(memberId),
-    () => loadFromStorage(memberId)
+    () => loadFromStorage<MoodBoardData>(STORAGE_KEY(memberId), {} as MoodBoardData)
   );
 
   const boardData: MoodBoardData = data ?? {
@@ -55,7 +35,7 @@ export function useDanceMoodBoard(memberId: string) {
       items: [newItem, ...boardData.items],
       updatedAt: now,
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(memberId), next);
     await mutate(next, false);
   }
 
@@ -72,7 +52,7 @@ export function useDanceMoodBoard(memberId: string) {
       ),
       updatedAt: now,
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(memberId), next);
     await mutate(next, false);
   }
 
@@ -84,7 +64,7 @@ export function useDanceMoodBoard(memberId: string) {
       items: boardData.items.filter((item) => item.id !== id),
       updatedAt: now,
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(memberId), next);
     await mutate(next, false);
   }
 

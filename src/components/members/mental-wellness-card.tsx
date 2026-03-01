@@ -34,6 +34,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useMentalWellness } from "@/hooks/use-mental-wellness";
 import type { MentalWellnessEntry } from "@/types";
@@ -628,7 +629,7 @@ export function MentalWellnessCard({ memberId }: MentalWellnessCardProps) {
         toast.success("심리 상태 기록이 수정되었습니다.");
         closeDialog();
       } else {
-        toast.error("수정에 실패했습니다.");
+        toast.error(TOAST.UPDATE_ERROR);
       }
     } else {
       addEntry(entryData);
@@ -644,7 +645,7 @@ export function MentalWellnessCard({ memberId }: MentalWellnessCardProps) {
       if (ok) {
         toast.success("기록이 삭제되었습니다.");
       } else {
-        toast.error("삭제에 실패했습니다.");
+        toast.error(TOAST.DELETE_ERROR);
       }
     },
     [deleteEntry]

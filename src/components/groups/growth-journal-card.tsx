@@ -39,6 +39,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useGrowthJournal,
   GROWTH_AREAS,
@@ -592,14 +593,14 @@ export function GrowthJournalCard({
     if (!editTarget) return;
     const ok = updateEntry(editTarget.id, data);
     if (ok) toast.success("성장 일지가 수정되었습니다.");
-    else toast.error("수정에 실패했습니다.");
+    else toast.error(TOAST.UPDATE_ERROR);
     setEditTarget(null);
   }
 
   function handleDelete(entryId: string) {
     const ok = deleteEntry(entryId);
     if (ok) toast.success("성장 일지가 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   }
 
   return (

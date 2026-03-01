@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { format } from "date-fns";
-import { formatKo } from "@/lib/date-utils";
+import { formatKo, formatTime } from "@/lib/date-utils";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,9 +63,9 @@ function DayCellPopover({
             >
               <p className="text-xs font-medium truncate">{schedule.title}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                {format(new Date(schedule.starts_at), "HH:mm")}
+                {formatTime(new Date(schedule.starts_at))}
                 {" ~ "}
-                {format(new Date(schedule.ends_at), "HH:mm")}
+                {formatTime(new Date(schedule.ends_at))}
               </p>
               {schedule.location && (
                 <p className="text-[10px] text-muted-foreground truncate">

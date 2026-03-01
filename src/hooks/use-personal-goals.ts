@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { PersonalGoalItem, PersonalGoalStatus } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // 상수
@@ -18,26 +19,6 @@ function storageKey(groupId: string, userId: string): string {
 }
 
 // ============================================
-// 로컬 스토리지 유틸
-// ============================================
-
-function saveToStorage(
-  groupId: string,
-  userId: string,
-  goals: PersonalGoalItem[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(groupId, userId),
-      JSON.stringify(goals)
-    );
-  } catch {
-    // 스토리지 용량 초과 등 무시
-  }
-}
-
-// ============================================
 // 훅
 // ============================================
 
@@ -48,7 +29,7 @@ export function usePersonalGoals(groupId: string, userId: string) {
   const persist = useCallback(
     (updated: PersonalGoalItem[]) => {
       setGoals(updated);
-      saveToStorage(groupId, userId, updated);
+      saveToStorage(storageKey(groupId, userId), updated);
     },
     [groupId, userId]
   );

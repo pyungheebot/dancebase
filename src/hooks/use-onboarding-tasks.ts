@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import type { OnboardingTasksData } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키
@@ -10,18 +11,6 @@ import type { OnboardingTasksData } from "@/types";
 
 function getStorageKey(groupId: string, userId: string): string {
   return `dancebase:onboarding-tasks:${groupId}:${userId}`;
-}
-
-// ============================================
-// localStorage 읽기/쓰기 헬퍼
-// ============================================
-
-function saveData(groupId: string, userId: string, data: OnboardingTasksData): void {
-  try {
-    localStorage.setItem(getStorageKey(groupId, userId), JSON.stringify(data));
-  } catch {
-    // localStorage 쓰기 실패 시 무시
-  }
 }
 
 // ============================================
@@ -60,7 +49,7 @@ export function useOnboardingTasks(groupId: string, userId: string) {
           completedAt: allDone && !prev.completedAt ? now : prev.completedAt,
         };
 
-        saveData(groupId, userId, next);
+        saveToStorage(getStorageKey(groupId, userId), next);
 
         // 방금 완료된 과제인지 확인
         const justCompleted = updatedTasks.find((t) => t.id === taskId)?.completed;
@@ -91,7 +80,7 @@ export function useOnboardingTasks(groupId: string, userId: string) {
     setData((prev) => {
       if (!prev) return prev;
       const next: OnboardingTasksData = { ...prev, dismissed: true };
-      saveData(groupId, userId, next);
+      saveToStorage(getStorageKey(groupId, userId), next);
       return next;
     });
   }, [groupId, userId]);

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateGroupTimeline } from "@/lib/swr/invalidate";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupTimelineData,
   GroupTimelineEvent,
@@ -12,31 +13,12 @@ import type {
 
 const STORAGE_PREFIX = "group-timeline-";
 
-function loadFromStorage(groupId: string): GroupTimelineData {
-  if (typeof window === "undefined") {
-    return { groupId, events: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}${groupId}`);
-    if (raw) return JSON.parse(raw) as GroupTimelineData;
-  } catch {
-    // 파싱 실패 시 기본값 반환
-  }
-  return { groupId, events: [], updatedAt: new Date().toISOString() };
-}
-
-function saveToStorage(data: GroupTimelineData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(
-    `${STORAGE_PREFIX}${data.groupId}`,
-    JSON.stringify(data)
-  );
-}
+const STORAGE_KEY = (groupId: string) => `${groupId}${groupId}`;
 
 export function useGroupTimeline(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.groupTimeline(groupId),
-    async () => loadFromStorage(groupId)
+    async () => loadFromStorage<GroupTimelineData>(STORAGE_KEY(groupId), {} as GroupTimelineData)
   );
 
   const currentData = data ?? { groupId, events: [], updatedAt: new Date().toISOString() };
@@ -54,7 +36,7 @@ export function useGroupTimeline(groupId: string) {
       events: [...currentData.events, newEvent],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(groupId), next);
     await mutate(next, false);
     invalidateGroupTimeline(groupId);
   }
@@ -70,7 +52,7 @@ export function useGroupTimeline(groupId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(groupId), next);
     await mutate(next, false);
     invalidateGroupTimeline(groupId);
   }
@@ -81,7 +63,7 @@ export function useGroupTimeline(groupId: string) {
       events: currentData.events.filter((e) => e.id !== id),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(groupId), next);
     await mutate(next, false);
     invalidateGroupTimeline(groupId);
   }

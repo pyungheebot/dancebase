@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StagePropData,
   StagePropItem,
@@ -18,25 +19,6 @@ const STORAGE_PREFIX = "dancebase:stage-prop-management";
 
 function getStorageKey(projectId: string): string {
   return `${STORAGE_PREFIX}:${projectId}`;
-}
-
-function loadData(projectId: string): StagePropData {
-  if (typeof window === "undefined") return createEmptyData(projectId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    return raw ? (JSON.parse(raw) as StagePropData) : createEmptyData(projectId);
-  } catch {
-    return createEmptyData(projectId);
-  }
-}
-
-function saveData(data: StagePropData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
 }
 
 function createEmptyData(projectId: string): StagePropData {
@@ -69,7 +51,7 @@ export type StagePropInput = {
 export function useStagePropManagement(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     projectId ? swrKeys.stagePropManagement(projectId) : null,
-    async () => loadData(projectId)
+    async () => loadFromStorage<StagePropData>(getStorageKey(projectId), {} as StagePropData)
   );
 
   const store = data ?? createEmptyData(projectId);
@@ -80,7 +62,7 @@ export function useStagePropManagement(projectId: string) {
       ...updated,
       updatedAt: new Date().toISOString(),
     };
-    saveData(withTimestamp);
+    saveToStorage(getStorageKey(projectId), withTimestamp);
     mutate(withTimestamp, false);
   }
 

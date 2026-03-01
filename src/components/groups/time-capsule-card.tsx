@@ -37,6 +37,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useTimeCapsule,
   usePracticeTimeCapsule,
@@ -857,7 +858,7 @@ function EntryItem({
             type="button"
             onClick={() => {
               const ok = onDelete(entry.id);
-              if (ok) toast.success("삭제되었습니다.");
+              if (ok) toast.success(TOAST.DELETE_SUCCESS);
             }}
             className="shrink-0"
             aria-label="삭제"
@@ -971,7 +972,7 @@ function EntryItem({
             type="button"
             onClick={() => {
               const ok = onDelete(entry.id);
-              if (ok) toast.success("삭제되었습니다.");
+              if (ok) toast.success(TOAST.DELETE_SUCCESS);
             }}
             className="shrink-0"
             aria-label="삭제"
@@ -1013,7 +1014,7 @@ function EntryItem({
             type="button"
             onClick={() => {
               const ok = onDelete(entry.id);
-              if (ok) toast.success("삭제되었습니다.");
+              if (ok) toast.success(TOAST.DELETE_SUCCESS);
             }}
             className="shrink-0"
             aria-label="삭제"
@@ -1059,7 +1060,7 @@ function EntryItem({
           type="button"
           onClick={() => {
             const ok = onDelete(entry.id);
-            if (ok) toast.success("삭제되었습니다.");
+            if (ok) toast.success(TOAST.DELETE_SUCCESS);
           }}
           className="shrink-0"
           aria-label="삭제"

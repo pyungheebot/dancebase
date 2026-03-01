@@ -45,6 +45,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSponsorTracking } from "@/hooks/use-sponsor-tracking";
 import type { SponsorTier, SponsorTrackingEntry, SponsorBenefitItem } from "@/types";
 
@@ -594,7 +595,7 @@ export function SponsorTrackingCard({
     if (ok) {
       toast.success("스폰서 정보가 수정되었습니다.");
     } else {
-      toast.error("수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
     setEditTarget(null);
   }
@@ -605,7 +606,7 @@ export function SponsorTrackingCard({
     if (ok) {
       toast.success(`"${sponsorName}" 스폰서가 삭제되었습니다.`);
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

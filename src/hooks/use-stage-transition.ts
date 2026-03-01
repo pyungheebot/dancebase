@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StageTransitionItem,
   StageTransitionData,
@@ -15,29 +16,6 @@ import type {
 
 function storageKey(projectId: string): string {
   return swrKeys.stageTransitionPlan(projectId);
-}
-
-function loadData(projectId: string): StageTransitionData {
-  if (typeof window === "undefined") {
-    return { projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw)
-      return { projectId, items: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as StageTransitionData;
-  } catch {
-    return { projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: StageTransitionData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -63,12 +41,12 @@ export type StageTransitionStats = {
 
 export function useStageTransition(projectId: string) {
   const [items, setItems] = useState<StageTransitionItem[]>(() =>
-    projectId ? [...loadData(projectId).items].sort((a, b) => a.order - b.order) : []
+    projectId ? [...loadFromStorage<StageTransitionData>(storageKey(projectId), {} as StageTransitionData).items].sort((a, b) => a.order - b.order) : []
   );
 
   const reload = useCallback(() => {
     if (!projectId) return;
-    const data = loadData(projectId);
+    const data = loadFromStorage<StageTransitionData>(storageKey(projectId), {} as StageTransitionData);
     const sorted = [...data.items].sort((a, b) => a.order - b.order);
     setItems(sorted);
   }, [projectId]);
@@ -80,7 +58,7 @@ export function useStageTransition(projectId: string) {
         items: updated,
         updatedAt: new Date().toISOString(),
       };
-      saveData(data);
+      saveToStorage(storageKey(projectId), data);
       const sorted = [...updated].sort((a, b) => a.order - b.order);
       setItems(sorted);
     },

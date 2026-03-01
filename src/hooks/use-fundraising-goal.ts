@@ -3,36 +3,12 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   FundraisingGoal,
   FundraisingContribution,
   FundraisingMilestone,
 } from "@/types";
-
-// ─── localStorage 헬퍼 ────────────────────────────────────────
-
-function loadData(groupId: string): FundraisingGoal[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(`dancebase:fundraising:${groupId}`);
-    if (!raw) return [];
-    return JSON.parse(raw) as FundraisingGoal[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: FundraisingGoal[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `dancebase:fundraising:${groupId}`,
-      JSON.stringify(data)
-    );
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 마일스톤 체크 헬퍼 ──────────────────────────────────────
 
@@ -74,10 +50,12 @@ function checkMilestones(
 
 // ─── 훅 ─────────────────────────────────────────────────────
 
+const STORAGE_KEY = (groupId: string) => `dancebase:fundraising:${groupId}`;
+
 export function useFundraisingGoal(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.fundraisingGoal(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<FundraisingGoal[]>(STORAGE_KEY(groupId), []),
     { revalidateOnFocus: false }
   );
 
@@ -104,7 +82,7 @@ export function useFundraisingGoal(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<FundraisingGoal[]>(STORAGE_KEY(groupId), []);
       const newGoal: FundraisingGoal = {
         id: crypto.randomUUID(),
         title: input.title.trim(),
@@ -118,7 +96,7 @@ export function useFundraisingGoal(groupId: string) {
         createdAt: new Date().toISOString(),
       };
       const next = [...stored, newGoal];
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("모금 목표가 추가되었습니다.");
       return true;
@@ -132,10 +110,10 @@ export function useFundraisingGoal(groupId: string) {
 
   function deleteGoal(goalId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<FundraisingGoal[]>(STORAGE_KEY(groupId), []);
       const next = stored.filter((g) => g.id !== goalId);
       if (next.length === stored.length) return false;
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("모금 목표가 삭제되었습니다.");
       return true;
@@ -154,7 +132,7 @@ export function useFundraisingGoal(groupId: string) {
     >
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<FundraisingGoal[]>(STORAGE_KEY(groupId), []);
       const idx = stored.findIndex((g) => g.id === goalId);
       if (idx === -1) {
         toast.error("목표를 찾을 수 없습니다.");
@@ -162,7 +140,7 @@ export function useFundraisingGoal(groupId: string) {
       }
       const updated = { ...stored[idx], ...patch };
       const next = stored.map((g) => (g.id === goalId ? updated : g));
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("모금 목표가 수정되었습니다.");
       return true;
@@ -187,7 +165,7 @@ export function useFundraisingGoal(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<FundraisingGoal[]>(STORAGE_KEY(groupId), []);
       const idx = stored.findIndex((g) => g.id === goalId);
       if (idx === -1) {
         toast.error("목표를 찾을 수 없습니다.");
@@ -213,7 +191,7 @@ export function useFundraisingGoal(groupId: string) {
       };
       const withMilestones = checkMilestones(updatedGoal, prevAmount);
       const next = stored.map((g) => (g.id === goalId ? withMilestones : g));
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
 
       // 마일스톤 도달 알림
@@ -244,7 +222,7 @@ export function useFundraisingGoal(groupId: string) {
 
   function cancelGoal(goalId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<FundraisingGoal[]>(STORAGE_KEY(groupId), []);
       const idx = stored.findIndex((g) => g.id === goalId);
       if (idx === -1) {
         toast.error("목표를 찾을 수 없습니다.");
@@ -257,7 +235,7 @@ export function useFundraisingGoal(groupId: string) {
       const next = stored.map((g) =>
         g.id === goalId ? { ...g, status: "cancelled" as const } : g
       );
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("모금이 취소되었습니다.");
       return true;

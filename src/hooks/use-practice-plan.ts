@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { PracticePlan } from "@/types";
 import type { MemberSkill, MemberGoal } from "@/types";
+import { removeFromStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키
@@ -297,7 +298,7 @@ export function usePracticePlan(
       if (typeof window === "undefined") return;
       try {
         if (newPlan === null) {
-          localStorage.removeItem(storageKey(groupId, userId));
+          removeFromStorage(storageKey(groupId, userId));
         } else {
           localStorage.setItem(storageKey(groupId, userId), JSON.stringify(newPlan));
         }

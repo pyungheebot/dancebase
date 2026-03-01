@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { ShowGalleryAlbum, ShowGalleryPhoto, ShowGalleryCategory } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -9,30 +10,6 @@ import type { ShowGalleryAlbum, ShowGalleryPhoto, ShowGalleryCategory } from "@/
 
 function storageKey(groupId: string, projectId: string): string {
   return `dancebase:show-gallery:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): ShowGalleryAlbum[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ShowGalleryAlbum[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: ShowGalleryAlbum[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -50,17 +27,17 @@ export type ShowGalleryStats = {
 // ============================================================
 
 export function useShowGallery(groupId: string, projectId: string) {
-  const [albums, setAlbums] = useState<ShowGalleryAlbum[]>(() => loadData(groupId, projectId));
+  const [albums, setAlbums] = useState<ShowGalleryAlbum[]>(() => loadFromStorage<ShowGalleryAlbum[]>(storageKey(groupId, projectId), []));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
-    const data = loadData(groupId, projectId);
+    const data = loadFromStorage<ShowGalleryAlbum[]>(storageKey(groupId, projectId), []);
     setAlbums(data);
   }, [groupId, projectId]);
 
   const persist = useCallback(
     (next: ShowGalleryAlbum[]) => {
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       setAlbums(next);
     },
     [groupId, projectId]

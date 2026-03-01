@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PracticeChallengeEntry,
   PracticeChallengeParticipant,
@@ -13,26 +14,6 @@ import type {
 
 const LS_KEY = (groupId: string) =>
   `dancebase:practice-challenge:${groupId}`;
-
-function loadData(groupId: string): PracticeChallengeEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as PracticeChallengeEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: PracticeChallengeEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 자동 상태 계산 ───────────────────────────────────────────
 
@@ -63,7 +44,7 @@ function withComputedStatus(
 export function usePracticeChallenge(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.practiceChallenge(groupId) : null,
-    () => withComputedStatus(loadData(groupId)),
+    () => withComputedStatus(loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), [])),
     { revalidateOnFocus: false }
   );
 
@@ -102,7 +83,7 @@ export function usePracticeChallenge(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), []);
       const newEntry: PracticeChallengeEntry = {
         id: crypto.randomUUID(),
         title: input.title.trim(),
@@ -118,7 +99,7 @@ export function usePracticeChallenge(groupId: string) {
         createdAt: new Date().toISOString(),
       };
       const next = [...stored, newEntry];
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
       toast.success("도전 과제가 생성되었습니다.");
       return true;
@@ -135,7 +116,7 @@ export function usePracticeChallenge(groupId: string) {
     patch: Partial<Omit<PracticeChallengeEntry, "id" | "createdAt" | "createdBy" | "participants">>
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), []);
       const idx = stored.findIndex((c) => c.id === challengeId);
       if (idx === -1) {
         toast.error("도전 과제를 찾을 수 없습니다.");
@@ -147,7 +128,7 @@ export function usePracticeChallenge(groupId: string) {
         updated,
         ...stored.slice(idx + 1),
       ];
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
       toast.success("도전 과제가 수정되었습니다.");
       return true;
@@ -161,10 +142,10 @@ export function usePracticeChallenge(groupId: string) {
 
   function deleteChallenge(challengeId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), []);
       const next = stored.filter((c) => c.id !== challengeId);
       if (next.length === stored.length) return false;
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
       toast.success("도전 과제가 삭제되었습니다.");
       return true;
@@ -182,7 +163,7 @@ export function usePracticeChallenge(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), []);
       const challenge = stored.find((c) => c.id === challengeId);
       if (!challenge) {
         toast.error("도전 과제를 찾을 수 없습니다.");
@@ -204,7 +185,7 @@ export function usePracticeChallenge(groupId: string) {
           ? { ...c, participants: [...c.participants, newParticipant] }
           : c
       );
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
       toast.success(`${memberName.trim()}님이 도전에 참가했습니다.`);
       return true;
@@ -223,7 +204,7 @@ export function usePracticeChallenge(groupId: string) {
   ): boolean {
     const clamped = Math.max(0, Math.min(100, Math.round(progress)));
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), []);
       const next = stored.map((c) => {
         if (c.id !== challengeId) return c;
         return {
@@ -242,7 +223,7 @@ export function usePracticeChallenge(groupId: string) {
           }),
         };
       });
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
       if (clamped === 100) {
         toast.success("도전 과제를 완료했습니다!");
@@ -258,7 +239,7 @@ export function usePracticeChallenge(groupId: string) {
 
   function completeChallenge(challengeId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PracticeChallengeEntry[]>(LS_KEY(groupId), []);
       const idx = stored.findIndex((c) => c.id === challengeId);
       if (idx === -1) {
         toast.error("도전 과제를 찾을 수 없습니다.");
@@ -267,7 +248,7 @@ export function usePracticeChallenge(groupId: string) {
       const next = stored.map((c) =>
         c.id === challengeId ? { ...c, status: "completed" as PracticeChallengeStatus } : c
       );
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(withComputedStatus(next), false);
       toast.success("도전 과제가 완료 처리되었습니다.");
       return true;

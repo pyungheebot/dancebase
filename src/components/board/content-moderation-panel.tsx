@@ -6,6 +6,7 @@ import { ShieldAlert, EyeOff, Trash2, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   Sheet,
   SheetContent,
@@ -116,7 +117,7 @@ export function ContentModerationPanel({ groupId }: ContentModerationPanelProps)
     }
 
     if (deleteError) {
-      toast.error("삭제에 실패했습니다");
+      toast.error(TOAST.DELETE_ERROR);
       setProcessingId(null);
       return;
     }

@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { ReceiptEntry, ReceiptCategory, ReceiptStatus } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키
@@ -14,30 +15,6 @@ function storageKey(groupId: string): string {
 }
 
 // ============================================
-// localStorage 헬퍼
-// ============================================
-
-function loadFromStorage(groupId: string): ReceiptEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ReceiptEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(groupId: string, entries: ReceiptEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(entries));
-  } catch {
-    // 무시
-  }
-}
-
-// ============================================
 // 훅
 // ============================================
 
@@ -45,7 +22,7 @@ export function useReceiptManagement(groupId: string) {
   const swrKey = swrKeys.receiptManagement(groupId);
 
   const { data: receipts = [], mutate } = useSWR(swrKey, () =>
-    loadFromStorage(groupId)
+    loadFromStorage<ReceiptEntry[]>(storageKey(groupId), [])
   );
 
   // 영수증 추가
@@ -72,7 +49,7 @@ export function useReceiptManagement(groupId: string) {
         createdAt: new Date().toISOString(),
       };
       const updated = [newEntry, ...receipts];
-      saveToStorage(groupId, updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       return true;
     },
@@ -85,7 +62,7 @@ export function useReceiptManagement(groupId: string) {
       const updated = receipts.map((r) =>
         r.id === id ? { ...r, ...patch } : r
       );
-      saveToStorage(groupId, updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
     },
     [groupId, receipts, mutate]
@@ -95,7 +72,7 @@ export function useReceiptManagement(groupId: string) {
   const deleteReceipt = useCallback(
     (id: string) => {
       const updated = receipts.filter((r) => r.id !== id);
-      saveToStorage(groupId, updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
     },
     [groupId, receipts, mutate]
@@ -109,7 +86,7 @@ export function useReceiptManagement(groupId: string) {
           ? { ...r, status: "approved" as ReceiptStatus, approvedBy: approverName.trim() }
           : r
       );
-      saveToStorage(groupId, updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
     },
     [groupId, receipts, mutate]
@@ -121,7 +98,7 @@ export function useReceiptManagement(groupId: string) {
       const updated = receipts.map((r) =>
         r.id === id ? { ...r, status: "rejected" as ReceiptStatus } : r
       );
-      saveToStorage(groupId, updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
     },
     [groupId, receipts, mutate]
@@ -133,7 +110,7 @@ export function useReceiptManagement(groupId: string) {
       const updated = receipts.map((r) =>
         r.id === id ? { ...r, status: "reimbursed" as ReceiptStatus } : r
       );
-      saveToStorage(groupId, updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
     },
     [groupId, receipts, mutate]

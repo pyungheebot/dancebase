@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   CostumeRentalItem,
   CostumeRentalItemStatus,
@@ -25,38 +26,6 @@ const LS_KEY = (groupId: string, projectId: string) =>
   `dancebase:costume-rental:${groupId}:${projectId}`;
 
 // ============================================
-// localStorage 헬퍼
-// ============================================
-
-function loadData(
-  groupId: string,
-  projectId: string
-): CostumeRentalData {
-  if (typeof window === "undefined") return { items: [], records: [] };
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId, projectId));
-    return raw
-      ? (JSON.parse(raw) as CostumeRentalData)
-      : { items: [], records: [] };
-  } catch {
-    return { items: [], records: [] };
-  }
-}
-
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: CostumeRentalData
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId, projectId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
-// ============================================
 // ID 생성 헬퍼
 // ============================================
 
@@ -76,7 +45,7 @@ export function useCostumeRental(groupId: string, projectId: string) {
 
   const { data, mutate } = useSWR(
     swrKey,
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<CostumeRentalData>(LS_KEY(groupId, projectId), { items: [], records: [] }),
     { revalidateOnFocus: false }
   );
 
@@ -101,7 +70,7 @@ export function useCostumeRental(groupId: string, projectId: string) {
       ...stored,
       items: [...stored.items, newItem],
     };
-    saveData(groupId, projectId, updated);
+    saveToStorage(LS_KEY(groupId, projectId), updated);
     mutate(updated, false);
   }
 
@@ -133,7 +102,7 @@ export function useCostumeRental(groupId: string, projectId: string) {
       ),
       records: [...stored.records, newRecord],
     };
-    saveData(groupId, projectId, updated);
+    saveToStorage(LS_KEY(groupId, projectId), updated);
     mutate(updated, false);
   }
 
@@ -175,7 +144,7 @@ export function useCostumeRental(groupId: string, projectId: string) {
         };
       }),
     };
-    saveData(groupId, projectId, updated);
+    saveToStorage(LS_KEY(groupId, projectId), updated);
     mutate(updated, false);
   }
 
@@ -186,7 +155,7 @@ export function useCostumeRental(groupId: string, projectId: string) {
       items: stored.items.filter((item) => item.id !== itemId),
       records: stored.records.filter((record) => record.itemId !== itemId),
     };
-    saveData(groupId, projectId, updated);
+    saveToStorage(LS_KEY(groupId, projectId), updated);
     mutate(updated, false);
   }
 

@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { usePracticeNotes } from "@/hooks/use-practice-notes";
 import type { PracticeNoteTag, PracticeNoteEntry } from "@/types";
 
@@ -526,7 +527,7 @@ export function PracticeNotesCard({
   const handleDelete = (id: string) => {
     const ok = hook.deleteNote(id);
     if (ok) toast.success("노트가 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   };
 
   const handleTogglePin = (id: string) => {
@@ -540,7 +541,7 @@ export function PracticeNotesCard({
   const handleDeleteComment = (noteId: string, commentId: string) => {
     const ok = hook.deleteComment(noteId, commentId);
     if (ok) toast.success("코멘트가 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   };
 
   const { totalNotes, pinnedNotes, totalComments } = hook.stats;

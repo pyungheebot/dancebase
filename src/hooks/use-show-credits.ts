@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   CreditSection,
   CreditSectionType,
@@ -34,30 +35,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:show-credits:${groupId}:${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): ShowCreditsData {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, sections: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) {
-      return { groupId, projectId, sections: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as ShowCreditsData;
-  } catch {
-    return { groupId, projectId, sections: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: ShowCreditsData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId, data.projectId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -65,7 +42,7 @@ function saveData(data: ShowCreditsData): void {
 export function useShowCredits(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.showCredits(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<ShowCreditsData>(storageKey(groupId, projectId), {} as ShowCreditsData),
     {
       fallbackData: {
         groupId,
@@ -83,7 +60,7 @@ export function useShowCredits(groupId: string, projectId: string) {
   /** 섹션 추가 */
   const addSection = useCallback(
     (type: CreditSectionType, customTitle?: string): CreditSection => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ShowCreditsData>(storageKey(groupId, projectId), {} as ShowCreditsData);
       const maxOrder =
         current.sections.length > 0
           ? Math.max(...current.sections.map((s) => s.order))
@@ -100,7 +77,7 @@ export function useShowCredits(groupId: string, projectId: string) {
         sections: [...current.sections, newSection],
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newSection;
     },
@@ -110,7 +87,7 @@ export function useShowCredits(groupId: string, projectId: string) {
   /** 섹션 제목 수정 */
   const updateSectionTitle = useCallback(
     (sectionId: string, title: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ShowCreditsData>(storageKey(groupId, projectId), {} as ShowCreditsData);
       const idx = current.sections.findIndex((s) => s.id === sectionId);
       if (idx === -1) return false;
       const updated: ShowCreditsData = {
@@ -120,7 +97,7 @@ export function useShowCredits(groupId: string, projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -130,7 +107,7 @@ export function useShowCredits(groupId: string, projectId: string) {
   /** 섹션 삭제 */
   const deleteSection = useCallback(
     (sectionId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ShowCreditsData>(storageKey(groupId, projectId), {} as ShowCreditsData);
       const exists = current.sections.some((s) => s.id === sectionId);
       if (!exists) return false;
       const filtered = current.sections.filter((s) => s.id !== sectionId);
@@ -143,7 +120,7 @@ export function useShowCredits(groupId: string, projectId: string) {
         sections: reordered,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -153,7 +130,7 @@ export function useShowCredits(groupId: string, projectId: string) {
   /** 섹션 순서 변경 (위/아래) */
   const moveSectionUp = useCallback(
     (sectionId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ShowCreditsData>(storageKey(groupId, projectId), {} as ShowCreditsData);
       const sorted = [...current.sections].sort((a, b) => a.order - b.order);
       const idx = sorted.findIndex((s) => s.id === sectionId);
       if (idx <= 0) return false;
@@ -170,7 +147,7 @@ export function useShowCredits(groupId: string, projectId: string) {
         sections: reordered,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -179,7 +156,7 @@ export function useShowCredits(groupId: string, projectId: string) {
 
   const moveSectionDown = useCallback(
     (sectionId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ShowCreditsData>(storageKey(groupId, projectId), {} as ShowCreditsData);
       const sorted = [...current.sections].sort((a, b) => a.order - b.order);
       const idx = sorted.findIndex((s) => s.id === sectionId);
       if (idx === -1 || idx >= sorted.length - 1) return false;
@@ -195,7 +172,7 @@ export function useShowCredits(groupId: string, projectId: string) {
         sections: reordered,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -205,7 +182,7 @@ export function useShowCredits(groupId: string, projectId: string) {
   /** 섹션에 인원 추가 */
   const addPerson = useCallback(
     (sectionId: string, name: string, role: string): CreditPerson | null => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ShowCreditsData>(storageKey(groupId, projectId), {} as ShowCreditsData);
       const sectionIdx = current.sections.findIndex((s) => s.id === sectionId);
       if (sectionIdx === -1) return null;
       const newPerson: CreditPerson = {
@@ -222,7 +199,7 @@ export function useShowCredits(groupId: string, projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newPerson;
     },
@@ -237,7 +214,7 @@ export function useShowCredits(groupId: string, projectId: string) {
       name: string,
       role: string
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ShowCreditsData>(storageKey(groupId, projectId), {} as ShowCreditsData);
       const sectionIdx = current.sections.findIndex((s) => s.id === sectionId);
       if (sectionIdx === -1) return false;
       const personIdx = current.sections[sectionIdx].people.findIndex(
@@ -260,7 +237,7 @@ export function useShowCredits(groupId: string, projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -270,7 +247,7 @@ export function useShowCredits(groupId: string, projectId: string) {
   /** 인원 삭제 */
   const deletePerson = useCallback(
     (sectionId: string, personId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<ShowCreditsData>(storageKey(groupId, projectId), {} as ShowCreditsData);
       const sectionIdx = current.sections.findIndex((s) => s.id === sectionId);
       if (sectionIdx === -1) return false;
       const updated: ShowCreditsData = {
@@ -282,7 +259,7 @@ export function useShowCredits(groupId: string, projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },

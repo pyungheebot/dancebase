@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { ScheduleWeather } from "@/types";
+import { removeFromStorage } from "@/lib/local-storage";
 
 // 서울 기본 좌표
 const DEFAULT_LAT = 37.5665;
@@ -44,7 +45,7 @@ function readCache(scheduleId: string): ScheduleWeather | null {
     if (!raw) return null;
     const entry: CacheEntry = JSON.parse(raw);
     if (Date.now() > entry.expiresAt) {
-      localStorage.removeItem(cacheKey(scheduleId));
+      removeFromStorage(cacheKey(scheduleId));
       return null;
     }
     return entry.data;

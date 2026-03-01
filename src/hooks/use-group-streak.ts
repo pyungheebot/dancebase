@@ -3,31 +3,13 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { StreakTrackData, StreakTrackMember, StreakTrackRecord } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY_PREFIX = "group-streak-";
 
-function loadData(groupId: string): StreakTrackData {
-  if (typeof window === "undefined") {
-    return { groupId, members: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`${STORAGE_KEY_PREFIX}${groupId}`);
-    if (!raw) return { groupId, members: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as StreakTrackData;
-  } catch {
-    return { groupId, members: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: StreakTrackData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(
-    `${STORAGE_KEY_PREFIX}${data.groupId}`,
-    JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-  );
-}
-
 /** 날짜 배열에서 현재 연속 스트릭 계산 */
+const STORAGE_KEY = (groupId: string) => `${groupId}${groupId}`;
+
 export function calcCurrentStreak(records: StreakTrackRecord[]): number {
   const attended = records
     .filter((r) => r.attended)
@@ -107,7 +89,7 @@ export function getLast7Days(): string[] {
 export function useGroupStreak(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.groupStreak(groupId),
-    async () => loadData(groupId)
+    async () => loadFromStorage<StreakTrackData>(STORAGE_KEY(groupId), {} as StreakTrackData)
   );
 
   const streakData: StreakTrackData = data ?? {
@@ -118,7 +100,7 @@ export function useGroupStreak(groupId: string) {
 
   /** 멤버 추가 */
   async function addMember(name: string): Promise<void> {
-    const current = loadData(groupId);
+    const current = loadFromStorage<StreakTrackData>(STORAGE_KEY(groupId), {} as StreakTrackData);
     const newMember: StreakTrackMember = {
       id: crypto.randomUUID(),
       name: name.trim(),
@@ -129,18 +111,18 @@ export function useGroupStreak(groupId: string) {
       ...current,
       members: [...current.members, newMember],
     };
-    saveData(updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     await mutate();
   }
 
   /** 멤버 삭제 */
   async function removeMember(memberId: string): Promise<void> {
-    const current = loadData(groupId);
+    const current = loadFromStorage<StreakTrackData>(STORAGE_KEY(groupId), {} as StreakTrackData);
     const updated: StreakTrackData = {
       ...current,
       members: current.members.filter((m) => m.id !== memberId),
     };
-    saveData(updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     await mutate();
   }
 
@@ -150,7 +132,7 @@ export function useGroupStreak(groupId: string) {
     date: string,
     attended: boolean
   ): Promise<void> {
-    const current = loadData(groupId);
+    const current = loadFromStorage<StreakTrackData>(STORAGE_KEY(groupId), {} as StreakTrackData);
     const updated: StreakTrackData = {
       ...current,
       members: current.members.map((m) => {
@@ -167,7 +149,7 @@ export function useGroupStreak(groupId: string) {
         return { ...m, records: newRecords };
       }),
     };
-    saveData(updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     await mutate();
   }
 

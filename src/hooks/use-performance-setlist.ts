@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { ShowSetlistData, ShowSetlistItem } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 유틸
@@ -12,23 +13,6 @@ const STORAGE_PREFIX = "dancebase:performance-setlist";
 
 function getStorageKey(projectId: string): string {
   return `${STORAGE_PREFIX}:${projectId}`;
-}
-
-function loadData(projectId: string): ShowSetlistData {
-  if (typeof window === "undefined") {
-    return createEmptyData(projectId);
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    return raw ? (JSON.parse(raw) as ShowSetlistData) : createEmptyData(projectId);
-  } catch {
-    return createEmptyData(projectId);
-  }
-}
-
-function saveData(data: ShowSetlistData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
 }
 
 function createEmptyData(projectId: string): ShowSetlistData {
@@ -81,7 +65,7 @@ export type ShowSetlistItemInput = Omit<ShowSetlistItem, "id" | "order">;
 export function usePerformanceSetlist(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     projectId ? swrKeys.performanceSetlist(projectId) : null,
-    async () => loadData(projectId)
+    async () => loadFromStorage<ShowSetlistData>(getStorageKey(projectId), {} as ShowSetlistData)
   );
 
   const store = data ?? createEmptyData(projectId);
@@ -92,7 +76,7 @@ export function usePerformanceSetlist(projectId: string) {
       ...updated,
       updatedAt: new Date().toISOString(),
     };
-    saveData(withTimestamp);
+    saveToStorage(getStorageKey(projectId), withTimestamp);
     mutate(withTimestamp, false);
   }
 

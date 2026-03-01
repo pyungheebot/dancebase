@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { LostFoundData, LostFoundItem, LostFoundStatus } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -13,30 +14,6 @@ function storageKey(groupId: string): string {
   return `dancebase:group-lost-found:${groupId}`;
 }
 
-function loadData(groupId: string): LostFoundData {
-  if (typeof window === "undefined") {
-    return { groupId, items: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) {
-      return { groupId, items: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as LostFoundData;
-  } catch {
-    return { groupId, items: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(groupId: string, data: LostFoundData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -44,7 +21,7 @@ function saveData(groupId: string, data: LostFoundData): void {
 export function useGroupLostFound(groupId: string) {
   const { data, mutate, isLoading } = useSWR(
     groupId ? swrKeys.groupLostFound(groupId) : null,
-    () => loadData(groupId)
+    () => loadFromStorage<LostFoundData>(storageKey(groupId), {} as LostFoundData)
   );
 
   const current: LostFoundData = useMemo(() => data ?? {
@@ -55,7 +32,7 @@ export function useGroupLostFound(groupId: string) {
 
   const persist = useCallback(
     (next: LostFoundData) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       mutate(next, false);
     },
     [groupId, mutate]

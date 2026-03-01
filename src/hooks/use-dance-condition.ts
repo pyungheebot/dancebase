@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { saveToStorage } from "@/lib/local-storage";
 import type {
   DanceConditionEntry,
   DanceConditionLog,
@@ -111,10 +112,6 @@ function makeEmpty(memberId: string): DanceConditionEntry {
   };
 }
 
-function saveData(entry: DanceConditionEntry): void {
-  localStorage.setItem(getStorageKey(entry.memberId), JSON.stringify(entry));
-}
-
 // ============================================================
 // 날짜 유틸
 // ============================================================
@@ -162,7 +159,7 @@ export function useDanceCondition(memberId: string) {
     (updater: (prev: DanceConditionEntry) => DanceConditionEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveData(next);
+        saveToStorage(getStorageKey(entry.memberId), next);
         return next;
       });
     },

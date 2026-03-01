@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MusicCuesheet, CueEntry, CueAction } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 유틸리티
@@ -11,32 +12,6 @@ import type { MusicCuesheet, CueEntry, CueAction } from "@/types";
 
 function getStorageKey(groupId: string, projectId: string): string {
   return `dancebase:music-cuesheet:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): MusicCuesheet[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as MusicCuesheet[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function persistData(
-  groupId: string,
-  projectId: string,
-  data: MusicCuesheet[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      getStorageKey(groupId, projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 // ============================================
@@ -76,7 +51,7 @@ export function useMusicCuesheet(groupId: string, projectId: string) {
   const key = swrKeys.musicCuesheet(groupId, projectId);
 
   const { data, mutate } = useSWR<MusicCuesheet[]>(key, () =>
-    loadData(groupId, projectId)
+    loadFromStorage<MusicCuesheet[]>(getStorageKey(groupId, projectId), [])
   );
 
   const cuesheets: MusicCuesheet[] = useMemo(() => data ?? [], [data]);
@@ -84,7 +59,7 @@ export function useMusicCuesheet(groupId: string, projectId: string) {
   /** 내부 상태 + localStorage 동기 업데이트 */
   const update = useCallback(
     (next: MusicCuesheet[]) => {
-      persistData(groupId, projectId, next);
+      saveToStorage(getStorageKey(groupId, projectId), next);
       mutate(next, false);
     },
     [groupId, projectId, mutate]

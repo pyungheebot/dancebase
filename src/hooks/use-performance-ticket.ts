@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PerfTicketTier,
   PerfTicketAllocation,
@@ -15,48 +16,6 @@ import type {
 
 function storageKey(projectId: string): string {
   return swrKeys.performanceTicket(projectId);
-}
-
-function loadData(projectId: string): PerfTicketData {
-  if (typeof window === "undefined") {
-    return {
-      projectId,
-      tiers: [],
-      allocations: [],
-      salesGoal: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw) {
-      return {
-        projectId,
-        tiers: [],
-        allocations: [],
-        salesGoal: null,
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as PerfTicketData;
-  } catch {
-    return {
-      projectId,
-      tiers: [],
-      allocations: [],
-      salesGoal: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function saveData(data: PerfTicketData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -97,13 +56,13 @@ export type PerfTicketStats = {
 // ============================================================
 
 export function usePerformanceTicket(projectId: string) {
-  const [tiers, setTiers] = useState<PerfTicketTier[]>(() => loadData(projectId).tiers);
+  const [tiers, setTiers] = useState<PerfTicketTier[]>(() => loadFromStorage<PerfTicketData>(storageKey(projectId), {} as PerfTicketData).tiers);
   const [allocations, setAllocations] = useState<PerfTicketAllocation[]>([]);
   const [salesGoal, setSalesGoal] = useState<number | null>(null);
 
   const reload = useCallback(() => {
     if (!projectId) return;
-    const data = loadData(projectId);
+    const data = loadFromStorage<PerfTicketData>(storageKey(projectId), {} as PerfTicketData);
     setTiers(data.tiers);
     setAllocations(data.allocations);
     setSalesGoal(data.salesGoal);
@@ -115,7 +74,7 @@ export function usePerformanceTicket(projectId: string) {
       allocations?: PerfTicketAllocation[];
       salesGoal?: number | null;
     }) => {
-      const currentData = loadData(projectId);
+      const currentData = loadFromStorage<PerfTicketData>(storageKey(projectId), {} as PerfTicketData);
       const newData: PerfTicketData = {
         projectId,
         tiers: updated.tiers ?? currentData.tiers,
@@ -126,7 +85,7 @@ export function usePerformanceTicket(projectId: string) {
             : currentData.salesGoal,
         updatedAt: new Date().toISOString(),
       };
-      saveData(newData);
+      saveToStorage(storageKey(projectId), newData);
       if (updated.tiers !== undefined) setTiers(newData.tiers);
       if (updated.allocations !== undefined)
         setAllocations(newData.allocations);

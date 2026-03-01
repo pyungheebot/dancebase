@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StageWeatherData,
   StageWeatherForecast,
@@ -43,22 +44,6 @@ function getStorageKey(projectId: string) {
   return `stage-weather-${projectId}`;
 }
 
-function loadFromStorage(projectId: string): StageWeatherData {
-  if (typeof window === "undefined") return buildDefaultData(projectId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    if (!raw) return buildDefaultData(projectId);
-    return JSON.parse(raw) as StageWeatherData;
-  } catch {
-    return buildDefaultData(projectId);
-  }
-}
-
-function saveToStorage(data: StageWeatherData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
-}
-
 // ─── 날씨 → 판정 자동 계산 ────────────────────────────────────
 
 export function calcSafety(
@@ -79,7 +64,7 @@ export function calcSafety(
 export function useStageWeather(projectId: string) {
   const { data, mutate } = useSWR(
     swrKeys.stageWeather(projectId),
-    () => loadFromStorage(projectId),
+    () => loadFromStorage<StageWeatherData>(getStorageKey(projectId), {} as StageWeatherData),
     { revalidateOnFocus: false }
   );
 
@@ -100,7 +85,7 @@ export function useStageWeather(projectId: string) {
       ],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -121,7 +106,7 @@ export function useStageWeather(projectId: string) {
       }),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -132,7 +117,7 @@ export function useStageWeather(projectId: string) {
       forecasts: weatherData.forecasts.filter((f) => f.id !== forecastId),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -151,7 +136,7 @@ export function useStageWeather(projectId: string) {
       }),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -171,7 +156,7 @@ export function useStageWeather(projectId: string) {
       }),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -188,7 +173,7 @@ export function useStageWeather(projectId: string) {
       }),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -202,7 +187,7 @@ export function useStageWeather(projectId: string) {
       ],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -215,7 +200,7 @@ export function useStageWeather(projectId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -226,7 +211,7 @@ export function useStageWeather(projectId: string) {
       plans: weatherData.plans.filter((p) => p.id !== planId),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 
@@ -237,7 +222,7 @@ export function useStageWeather(projectId: string) {
       rainPlan: { ...weatherData.rainPlan, ...patch },
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(getStorageKey(projectId), next);
     mutate(next, false);
   }
 

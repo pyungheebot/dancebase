@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { removeFromStorage } from "@/lib/local-storage";
 
 // ============================================================
 // 타입 정의
@@ -53,7 +54,7 @@ function loadPoll(groupId: string): PreRsvpPoll | null {
 function savePoll(groupId: string, poll: PreRsvpPoll | null) {
   if (typeof window === "undefined") return;
   if (poll === null) {
-    localStorage.removeItem(getStorageKey(groupId));
+    removeFromStorage(getStorageKey(groupId));
   } else {
     localStorage.setItem(getStorageKey(groupId), JSON.stringify(poll));
   }

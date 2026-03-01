@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { DanceCompetitionRecord, DanceCompetitionData } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // 상수
@@ -63,29 +64,6 @@ function getStorageKey(memberId: string): string {
   return swrKeys.danceCompetition(memberId);
 }
 
-function loadData(memberId: string): DanceCompetitionData {
-  if (typeof window === "undefined") {
-    return { memberId, records: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw)
-      return { memberId, records: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as DanceCompetitionData;
-  } catch {
-    return { memberId, records: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(memberId: string, data: DanceCompetitionData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
-}
-
 // ============================================================
 // 통계 타입
 // ============================================================
@@ -141,13 +119,13 @@ function calcStats(records: DanceCompetitionRecord[]): DanceCompetitionStats {
 export function useDanceCompetition(memberId: string) {
   const [records, setRecords] = useState<DanceCompetitionRecord[]>(() =>
     memberId
-      ? [...loadData(memberId).records].sort((a, b) => b.date.localeCompare(a.date))
+      ? [...loadFromStorage<DanceCompetitionData>(getStorageKey(memberId), {} as DanceCompetitionData).records].sort((a, b) => b.date.localeCompare(a.date))
       : []
   );
 
   const reload = useCallback(() => {
     if (!memberId) return;
-    const data = loadData(memberId);
+    const data = loadFromStorage<DanceCompetitionData>(getStorageKey(memberId), {} as DanceCompetitionData);
     const sorted = [...data.records].sort((a, b) => b.date.localeCompare(a.date));
     setRecords(sorted);
   }, [memberId]);
@@ -158,7 +136,7 @@ export function useDanceCompetition(memberId: string) {
       const sorted = [...nextRecords].sort((a, b) =>
         b.date.localeCompare(a.date)
       );
-      saveData(memberId, {
+      saveToStorage(getStorageKey(memberId), {
         memberId,
         records: sorted,
         updatedAt: new Date().toISOString(),

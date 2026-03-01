@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   CarPoolData,
   CarPoolItem,
@@ -18,30 +19,6 @@ function storageKey(groupId: string): string {
   return `dancebase:group-carpool:${groupId}`;
 }
 
-function loadData(groupId: string): CarPoolData {
-  if (typeof window === "undefined") {
-    return { groupId, carpools: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) {
-      return { groupId, carpools: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as CarPoolData;
-  } catch {
-    return { groupId, carpools: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(groupId: string, data: CarPoolData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -49,7 +26,7 @@ function saveData(groupId: string, data: CarPoolData): void {
 export function useGroupCarPool(groupId: string) {
   const { data, mutate, isLoading } = useSWR(
     groupId ? swrKeys.groupCarPool(groupId) : null,
-    () => loadData(groupId)
+    () => loadFromStorage<CarPoolData>(storageKey(groupId), {} as CarPoolData)
   );
 
   const current: CarPoolData = useMemo(() => data ?? {
@@ -60,7 +37,7 @@ export function useGroupCarPool(groupId: string) {
 
   const persist = useCallback(
     (next: CarPoolData) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       mutate(next, false);
     },
     [groupId, mutate]

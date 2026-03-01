@@ -33,6 +33,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupDuesTracker } from "@/hooks/use-group-dues-tracker";
 import type { DuesTrackPeriod, DuesTrackPaymentStatus } from "@/types";
 
@@ -361,7 +362,7 @@ function MemberRow({
   const handleDelete = () => {
     const ok = hook.removeMemberFromPeriod(periodId, member.id);
     if (ok) toast.success(`${member.name}이(가) 삭제되었습니다.`);
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   };
 
   return (
@@ -490,7 +491,7 @@ function PeriodCard({ period, hook }: PeriodCardProps) {
       toast.success(
         `${formatYearMonth(period.year, period.month)} 기간이 삭제되었습니다.`
       );
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   };
 
   return (

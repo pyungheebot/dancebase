@@ -4,35 +4,12 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
 import type { PerformanceRetro, RetroCategory, RetroItem } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 
 function storageKey(groupId: string, projectId: string): string {
   return `dancebase:retro:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): PerformanceRetro[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as PerformanceRetro[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: PerformanceRetro[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
 }
 
 // ─── 훅 ─────────────────────────────────────────────────────
@@ -45,7 +22,7 @@ export function usePerformanceRetrospective(
     groupId && projectId
       ? swrKeys.performanceRetro(groupId, projectId)
       : null,
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<PerformanceRetro[]>(storageKey(groupId, projectId), []),
     { revalidateOnFocus: false }
   );
 
@@ -80,7 +57,7 @@ export function usePerformanceRetrospective(
       return false;
     }
     try {
-      const stored = loadData(groupId, projectId);
+      const stored = loadFromStorage<PerformanceRetro[]>(storageKey(groupId, projectId), []);
       const newRetro: PerformanceRetro = {
         id: crypto.randomUUID(),
         performanceTitle: input.performanceTitle.trim(),
@@ -91,7 +68,7 @@ export function usePerformanceRetrospective(
         createdAt: new Date().toISOString(),
       };
       const next = [...stored, newRetro];
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       void mutate(next, false);
       toast.success("회고가 생성되었습니다.");
       return true;
@@ -104,9 +81,9 @@ export function usePerformanceRetrospective(
   // ── 회고 삭제 ────────────────────────────────────────────
   function deleteRetro(retroId: string): boolean {
     try {
-      const stored = loadData(groupId, projectId);
+      const stored = loadFromStorage<PerformanceRetro[]>(storageKey(groupId, projectId), []);
       const next = stored.filter((r) => r.id !== retroId);
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       void mutate(next, false);
       toast.success("회고가 삭제되었습니다.");
       return true;
@@ -128,7 +105,7 @@ export function usePerformanceRetrospective(
       return false;
     }
     try {
-      const stored = loadData(groupId, projectId);
+      const stored = loadFromStorage<PerformanceRetro[]>(storageKey(groupId, projectId), []);
       const next = stored.map((r) => {
         if (r.id !== retroId) return r;
         const newItem: RetroItem = {
@@ -141,7 +118,7 @@ export function usePerformanceRetrospective(
         };
         return { ...r, items: [...r.items, newItem] };
       });
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       void mutate(next, false);
       return true;
     } catch {
@@ -153,7 +130,7 @@ export function usePerformanceRetrospective(
   // ── 공감 투표 ────────────────────────────────────────────
   function voteItem(retroId: string, itemId: string): boolean {
     try {
-      const stored = loadData(groupId, projectId);
+      const stored = loadFromStorage<PerformanceRetro[]>(storageKey(groupId, projectId), []);
       const next = stored.map((r) => {
         if (r.id !== retroId) return r;
         return {
@@ -163,7 +140,7 @@ export function usePerformanceRetrospective(
           ),
         };
       });
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       void mutate(next, false);
       return true;
     } catch {
@@ -179,12 +156,12 @@ export function usePerformanceRetrospective(
       return false;
     }
     try {
-      const stored = loadData(groupId, projectId);
+      const stored = loadFromStorage<PerformanceRetro[]>(storageKey(groupId, projectId), []);
       const next = stored.map((r) => {
         if (r.id !== retroId) return r;
         return { ...r, actionItems: [...r.actionItems, action.trim()] };
       });
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       void mutate(next, false);
       toast.success("액션 아이템이 추가되었습니다.");
       return true;

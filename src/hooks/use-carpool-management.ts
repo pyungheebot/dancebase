@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { CarpoolRide, CarpoolRideStatus } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -9,26 +10,6 @@ import type { CarpoolRide, CarpoolRideStatus } from "@/types";
 
 function storageKey(groupId: string): string {
   return `dancebase:carpool:${groupId}`;
-}
-
-function loadData(groupId: string): CarpoolRide[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as CarpoolRide[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: CarpoolRide[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -46,17 +27,17 @@ export type CarpoolStats = {
 // ============================================================
 
 export function useCarpoolManagement(groupId: string) {
-  const [rides, setRides] = useState<CarpoolRide[]>(() => loadData(groupId));
+  const [rides, setRides] = useState<CarpoolRide[]>(() => loadFromStorage<CarpoolRide[]>(storageKey(groupId), []));
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<CarpoolRide[]>(storageKey(groupId), []);
     setRides(data);
   }, [groupId]);
 
   const persist = useCallback(
     (next: CarpoolRide[]) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       setRides(next);
     },
     [groupId]

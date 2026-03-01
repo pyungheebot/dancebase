@@ -45,6 +45,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useWardrobeTracker } from "@/hooks/use-wardrobe-tracker";
 import type { WardrobeTrackStatus, WardrobeTrackItem } from "@/types";
 
@@ -309,7 +310,7 @@ export function WardrobeTrackerCard({ projectId }: { projectId: string }) {
       if (ok) {
         toast.success("의상 정보가 수정되었습니다.");
       } else {
-        toast.error("수정에 실패했습니다.");
+        toast.error(TOAST.UPDATE_ERROR);
         return;
       }
     } else {
@@ -333,7 +334,7 @@ export function WardrobeTrackerCard({ projectId }: { projectId: string }) {
     if (ok) {
       toast.success("의상이 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 

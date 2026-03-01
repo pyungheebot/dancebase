@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PracticeEntry,
   PracticeJournalData,
@@ -12,26 +13,6 @@ const DEFAULT_WEEKLY_GOAL = 180; // 기본 주간 목표: 180분
 
 function getStorageKey(userId: string) {
   return `dancebase:practice-journal:${userId}`;
-}
-
-function loadData(userId: string): PracticeJournalData {
-  if (typeof window === "undefined") {
-    return { entries: [], weeklyGoalMinutes: DEFAULT_WEEKLY_GOAL };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(userId));
-    if (!raw) {
-      return { entries: [], weeklyGoalMinutes: DEFAULT_WEEKLY_GOAL };
-    }
-    return JSON.parse(raw) as PracticeJournalData;
-  } catch {
-    return { entries: [], weeklyGoalMinutes: DEFAULT_WEEKLY_GOAL };
-  }
-}
-
-function saveData(userId: string, data: PracticeJournalData) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(userId), JSON.stringify(data));
 }
 
 /** YYYY-MM-DD 형식 날짜 문자열 반환 */
@@ -63,7 +44,7 @@ export function usePracticeJournal() {
       const uid = authData.user?.id ?? null;
       setUserId(uid);
       if (uid) {
-        setData(loadData(uid));
+        setData(loadFromStorage<PracticeJournalData>(getStorageKey(uid), {} as PracticeJournalData));
       }
     });
   }, []);
@@ -72,7 +53,7 @@ export function usePracticeJournal() {
   const persist = useCallback(
     (next: PracticeJournalData) => {
       if (!userId) return;
-      saveData(userId, next);
+      saveToStorage(getStorageKey(userId), next);
       setData(next);
     },
     [userId]

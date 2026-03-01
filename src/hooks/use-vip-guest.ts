@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   VipGuestEntry,
   VipGuestStore,
@@ -18,30 +19,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:vip-guest:${groupId}:${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): VipGuestStore {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) {
-      return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as VipGuestStore;
-  } catch {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: VipGuestStore): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId, data.projectId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -49,7 +26,7 @@ function saveData(data: VipGuestStore): void {
 export function useVipGuest(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.vipGuest(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<VipGuestStore>(storageKey(groupId, projectId), {} as VipGuestStore),
     {
       fallbackData: {
         groupId,
@@ -76,7 +53,7 @@ export function useVipGuest(groupId: string, projectId: string) {
       seatNumber?: string;
       specialRequest?: string;
     }): VipGuestEntry => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<VipGuestStore>(storageKey(groupId, projectId), {} as VipGuestStore);
       const now = new Date().toISOString();
       const newEntry: VipGuestEntry = {
         id: crypto.randomUUID(),
@@ -98,7 +75,7 @@ export function useVipGuest(groupId: string, projectId: string) {
         entries: [newEntry, ...current.entries],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newEntry;
     },
@@ -122,7 +99,7 @@ export function useVipGuest(groupId: string, projectId: string) {
         specialRequest: string;
       }>
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<VipGuestStore>(storageKey(groupId, projectId), {} as VipGuestStore);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -168,7 +145,7 @@ export function useVipGuest(groupId: string, projectId: string) {
         entries: current.entries.map((e) => (e.id === entryId ? updatedEntry : e)),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -178,7 +155,7 @@ export function useVipGuest(groupId: string, projectId: string) {
   /** 게스트 삭제 */
   const deleteEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<VipGuestStore>(storageKey(groupId, projectId), {} as VipGuestStore);
       const exists = current.entries.some((e) => e.id === entryId);
       if (!exists) return false;
 
@@ -187,7 +164,7 @@ export function useVipGuest(groupId: string, projectId: string) {
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },

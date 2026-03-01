@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, addMonths, subMonths, format } from "date-fns";
-import { formatYearMonth, formatShortDateTime, formatKo } from "@/lib/date-utils";
+import { formatYearMonth, formatShortDateTime, formatKo, formatTime } from "@/lib/date-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -743,7 +743,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   <span>
                     {formatKo(new Date(detailSchedule.starts_at), "yyyy년 M월 d일 (EEE) HH:mm")}
                     {" ~ "}
-                    {format(new Date(detailSchedule.ends_at), "HH:mm")}
+                    {formatTime(new Date(detailSchedule.ends_at))}
                   </span>
                 </div>
                 {detailSchedule.location && (
@@ -960,7 +960,7 @@ export function CalendarView({ schedules, onSelectSchedule, canEdit, onScheduleU
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
                     <span className="flex items-center gap-0.5">
                       <Clock className="h-2.5 w-2.5" />
-                      {format(new Date(schedule.starts_at), "HH:mm")}
+                      {formatTime(new Date(schedule.starts_at))}
                     </span>
                     {schedule.location && (
                       <span className="flex items-center gap-0.5">

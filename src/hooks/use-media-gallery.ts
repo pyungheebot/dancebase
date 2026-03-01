@@ -4,52 +4,7 @@ import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MediaAlbum, MediaGalleryData, MediaGalleryItem } from "@/types";
-
-// ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(groupId: string): MediaGalleryData {
-  if (typeof window === "undefined") {
-    return {
-      groupId,
-      items: [],
-      albums: [],
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(`group-media-gallery-${groupId}`);
-    if (!raw) {
-      return {
-        groupId,
-        items: [],
-        albums: [],
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as MediaGalleryData;
-  } catch {
-    return {
-      groupId,
-      items: [],
-      albums: [],
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function persistData(data: MediaGalleryData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `group-media-gallery-${data.groupId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ——————————————————————————————
 // 파라미터 타입
@@ -71,10 +26,12 @@ export type UpdateAlbumParams = Partial<
 // 훅
 // ——————————————————————————————
 
+const STORAGE_KEY = (groupId: string) => `group-media-gallery-${groupId}`;
+
 export function useMediaGallery(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.groupMediaGallery(groupId),
-    () => loadData(groupId),
+    () => loadFromStorage<MediaGalleryData>(STORAGE_KEY(groupId), {} as MediaGalleryData),
     { revalidateOnFocus: false }
   );
 
@@ -88,7 +45,7 @@ export function useMediaGallery(groupId: string) {
   // ——— 미디어 항목 추가 ———
   const addItem = useCallback(
     (params: AddItemParams) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MediaGalleryData>(STORAGE_KEY(groupId), {} as MediaGalleryData);
       const newItem: MediaGalleryItem = {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
@@ -99,7 +56,7 @@ export function useMediaGallery(groupId: string) {
         items: [newItem, ...current.items],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -108,7 +65,7 @@ export function useMediaGallery(groupId: string) {
   // ——— 미디어 항목 수정 ———
   const updateItem = useCallback(
     (itemId: string, params: UpdateItemParams) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MediaGalleryData>(STORAGE_KEY(groupId), {} as MediaGalleryData);
       const updated: MediaGalleryData = {
         ...current,
         items: current.items.map((item) =>
@@ -116,7 +73,7 @@ export function useMediaGallery(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -125,13 +82,13 @@ export function useMediaGallery(groupId: string) {
   // ——— 미디어 항목 삭제 ———
   const deleteItem = useCallback(
     (itemId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MediaGalleryData>(STORAGE_KEY(groupId), {} as MediaGalleryData);
       const updated: MediaGalleryData = {
         ...current,
         items: current.items.filter((item) => item.id !== itemId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -140,7 +97,7 @@ export function useMediaGallery(groupId: string) {
   // ——— 앨범 생성 ———
   const createAlbum = useCallback(
     (params: CreateAlbumParams) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MediaGalleryData>(STORAGE_KEY(groupId), {} as MediaGalleryData);
       const newAlbum: MediaAlbum = {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
@@ -151,7 +108,7 @@ export function useMediaGallery(groupId: string) {
         albums: [newAlbum, ...current.albums],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -160,7 +117,7 @@ export function useMediaGallery(groupId: string) {
   // ——— 앨범 수정 ———
   const updateAlbum = useCallback(
     (albumId: string, params: UpdateAlbumParams) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MediaGalleryData>(STORAGE_KEY(groupId), {} as MediaGalleryData);
       const updated: MediaGalleryData = {
         ...current,
         albums: current.albums.map((album) =>
@@ -168,7 +125,7 @@ export function useMediaGallery(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -177,7 +134,7 @@ export function useMediaGallery(groupId: string) {
   // ——— 앨범 삭제 (앨범 내 항목은 미분류로 이동) ———
   const deleteAlbum = useCallback(
     (albumId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MediaGalleryData>(STORAGE_KEY(groupId), {} as MediaGalleryData);
       const updated: MediaGalleryData = {
         ...current,
         albums: current.albums.filter((album) => album.id !== albumId),
@@ -187,7 +144,7 @@ export function useMediaGallery(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -196,7 +153,7 @@ export function useMediaGallery(groupId: string) {
   // ——— 앨범별 항목 조회 ———
   const getAlbumItems = useCallback(
     (albumId: string | null): MediaGalleryItem[] => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MediaGalleryData>(STORAGE_KEY(groupId), {} as MediaGalleryData);
       return current.items.filter((item) => item.albumId === albumId);
     },
     [groupId]

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MentalCoachingNote,
   MentalCoachingData,
@@ -16,28 +17,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return swrKeys.mentalCoaching(groupId);
-}
-
-function loadData(groupId: string): MentalCoachingData {
-  if (typeof window === "undefined") {
-    return { groupId, notes: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return { groupId, notes: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as MentalCoachingData;
-  } catch {
-    return { groupId, notes: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: MentalCoachingData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -64,12 +43,12 @@ export type MentalCoachingStats = {
 // ============================================================
 
 export function useMentalCoaching(groupId: string) {
-  const [notes, setNotes] = useState<MentalCoachingNote[]>(() => loadData(groupId).notes);
+  const [notes, setNotes] = useState<MentalCoachingNote[]>(() => loadFromStorage<MentalCoachingData>(storageKey(groupId), {} as MentalCoachingData).notes);
 
   // localStorage에서 데이터 불러오기
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<MentalCoachingData>(storageKey(groupId), {} as MentalCoachingData);
     setNotes(data.notes);
   }, [groupId]);
 
@@ -81,7 +60,7 @@ export function useMentalCoaching(groupId: string) {
         notes: updated,
         updatedAt: new Date().toISOString(),
       };
-      saveData(data);
+      saveToStorage(storageKey(groupId), data);
       setNotes(updated);
     },
     [groupId]

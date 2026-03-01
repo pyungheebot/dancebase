@@ -4,30 +4,11 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
 import type { DanceChallenge, ChallengeCategory, ChallengeParticipant } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 
 const LS_KEY = (groupId: string) => `dancebase:challenges:${groupId}`;
-
-function loadData(groupId: string): DanceChallenge[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as DanceChallenge[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: DanceChallenge[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 자동 상태 계산 ───────────────────────────────────────────
 
@@ -47,7 +28,7 @@ export function useDanceChallenge(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.danceChallenge(groupId) : null,
     () => {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DanceChallenge[]>(LS_KEY(groupId), []);
       // 저장 시마다 상태를 재계산해서 반환
       return stored.map((c) => ({
         ...c,
@@ -87,7 +68,7 @@ export function useDanceChallenge(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DanceChallenge[]>(LS_KEY(groupId), []);
       const newChallenge: DanceChallenge = {
         id: crypto.randomUUID(),
         title: input.title.trim(),
@@ -102,7 +83,7 @@ export function useDanceChallenge(groupId: string) {
         createdAt: new Date().toISOString(),
       };
       const next = [...stored, newChallenge];
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(
         next.map((c) => ({ ...c, status: computeStatus(c.startDate, c.endDate) })),
         false
@@ -119,10 +100,10 @@ export function useDanceChallenge(groupId: string) {
 
   function deleteChallenge(challengeId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DanceChallenge[]>(LS_KEY(groupId), []);
       const next = stored.filter((c) => c.id !== challengeId);
       if (next.length === stored.length) return false;
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(
         next.map((c) => ({ ...c, status: computeStatus(c.startDate, c.endDate) })),
         false
@@ -143,7 +124,7 @@ export function useDanceChallenge(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DanceChallenge[]>(LS_KEY(groupId), []);
       const challenge = stored.find((c) => c.id === challengeId);
       if (!challenge) {
         toast.error("챌린지를 찾을 수 없습니다.");
@@ -167,7 +148,7 @@ export function useDanceChallenge(groupId: string) {
           ? { ...c, participants: [...c.participants, newParticipant] }
           : c
       );
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(
         next.map((c) => ({ ...c, status: computeStatus(c.startDate, c.endDate) })),
         false
@@ -189,7 +170,7 @@ export function useDanceChallenge(groupId: string) {
   ): boolean {
     const clamped = Math.max(0, Math.min(100, Math.round(progress)));
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DanceChallenge[]>(LS_KEY(groupId), []);
       const next = stored.map((c) => {
         if (c.id !== challengeId) return c;
         return {
@@ -208,7 +189,7 @@ export function useDanceChallenge(groupId: string) {
           }),
         };
       });
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(
         next.map((c) => ({ ...c, status: computeStatus(c.startDate, c.endDate) })),
         false

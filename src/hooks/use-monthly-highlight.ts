@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MonthlyHighlight,
   MonthlyHighlightData,
@@ -16,30 +17,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return `dancebase:monthly-highlights:${groupId}`;
-}
-
-function loadData(groupId: string): MonthlyHighlightData {
-  if (typeof window === "undefined") {
-    return { groupId, highlights: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) {
-      return { groupId, highlights: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as MonthlyHighlightData;
-  } catch {
-    return { groupId, highlights: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: MonthlyHighlightData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // ignore
-  }
 }
 
 // ============================================================
@@ -99,7 +76,7 @@ function computeStats(
 export function useMonthlyHighlight(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.monthlyHighlights(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<MonthlyHighlightData>(storageKey(groupId), {} as MonthlyHighlightData),
     { revalidateOnFocus: false, revalidateOnReconnect: false }
   );
 
@@ -115,7 +92,7 @@ export function useMonthlyHighlight(groupId: string) {
       relatedMembers: string[];
       photoUrl?: string;
     }): boolean => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MonthlyHighlightData>(storageKey(groupId), {} as MonthlyHighlightData);
       const newItem: MonthlyHighlight = {
         id: `hl-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         yearMonth: input.yearMonth,
@@ -132,7 +109,7 @@ export function useMonthlyHighlight(groupId: string) {
         highlights: [newItem, ...current.highlights],
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       toast.success("하이라이트가 등록되었습니다.");
       return true;
@@ -143,13 +120,13 @@ export function useMonthlyHighlight(groupId: string) {
   // 하이라이트 삭제
   const deleteHighlight = useCallback(
     (id: string): void => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MonthlyHighlightData>(storageKey(groupId), {} as MonthlyHighlightData);
       const updated: MonthlyHighlightData = {
         ...current,
         highlights: current.highlights.filter((h) => h.id !== id),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
       toast.success("하이라이트가 삭제되었습니다.");
     },
@@ -160,7 +137,7 @@ export function useMonthlyHighlight(groupId: string) {
   const toggleLike = useCallback(
     (id: string, memberName: string): void => {
       if (!memberName.trim()) return;
-      const current = loadData(groupId);
+      const current = loadFromStorage<MonthlyHighlightData>(storageKey(groupId), {} as MonthlyHighlightData);
       const updated: MonthlyHighlightData = {
         ...current,
         highlights: current.highlights.map((h) => {
@@ -175,7 +152,7 @@ export function useMonthlyHighlight(groupId: string) {
         }),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]

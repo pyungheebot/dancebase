@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { MusicLicenseEntry, MusicLicenseStatus } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -9,26 +10,6 @@ import type { MusicLicenseEntry, MusicLicenseStatus } from "@/types";
 
 function storageKey(groupId: string): string {
   return `dancebase:music-license:${groupId}`;
-}
-
-function loadData(groupId: string): MusicLicenseEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MusicLicenseEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: MusicLicenseEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -66,17 +47,17 @@ export type MusicLicenseStats = {
 // ============================================================
 
 export function useMusicLicense(groupId: string) {
-  const [licenses, setLicenses] = useState<MusicLicenseEntry[]>(() => loadData(groupId));
+  const [licenses, setLicenses] = useState<MusicLicenseEntry[]>(() => loadFromStorage<MusicLicenseEntry[]>(storageKey(groupId), []));
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<MusicLicenseEntry[]>(storageKey(groupId), []);
     setLicenses(data);
   }, [groupId]);
 
   const persist = useCallback(
     (next: MusicLicenseEntry[]) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       setLicenses(next);
     },
     [groupId]

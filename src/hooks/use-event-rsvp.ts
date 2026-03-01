@@ -4,37 +4,18 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
 import type { EventRsvpItem, EventRsvpMember, EventRsvpResponse } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 
 const LS_KEY = (groupId: string) => `dancebase:event-rsvp:${groupId}`;
-
-function loadData(groupId: string): EventRsvpItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as EventRsvpItem[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: EventRsvpItem[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 훅 ─────────────────────────────────────────────────────
 
 export function useEventRsvp(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.eventRsvp(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<EventRsvpItem[]>(LS_KEY(groupId), []),
     { revalidateOnFocus: false }
   );
 
@@ -61,7 +42,7 @@ export function useEventRsvp(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<EventRsvpItem[]>(LS_KEY(groupId), []);
       // 멤버 목록이 있으면 pending 응답으로 초기화
       const initialResponses: EventRsvpMember[] = (input.memberNames ?? []).map(
         (name) => ({ memberName: name, response: "pending" as EventRsvpResponse })
@@ -79,7 +60,7 @@ export function useEventRsvp(groupId: string) {
         createdAt: new Date().toISOString(),
       };
       const next = [...stored, newEvent];
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("이벤트가 추가되었습니다.");
       return true;
@@ -96,7 +77,7 @@ export function useEventRsvp(groupId: string) {
     patch: Partial<Omit<EventRsvpItem, "id" | "createdAt" | "createdBy" | "responses">>
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<EventRsvpItem[]>(LS_KEY(groupId), []);
       const idx = stored.findIndex((e) => e.id === eventId);
       if (idx === -1) {
         toast.error("이벤트를 찾을 수 없습니다.");
@@ -108,7 +89,7 @@ export function useEventRsvp(groupId: string) {
         updated,
         ...stored.slice(idx + 1),
       ];
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("이벤트가 수정되었습니다.");
       return true;
@@ -122,10 +103,10 @@ export function useEventRsvp(groupId: string) {
 
   function deleteEvent(eventId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<EventRsvpItem[]>(LS_KEY(groupId), []);
       const next = stored.filter((e) => e.id !== eventId);
       if (next.length === stored.length) return false;
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("이벤트가 삭제되었습니다.");
       return true;
@@ -148,7 +129,7 @@ export function useEventRsvp(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<EventRsvpItem[]>(LS_KEY(groupId), []);
       const event = stored.find((e) => e.id === eventId);
       if (!event) {
         toast.error("이벤트를 찾을 수 없습니다.");
@@ -174,7 +155,7 @@ export function useEventRsvp(groupId: string) {
       const next = stored.map((e) =>
         e.id === eventId ? { ...e, responses: updatedResponses } : e
       );
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       const LABELS: Record<EventRsvpResponse, string> = {
         attending: "참석",

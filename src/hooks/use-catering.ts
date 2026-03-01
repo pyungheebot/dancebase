@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   CateringData,
   CateringEntry,
@@ -19,33 +20,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:catering:${groupId}:${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): CateringData {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) {
-      return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as CateringData;
-  } catch {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: CateringData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(data.groupId, data.projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -53,7 +27,7 @@ function saveData(data: CateringData): void {
 export function useCatering(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.catering(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<CateringData>(storageKey(groupId, projectId), {} as CateringData),
     {
       fallbackData: {
         groupId,
@@ -82,7 +56,7 @@ export function useCatering(groupId: string, projectId: string) {
       deliveryLocation?: string;
       notes?: string;
     }): CateringEntry => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<CateringData>(storageKey(groupId, projectId), {} as CateringData);
       const now = new Date().toISOString();
       const newEntry: CateringEntry = {
         id: crypto.randomUUID(),
@@ -107,7 +81,7 @@ export function useCatering(groupId: string, projectId: string) {
         entries: [newEntry, ...current.entries],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newEntry;
     },
@@ -134,7 +108,7 @@ export function useCatering(groupId: string, projectId: string) {
         notes: string;
       }>
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<CateringData>(storageKey(groupId, projectId), {} as CateringData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -153,7 +127,7 @@ export function useCatering(groupId: string, projectId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -163,7 +137,7 @@ export function useCatering(groupId: string, projectId: string) {
   // 상태 변경
   const updateStatus = useCallback(
     (entryId: string, status: CateringStatus): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<CateringData>(storageKey(groupId, projectId), {} as CateringData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -179,7 +153,7 @@ export function useCatering(groupId: string, projectId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -189,7 +163,7 @@ export function useCatering(groupId: string, projectId: string) {
   // 항목 삭제
   const deleteEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<CateringData>(storageKey(groupId, projectId), {} as CateringData);
       const exists = current.entries.some((e) => e.id === entryId);
       if (!exists) return false;
 
@@ -198,7 +172,7 @@ export function useCatering(groupId: string, projectId: string) {
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },

@@ -3,40 +3,12 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MeetingVoteData,
   MeetingVoteAgendaItem,
   MeetingVoteOption,
 } from "@/types";
-
-// ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(groupId: string): MeetingVoteData {
-  if (typeof window === "undefined") {
-    return { groupId, agendas: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`meeting-agenda-vote-${groupId}`);
-    if (!raw) return { groupId, agendas: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as MeetingVoteData;
-  } catch {
-    return { groupId, agendas: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function persistData(data: MeetingVoteData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `meeting-agenda-vote-${data.groupId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
 
 // ——————————————————————————————
 // 결과 계산 유틸
@@ -69,10 +41,12 @@ function calcResults(agenda: MeetingVoteAgendaItem): AgendaResult {
 // 훅
 // ——————————————————————————————
 
+const STORAGE_KEY = (groupId: string) => `meeting-agenda-vote-${groupId}`;
+
 export function useMeetingVote(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.meetingAgendaVote(groupId),
-    () => loadData(groupId),
+    () => loadFromStorage<MeetingVoteData>(STORAGE_KEY(groupId), {} as MeetingVoteData),
     { revalidateOnFocus: false }
   );
 
@@ -92,7 +66,7 @@ export function useMeetingVote(groupId: string) {
       isAnonymous: boolean;
       deadline: string | null;
     }) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MeetingVoteData>(STORAGE_KEY(groupId), {} as MeetingVoteData);
       const newOptions: MeetingVoteOption[] = params.options.map((text) => ({
         id: crypto.randomUUID(),
         text,
@@ -114,7 +88,7 @@ export function useMeetingVote(groupId: string) {
         agendas: [newAgenda, ...current.agendas],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -123,13 +97,13 @@ export function useMeetingVote(groupId: string) {
   // ——— 안건 삭제 ———
   const deleteAgenda = useCallback(
     (agendaId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MeetingVoteData>(STORAGE_KEY(groupId), {} as MeetingVoteData);
       const updated: MeetingVoteData = {
         ...current,
         agendas: current.agendas.filter((a) => a.id !== agendaId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -138,7 +112,7 @@ export function useMeetingVote(groupId: string) {
   // ——— 안건 마감 ———
   const closeAgenda = useCallback(
     (agendaId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MeetingVoteData>(STORAGE_KEY(groupId), {} as MeetingVoteData);
       const updated: MeetingVoteData = {
         ...current,
         agendas: current.agendas.map((a) =>
@@ -146,7 +120,7 @@ export function useMeetingVote(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -155,7 +129,7 @@ export function useMeetingVote(groupId: string) {
   // ——— 투표 등록 ———
   const castVote = useCallback(
     (agendaId: string, optionIds: string[], voterName: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MeetingVoteData>(STORAGE_KEY(groupId), {} as MeetingVoteData);
       const now = new Date().toISOString();
       const updated: MeetingVoteData = {
         ...current,
@@ -174,7 +148,7 @@ export function useMeetingVote(groupId: string) {
         }),
         updatedAt: now,
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -183,7 +157,7 @@ export function useMeetingVote(groupId: string) {
   // ——— 투표 취소 ———
   const removeVote = useCallback(
     (agendaId: string, voterName: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<MeetingVoteData>(STORAGE_KEY(groupId), {} as MeetingVoteData);
       const updated: MeetingVoteData = {
         ...current,
         agendas: current.agendas.map((a) =>
@@ -193,7 +167,7 @@ export function useMeetingVote(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { SkillCertDefinition, SkillCertAward, SkillCertLevel } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // 상수
@@ -67,26 +68,6 @@ function storageKey(groupId: string): string {
   return `dancebase:skill-cert:${groupId}`;
 }
 
-function loadData(groupId: string): StorageData {
-  if (typeof window === "undefined") return { certs: [], awards: [] };
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return { certs: [], awards: [] };
-    return JSON.parse(raw) as StorageData;
-  } catch {
-    return { certs: [], awards: [] };
-  }
-}
-
-function saveData(groupId: string, data: StorageData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 통계 타입
 // ============================================================
@@ -103,12 +84,12 @@ export type SkillCertStats = {
 // ============================================================
 
 export function useSkillCertification(groupId: string) {
-  const [certs, setCerts] = useState<SkillCertDefinition[]>(() => loadData(groupId).certs);
+  const [certs, setCerts] = useState<SkillCertDefinition[]>(() => loadFromStorage<StorageData>(storageKey(groupId), { certs: [], awards: [] }).certs);
   const [awards, setAwards] = useState<SkillCertAward[]>([]);
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<StorageData>(storageKey(groupId), { certs: [], awards: [] });
     setCerts(data.certs);
     setAwards(data.awards);
   }, [groupId]);
@@ -116,7 +97,7 @@ export function useSkillCertification(groupId: string) {
   // 내부 저장 헬퍼
   const persist = useCallback(
     (nextCerts: SkillCertDefinition[], nextAwards: SkillCertAward[]) => {
-      saveData(groupId, { certs: nextCerts, awards: nextAwards });
+      saveToStorage(storageKey(groupId), { certs: nextCerts, awards: nextAwards });
       setCerts(nextCerts);
       setAwards(nextAwards);
     },

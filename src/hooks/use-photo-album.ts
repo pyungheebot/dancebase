@@ -4,38 +4,16 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
 import type { PhotoAlbum, PhotoAlbumItem } from "@/types";
-
-// ─── localStorage 헬퍼 ────────────────────────────────────────
-
-function loadData(groupId: string): PhotoAlbum[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(`dancebase:photo-albums:${groupId}`);
-    if (!raw) return [];
-    return JSON.parse(raw) as PhotoAlbum[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: PhotoAlbum[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `dancebase:photo-albums:${groupId}`,
-      JSON.stringify(data)
-    );
-  } catch {
-    /* ignore */
-  }
-}
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── 훅 ─────────────────────────────────────────────────────
+
+const STORAGE_KEY = (groupId: string) => `dancebase:photo-albums:${groupId}`;
 
 export function usePhotoAlbum(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.photoAlbum(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<PhotoAlbum[]>(STORAGE_KEY(groupId), []),
     { revalidateOnFocus: false }
   );
 
@@ -49,7 +27,7 @@ export function usePhotoAlbum(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PhotoAlbum[]>(STORAGE_KEY(groupId), []);
       const newAlbum: PhotoAlbum = {
         id: crypto.randomUUID(),
         name: input.name.trim(),
@@ -58,7 +36,7 @@ export function usePhotoAlbum(groupId: string) {
         createdAt: new Date().toISOString(),
       };
       const next = [...stored, newAlbum];
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("앨범이 생성되었습니다.");
       return true;
@@ -72,10 +50,10 @@ export function usePhotoAlbum(groupId: string) {
 
   function deleteAlbum(albumId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PhotoAlbum[]>(STORAGE_KEY(groupId), []);
       const next = stored.filter((a) => a.id !== albumId);
       if (next.length === stored.length) return false;
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("앨범이 삭제되었습니다.");
       return true;
@@ -96,7 +74,7 @@ export function usePhotoAlbum(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PhotoAlbum[]>(STORAGE_KEY(groupId), []);
       const album = stored.find((a) => a.id === albumId);
       if (!album) {
         toast.error("앨범을 찾을 수 없습니다.");
@@ -115,7 +93,7 @@ export function usePhotoAlbum(groupId: string) {
       const next = stored.map((a) =>
         a.id === albumId ? { ...a, photos: [...a.photos, newPhoto] } : a
       );
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("사진이 추가되었습니다.");
       return true;
@@ -129,13 +107,13 @@ export function usePhotoAlbum(groupId: string) {
 
   function deletePhoto(albumId: string, photoId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PhotoAlbum[]>(STORAGE_KEY(groupId), []);
       const next = stored.map((a) =>
         a.id === albumId
           ? { ...a, photos: a.photos.filter((p) => p.id !== photoId) }
           : a
       );
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("사진이 삭제되었습니다.");
       return true;
@@ -153,7 +131,7 @@ export function usePhotoAlbum(groupId: string) {
     patch: Partial<Omit<PhotoAlbumItem, "id" | "createdAt">>
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<PhotoAlbum[]>(STORAGE_KEY(groupId), []);
       const next = stored.map((a) => {
         if (a.id !== albumId) return a;
         return {
@@ -163,7 +141,7 @@ export function usePhotoAlbum(groupId: string) {
           ),
         };
       });
-      saveData(groupId, next);
+      saveToStorage(STORAGE_KEY(groupId), next);
       mutate(next, false);
       toast.success("사진이 수정되었습니다.");
       return true;

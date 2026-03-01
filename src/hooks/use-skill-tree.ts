@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { SkillTreeData, SkillTreeNode, SkillTreeNodeStatus } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // 장르별 스킬 트리 템플릿
@@ -134,26 +135,6 @@ function storageKey(groupId: string, userId: string): string {
   return `dancebase:skill-tree:${groupId}:${userId}`;
 }
 
-function loadData(groupId: string, userId: string): SkillTreeData | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, userId));
-    if (!raw) return null;
-    return JSON.parse(raw) as SkillTreeData;
-  } catch {
-    return null;
-  }
-}
-
-function saveData(groupId: string, userId: string, data: SkillTreeData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, userId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================
 // 스킬 상태 계산 헬퍼
 // ============================================
@@ -203,7 +184,7 @@ export function useSkillTree(groupId: string, userId: string) {
 
   const reload = useCallback(() => {
     if (!groupId || !userId) return;
-    const saved = loadData(groupId, userId);
+    const saved = loadFromStorage<SkillTreeData | null>(storageKey(groupId, userId), {} as SkillTreeData | null);
     setData(saved);
   }, [groupId, userId]);
 
@@ -219,7 +200,7 @@ export function useSkillTree(groupId: string, userId: string) {
         totalLearned: 0,
         updatedAt: new Date().toISOString(),
       };
-      saveData(groupId, userId, newData);
+      saveToStorage(storageKey(groupId, userId), newData);
       setData(newData);
     },
     [groupId, userId]
@@ -246,7 +227,7 @@ export function useSkillTree(groupId: string, userId: string) {
         totalLearned,
         updatedAt: new Date().toISOString(),
       };
-      saveData(groupId, userId, newData);
+      saveToStorage(storageKey(groupId, userId), newData);
       setData(newData);
       return true;
     },
@@ -263,7 +244,7 @@ export function useSkillTree(groupId: string, userId: string) {
       totalLearned: 0,
       updatedAt: new Date().toISOString(),
     };
-    saveData(groupId, userId, newData);
+    saveToStorage(storageKey(groupId, userId), newData);
     setData(newData);
   }, [data, groupId, userId]);
 

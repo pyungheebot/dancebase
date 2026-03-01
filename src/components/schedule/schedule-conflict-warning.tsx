@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, Clock } from "lucide-react";
-import { format } from "date-fns";
+import { formatKo, formatTime } from "@/lib/date-utils";
 import type { Schedule } from "@/types";
 
 type ScheduleConflictWarningProps = {
@@ -29,9 +29,9 @@ export function ScheduleConflictWarning({ conflicts }: ScheduleConflictWarningPr
             <span className="font-medium">{s.title}</span>
             <span className="text-yellow-600 flex items-center gap-0.5">
               <Clock className="h-2.5 w-2.5" />
-              {format(new Date(s.starts_at), "M/d HH:mm")}
+              {formatKo(new Date(s.starts_at), "M/d HH:mm")}
               {" ~ "}
-              {format(new Date(s.ends_at), "HH:mm")}
+              {formatTime(new Date(s.ends_at))}
             </span>
           </li>
         ))}

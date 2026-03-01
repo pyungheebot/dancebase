@@ -52,6 +52,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useShowCredits,
   CREDIT_SECTION_DEFAULT_TITLES,
@@ -755,16 +756,16 @@ export function ShowCreditsCard({
   ) {
     const ok = updatePerson(sectionId, personId, name, role);
     if (ok) {
-      toast.success("수정되었습니다");
+      toast.success(TOAST.UPDATE_SUCCESS);
     } else {
-      toast.error("수정에 실패했습니다");
+      toast.error(TOAST.UPDATE_ERROR);
     }
   }
 
   function handleDeletePerson(sectionId: string, personId: string) {
     const ok = deletePerson(sectionId, personId);
     if (!ok) {
-      toast.error("삭제에 실패했습니다");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

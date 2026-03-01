@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   AttendanceBookData,
   AttendanceSheet,
@@ -11,42 +12,15 @@ import type {
 } from "@/types";
 
 // ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(groupId: string): AttendanceBookData {
-  if (typeof window === "undefined") {
-    return { groupId, sheets: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`attendance-book-${groupId}`);
-    if (!raw) return { groupId, sheets: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as AttendanceBookData;
-  } catch {
-    return { groupId, sheets: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function persistData(data: AttendanceBookData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `attendance-book-${data.groupId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
-// ——————————————————————————————
 // 훅
 // ——————————————————————————————
+
+const STORAGE_KEY = (groupId: string) => `attendance-book-${groupId}`;
 
 export function useAttendanceBook(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.attendanceBook(groupId),
-    () => loadData(groupId),
+    () => loadFromStorage<AttendanceBookData>(STORAGE_KEY(groupId), {} as AttendanceBookData),
     { revalidateOnFocus: false }
   );
 
@@ -59,7 +33,7 @@ export function useAttendanceBook(groupId: string) {
   // ——— 출석부 생성 ———
   const createSheet = useCallback(
     (params: { date: string; title: string; memberNames: string[] }) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<AttendanceBookData>(STORAGE_KEY(groupId), {} as AttendanceBookData);
       const newSheet: AttendanceSheet = {
         id: crypto.randomUUID(),
         date: params.date,
@@ -76,7 +50,7 @@ export function useAttendanceBook(groupId: string) {
         sheets: [newSheet, ...current.sheets],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -85,13 +59,13 @@ export function useAttendanceBook(groupId: string) {
   // ——— 출석부 삭제 ———
   const deleteSheet = useCallback(
     (sheetId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<AttendanceBookData>(STORAGE_KEY(groupId), {} as AttendanceBookData);
       const updated: AttendanceBookData = {
         ...current,
         sheets: current.sheets.filter((s) => s.id !== sheetId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -100,7 +74,7 @@ export function useAttendanceBook(groupId: string) {
   // ——— 멤버 출석 상태 변경 ———
   const updateRecord = useCallback(
     (sheetId: string, memberName: string, status: BookAttendanceStatus, note?: string | null) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<AttendanceBookData>(STORAGE_KEY(groupId), {} as AttendanceBookData);
       const updated: AttendanceBookData = {
         ...current,
         sheets: current.sheets.map((sheet) =>
@@ -117,7 +91,7 @@ export function useAttendanceBook(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]
@@ -126,7 +100,7 @@ export function useAttendanceBook(groupId: string) {
   // ——— 전체 출석 처리 ———
   const bulkSetPresent = useCallback(
     (sheetId: string) => {
-      const current = loadData(groupId);
+      const current = loadFromStorage<AttendanceBookData>(STORAGE_KEY(groupId), {} as AttendanceBookData);
       const updated: AttendanceBookData = {
         ...current,
         sheets: current.sheets.map((sheet) =>
@@ -142,7 +116,7 @@ export function useAttendanceBook(groupId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(groupId), updated);
       mutate(updated, false);
     },
     [groupId, mutate]

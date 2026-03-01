@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   SkillShareData,
   SkillShareItem,
@@ -11,29 +12,10 @@ import type {
 
 const STORAGE_KEY = (groupId: string) => `group-skill-share-${groupId}`;
 
-function loadData(groupId: string): SkillShareData {
-  if (typeof window === "undefined") {
-    return { groupId, skills: [], requests: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(groupId));
-    if (raw) {
-      return JSON.parse(raw) as SkillShareData;
-    }
-  } catch {
-    // 파싱 실패 시 기본값 반환
-  }
-  return { groupId, skills: [], requests: [], updatedAt: new Date().toISOString() };
-}
-
-function saveData(data: SkillShareData): void {
-  localStorage.setItem(STORAGE_KEY(data.groupId), JSON.stringify(data));
-}
-
 export function useGroupSkillShare(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.groupSkillShare(groupId),
-    () => loadData(groupId)
+    () => loadFromStorage<SkillShareData>(STORAGE_KEY(groupId), {} as SkillShareData)
   );
 
   const skillShareData = data ?? { groupId, skills: [], requests: [], updatedAt: new Date().toISOString() };
@@ -52,7 +34,7 @@ export function useGroupSkillShare(groupId: string) {
       skills: [newSkill, ...skillShareData.skills],
       updatedAt: new Date().toISOString(),
     };
-    saveData(updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     await mutate(updated, false);
   }
 
@@ -64,7 +46,7 @@ export function useGroupSkillShare(groupId: string) {
       requests: skillShareData.requests.filter((r) => r.skillId !== skillId),
       updatedAt: new Date().toISOString(),
     };
-    saveData(updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     await mutate(updated, false);
   }
 
@@ -83,7 +65,7 @@ export function useGroupSkillShare(groupId: string) {
       requests: [newRequest, ...skillShareData.requests],
       updatedAt: new Date().toISOString(),
     };
-    saveData(updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     await mutate(updated, false);
   }
 
@@ -99,7 +81,7 @@ export function useGroupSkillShare(groupId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveData(updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     await mutate(updated, false);
   }
 
@@ -110,7 +92,7 @@ export function useGroupSkillShare(groupId: string) {
       requests: skillShareData.requests.filter((r) => r.id !== requestId),
       updatedAt: new Date().toISOString(),
     };
-    saveData(updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     await mutate(updated, false);
   }
 

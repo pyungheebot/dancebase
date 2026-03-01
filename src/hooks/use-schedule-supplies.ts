@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ScheduleSupplyItem, ScheduleSupplyList } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 const MAX_ITEMS_PER_SCHEDULE = 20;
 const STORAGE_PREFIX = "dancebase:schedule-supplies:";
@@ -10,17 +11,7 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function saveToStorage(list: ScheduleSupplyList): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `${STORAGE_PREFIX}${list.groupId}`,
-      JSON.stringify({ ...list, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 저장 실패 시 무시
-  }
-}
+const STORAGE_KEY = (groupId: string) => `${STORAGE_PREFIX}${groupId}`;
 
 export function useScheduleSupplies(groupId: string, scheduleId: string) {
   const [allItems, setAllItems] = useState<ScheduleSupplyItem[]>([]);
@@ -32,7 +23,7 @@ export function useScheduleSupplies(groupId: string, scheduleId: string) {
       items: nextItems,
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(list);
+    saveToStorage(STORAGE_KEY(groupId), list);
     setAllItems([...nextItems]);
   }
 

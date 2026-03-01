@@ -40,6 +40,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupMentor } from "@/hooks/use-group-mentor";
 import type {
   GroupMentorMatch,
@@ -740,13 +741,13 @@ export function GroupMentorCard({ groupId }: { groupId: string }) {
       status: data.status,
     });
     if (ok) toast.success("매칭이 수정되었습니다.");
-    else toast.error("수정에 실패했습니다.");
+    else toast.error(TOAST.UPDATE_ERROR);
   }
 
   function handleDelete(id: string) {
     const ok = deleteMatch(id);
     if (ok) toast.success("매칭이 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   }
 
   function handleStatusChange(id: string, status: GroupMentorStatus) {
@@ -766,7 +767,7 @@ export function GroupMentorCard({ groupId }: { groupId: string }) {
   function handleDeleteSession(matchId: string, sessionId: string) {
     const ok = deleteSession(matchId, sessionId);
     if (ok) toast.success("세션이 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   }
 
   return (

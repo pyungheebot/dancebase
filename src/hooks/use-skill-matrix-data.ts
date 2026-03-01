@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   SkillMatrixData,
   SkillMatrixSkill,
@@ -17,45 +18,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return `dancebase:skill-matrix-data:${groupId}`;
-}
-
-function loadData(groupId: string): SkillMatrixData {
-  if (typeof window === "undefined") {
-    return {
-      groupId,
-      skills: [],
-      members: [],
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) {
-      return {
-        groupId,
-        skills: [],
-        members: [],
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as SkillMatrixData;
-  } catch {
-    return {
-      groupId,
-      skills: [],
-      members: [],
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function saveData(data: SkillMatrixData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 // ============================================
@@ -114,7 +76,7 @@ export function useSkillMatrixData(groupId: string) {
 
   const { data, isLoading, mutate } = useSWR(
     groupId ? swrKeys.skillMatrixData(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<SkillMatrixData>(storageKey(groupId), {} as SkillMatrixData),
     { fallbackData: fallback, revalidateOnFocus: false }
   );
 
@@ -128,7 +90,7 @@ export function useSkillMatrixData(groupId: string) {
         ...next,
         updatedAt: new Date().toISOString(),
       };
-      saveData(withTs);
+      saveToStorage(storageKey(groupId), withTs);
       mutate(withTs, false);
     },
     [mutate]

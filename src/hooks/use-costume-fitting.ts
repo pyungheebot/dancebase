@@ -3,43 +3,13 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   CostumeFittingData,
   CostumeFittingEntry,
   CostumeFittingMeasurement,
   CostumeFittingStatus,
 } from "@/types";
-
-// ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(projectId: string): CostumeFittingData {
-  if (typeof window === "undefined") {
-    return { projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`costume-fitting-${projectId}`);
-    if (!raw) {
-      return { projectId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as CostumeFittingData;
-  } catch {
-    return { projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function persistData(data: CostumeFittingData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `costume-fitting-${data.projectId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
 
 // ——————————————————————————————
 // 파라미터 타입
@@ -62,10 +32,12 @@ export type UpdateEntryParams = Partial<
 // 훅
 // ——————————————————————————————
 
+const STORAGE_KEY = (projectId: string) => `costume-fitting-${projectId}`;
+
 export function useCostumeFitting(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.costumeFitting(projectId),
-    () => loadData(projectId),
+    () => loadFromStorage<CostumeFittingData>(STORAGE_KEY(projectId), {} as CostumeFittingData),
     { revalidateOnFocus: false }
   );
 
@@ -78,7 +50,7 @@ export function useCostumeFitting(projectId: string) {
   // ——— 항목 추가 ———
   const addEntry = useCallback(
     (params: AddEntryParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<CostumeFittingData>(STORAGE_KEY(projectId), {} as CostumeFittingData);
       const defaultMeasurements: CostumeFittingMeasurement = {
         height: null,
         chest: null,
@@ -103,7 +75,7 @@ export function useCostumeFitting(projectId: string) {
         entries: [newEntry, ...current.entries],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -112,7 +84,7 @@ export function useCostumeFitting(projectId: string) {
   // ——— 항목 수정 ———
   const updateEntry = useCallback(
     (entryId: string, params: UpdateEntryParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<CostumeFittingData>(STORAGE_KEY(projectId), {} as CostumeFittingData);
       const updated: CostumeFittingData = {
         ...current,
         entries: current.entries.map((e) =>
@@ -120,7 +92,7 @@ export function useCostumeFitting(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -129,13 +101,13 @@ export function useCostumeFitting(projectId: string) {
   // ——— 항목 삭제 ———
   const deleteEntry = useCallback(
     (entryId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<CostumeFittingData>(STORAGE_KEY(projectId), {} as CostumeFittingData);
       const updated: CostumeFittingData = {
         ...current,
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -147,7 +119,7 @@ export function useCostumeFitting(projectId: string) {
       entryId: string,
       measurements: Partial<CostumeFittingMeasurement>
     ) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<CostumeFittingData>(STORAGE_KEY(projectId), {} as CostumeFittingData);
       const updated: CostumeFittingData = {
         ...current,
         entries: current.entries.map((e) =>
@@ -157,7 +129,7 @@ export function useCostumeFitting(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -166,7 +138,7 @@ export function useCostumeFitting(projectId: string) {
   // ——— 상태 업데이트 ———
   const updateStatus = useCallback(
     (entryId: string, status: CostumeFittingStatus) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<CostumeFittingData>(STORAGE_KEY(projectId), {} as CostumeFittingData);
       const updated: CostumeFittingData = {
         ...current,
         entries: current.entries.map((e) =>
@@ -174,7 +146,7 @@ export function useCostumeFitting(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]

@@ -4,30 +4,14 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateTicketSales } from "@/lib/swr/invalidate";
 import type { TicketSalesData, TicketSalesTier, TicketSalesRecord } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY = (projectId: string) => `ticket-sales-${projectId}`;
-
-function loadFromStorage(projectId: string): TicketSalesData {
-  if (typeof window === "undefined") {
-    return { projectId, tiers: [], records: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(projectId));
-    if (raw) return JSON.parse(raw) as TicketSalesData;
-  } catch {
-    // 파싱 오류 시 기본값 반환
-  }
-  return { projectId, tiers: [], records: [], updatedAt: new Date().toISOString() };
-}
-
-function saveToStorage(data: TicketSalesData) {
-  localStorage.setItem(STORAGE_KEY(data.projectId), JSON.stringify(data));
-}
 
 export function useTicketSales(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.ticketSales(projectId),
-    () => loadFromStorage(projectId)
+    () => loadFromStorage<TicketSalesData>(STORAGE_KEY(projectId), {} as TicketSalesData)
   );
 
   const current = data ?? { projectId, tiers: [], records: [], updatedAt: new Date().toISOString() };
@@ -42,7 +26,7 @@ export function useTicketSales(projectId: string) {
       ],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(projectId), next);
     await mutate(next, false);
     invalidateTicketSales(projectId);
   }
@@ -54,7 +38,7 @@ export function useTicketSales(projectId: string) {
       tiers: current.tiers.map((t) => (t.id === tierId ? { ...t, ...patch } : t)),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(projectId), next);
     await mutate(next, false);
     invalidateTicketSales(projectId);
   }
@@ -67,7 +51,7 @@ export function useTicketSales(projectId: string) {
       records: current.records.filter((r) => r.tierId !== tierId),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(projectId), next);
     await mutate(next, false);
     invalidateTicketSales(projectId);
   }
@@ -82,7 +66,7 @@ export function useTicketSales(projectId: string) {
       ],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(projectId), next);
     await mutate(next, false);
     invalidateTicketSales(projectId);
   }
@@ -94,7 +78,7 @@ export function useTicketSales(projectId: string) {
       records: current.records.filter((r) => r.id !== recordId),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(next);
+    saveToStorage(STORAGE_KEY(projectId), next);
     await mutate(next, false);
     invalidateTicketSales(projectId);
   }

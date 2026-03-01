@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { ActivityRetrospective } from "@/types";
 import { toast } from "sonner";
+import { removeFromStorage } from "@/lib/local-storage";
 
 const CACHE_KEY_PREFIX = "dancebase:retrospective:";
 const MAX_CACHED_MONTHS = 12;
@@ -198,7 +199,7 @@ export function useActivityRetrospective(groupId: string) {
 
   function clearCache(): void {
     try {
-      localStorage.removeItem(`${CACHE_KEY_PREFIX}${groupId}`);
+      removeFromStorage(`${CACHE_KEY_PREFIX}${groupId}`);
       mutate([]);
     } catch {
       // ignore

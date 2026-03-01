@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PracticeRoom,
   PracticeRoomBooking,
@@ -52,32 +53,6 @@ export const BOOKING_STATUS_COLORS: Record<
 
 function storageKey(groupId: string): string {
   return swrKeys.practiceRoomBooking(groupId);
-}
-
-function loadData(groupId: string): PracticeRoomBookingData {
-  const empty: PracticeRoomBookingData = {
-    groupId,
-    rooms: [],
-    bookings: [],
-    updatedAt: new Date().toISOString(),
-  };
-  if (typeof window === "undefined") return empty;
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return empty;
-    return JSON.parse(raw) as PracticeRoomBookingData;
-  } catch {
-    return empty;
-  }
-}
-
-function saveData(data: PracticeRoomBookingData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -142,12 +117,12 @@ export type PracticeRoomBookingStats = {
 // ============================================================
 
 export function usePracticeRoomBooking(groupId: string) {
-  const [rooms, setRooms] = useState<PracticeRoom[]>(() => loadData(groupId).rooms);
+  const [rooms, setRooms] = useState<PracticeRoom[]>(() => loadFromStorage<PracticeRoomBookingData>(storageKey(groupId), {} as PracticeRoomBookingData).rooms);
   const [bookings, setBookings] = useState<PracticeRoomBooking[]>([]);
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<PracticeRoomBookingData>(storageKey(groupId), {} as PracticeRoomBookingData);
     setRooms(data.rooms);
     setBookings(data.bookings);
   }, [groupId]);
@@ -160,7 +135,7 @@ export function usePracticeRoomBooking(groupId: string) {
         bookings: updatedBookings,
         updatedAt: new Date().toISOString(),
       };
-      saveData(data);
+      saveToStorage(storageKey(groupId), data);
       setRooms(updatedRooms);
       setBookings(updatedBookings);
     },

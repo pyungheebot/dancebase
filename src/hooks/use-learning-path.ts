@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import type { LearningPath, LearningStep, LearningStepStatus } from "@/types";
+import { removeFromStorage } from "@/lib/local-storage";
 
 // -------------------------------------------------------
 // localStorage 키
@@ -123,7 +124,7 @@ function savePath(groupId: string, userId: string, path: LearningPath) {
 function removePath(groupId: string, userId: string) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.removeItem(storageKey(groupId, userId));
+    removeFromStorage(storageKey(groupId, userId));
   } catch { /* ignore */ }
 }
 

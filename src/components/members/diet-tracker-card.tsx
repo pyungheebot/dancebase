@@ -43,6 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { cn } from "@/lib/utils";
 import { useDietTracker } from "@/hooks/use-diet-tracker";
 import type { DietMealType, DietTrackerMeal } from "@/types";
@@ -538,7 +539,7 @@ export function DietTrackerCard({
         toast.success("식사 기록이 수정되었습니다.");
         closeDialog();
       } else {
-        toast.error("수정에 실패했습니다.");
+        toast.error(TOAST.UPDATE_ERROR);
       }
     } else {
       addMeal({
@@ -562,7 +563,7 @@ export function DietTrackerCard({
       if (ok) {
         toast.success("식사 기록이 삭제되었습니다.");
       } else {
-        toast.error("삭제에 실패했습니다.");
+        toast.error(TOAST.DELETE_ERROR);
       }
     },
     [deleteMeal]

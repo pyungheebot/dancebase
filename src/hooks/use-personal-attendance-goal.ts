@@ -6,6 +6,7 @@ import { format, startOfMonth, endOfMonth, differenceInCalendarDays, endOfDay } 
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import type { PersonalAttendanceGoal, PersonalAttendanceGoalData } from "@/types";
+import { removeFromStorage } from "@/lib/local-storage";
 
 const STORAGE_PREFIX = "dancebase:personal-att-goal";
 
@@ -40,7 +41,7 @@ function saveGoal(groupId: string, userId: string, targetCount: number): void {
 
 function clearGoalStorage(groupId: string, userId: string): void {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(getStorageKey(groupId, userId));
+  removeFromStorage(getStorageKey(groupId, userId));
 }
 
 export function usePersonalAttendanceGoal(groupId: string, userId: string) {

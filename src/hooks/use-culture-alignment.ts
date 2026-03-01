@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { toast } from "sonner";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { CultureDimension, CultureProfile, GroupCultureConfig } from "@/types";
 
 // ─── 상수 ─────────────────────────────────────────────────────
@@ -23,46 +24,16 @@ const DEFAULT_IDEAL_SCORES: Record<CultureDimension, number> = {
   growth: 7,
 };
 
+const DEFAULT_CONFIG: GroupCultureConfig = {
+  idealScores: { ...DEFAULT_IDEAL_SCORES },
+  profiles: [],
+  createdAt: new Date().toISOString(),
+};
+
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 
 const LS_KEY = (groupId: string) =>
   `dancebase:culture-alignment:${groupId}`;
-
-function loadData(groupId: string): GroupCultureConfig {
-  if (typeof window === "undefined") {
-    return {
-      idealScores: { ...DEFAULT_IDEAL_SCORES },
-      profiles: [],
-      createdAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) {
-      return {
-        idealScores: { ...DEFAULT_IDEAL_SCORES },
-        profiles: [],
-        createdAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as GroupCultureConfig;
-  } catch {
-    return {
-      idealScores: { ...DEFAULT_IDEAL_SCORES },
-      profiles: [],
-      createdAt: new Date().toISOString(),
-    };
-  }
-}
-
-function saveData(groupId: string, data: GroupCultureConfig): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 맞춤도 계산 헬퍼 ─────────────────────────────────────────
 
@@ -89,7 +60,7 @@ function computeAlignment(
 export function useCultureAlignment(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.cultureAlignment(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<GroupCultureConfig>(LS_KEY(groupId), DEFAULT_CONFIG),
     { revalidateOnFocus: false }
   );
 
@@ -103,12 +74,12 @@ export function useCultureAlignment(groupId: string) {
 
   function setIdealScores(scores: Record<CultureDimension, number>): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<GroupCultureConfig>(LS_KEY(groupId), DEFAULT_CONFIG);
       const next: GroupCultureConfig = {
         ...stored,
         idealScores: scores,
       };
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("그룹 이상 가치가 저장되었습니다.");
       return true;
@@ -129,7 +100,7 @@ export function useCultureAlignment(groupId: string) {
       return false;
     }
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<GroupCultureConfig>(LS_KEY(groupId), DEFAULT_CONFIG);
       const duplicate = stored.profiles.some(
         (p) => p.memberName.toLowerCase() === memberName.trim().toLowerCase()
       );
@@ -147,7 +118,7 @@ export function useCultureAlignment(groupId: string) {
         ...stored,
         profiles: [...stored.profiles, newProfile],
       };
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success(`${memberName.trim()}님의 프로필이 추가되었습니다.`);
       return true;
@@ -164,7 +135,7 @@ export function useCultureAlignment(groupId: string) {
     scores: Record<CultureDimension, number>
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<GroupCultureConfig>(LS_KEY(groupId), DEFAULT_CONFIG);
       const exists = stored.profiles.some((p) => p.id === profileId);
       if (!exists) {
         toast.error("프로필을 찾을 수 없습니다.");
@@ -178,7 +149,7 @@ export function useCultureAlignment(groupId: string) {
             : p
         ),
       };
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("프로필이 업데이트되었습니다.");
       return true;
@@ -192,13 +163,13 @@ export function useCultureAlignment(groupId: string) {
 
   function deleteProfile(id: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<GroupCultureConfig>(LS_KEY(groupId), DEFAULT_CONFIG);
       const next: GroupCultureConfig = {
         ...stored,
         profiles: stored.profiles.filter((p) => p.id !== id),
       };
       if (next.profiles.length === stored.profiles.length) return false;
-      saveData(groupId, next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
       toast.success("프로필이 삭제되었습니다.");
       return true;

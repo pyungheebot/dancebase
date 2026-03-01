@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
 import { formatKo } from "@/lib/date-utils";
 import {
   Calendar,
@@ -168,7 +167,7 @@ export function PostsCard({
                   )}
                 </div>
                 <span className="text-muted-foreground shrink-0 ml-1.5 tabular-nums">
-                  {format(new Date(post.created_at), "M/d")}
+                  {formatKo(new Date(post.created_at), "M/d")}
                 </span>
               </Link>
             ))}

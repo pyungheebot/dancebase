@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback, useMemo } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupBudgetData,
   GroupBudgetTransaction,
@@ -34,53 +35,6 @@ function storageKey(groupId: string): string {
   return `dancebase:group-budget-tracker:${groupId}`;
 }
 
-function loadData(groupId: string): GroupBudgetData {
-  if (typeof window === "undefined") {
-    return {
-      groupId,
-      transactions: [],
-      categories: DEFAULT_CATEGORIES,
-      monthlyBudgetLimit: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) {
-      return {
-        groupId,
-        transactions: [],
-        categories: DEFAULT_CATEGORIES,
-        monthlyBudgetLimit: null,
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    const parsed = JSON.parse(raw) as GroupBudgetData;
-    // 기본 카테고리가 없으면 추가
-    if (!parsed.categories || parsed.categories.length === 0) {
-      parsed.categories = DEFAULT_CATEGORIES;
-    }
-    return parsed;
-  } catch {
-    return {
-      groupId,
-      transactions: [],
-      categories: DEFAULT_CATEGORIES,
-      monthlyBudgetLimit: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function saveData(groupId: string, data: GroupBudgetData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 통계 타입
 // ============================================================
@@ -110,7 +64,7 @@ export function useGroupBudget(groupId: string) {
 
   const { data, mutate, isLoading } = useSWR(
     groupId ? swrKey : null,
-    () => loadData(groupId),
+    () => loadFromStorage<GroupBudgetData>(storageKey(groupId), {} as GroupBudgetData),
     { revalidateOnFocus: false }
   );
 
@@ -126,7 +80,7 @@ export function useGroupBudget(groupId: string) {
 
   const persist = useCallback(
     async (next: GroupBudgetData) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       await mutate(next, { revalidate: false });
     },
     [groupId, mutate]

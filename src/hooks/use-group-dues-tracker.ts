@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DuesTrackData,
   DuesTrackPeriod,
@@ -13,26 +14,6 @@ import type {
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 
 const LS_KEY = (groupId: string) => `dancebase:dues-tracker:${groupId}`;
-
-function loadData(groupId: string): DuesTrackData {
-  if (typeof window === "undefined") return { groupId, periods: [] };
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return { groupId, periods: [] };
-    return JSON.parse(raw) as DuesTrackData;
-  } catch {
-    return { groupId, periods: [] };
-  }
-}
-
-function saveData(data: DuesTrackData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(data.groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 유틸: 연-월 문자열 ──────────────────────────────────────
 
@@ -45,7 +26,7 @@ export function toYearMonth(year: number, month: number): string {
 export function useGroupDuesTracker(groupId: string) {
   const { data, mutate, isLoading } = useSWR(
     groupId ? swrKeys.groupDuesTracker(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<DuesTrackData>(LS_KEY(groupId), { groupId, periods: [] }),
     { revalidateOnFocus: false }
   );
 
@@ -56,7 +37,7 @@ export function useGroupDuesTracker(groupId: string) {
 
   const persist = useCallback(
     (next: DuesTrackData): void => {
-      saveData(next);
+      saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
     },
     [mutate]
@@ -72,7 +53,7 @@ export function useGroupDuesTracker(groupId: string) {
       dueDate: string,
       memberNames: string[]
     ): boolean => {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DuesTrackData>(LS_KEY(groupId), { groupId, periods: [] });
       // 중복 체크
       const exists = stored.periods.some(
         (p) => p.year === year && p.month === month
@@ -111,7 +92,7 @@ export function useGroupDuesTracker(groupId: string) {
 
   const deletePeriod = useCallback(
     (periodId: string): boolean => {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DuesTrackData>(LS_KEY(groupId), { groupId, periods: [] });
       const next: DuesTrackData = {
         ...stored,
         periods: stored.periods.filter((p) => p.id !== periodId),
@@ -131,7 +112,7 @@ export function useGroupDuesTracker(groupId: string) {
       memberId: string,
       status: DuesTrackPaymentStatus
     ): boolean => {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DuesTrackData>(LS_KEY(groupId), { groupId, periods: [] });
       const pIdx = stored.periods.findIndex((p) => p.id === periodId);
       if (pIdx === -1) return false;
 
@@ -164,7 +145,7 @@ export function useGroupDuesTracker(groupId: string) {
       memberIds: string[],
       status: DuesTrackPaymentStatus
     ): boolean => {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DuesTrackData>(LS_KEY(groupId), { groupId, periods: [] });
       const pIdx = stored.periods.findIndex((p) => p.id === periodId);
       if (pIdx === -1) return false;
 
@@ -194,7 +175,7 @@ export function useGroupDuesTracker(groupId: string) {
   const addMemberToPeriod = useCallback(
     (periodId: string, name: string): boolean => {
       if (!name.trim()) return false;
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DuesTrackData>(LS_KEY(groupId), { groupId, periods: [] });
       const pIdx = stored.periods.findIndex((p) => p.id === periodId);
       if (pIdx === -1) return false;
 
@@ -219,7 +200,7 @@ export function useGroupDuesTracker(groupId: string) {
 
   const removeMemberFromPeriod = useCallback(
     (periodId: string, memberId: string): boolean => {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<DuesTrackData>(LS_KEY(groupId), { groupId, periods: [] });
       const pIdx = stored.periods.findIndex((p) => p.id === periodId);
       if (pIdx === -1) return false;
 

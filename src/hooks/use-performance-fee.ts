@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PerformanceFeeData,
   PerformanceFeeEntry,
@@ -18,33 +19,6 @@ import type {
 
 function storageKey(groupId: string, projectId: string): string {
   return `dancebase:performance-fee:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): PerformanceFeeData {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) {
-      return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as PerformanceFeeData;
-  } catch {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: PerformanceFeeData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(data.groupId, data.projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 // ============================================
@@ -66,7 +40,7 @@ function calcFinalAmount(
 export function usePerformanceFee(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.performanceFee(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<PerformanceFeeData>(storageKey(groupId, projectId), {} as PerformanceFeeData),
     {
       fallbackData: {
         groupId,
@@ -87,7 +61,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
       baseFee: number;
       notes?: string;
     }): PerformanceFeeEntry => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PerformanceFeeData>(storageKey(groupId, projectId), {} as PerformanceFeeData);
       const now = new Date().toISOString();
       const newEntry: PerformanceFeeEntry = {
         id: crypto.randomUUID(),
@@ -106,7 +80,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
         entries: [newEntry, ...current.entries],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newEntry;
     },
@@ -124,7 +98,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
         notes: string;
       }>
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PerformanceFeeData>(storageKey(groupId, projectId), {} as PerformanceFeeData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -147,7 +121,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -157,7 +131,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
   // 멤버 삭제
   const deleteEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PerformanceFeeData>(storageKey(groupId, projectId), {} as PerformanceFeeData);
       const exists = current.entries.some((e) => e.id === entryId);
       if (!exists) return false;
 
@@ -166,7 +140,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -183,7 +157,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
         amount: number;
       }
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PerformanceFeeData>(storageKey(groupId, projectId), {} as PerformanceFeeData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -211,7 +185,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -221,7 +195,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
   // 수당/공제 항목 삭제
   const deleteAdjustment = useCallback(
     (entryId: string, adjustmentId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PerformanceFeeData>(storageKey(groupId, projectId), {} as PerformanceFeeData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -244,7 +218,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -254,7 +228,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
   // 정산 완료 처리
   const settleEntry = useCallback(
     (entryId: string, settledAt?: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PerformanceFeeData>(storageKey(groupId, projectId), {} as PerformanceFeeData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -274,7 +248,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -284,7 +258,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
   // 정산 취소 (미정산 상태로 되돌리기)
   const unsettleEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<PerformanceFeeData>(storageKey(groupId, projectId), {} as PerformanceFeeData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -304,7 +278,7 @@ export function usePerformanceFee(groupId: string, projectId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },

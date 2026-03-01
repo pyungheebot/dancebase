@@ -46,6 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useGroupWishlistV2 } from "@/hooks/use-group-wishlist-v2";
 import type {
   GroupWishCategory,
@@ -399,7 +400,7 @@ function EditItemDialog({ item, hook, open, onOpenChange }: EditItemDialogProps)
       toast.success("위시가 수정되었습니다.");
       onOpenChange(false);
     } else {
-      toast.error("수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
   };
 
@@ -583,7 +584,7 @@ function WishItemCard({ item, hook }: WishItemCardProps) {
   const handleDelete = () => {
     const ok = hook.deleteItem(item.id);
     if (ok) toast.success("위시가 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   };
 
   const handleStatusChange = (value: string) => {

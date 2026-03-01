@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { PracticeTimerCategory, PracticeTimerLogEntry } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -9,26 +10,6 @@ import type { PracticeTimerCategory, PracticeTimerLogEntry } from "@/types";
 
 function storageKey(groupId: string): string {
   return `dancebase:practice-timer-log:${groupId}`;
-}
-
-function loadData(groupId: string): PracticeTimerLogEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as PracticeTimerLogEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: PracticeTimerLogEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -77,17 +58,17 @@ export type PracticeTimerStats = {
 // ============================================================
 
 export function usePracticeTimerLog(groupId: string) {
-  const [logs, setLogs] = useState<PracticeTimerLogEntry[]>(() => loadData(groupId));
+  const [logs, setLogs] = useState<PracticeTimerLogEntry[]>(() => loadFromStorage<PracticeTimerLogEntry[]>(storageKey(groupId), []));
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<PracticeTimerLogEntry[]>(storageKey(groupId), []);
     setLogs(data);
   }, [groupId]);
 
   const persist = useCallback(
     (next: PracticeTimerLogEntry[]) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       setLogs(next);
     },
     [groupId]

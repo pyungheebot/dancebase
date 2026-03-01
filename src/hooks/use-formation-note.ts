@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { FormationSnapshot, FormationNotePosition } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키
@@ -14,34 +15,6 @@ function storageKey(groupId: string, projectId: string): string {
 }
 
 // ============================================
-// localStorage 헬퍼
-// ============================================
-
-function loadFromStorage(groupId: string, projectId: string): FormationSnapshot[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as FormationSnapshot[];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(
-  groupId: string,
-  projectId: string,
-  snapshots: FormationSnapshot[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(snapshots));
-  } catch {
-    // 무시
-  }
-}
-
-// ============================================
 // 훅
 // ============================================
 
@@ -49,7 +22,7 @@ export function useFormationNote(groupId: string, projectId: string) {
   const swrKey = swrKeys.formationNote(groupId, projectId);
 
   const { data: snapshots = [], mutate } = useSWR(swrKey, () =>
-    loadFromStorage(groupId, projectId)
+    loadFromStorage<FormationSnapshot[]>(storageKey(groupId, projectId), [])
   );
 
   // 스냅샷 추가
@@ -69,7 +42,7 @@ export function useFormationNote(groupId: string, projectId: string) {
         createdAt: new Date().toISOString(),
       };
       const updated = [...snapshots, newSnapshot];
-      saveToStorage(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newSnapshot.id;
     },
@@ -82,7 +55,7 @@ export function useFormationNote(groupId: string, projectId: string) {
       const updated = snapshots.map((s) =>
         s.id === id ? { ...s, ...patch } : s
       );
-      saveToStorage(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, snapshots, mutate]
@@ -92,7 +65,7 @@ export function useFormationNote(groupId: string, projectId: string) {
   const deleteSnapshot = useCallback(
     (id: string) => {
       const updated = snapshots.filter((s) => s.id !== id);
-      saveToStorage(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, snapshots, mutate]
@@ -110,7 +83,7 @@ export function useFormationNote(groupId: string, projectId: string) {
         );
         return { ...s, positions: newPositions };
       });
-      saveToStorage(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, snapshots, mutate]
@@ -126,7 +99,7 @@ export function useFormationNote(groupId: string, projectId: string) {
         const newPosition: FormationNotePosition = { memberName, x: 50, y: 50 };
         return { ...s, positions: [...s.positions, newPosition] };
       });
-      saveToStorage(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, snapshots, mutate]
@@ -142,7 +115,7 @@ export function useFormationNote(groupId: string, projectId: string) {
           positions: s.positions.filter((p) => p.memberName !== memberName),
         };
       });
-      saveToStorage(groupId, projectId, updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, snapshots, mutate]

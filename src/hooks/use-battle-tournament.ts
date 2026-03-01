@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   BattleTournamentEntry,
   TournamentFormat,
@@ -13,26 +14,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return `dancebase:battle-tournament:${groupId}`;
-}
-
-function loadData(groupId: string): BattleTournamentEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as BattleTournamentEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: BattleTournamentEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -103,18 +84,18 @@ export type BattleTournamentStats = {
 // ============================================================
 
 export function useBattleTournament(groupId: string) {
-  const [tournaments, setTournaments] = useState<BattleTournamentEntry[]>(() => loadData(groupId));
+  const [tournaments, setTournaments] = useState<BattleTournamentEntry[]>(() => loadFromStorage<BattleTournamentEntry[]>(storageKey(groupId), []));
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<BattleTournamentEntry[]>(storageKey(groupId), []);
     setTournaments(data);
   }, [groupId]);
 
   // 내부 저장 헬퍼
   const persist = useCallback(
     (next: BattleTournamentEntry[]) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       setTournaments(next);
     },
     [groupId]

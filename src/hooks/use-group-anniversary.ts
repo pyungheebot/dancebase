@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { GroupAnniversaryData, GroupAnniversaryItem, GroupAnniversaryType } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 유틸
@@ -12,23 +13,6 @@ const STORAGE_PREFIX = "dancebase:group-anniversary";
 
 function getStorageKey(groupId: string): string {
   return `${STORAGE_PREFIX}:${groupId}`;
-}
-
-function loadData(groupId: string): GroupAnniversaryData {
-  if (typeof window === "undefined") {
-    return createEmptyData(groupId);
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as GroupAnniversaryData) : createEmptyData(groupId);
-  } catch {
-    return createEmptyData(groupId);
-  }
-}
-
-function saveData(data: GroupAnniversaryData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.groupId), JSON.stringify(data));
 }
 
 function createEmptyData(groupId: string): GroupAnniversaryData {
@@ -122,7 +106,7 @@ export type AnniversaryInput = Omit<GroupAnniversaryItem, "id" | "createdAt">;
 export function useGroupAnniversary(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     groupId ? swrKeys.groupAnniversary(groupId) : null,
-    async () => loadData(groupId)
+    async () => loadFromStorage<GroupAnniversaryData>(getStorageKey(groupId), {} as GroupAnniversaryData)
   );
 
   const store = data ?? createEmptyData(groupId);
@@ -133,7 +117,7 @@ export function useGroupAnniversary(groupId: string) {
       ...updated,
       updatedAt: new Date().toISOString(),
     };
-    saveData(withTimestamp);
+    saveToStorage(getStorageKey(groupId), withTimestamp);
     mutate(withTimestamp, false);
   }
 

@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { PerfSponsorEntry, PerfSponsorTier, PerfSponsorshipData } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -10,45 +11,6 @@ import type { PerfSponsorEntry, PerfSponsorTier, PerfSponsorshipData } from "@/t
 
 function storageKey(projectId: string): string {
   return swrKeys.performanceSponsor(projectId);
-}
-
-function loadData(projectId: string): PerfSponsorshipData {
-  if (typeof window === "undefined") {
-    return {
-      projectId,
-      sponsors: [],
-      totalGoal: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw) {
-      return {
-        projectId,
-        sponsors: [],
-        totalGoal: null,
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as PerfSponsorshipData;
-  } catch {
-    return {
-      projectId,
-      sponsors: [],
-      totalGoal: null,
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function saveData(data: PerfSponsorshipData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -105,12 +67,12 @@ const TIER_META: Record<
 // ============================================================
 
 export function usePerformanceSponsor(projectId: string) {
-  const [sponsors, setSponsors] = useState<PerfSponsorEntry[]>(() => loadData(projectId).sponsors);
+  const [sponsors, setSponsors] = useState<PerfSponsorEntry[]>(() => loadFromStorage<PerfSponsorshipData>(storageKey(projectId), {} as PerfSponsorshipData).sponsors);
   const [totalGoal, setTotalGoalState] = useState<number | null>(null);
 
   const reload = useCallback(() => {
     if (!projectId) return;
-    const data = loadData(projectId);
+    const data = loadFromStorage<PerfSponsorshipData>(storageKey(projectId), {} as PerfSponsorshipData);
     setSponsors(data.sponsors);
     setTotalGoalState(data.totalGoal);
   }, [projectId]);
@@ -120,7 +82,7 @@ export function usePerformanceSponsor(projectId: string) {
       sponsors?: PerfSponsorEntry[];
       totalGoal?: number | null;
     }) => {
-      const currentData = loadData(projectId);
+      const currentData = loadFromStorage<PerfSponsorshipData>(storageKey(projectId), {} as PerfSponsorshipData);
       const newData: PerfSponsorshipData = {
         projectId,
         sponsors: updated.sponsors ?? currentData.sponsors,
@@ -130,7 +92,7 @@ export function usePerformanceSponsor(projectId: string) {
             : currentData.totalGoal,
         updatedAt: new Date().toISOString(),
       };
-      saveData(newData);
+      saveToStorage(storageKey(projectId), newData);
       if (updated.sponsors !== undefined) setSponsors(newData.sponsors);
       if (updated.totalGoal !== undefined) setTotalGoalState(newData.totalGoal);
     },

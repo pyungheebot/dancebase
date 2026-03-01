@@ -3,43 +3,13 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   AudienceFeedbackData,
   AudienceFeedbackQuestion,
   AudienceFeedbackResponse,
   AudienceFeedbackSurveyItem,
 } from "@/types";
-
-// ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(projectId: string): AudienceFeedbackData {
-  if (typeof window === "undefined") {
-    return { projectId, surveys: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`audience-feedback-${projectId}`);
-    if (!raw) {
-      return { projectId, surveys: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as AudienceFeedbackData;
-  } catch {
-    return { projectId, surveys: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function persistData(data: AudienceFeedbackData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `audience-feedback-${data.projectId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
 
 // ——————————————————————————————
 // 파라미터 타입
@@ -107,10 +77,12 @@ export type SurveyResults = {
 // 훅
 // ——————————————————————————————
 
+const STORAGE_KEY = (projectId: string) => `audience-feedback-${projectId}`;
+
 export function useAudienceFeedback(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.audienceFeedback(projectId),
-    () => loadData(projectId),
+    () => loadFromStorage<AudienceFeedbackData>(STORAGE_KEY(projectId), {} as AudienceFeedbackData),
     { revalidateOnFocus: false }
   );
 
@@ -123,7 +95,7 @@ export function useAudienceFeedback(projectId: string) {
   // ——— 설문 생성 ———
   const createSurvey = useCallback(
     (params: CreateSurveyParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<AudienceFeedbackData>(STORAGE_KEY(projectId), {} as AudienceFeedbackData);
       const newSurvey: AudienceFeedbackSurveyItem = {
         id: crypto.randomUUID(),
         title: params.title,
@@ -140,7 +112,7 @@ export function useAudienceFeedback(projectId: string) {
         surveys: [newSurvey, ...current.surveys],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -149,13 +121,13 @@ export function useAudienceFeedback(projectId: string) {
   // ——— 설문 삭제 ———
   const deleteSurvey = useCallback(
     (surveyId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<AudienceFeedbackData>(STORAGE_KEY(projectId), {} as AudienceFeedbackData);
       const updated: AudienceFeedbackData = {
         ...current,
         surveys: current.surveys.filter((s) => s.id !== surveyId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -164,7 +136,7 @@ export function useAudienceFeedback(projectId: string) {
   // ——— 설문 활성/비활성 토글 ———
   const toggleSurveyActive = useCallback(
     (surveyId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<AudienceFeedbackData>(STORAGE_KEY(projectId), {} as AudienceFeedbackData);
       const updated: AudienceFeedbackData = {
         ...current,
         surveys: current.surveys.map((s) =>
@@ -172,7 +144,7 @@ export function useAudienceFeedback(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -181,7 +153,7 @@ export function useAudienceFeedback(projectId: string) {
   // ——— 질문 추가 ———
   const addQuestion = useCallback(
     (surveyId: string, params: AddQuestionParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<AudienceFeedbackData>(STORAGE_KEY(projectId), {} as AudienceFeedbackData);
       const newQuestion: AudienceFeedbackQuestion = {
         id: crypto.randomUUID(),
         ...params,
@@ -195,7 +167,7 @@ export function useAudienceFeedback(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -204,7 +176,7 @@ export function useAudienceFeedback(projectId: string) {
   // ——— 질문 수정 ———
   const updateQuestion = useCallback(
     (surveyId: string, questionId: string, params: UpdateQuestionParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<AudienceFeedbackData>(STORAGE_KEY(projectId), {} as AudienceFeedbackData);
       const updated: AudienceFeedbackData = {
         ...current,
         surveys: current.surveys.map((s) =>
@@ -219,7 +191,7 @@ export function useAudienceFeedback(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -228,7 +200,7 @@ export function useAudienceFeedback(projectId: string) {
   // ——— 질문 삭제 ———
   const removeQuestion = useCallback(
     (surveyId: string, questionId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<AudienceFeedbackData>(STORAGE_KEY(projectId), {} as AudienceFeedbackData);
       const updated: AudienceFeedbackData = {
         ...current,
         surveys: current.surveys.map((s) =>
@@ -241,7 +213,7 @@ export function useAudienceFeedback(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -250,7 +222,7 @@ export function useAudienceFeedback(projectId: string) {
   // ——— 응답 제출 ———
   const submitResponse = useCallback(
     (surveyId: string, params: SubmitResponseParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<AudienceFeedbackData>(STORAGE_KEY(projectId), {} as AudienceFeedbackData);
       const newResponse: AudienceFeedbackResponse = {
         id: crypto.randomUUID(),
         respondentName: params.respondentName,
@@ -266,7 +238,7 @@ export function useAudienceFeedback(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -275,7 +247,7 @@ export function useAudienceFeedback(projectId: string) {
   // ——— 설문 결과 분석 ———
   const getSurveyResults = useCallback(
     (surveyId: string): SurveyResults | null => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<AudienceFeedbackData>(STORAGE_KEY(projectId), {} as AudienceFeedbackData);
       const survey = current.surveys.find((s) => s.id === surveyId);
       if (!survey) return null;
 

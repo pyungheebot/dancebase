@@ -2,31 +2,12 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { EquipmentItem, EquipmentCheckout, EquipmentCondition } from "@/types";
 
-// ─── localStorage 헬퍼 ────────────────────────────────────────
-
-function loadData(groupId: string): {
-  items: EquipmentItem[];
-  checkouts: EquipmentCheckout[];
-} {
-  if (typeof window === "undefined") return { items: [], checkouts: [] };
-  try {
-    const raw = localStorage.getItem(`dancebase:equipment:${groupId}`);
-    if (!raw) return { items: [], checkouts: [] };
-    return JSON.parse(raw);
-  } catch {
-    return { items: [], checkouts: [] };
-  }
-}
-
-function saveData(
-  groupId: string,
-  data: { items: EquipmentItem[]; checkouts: EquipmentCheckout[] }
-) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(`dancebase:equipment:${groupId}`, JSON.stringify(data));
-}
+const STORAGE_KEY = (groupId: string) => `dancebase:equipment:${groupId}`;
+type EquipmentData = { items: EquipmentItem[]; checkouts: EquipmentCheckout[] };
+const EMPTY_DATA: EquipmentData = { items: [], checkouts: [] };
 
 // ─── 오늘 날짜 (YYYY-MM-DD) ─────────────────────────────────
 
@@ -46,7 +27,7 @@ function isOverdue(checkout: EquipmentCheckout): boolean {
 export function useEquipmentInventory(groupId: string) {
   const key = swrKeys.equipmentInventory(groupId);
 
-  const { data, mutate } = useSWR(key, () => loadData(groupId), {
+  const { data, mutate } = useSWR(key, () => loadFromStorage<EquipmentData>(STORAGE_KEY(groupId), EMPTY_DATA), {
     revalidateOnFocus: false,
   });
 
@@ -59,7 +40,7 @@ export function useEquipmentInventory(groupId: string) {
     input: Omit<EquipmentItem, "id" | "createdAt" | "lastCheckedAt">
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<EquipmentData>(STORAGE_KEY(groupId), EMPTY_DATA);
       const newItem: EquipmentItem = {
         ...input,
         id: crypto.randomUUID(),
@@ -67,7 +48,7 @@ export function useEquipmentInventory(groupId: string) {
         createdAt: new Date().toISOString(),
       };
       stored.items = [...stored.items, newItem];
-      saveData(groupId, stored);
+      saveToStorage(STORAGE_KEY(groupId), stored);
       mutate(stored, false);
       return true;
     } catch {
@@ -80,11 +61,11 @@ export function useEquipmentInventory(groupId: string) {
     patch: Partial<Omit<EquipmentItem, "id" | "createdAt">>
   ): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<EquipmentData>(STORAGE_KEY(groupId), EMPTY_DATA);
       const idx = stored.items.findIndex((i) => i.id === id);
       if (idx === -1) return false;
       stored.items[idx] = { ...stored.items[idx], ...patch };
-      saveData(groupId, stored);
+      saveToStorage(STORAGE_KEY(groupId), stored);
       mutate(stored, false);
       return true;
     } catch {
@@ -94,11 +75,11 @@ export function useEquipmentInventory(groupId: string) {
 
   function deleteItem(id: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<EquipmentData>(STORAGE_KEY(groupId), EMPTY_DATA);
       stored.items = stored.items.filter((i) => i.id !== id);
       // 해당 장비의 대여 기록도 함께 삭제
       stored.checkouts = stored.checkouts.filter((c) => c.equipmentId !== id);
-      saveData(groupId, stored);
+      saveToStorage(STORAGE_KEY(groupId), stored);
       mutate(stored, false);
       return true;
     } catch {
@@ -115,7 +96,7 @@ export function useEquipmentInventory(groupId: string) {
     note: string = ""
   ): { ok: boolean; error?: string } {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<EquipmentData>(STORAGE_KEY(groupId), EMPTY_DATA);
       const item = stored.items.find((i) => i.id === equipmentId);
       if (!item) return { ok: false, error: "장비를 찾을 수 없습니다." };
 
@@ -140,7 +121,7 @@ export function useEquipmentInventory(groupId: string) {
         note,
       };
       stored.checkouts = [...stored.checkouts, newCheckout];
-      saveData(groupId, stored);
+      saveToStorage(STORAGE_KEY(groupId), stored);
       mutate(stored, false);
       return { ok: true };
     } catch {
@@ -150,14 +131,14 @@ export function useEquipmentInventory(groupId: string) {
 
   function returnCheckout(checkoutId: string): boolean {
     try {
-      const stored = loadData(groupId);
+      const stored = loadFromStorage<EquipmentData>(STORAGE_KEY(groupId), EMPTY_DATA);
       const idx = stored.checkouts.findIndex((c) => c.id === checkoutId);
       if (idx === -1) return false;
       stored.checkouts[idx] = {
         ...stored.checkouts[idx],
         returnedAt: new Date().toISOString(),
       };
-      saveData(groupId, stored);
+      saveToStorage(STORAGE_KEY(groupId), stored);
       mutate(stored, false);
       return true;
     } catch {

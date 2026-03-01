@@ -4,28 +4,10 @@ import {useCallback} from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { PerformanceSetlistData, PerformanceSetlistItem, SetlistItemType } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 function getStorageKey(groupId: string, projectId: string): string {
   return `dancebase:setlist:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): PerformanceSetlistData | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as PerformanceSetlistData) : null;
-  } catch {
-    return null;
-  }
-}
-
-function persistData(groupId: string, projectId: string, data: PerformanceSetlistData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId, projectId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 function createDefault(groupId: string, projectId: string): PerformanceSetlistData {
@@ -60,7 +42,7 @@ export function useSetlistManagement(groupId: string, projectId: string) {
   const key = swrKeys.setlistManagement(groupId, projectId);
 
   const { data, mutate } = useSWR<PerformanceSetlistData>(key, () => {
-    const stored = loadData(groupId, projectId);
+    const stored = loadFromStorage<PerformanceSetlistData | null>(getStorageKey(groupId, projectId), {} as PerformanceSetlistData | null);
     return stored ?? createDefault(groupId, projectId);
   });
 
@@ -70,7 +52,7 @@ export function useSetlistManagement(groupId: string, projectId: string) {
   const update = useCallback(
     (next: PerformanceSetlistData) => {
       const updated: PerformanceSetlistData = { ...next, updatedAt: new Date().toISOString() };
-      persistData(groupId, projectId, updated);
+      saveToStorage(getStorageKey(groupId, projectId), updated);
       mutate(updated, false);
     },
     [groupId, projectId, mutate]

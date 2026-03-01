@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { FitnessTestItem, FitnessTestResult, FitnessTestCategory } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // 상수
@@ -80,26 +81,6 @@ function storageKey(groupId: string): string {
   return `dancebase:fitness-test:${groupId}`;
 }
 
-function loadData(groupId: string): StorageData {
-  if (typeof window === "undefined") return { testItems: [], results: [] };
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return { testItems: [], results: [] };
-    return JSON.parse(raw) as StorageData;
-  } catch {
-    return { testItems: [], results: [] };
-  }
-}
-
-function saveData(groupId: string, data: StorageData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 통계 타입
 // ============================================================
@@ -115,12 +96,12 @@ export type FitnessTestStats = {
 // ============================================================
 
 export function useFitnessTest(groupId: string) {
-  const [testItems, setTestItems] = useState<FitnessTestItem[]>(() => loadData(groupId).testItems);
+  const [testItems, setTestItems] = useState<FitnessTestItem[]>(() => loadFromStorage<StorageData>(storageKey(groupId), { testItems: [], results: [] }).testItems);
   const [results, setResults] = useState<FitnessTestResult[]>([]);
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<StorageData>(storageKey(groupId), { testItems: [], results: [] });
     setTestItems(data.testItems);
     setResults(data.results);
   }, [groupId]);
@@ -128,7 +109,7 @@ export function useFitnessTest(groupId: string) {
   // 내부 저장 헬퍼
   const persist = useCallback(
     (nextItems: FitnessTestItem[], nextResults: FitnessTestResult[]) => {
-      saveData(groupId, { testItems: nextItems, results: nextResults });
+      saveToStorage(storageKey(groupId), { testItems: nextItems, results: nextResults });
       setTestItems(nextItems);
       setResults(nextResults);
     },

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GrowthJournalEntry,
   GrowthJournalData,
@@ -29,28 +30,6 @@ function storageKey(groupId: string): string {
   return swrKeys.growthJournal(groupId);
 }
 
-function loadData(groupId: string): GrowthJournalData {
-  if (typeof window === "undefined") {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return { groupId, entries: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as GrowthJournalData;
-  } catch {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: GrowthJournalData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 통계 타입
 // ============================================================
@@ -71,12 +50,12 @@ export type GrowthJournalStats = {
 // ============================================================
 
 export function useGrowthJournal(groupId: string) {
-  const [entries, setEntries] = useState<GrowthJournalEntry[]>(() => loadData(groupId).entries);
+  const [entries, setEntries] = useState<GrowthJournalEntry[]>(() => loadFromStorage<GrowthJournalData>(storageKey(groupId), {} as GrowthJournalData).entries);
 
   // localStorage에서 데이터 불러오기
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<GrowthJournalData>(storageKey(groupId), {} as GrowthJournalData);
     setEntries(data.entries);
   }, [groupId]);
 
@@ -88,7 +67,7 @@ export function useGrowthJournal(groupId: string) {
         entries: updated,
         updatedAt: new Date().toISOString(),
       };
-      saveData(data);
+      saveToStorage(storageKey(groupId), data);
       setEntries(updated);
     },
     [groupId]

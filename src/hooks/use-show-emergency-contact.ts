@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   EmergencyContact,
   EmergencyContactData,
@@ -18,30 +19,6 @@ function storageKey(projectId: string): string {
   return `dancebase:show-emergency-contact:${projectId}`;
 }
 
-function loadData(projectId: string): EmergencyContactData {
-  if (typeof window === "undefined") {
-    return { projectId, contacts: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw) {
-      return { projectId, contacts: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as EmergencyContactData;
-  } catch {
-    return { projectId, contacts: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(projectId: string, data: EmergencyContactData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -49,7 +26,7 @@ function saveData(projectId: string, data: EmergencyContactData): void {
 export function useShowEmergencyContact(projectId: string) {
   const { data, mutate, isLoading } = useSWR(
     projectId ? swrKeys.showEmergencyContact(projectId) : null,
-    () => loadData(projectId)
+    () => loadFromStorage<EmergencyContactData>(storageKey(projectId), {} as EmergencyContactData)
   );
 
   const current: EmergencyContactData = useMemo(() => data ?? {
@@ -60,7 +37,7 @@ export function useShowEmergencyContact(projectId: string) {
 
   const persist = useCallback(
     (next: EmergencyContactData) => {
-      saveData(projectId, next);
+      saveToStorage(storageKey(projectId), next);
       mutate(next, false);
     },
     [projectId, mutate]

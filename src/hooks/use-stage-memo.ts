@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StageMemoBoard,
   StageMemoNote,
@@ -13,30 +14,6 @@ import type {
 
 function storageKey(groupId: string, projectId: string): string {
   return `dancebase:stage-memo:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): StageMemoBoard[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as StageMemoBoard[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: StageMemoBoard[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -54,17 +31,17 @@ export type StageMemoStats = {
 // ============================================================
 
 export function useStageMemo(groupId: string, projectId: string) {
-  const [boards, setBoards] = useState<StageMemoBoard[]>(() => loadData(groupId, projectId));
+  const [boards, setBoards] = useState<StageMemoBoard[]>(() => loadFromStorage<StageMemoBoard[]>(storageKey(groupId, projectId), []));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
-    const data = loadData(groupId, projectId);
+    const data = loadFromStorage<StageMemoBoard[]>(storageKey(groupId, projectId), []);
     setBoards(data);
   }, [groupId, projectId]);
 
   const persist = useCallback(
     (next: StageMemoBoard[]) => {
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       setBoards(next);
     },
     [groupId, projectId]

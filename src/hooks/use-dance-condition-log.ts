@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceConditionJournalEntry,
   DanceConditionJournalData,
@@ -72,23 +73,6 @@ function makeEmpty(memberId: string): DanceConditionJournalData {
   };
 }
 
-function loadData(memberId: string): DanceConditionJournalData {
-  if (typeof window === "undefined") return makeEmpty(memberId);
-  try {
-    const key = swrKeys.danceConditionLog(memberId);
-    const raw = localStorage.getItem(key);
-    if (!raw) return makeEmpty(memberId);
-    return JSON.parse(raw) as DanceConditionJournalData;
-  } catch {
-    return makeEmpty(memberId);
-  }
-}
-
-function saveData(data: DanceConditionJournalData): void {
-  const key = swrKeys.danceConditionLog(data.memberId);
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
 // ============================================================
 // 날짜 유틸
 // ============================================================
@@ -129,10 +113,12 @@ export type BodyPartFrequencyItem = {
 // 훅
 // ============================================================
 
+const STORAGE_KEY = (id: string) => `dancebase:dance-condition-log:${id}`;
+
 export function useDanceConditionLog(memberId: string) {
   const { data, mutate } = useSWR(
     swrKeys.danceConditionLog(memberId),
-    () => loadData(memberId),
+    () => loadFromStorage<DanceConditionJournalData>(STORAGE_KEY(memberId), {} as DanceConditionJournalData),
     {
       fallbackData: makeEmpty(memberId),
       revalidateOnFocus: false,
@@ -160,7 +146,7 @@ export function useDanceConditionLog(memberId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      saveData(next);
+      saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
     [journalData, mutate]
@@ -179,7 +165,7 @@ export function useDanceConditionLog(memberId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      saveData(next);
+      saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
     [journalData, mutate]
@@ -193,7 +179,7 @@ export function useDanceConditionLog(memberId: string) {
         entries: journalData.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(next);
+      saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
     [journalData, mutate]

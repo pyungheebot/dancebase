@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { ScheduleCheckItem, ScheduleChecklist } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_PREFIX = "dancebase:schedule-checklist:";
 
@@ -17,17 +18,7 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function saveToStorage(checklist: ScheduleChecklist): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `${STORAGE_PREFIX}${checklist.scheduleId}`,
-      JSON.stringify({ ...checklist, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 저장 실패 시 무시
-  }
-}
+const STORAGE_KEY = (scheduleId: string) => `${STORAGE_PREFIX}${scheduleId}`;
 
 export function useScheduleChecklist(scheduleId: string) {
   const [items, setItems] = useState<ScheduleCheckItem[]>([]);
@@ -40,7 +31,7 @@ export function useScheduleChecklist(scheduleId: string) {
         items: nextItems,
         updatedAt: new Date().toISOString(),
       };
-      saveToStorage(checklist);
+      saveToStorage(STORAGE_KEY(scheduleId), checklist);
       setItems([...nextItems].sort((a, b) => a.order - b.order));
     },
     [scheduleId]

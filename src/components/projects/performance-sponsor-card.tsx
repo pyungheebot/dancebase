@@ -21,6 +21,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -737,14 +738,14 @@ export function PerformanceSponsorCard({ projectId }: { projectId: string }) {
       notes: form.notes.trim(),
     });
     if (ok) toast.success("스폰서 정보가 수정되었습니다.");
-    else toast.error("수정에 실패했습니다.");
+    else toast.error(TOAST.UPDATE_ERROR);
     setEditTarget(null);
   };
 
   const handleDelete = (id: string) => {
     const ok = deleteSponsor(id);
     if (ok) toast.success("스폰서가 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   };
 
   const handleSetGoal = (goal: number | null) => {

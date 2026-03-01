@@ -2,39 +2,13 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   GroupMentorMatch,
   GroupMentorSession,
   GroupMentorStatus,
 
 } from "@/types";
-
-// ============================================================
-// localStorage 헬퍼
-// ============================================================
-
-function loadData(groupId: string): GroupMentorMatch[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(`dancebase:group-mentor:${groupId}`);
-    if (!raw) return [];
-    return JSON.parse(raw) as GroupMentorMatch[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: GroupMentorMatch[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `dancebase:group-mentor:${groupId}`,
-      JSON.stringify(data)
-    );
-  } catch {
-    // 무시
-  }
-}
 
 // ============================================================
 // 통계 타입
@@ -66,17 +40,19 @@ export type GroupMentorStats = {
 // 훅
 // ============================================================
 
+const STORAGE_KEY = (groupId: string) => `dancebase:group-mentor:${groupId}`;
+
 export function useGroupMentor(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.groupMentorMatches(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<GroupMentorMatch[]>(STORAGE_KEY(groupId), []),
     { fallbackData: [] }
   );
 
   const matches = data ?? [];
 
   function persist(next: GroupMentorMatch[]) {
-    saveData(groupId, next);
+    saveToStorage(STORAGE_KEY(groupId), next);
     mutate(next, { revalidate: false });
   }
 

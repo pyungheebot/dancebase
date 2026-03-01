@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type {
   AudienceGuideEntry,
   AudienceGuideSection,
@@ -44,13 +45,6 @@ function getStorageKey(groupId: string, projectId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}-${projectId}`;
 }
 
-function saveData(entry: AudienceGuideEntry): void {
-  localStorage.setItem(
-    getStorageKey(entry.groupId, entry.projectId),
-    JSON.stringify(entry)
-  );
-}
-
 function makeEmpty(groupId: string, projectId: string): AudienceGuideEntry {
   return {
     id: crypto.randomUUID(),
@@ -78,7 +72,7 @@ export function useAudienceGuide(groupId: string, projectId: string) {
     (updater: (prev: AudienceGuideEntry) => AudienceGuideEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveData(next);
+        saveToStorage(getStorageKey(entry.groupId, entry.projectId), next);
         return next;
       });
     },

@@ -37,6 +37,7 @@ import {
   Activity,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useInjuryTracker } from "@/hooks/use-injury-tracker";
 import type { InjuryBodyPart, InjuryTrackerSeverity } from "@/types";
 
@@ -191,7 +192,7 @@ export function InjuryTrackerCard({
     if (ok) {
       toast.success("부상 기록이 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

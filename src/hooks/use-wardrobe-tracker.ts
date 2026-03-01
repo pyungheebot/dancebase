@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   WardrobeTrackerData,
   WardrobeTrackItem,
@@ -17,30 +18,6 @@ function storageKey(projectId: string): string {
   return `dancebase:wardrobe-tracker:${projectId}`;
 }
 
-function loadData(projectId: string): WardrobeTrackerData {
-  if (typeof window === "undefined") {
-    return { projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw) {
-      return { projectId, items: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as WardrobeTrackerData;
-  } catch {
-    return { projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(projectId: string, data: WardrobeTrackerData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -48,7 +25,7 @@ function saveData(projectId: string, data: WardrobeTrackerData): void {
 export function useWardrobeTracker(projectId: string) {
   const { data, mutate, isLoading } = useSWR(
     projectId ? swrKeys.wardrobeTracker(projectId) : null,
-    () => loadData(projectId)
+    () => loadFromStorage<WardrobeTrackerData>(storageKey(projectId), {} as WardrobeTrackerData)
   );
 
   const current: WardrobeTrackerData = useMemo(() => data ?? {
@@ -59,7 +36,7 @@ export function useWardrobeTracker(projectId: string) {
 
   const persist = useCallback(
     (next: WardrobeTrackerData) => {
-      saveData(projectId, next);
+      saveToStorage(storageKey(projectId), next);
       mutate(next, false);
     },
     [projectId, mutate]

@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   VideoPortfolioData,
   VideoPortfolioEntry,
@@ -30,30 +31,6 @@ function storageKey(memberId: string): string {
   return `dancebase:video-portfolio:${memberId}`;
 }
 
-function loadData(memberId: string): VideoPortfolioData {
-  if (typeof window === "undefined") {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw) {
-      return { memberId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as VideoPortfolioData;
-  } catch {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: VideoPortfolioData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.memberId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -61,7 +38,7 @@ function saveData(data: VideoPortfolioData): void {
 export function useVideoPortfolio(memberId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.videoPortfolio(memberId),
-    () => loadData(memberId),
+    () => loadFromStorage<VideoPortfolioData>(storageKey(memberId), {} as VideoPortfolioData),
     {
       fallbackData: {
         memberId,
@@ -85,7 +62,7 @@ export function useVideoPortfolio(memberId: string) {
       thumbnailUrl?: string;
       isPublic?: boolean;
     }): VideoPortfolioEntry => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<VideoPortfolioData>(storageKey(memberId), {} as VideoPortfolioData);
       const now = new Date().toISOString();
       const newEntry: VideoPortfolioEntry = {
         id: crypto.randomUUID(),
@@ -106,7 +83,7 @@ export function useVideoPortfolio(memberId: string) {
         entries: [newEntry, ...current.entries],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(memberId), updated);
       mutate(updated, false);
       return newEntry;
     },
@@ -128,7 +105,7 @@ export function useVideoPortfolio(memberId: string) {
         isPublic: boolean;
       }>
     ): boolean => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<VideoPortfolioData>(storageKey(memberId), {} as VideoPortfolioData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -160,7 +137,7 @@ export function useVideoPortfolio(memberId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(memberId), updated);
       mutate(updated, false);
       return true;
     },
@@ -170,7 +147,7 @@ export function useVideoPortfolio(memberId: string) {
   // 영상 삭제
   const deleteEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(memberId);
+      const current = loadFromStorage<VideoPortfolioData>(storageKey(memberId), {} as VideoPortfolioData);
       const exists = current.entries.some((e) => e.id === entryId);
       if (!exists) return false;
 
@@ -179,7 +156,7 @@ export function useVideoPortfolio(memberId: string) {
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(memberId), updated);
       mutate(updated, false);
       return true;
     },

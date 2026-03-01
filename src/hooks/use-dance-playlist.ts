@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MyPlaylistData,
   MyPlaylist,
@@ -67,30 +68,6 @@ function storageKey(memberId: string): string {
   return `dancebase:dance-playlist:${memberId}`;
 }
 
-function loadData(memberId: string): MyPlaylistData {
-  if (typeof window === "undefined") {
-    return { memberId, playlists: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw) {
-      return { memberId, playlists: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as MyPlaylistData;
-  } catch {
-    return { memberId, playlists: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(memberId: string, data: MyPlaylistData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -98,7 +75,7 @@ function saveData(memberId: string, data: MyPlaylistData): void {
 export function useDancePlaylist(memberId: string) {
   const { data, mutate, isLoading } = useSWR(
     memberId ? swrKeys.dancePlaylist(memberId) : null,
-    () => loadData(memberId)
+    () => loadFromStorage<MyPlaylistData>(storageKey(memberId), {} as MyPlaylistData)
   );
 
   const current: MyPlaylistData = useMemo(() => data ?? {
@@ -109,7 +86,7 @@ export function useDancePlaylist(memberId: string) {
 
   const persist = useCallback(
     (next: MyPlaylistData) => {
-      saveData(memberId, next);
+      saveToStorage(storageKey(memberId), next);
       mutate(next, false);
     },
     [memberId, mutate]

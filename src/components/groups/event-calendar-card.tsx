@@ -45,6 +45,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   useGroupEventCalendar,
   GROUP_EVENT_CATEGORIES,
@@ -743,7 +744,7 @@ export function EventCalendarCard({ groupId }: EventCalendarCardProps) {
   function handleDelete(id: string) {
     const ok = deleteEvent(id);
     if (ok) toast.success("이벤트가 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   }
 
   // ── RSVP ────────────────────────────────────────────────

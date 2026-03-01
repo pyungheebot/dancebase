@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import type { GroupMilestone, GroupMilestoneCategory } from "@/types";
+import { loadFromStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY_PREFIX = "dancebase:group-milestones:";
 
@@ -33,16 +34,6 @@ const DEFAULT_MILESTONE_TEMPLATES: DefaultMilestoneTemplate[] = [
 
 function getStorageKey(groupId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}`;
-}
-
-function loadFromStorage(groupId: string): GroupMilestone[] | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as GroupMilestone[]) : null;
-  } catch {
-    return null;
-  }
 }
 
 function persistToStorage(groupId: string, milestones: GroupMilestone[]): void {
@@ -162,7 +153,7 @@ export function useGroupMilestonesAchievements(
 ): GroupMilestonesAchievementsResult {
   // localStorage에서 초기 상태 로드 (기본 마일스톤 자동 생성 포함)
   const [milestones, setMilestones] = useState<GroupMilestone[]>(() => {
-    const stored = loadFromStorage(groupId);
+    const stored = loadFromStorage<GroupMilestone[] | null>(getStorageKey(groupId), {} as GroupMilestone[] | null);
     if (stored !== null) return stored;
     const defaults = createDefaultMilestones(groupId);
     persistToStorage(groupId, defaults);

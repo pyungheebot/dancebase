@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   SafetyChecklistData,
   SafetyChecklistItem,
@@ -19,33 +20,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:safety-checklist:${groupId}:${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): SafetyChecklistData {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) {
-      return { groupId, projectId, items: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as SafetyChecklistData;
-  } catch {
-    return { groupId, projectId, items: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: SafetyChecklistData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(data.groupId, data.projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -53,7 +27,7 @@ function saveData(data: SafetyChecklistData): void {
 export function useSafetyChecklist(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.safetyChecklist(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<SafetyChecklistData>(storageKey(groupId, projectId), {} as SafetyChecklistData),
     {
       fallbackData: {
         groupId,
@@ -75,7 +49,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
       priority: SafetyChecklistPriority;
       notes?: string;
     }): SafetyChecklistItem => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<SafetyChecklistData>(storageKey(groupId, projectId), {} as SafetyChecklistData);
       const now = new Date().toISOString();
       const newItem: SafetyChecklistItem = {
         id: crypto.randomUUID(),
@@ -93,7 +67,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
         items: [...current.items, newItem],
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newItem;
     },
@@ -112,7 +86,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
         notes: string;
       }>
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<SafetyChecklistData>(storageKey(groupId, projectId), {} as SafetyChecklistData);
       const idx = current.items.findIndex((i) => i.id === itemId);
       if (idx === -1) return false;
 
@@ -137,7 +111,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
         items: current.items.map((i) => (i.id === itemId ? updatedItem : i)),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -147,7 +121,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
   // 확인 상태 변경
   const updateStatus = useCallback(
     (itemId: string, status: SafetyChecklistStatus): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<SafetyChecklistData>(storageKey(groupId, projectId), {} as SafetyChecklistData);
       const idx = current.items.findIndex((i) => i.id === itemId);
       if (idx === -1) return false;
 
@@ -165,7 +139,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
         items: current.items.map((i) => (i.id === itemId ? updatedItem : i)),
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -175,7 +149,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
   // 항목 삭제
   const deleteItem = useCallback(
     (itemId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<SafetyChecklistData>(storageKey(groupId, projectId), {} as SafetyChecklistData);
       const exists = current.items.some((i) => i.id === itemId);
       if (!exists) return false;
 
@@ -184,7 +158,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
         items: current.items.filter((i) => i.id !== itemId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -193,7 +167,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
 
   // 전체 초기화
   const resetAll = useCallback((): void => {
-    const current = loadData(groupId, projectId);
+    const current = loadFromStorage<SafetyChecklistData>(storageKey(groupId, projectId), {} as SafetyChecklistData);
     const now = new Date().toISOString();
     const updated: SafetyChecklistData = {
       ...current,
@@ -205,7 +179,7 @@ export function useSafetyChecklist(groupId: string, projectId: string) {
       })),
       updatedAt: now,
     };
-    saveData(updated);
+    saveToStorage(storageKey(groupId, projectId), updated);
     mutate(updated, false);
   }, [groupId, projectId, mutate]);
 

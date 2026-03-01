@@ -50,6 +50,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useSponsoredGoods } from "@/hooks/use-sponsored-goods";
 import type { SponsoredGoodsItem, SponsoredGoodsStatus } from "@/types";
 
@@ -251,7 +252,7 @@ export function SponsoredGoodsCard({
       }
       setItemDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setItemSaving(false);
     }
@@ -263,7 +264,7 @@ export function SponsoredGoodsCard({
       await deleteItem(item.id);
       toast.success(`'${item.itemName}' 물품이 삭제되었습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

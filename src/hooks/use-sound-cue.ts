@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import type { SoundCueSheet, SoundCueEntry, SoundCueType } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -9,30 +10,6 @@ import type { SoundCueSheet, SoundCueEntry, SoundCueType } from "@/types";
 
 function storageKey(groupId: string, projectId: string): string {
   return `dancebase:sound-cue:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): SoundCueSheet[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as SoundCueSheet[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: SoundCueSheet[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 무시
-  }
 }
 
 // ============================================================
@@ -75,17 +52,17 @@ export type SoundCueStats = {
 // ============================================================
 
 export function useSoundCue(groupId: string, projectId: string) {
-  const [sheets, setSheets] = useState<SoundCueSheet[]>(() => loadData(groupId, projectId));
+  const [sheets, setSheets] = useState<SoundCueSheet[]>(() => loadFromStorage<SoundCueSheet[]>(storageKey(groupId, projectId), []));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
-    const data = loadData(groupId, projectId);
+    const data = loadFromStorage<SoundCueSheet[]>(storageKey(groupId, projectId), []);
     setSheets(data);
   }, [groupId, projectId]);
 
   const persist = useCallback(
     (next: SoundCueSheet[]) => {
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       setSheets(next);
     },
     [groupId, projectId]

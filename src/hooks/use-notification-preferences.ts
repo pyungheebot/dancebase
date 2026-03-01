@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // 알림 카테고리 타입
@@ -63,44 +64,6 @@ function buildStorageKey(groupId: string, userId: string): string {
   return `notification-prefs-${groupId}-${userId}`;
 }
 
-function loadFromStorage(
-  groupId: string,
-  userId: string
-): NotificationPreferences {
-  if (typeof window === "undefined") return { ...DEFAULT_NOTIFICATION_PREFERENCES };
-  try {
-    const raw = window.localStorage.getItem(buildStorageKey(groupId, userId));
-    if (!raw) return { ...DEFAULT_NOTIFICATION_PREFERENCES };
-    const parsed = JSON.parse(raw) as Partial<NotificationPreferences>;
-    // 기존 저장값에 없는 카테고리는 기본값(true)으로 채움
-    return {
-      schedule: parsed.schedule ?? true,
-      attendance: parsed.attendance ?? true,
-      finance: parsed.finance ?? true,
-      board: parsed.board ?? true,
-      member: parsed.member ?? true,
-    };
-  } catch {
-    return { ...DEFAULT_NOTIFICATION_PREFERENCES };
-  }
-}
-
-function saveToStorage(
-  groupId: string,
-  userId: string,
-  prefs: NotificationPreferences
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(
-      buildStorageKey(groupId, userId),
-      JSON.stringify(prefs)
-    );
-  } catch {
-    // localStorage 저장 실패 시 무시 (용량 초과 등)
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -112,19 +75,18 @@ export function useNotificationPreferences(
   const [preferences, setPreferences] = useState<NotificationPreferences>(
     () => {
       if (!groupId || !userId) return { ...DEFAULT_NOTIFICATION_PREFERENCES };
-      return loadFromStorage(groupId, userId);
+      return loadFromStorage<NotificationPreferences>(buildStorageKey(groupId, userId), { ...DEFAULT_NOTIFICATION_PREFERENCES });
     }
   );
 
   // userId가 늦게 로드되는 경우 대비: userId 확정 후 다시 로드
-
 
   const toggle = useCallback(
     (category: NotificationCategory) => {
       if (!groupId || !userId) return;
       setPreferences((prev) => {
         const next = { ...prev, [category]: !prev[category] };
-        saveToStorage(groupId, userId, next);
+        saveToStorage(buildStorageKey(groupId, userId), next);
         return next;
       });
     },
@@ -140,7 +102,7 @@ export function useNotificationPreferences(
       board: true,
       member: true,
     };
-    saveToStorage(groupId, userId, next);
+    saveToStorage(buildStorageKey(groupId, userId), next);
     setPreferences(next);
   }, [groupId, userId]);
 
@@ -153,7 +115,7 @@ export function useNotificationPreferences(
       board: false,
       member: false,
     };
-    saveToStorage(groupId, userId, next);
+    saveToStorage(buildStorageKey(groupId, userId), next);
     setPreferences(next);
   }, [groupId, userId]);
 

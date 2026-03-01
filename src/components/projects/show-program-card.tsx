@@ -57,6 +57,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useShowProgram } from "@/hooks/use-show-program";
 import type {
   ShowProgramPiece,
@@ -273,7 +274,7 @@ export function ShowProgramCard({
       toast.success("공연 정보가 저장되었습니다.");
       setInfoDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setInfoSaving(false);
     }
@@ -327,7 +328,7 @@ export function ShowProgramCard({
       }
       setPieceDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setPieceSaving(false);
     }
@@ -338,7 +339,7 @@ export function ShowProgramCard({
       await deletePiece(piece.id);
       toast.success(`'${piece.title}'이 삭제되었습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -396,7 +397,7 @@ export function ShowProgramCard({
       }
       setCreditDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setCreditSaving(false);
     }
@@ -411,7 +412,7 @@ export function ShowProgramCard({
           : CREDIT_ROLE_LABELS[credit.role];
       toast.success(`'${label}' 크레딧이 삭제되었습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 
@@ -453,7 +454,7 @@ export function ShowProgramCard({
       }
       setSponsorDialogOpen(false);
     } catch {
-      toast.error("저장에 실패했습니다.");
+      toast.error(TOAST.SAVE_ERROR);
     } finally {
       setSponsorSaving(false);
     }
@@ -464,7 +465,7 @@ export function ShowProgramCard({
       await deleteSponsor(sponsor.id);
       toast.success(`'${sponsor.name}'이 삭제되었습니다.`);
     } catch {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { RehearsalPlan, RehearsalWeek, RehearsalCheckItem } from "@/types";
+import { removeFromStorage } from "@/lib/local-storage";
 
 // ============================================
 // 6주 리허설 템플릿 정의
@@ -123,7 +124,7 @@ export function useRehearsalPlanner(groupId: string, projectId: string) {
   const persist = useCallback(
     (next: RehearsalPlan | null) => {
       if (next === null) {
-        localStorage.removeItem(storageKey);
+        removeFromStorage(storageKey);
         setPlan(null);
       } else {
         localStorage.setItem(storageKey, JSON.stringify(next));

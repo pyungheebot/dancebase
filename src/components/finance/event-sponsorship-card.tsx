@@ -33,6 +33,7 @@ import {
   Handshake,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useEventSponsorship } from "@/hooks/use-event-sponsorship";
 import type { SponsorType, SponsorStatus } from "@/types";
 
@@ -230,7 +231,7 @@ export function EventSponsorshipCard({ groupId }: Props) {
     if (ok) {
       toast.success(`"${name}" 스폰서가 삭제되었습니다`);
     } else {
-      toast.error("삭제에 실패했습니다");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

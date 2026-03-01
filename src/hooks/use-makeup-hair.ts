@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MakeupHairData,
   MakeupHairPlan,
@@ -19,51 +20,6 @@ function storageKey(projectId: string): string {
   return `dancebase:makeup-hair:${projectId}`;
 }
 
-function loadData(projectId: string): MakeupHairData {
-  if (typeof window === "undefined") {
-    return {
-      projectId,
-      plans: [],
-      timeline: [],
-      checklist: [],
-      artists: [],
-      updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw) {
-      return {
-        projectId,
-        plans: [],
-        timeline: [],
-        checklist: [],
-        artists: [],
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as MakeupHairData;
-  } catch {
-    return {
-      projectId,
-      plans: [],
-      timeline: [],
-      checklist: [],
-      artists: [],
-      updatedAt: new Date().toISOString(),
-    };
-  }
-}
-
-function saveData(projectId: string, data: MakeupHairData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
@@ -71,7 +27,7 @@ function saveData(projectId: string, data: MakeupHairData): void {
 export function useMakeupHair(projectId: string) {
   const { data, mutate, isLoading } = useSWR(
     projectId ? swrKeys.makeupHair(projectId) : null,
-    () => loadData(projectId)
+    () => loadFromStorage<MakeupHairData>(storageKey(projectId), {} as MakeupHairData)
   );
 
   const current: MakeupHairData = useMemo(() => data ?? {
@@ -85,7 +41,7 @@ export function useMakeupHair(projectId: string) {
 
   const persist = useCallback(
     (next: MakeupHairData) => {
-      saveData(projectId, next);
+      saveToStorage(storageKey(projectId), next);
       mutate(next, false);
     },
     [projectId, mutate]

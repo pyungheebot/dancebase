@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { SponsorTrackingEntry, SponsorTier } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -9,30 +10,6 @@ import type { SponsorTrackingEntry, SponsorTier } from "@/types";
 
 function storageKey(groupId: string, projectId: string): string {
   return `dancebase:sponsor-tracking:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): SponsorTrackingEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as SponsorTrackingEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(
-  groupId: string,
-  projectId: string,
-  data: SponsorTrackingEntry[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -58,17 +35,17 @@ export type SponsorTrackingStats = {
 // ============================================================
 
 export function useSponsorTracking(groupId: string, projectId: string) {
-  const [sponsors, setSponsors] = useState<SponsorTrackingEntry[]>(() => loadData(groupId, projectId));
+  const [sponsors, setSponsors] = useState<SponsorTrackingEntry[]>(() => loadFromStorage<SponsorTrackingEntry[]>(storageKey(groupId, projectId), []));
 
   const reload = useCallback(() => {
     if (!groupId || !projectId) return;
-    const data = loadData(groupId, projectId);
+    const data = loadFromStorage<SponsorTrackingEntry[]>(storageKey(groupId, projectId), []);
     setSponsors(data);
   }, [groupId, projectId]);
 
   const persist = useCallback(
     (next: SponsorTrackingEntry[]) => {
-      saveData(groupId, projectId, next);
+      saveToStorage(storageKey(groupId, projectId), next);
       setSponsors(next);
     },
     [groupId, projectId]

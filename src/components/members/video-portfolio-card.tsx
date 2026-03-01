@@ -24,6 +24,7 @@ import {
   Filter,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -521,7 +522,7 @@ export function VideoPortfolioCard({ memberId, className }: VideoPortfolioCardPr
     if (ok) {
       toast.success("영상 정보가 수정되었습니다.");
     } else {
-      toast.error("수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
     setEditTarget(null);
   };
@@ -532,7 +533,7 @@ export function VideoPortfolioCard({ memberId, className }: VideoPortfolioCardPr
     if (ok) {
       toast.success("영상이 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 

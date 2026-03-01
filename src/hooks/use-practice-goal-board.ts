@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PracticeGoalBoardData,
   PracticeGoalEntry,
@@ -17,28 +18,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return `dancebase:practice-goal-board:${groupId}`;
-}
-
-function loadData(groupId: string): PracticeGoalBoardData {
-  if (typeof window === "undefined") {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return { groupId, entries: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as PracticeGoalBoardData;
-  } catch {
-    return { groupId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: PracticeGoalBoardData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(data.groupId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 // ============================================
@@ -67,7 +46,7 @@ export function usePracticeGoalBoard(groupId: string) {
 
   const { data, isLoading, mutate } = useSWR(
     groupId ? swrKeys.practiceGoalBoard(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<PracticeGoalBoardData>(storageKey(groupId), {} as PracticeGoalBoardData),
     { fallbackData: fallback, revalidateOnFocus: false }
   );
 
@@ -81,7 +60,7 @@ export function usePracticeGoalBoard(groupId: string) {
         ...next,
         updatedAt: new Date().toISOString(),
       };
-      saveData(withTs);
+      saveToStorage(storageKey(groupId), withTs);
       mutate(withTs, false);
     },
     [mutate]

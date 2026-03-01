@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   FlexibilityTestItem,
 
@@ -91,26 +92,6 @@ function getStorageKey(memberId: string): string {
   return swrKeys.flexibilityTest(memberId);
 }
 
-function loadData(memberId: string): FlexibilityTestData {
-  if (typeof window === "undefined") return { items: [], records: [] };
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) return { items: [], records: [] };
-    return JSON.parse(raw) as FlexibilityTestData;
-  } catch {
-    return { items: [], records: [] };
-  }
-}
-
-function saveData(memberId: string, data: FlexibilityTestData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
-}
-
 // ============================================================
 // 진행률 계산 헬퍼
 // ============================================================
@@ -138,15 +119,15 @@ export function calcProgress(
 
 export function useFlexibilityTest(memberId: string) {
   const [items, setItems] = useState<FlexibilityTestItem[]>(() =>
-    memberId ? loadData(memberId).items : []
+    memberId ? loadFromStorage<FlexibilityTestData>(getStorageKey(memberId), { items: [], records: [] }).items : []
   );
   const [records, setRecords] = useState<FlexibilityTestRecord[]>(() =>
-    memberId ? loadData(memberId).records : []
+    memberId ? loadFromStorage<FlexibilityTestData>(getStorageKey(memberId), { items: [], records: [] }).records : []
   );
 
   const reload = useCallback(() => {
     if (!memberId) return;
-    const data = loadData(memberId);
+    const data = loadFromStorage<FlexibilityTestData>(getStorageKey(memberId), { items: [], records: [] });
     setItems(data.items);
     setRecords(data.records);
   }, [memberId]);
@@ -154,7 +135,7 @@ export function useFlexibilityTest(memberId: string) {
   // 내부 persist 헬퍼
   const persist = useCallback(
     (nextItems: FlexibilityTestItem[], nextRecords: FlexibilityTestRecord[]) => {
-      saveData(memberId, { items: nextItems, records: nextRecords });
+      saveToStorage(getStorageKey(memberId), { items: nextItems, records: nextRecords });
       setItems(nextItems);
       setRecords(nextRecords);
     },

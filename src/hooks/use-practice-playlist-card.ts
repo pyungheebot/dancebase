@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PracticePlaylistEntry,
   PracticePlaylistTrack,
@@ -15,33 +16,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return `dancebase:practice-playlist:${groupId}`;
-}
-
-// ============================================
-// localStorage 헬퍼
-// ============================================
-
-function loadFromStorage(groupId: string): PracticePlaylistEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as PracticePlaylistEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(
-  groupId: string,
-  data: PracticePlaylistEntry[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================
@@ -78,7 +52,7 @@ export function usePracticePlaylistCard(groupId: string) {
   const swrKey = swrKeys.practicePlaylist(groupId);
 
   const { data: playlists = [], mutate } = useSWR(swrKey, () =>
-    loadFromStorage(groupId)
+    loadFromStorage<PracticePlaylistEntry[]>(storageKey(groupId), [])
   );
 
   // 상태 업데이트 + localStorage 동기화
@@ -87,7 +61,7 @@ export function usePracticePlaylistCard(groupId: string) {
       updater: (prev: PracticePlaylistEntry[]) => PracticePlaylistEntry[]
     ) => {
       const next = updater(playlists);
-      saveToStorage(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       mutate(next, false);
     },
     [groupId, playlists, mutate]

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceClassLogData,
   DanceClassLogEntry,
@@ -106,26 +107,6 @@ function makeEmpty(memberId: string): DanceClassLogData {
   };
 }
 
-function loadData(memberId: string): DanceClassLogData {
-  if (typeof window === "undefined") return makeEmpty(memberId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) return makeEmpty(memberId);
-    return JSON.parse(raw) as DanceClassLogData;
-  } catch {
-    return makeEmpty(memberId);
-  }
-}
-
-function saveData(data: DanceClassLogData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(data.memberId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
-}
-
 // ============================================================
 // 통계 타입
 // ============================================================
@@ -154,13 +135,12 @@ export function useDanceClassLog(memberId: string) {
     makeEmpty(memberId)
   );
 
-
   // 상태 업데이트 + localStorage 동기화
   const updateData = useCallback(
     (updater: (prev: DanceClassLogData) => DanceClassLogData) => {
       setData((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveData(next);
+        saveToStorage(getStorageKey(memberId), next);
         return next;
       });
     },
@@ -354,6 +334,6 @@ export function useDanceClassLog(memberId: string) {
     getByLevel,
     getMonthlyCount,
     getStats,
-    refetch: () => setData(loadData(memberId)),
+    refetch: () => setData(loadFromStorage<DanceClassLogData>(getStorageKey(memberId), {} as DanceClassLogData)),
   };
 }

@@ -45,6 +45,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useCatering } from "@/hooks/use-catering";
 import type {
   CateringEntry,
@@ -585,7 +586,7 @@ export function CateringCard({ groupId, projectId }: CateringCardProps) {
     if (ok) {
       toast.success("케이터링 항목이 수정되었습니다.");
     } else {
-      toast.error("수정에 실패했습니다.");
+      toast.error(TOAST.UPDATE_ERROR);
     }
     setEditTarget(null);
   };
@@ -595,7 +596,7 @@ export function CateringCard({ groupId, projectId }: CateringCardProps) {
     if (ok) {
       toast.success("항목이 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 

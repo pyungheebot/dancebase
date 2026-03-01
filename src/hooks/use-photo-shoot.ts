@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   PhotoShootData,
   PhotoShootPlan,
@@ -16,28 +17,6 @@ import type {
 
 function getStorageKey(projectId: string): string {
   return `dancebase:photo-shoot:${projectId}`;
-}
-
-function loadFromStorage(projectId: string): PhotoShootData {
-  const defaultData: PhotoShootData = {
-    projectId,
-    plans: [],
-    photographerName: null,
-    updatedAt: new Date().toISOString(),
-  };
-  if (typeof window === "undefined") return defaultData;
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    if (!raw) return defaultData;
-    return JSON.parse(raw) as PhotoShootData;
-  } catch {
-    return defaultData;
-  }
-}
-
-function saveToStorage(data: PhotoShootData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
 }
 
 // ============================================
@@ -63,14 +42,14 @@ export function usePhotoShoot(projectId: string) {
   // SWR 캐시 관리 (fetcher는 localStorage에서 읽음)
   const { data, mutate } = useSWR(
     swrKeys.photoShootPlan(projectId),
-    () => loadFromStorage(projectId),
+    () => loadFromStorage<PhotoShootData>(getStorageKey(projectId), {} as PhotoShootData),
     { revalidateOnFocus: false }
   );
 
   // 내부 저장 헬퍼
   const persist = useCallback(
     (next: PhotoShootData) => {
-      saveToStorage(next);
+      saveToStorage(getStorageKey(projectId), next);
       mutate(next, false);
     },
     [mutate]

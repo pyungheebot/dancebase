@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import {
   GROUP_FAQ_SETTING_KEY,
   DEFAULT_GROUP_FAQ_SETTING,
@@ -13,52 +14,13 @@ import {
   type GroupFaqSettingValue,
 } from "@/types";
 
-function loadFromStorage(groupId: string): GroupFaqSettingValue {
-  if (typeof window === "undefined") return DEFAULT_GROUP_FAQ_SETTING;
-  try {
-    const raw = localStorage.getItem(`${GROUP_FAQ_SETTING_KEY}_${groupId}`);
-    if (!raw) return DEFAULT_GROUP_FAQ_SETTING;
-    const parsed = JSON.parse(raw) as GroupFaqSettingValue;
-    // 기존 데이터에 새 필드 없는 경우 기본값 보완
-    const faqs = (parsed.faqs ?? []).map((faq) => {
-      const defaults: GroupFaq = {
-        id: faq.id,
-        question: faq.question,
-        answer: faq.answer,
-        order: faq.order ?? 0,
-        category: (faq as GroupFaq).category ?? ("기타" as GroupFaqCategory),
-        authorName: (faq as GroupFaq).authorName ?? "",
-        createdAt: (faq as GroupFaq).createdAt ?? new Date().toISOString(),
-        pinned: (faq as GroupFaq).pinned ?? false,
-      };
-      return defaults;
-    });
-    return { faqs };
-  } catch {
-    return DEFAULT_GROUP_FAQ_SETTING;
-  }
-}
-
-async function saveToStorage(
-  groupId: string,
-  value: GroupFaqSettingValue
-): Promise<{ error: null | string }> {
-  try {
-    localStorage.setItem(
-      `${GROUP_FAQ_SETTING_KEY}_${groupId}`,
-      JSON.stringify(value)
-    );
-    return { error: null };
-  } catch {
-    return { error: "저장 실패" };
-  }
-}
+const STORAGE_KEY = (groupId: string) => `${GROUP_FAQ_SETTING_KEY}_${groupId}`;
 
 export function useGroupFaq(groupId: string) {
   const swrKey = swrKeys.groupFaq(groupId);
 
   const { data, isLoading, mutate } = useSWR(swrKey, () =>
-    loadFromStorage(groupId)
+    loadFromStorage<GroupFaqSettingValue>(STORAGE_KEY(groupId), DEFAULT_GROUP_FAQ_SETTING)
   );
 
   const value = data ?? DEFAULT_GROUP_FAQ_SETTING;
@@ -68,6 +30,15 @@ export function useGroupFaq(groupId: string) {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
     return a.order - b.order;
   });
+
+  function persist(newValue: GroupFaqSettingValue): boolean {
+    try {
+      saveToStorage(STORAGE_KEY(groupId), newValue);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
   const addFaq = useCallback(
     async (faq: {
@@ -92,8 +63,7 @@ export function useGroupFaq(groupId: string) {
         faqs: [...(value.faqs ?? []), newFaq],
       };
 
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("FAQ 추가에 실패했습니다");
         return false;
       }
@@ -115,8 +85,7 @@ export function useGroupFaq(groupId: string) {
       );
       const newValue: GroupFaqSettingValue = { faqs: newFaqs };
 
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("FAQ 수정에 실패했습니다");
         return false;
       }
@@ -135,8 +104,7 @@ export function useGroupFaq(groupId: string) {
         .map((faq, index) => ({ ...faq, order: index }));
       const newValue: GroupFaqSettingValue = { faqs: newFaqs };
 
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("FAQ 삭제에 실패했습니다");
         return false;
       }
@@ -155,8 +123,7 @@ export function useGroupFaq(groupId: string) {
       );
       const newValue: GroupFaqSettingValue = { faqs: newFaqs };
 
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("고정 설정에 실패했습니다");
         return false;
       }
@@ -188,8 +155,7 @@ export function useGroupFaq(groupId: string) {
         faqs: [...pinned, ...reordered],
       };
 
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("순서 변경에 실패했습니다");
         return false;
       }

@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { GrowthTrajectory, GrowthDataPoint, GrowthDimension } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── 상수 ──────────────────────────────────────────────────────
 
@@ -19,26 +20,6 @@ const DIMENSIONS: GrowthDimension[] = [
 
 function storageKey(groupId: string): string {
   return `dancebase:growth-trajectory:${groupId}`;
-}
-
-function loadData(groupId: string): GrowthTrajectory[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as GrowthTrajectory[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: GrowthTrajectory[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
 }
 
 // ─── 유틸 ──────────────────────────────────────────────────────
@@ -108,7 +89,7 @@ function calcTrend(
 export function useGrowthTrajectory(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     groupId ? swrKeys.growthTrajectory(groupId) : null,
-    (): GrowthTrajectory[] => loadData(groupId)
+    (): GrowthTrajectory[] => loadFromStorage<GrowthTrajectory[]>(storageKey(groupId), [])
   );
 
   const trajectories = useMemo(() => data ?? [], [data]);
@@ -137,7 +118,7 @@ export function useGrowthTrajectory(groupId: string) {
     };
 
     const updated = [...trajectories, newItem];
-    saveData(groupId, updated);
+    saveToStorage(storageKey(groupId), updated);
     mutate(updated, false);
     return newItem;
   }, [trajectories, groupId, mutate]);
@@ -171,7 +152,7 @@ export function useGrowthTrajectory(groupId: string) {
     };
 
     const newList = trajectories.map((t, i) => (i === idx ? updated : t));
-    saveData(groupId, newList);
+    saveToStorage(storageKey(groupId), newList);
     mutate(newList, false);
     return true;
   }, [trajectories, groupId, mutate]);
@@ -179,7 +160,7 @@ export function useGrowthTrajectory(groupId: string) {
   /** 성장 궤적 삭제 */
   const deleteTrajectory = useCallback((id: string): void => {
     const updated = trajectories.filter((t) => t.id !== id);
-    saveData(groupId, updated);
+    saveToStorage(storageKey(groupId), updated);
     mutate(updated, false);
   }, [trajectories, groupId, mutate]);
 

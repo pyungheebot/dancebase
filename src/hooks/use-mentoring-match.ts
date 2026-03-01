@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   MentoringMatchPair,
   MentoringMatchStatus,
@@ -13,26 +14,6 @@ import type {
 
 function storageKey(groupId: string): string {
   return `dancebase:mentoring-match:${groupId}`;
-}
-
-function loadData(groupId: string): MentoringMatchPair[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MentoringMatchPair[];
-  } catch {
-    return [];
-  }
-}
-
-function saveData(groupId: string, data: MentoringMatchPair[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(data));
-  } catch {
-    // 무시
-  }
 }
 
 // ============================================================
@@ -54,17 +35,17 @@ export type MentoringMatchStats = {
 // ============================================================
 
 export function useMentoringMatch(groupId: string) {
-  const [pairs, setPairs] = useState<MentoringMatchPair[]>(() => loadData(groupId));
+  const [pairs, setPairs] = useState<MentoringMatchPair[]>(() => loadFromStorage<MentoringMatchPair[]>(storageKey(groupId), []));
 
   const reload = useCallback(() => {
     if (!groupId) return;
-    const data = loadData(groupId);
+    const data = loadFromStorage<MentoringMatchPair[]>(storageKey(groupId), []);
     setPairs(data);
   }, [groupId]);
 
   const persist = useCallback(
     (next: MentoringMatchPair[]) => {
-      saveData(groupId, next);
+      saveToStorage(storageKey(groupId), next);
       setPairs(next);
     },
     [groupId]

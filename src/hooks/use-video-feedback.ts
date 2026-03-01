@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { VideoFeedbackItem, VideoFeedbackTimestamp } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 유틸리티
@@ -11,32 +12,6 @@ import type { VideoFeedbackItem, VideoFeedbackTimestamp } from "@/types";
 
 function getStorageKey(groupId: string, projectId: string): string {
   return `dancebase:video-feedback:${groupId}:${projectId}`;
-}
-
-function loadData(groupId: string, projectId: string): VideoFeedbackItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as VideoFeedbackItem[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function persistData(
-  groupId: string,
-  projectId: string,
-  data: VideoFeedbackItem[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      getStorageKey(groupId, projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 // ============================================
@@ -47,7 +22,7 @@ export function useVideoFeedback(groupId: string, projectId: string) {
   const key = swrKeys.videoFeedback(groupId, projectId);
 
   const { data, mutate } = useSWR<VideoFeedbackItem[]>(key, () =>
-    loadData(groupId, projectId)
+    loadFromStorage<VideoFeedbackItem[]>(getStorageKey(groupId, projectId), [])
   );
 
   const videos: VideoFeedbackItem[] = useMemo(() => data ?? [], [data]);
@@ -55,7 +30,7 @@ export function useVideoFeedback(groupId: string, projectId: string) {
   /** 내부 상태 + localStorage 동기 업데이트 */
   const update = useCallback(
     (next: VideoFeedbackItem[]) => {
-      persistData(groupId, projectId, next);
+      saveToStorage(getStorageKey(groupId, projectId), next);
       mutate(next, false);
     },
     [groupId, projectId, mutate]

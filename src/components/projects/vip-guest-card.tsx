@@ -53,6 +53,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useVipGuest } from "@/hooks/use-vip-guest";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { useDeleteConfirm } from "@/hooks/use-delete-confirm";
@@ -217,7 +218,7 @@ export function VipGuestCard({
         if (ok) {
           toast.success("게스트 정보가 수정되었습니다.");
         } else {
-          toast.error("수정에 실패했습니다.");
+          toast.error(TOAST.UPDATE_ERROR);
         }
       } else {
         addEntry({
@@ -246,7 +247,7 @@ export function VipGuestCard({
     if (ok) {
       toast.success(`${target.name} 게스트가 삭제되었습니다.`);
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

@@ -3,46 +3,12 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StageSafetyData,
   SafetyInspection,
   SafetyCheckItem,
 } from "@/types";
-
-// ——————————————————————————————
-// localStorage 헬퍼
-// ——————————————————————————————
-
-function loadData(projectId: string): StageSafetyData {
-  if (typeof window === "undefined") {
-    return { projectId, inspections: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`stage-safety-check-${projectId}`);
-    if (!raw) {
-      return {
-        projectId,
-        inspections: [],
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return JSON.parse(raw) as StageSafetyData;
-  } catch {
-    return { projectId, inspections: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function persistData(data: StageSafetyData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      `stage-safety-check-${data.projectId}`,
-      JSON.stringify({ ...data, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
 
 // ——————————————————————————————
 // 파라미터 타입
@@ -63,10 +29,12 @@ export type UpdateCheckItemParams = Partial<Omit<SafetyCheckItem, "id">>;
 // 훅
 // ——————————————————————————————
 
+const STORAGE_KEY = (projectId: string) => `stage-safety-check-${projectId}`;
+
 export function useStageSafety(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.stageSafetyCheck(projectId),
-    () => loadData(projectId),
+    () => loadFromStorage<StageSafetyData>(STORAGE_KEY(projectId), {} as StageSafetyData),
     { revalidateOnFocus: false }
   );
 
@@ -79,7 +47,7 @@ export function useStageSafety(projectId: string) {
   // ——— 점검 생성 ———
   const createInspection = useCallback(
     (params: CreateInspectionParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<StageSafetyData>(STORAGE_KEY(projectId), {} as StageSafetyData);
       const newInspection: SafetyInspection = {
         id: crypto.randomUUID(),
         title: params.title,
@@ -98,7 +66,7 @@ export function useStageSafety(projectId: string) {
         inspections: [newInspection, ...current.inspections],
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -107,13 +75,13 @@ export function useStageSafety(projectId: string) {
   // ——— 점검 삭제 ———
   const deleteInspection = useCallback(
     (inspectionId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<StageSafetyData>(STORAGE_KEY(projectId), {} as StageSafetyData);
       const updated: StageSafetyData = {
         ...current,
         inspections: current.inspections.filter((i) => i.id !== inspectionId),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -122,7 +90,7 @@ export function useStageSafety(projectId: string) {
   // ——— 점검 항목 추가 ———
   const addCheckItem = useCallback(
     (inspectionId: string, params: AddCheckItemParams) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<StageSafetyData>(STORAGE_KEY(projectId), {} as StageSafetyData);
       const newItem: SafetyCheckItem = {
         id: crypto.randomUUID(),
         ...params,
@@ -136,7 +104,7 @@ export function useStageSafety(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -149,7 +117,7 @@ export function useStageSafety(projectId: string) {
       itemId: string,
       params: UpdateCheckItemParams
     ) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<StageSafetyData>(STORAGE_KEY(projectId), {} as StageSafetyData);
       const updated: StageSafetyData = {
         ...current,
         inspections: current.inspections.map((i) =>
@@ -164,7 +132,7 @@ export function useStageSafety(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -173,7 +141,7 @@ export function useStageSafety(projectId: string) {
   // ——— 점검 항목 삭제 ———
   const removeCheckItem = useCallback(
     (inspectionId: string, itemId: string) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<StageSafetyData>(STORAGE_KEY(projectId), {} as StageSafetyData);
       const updated: StageSafetyData = {
         ...current,
         inspections: current.inspections.map((i) =>
@@ -183,7 +151,7 @@ export function useStageSafety(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]
@@ -196,7 +164,7 @@ export function useStageSafety(projectId: string) {
       status: SafetyInspection["overallStatus"],
       signedBy?: string | null
     ) => {
-      const current = loadData(projectId);
+      const current = loadFromStorage<StageSafetyData>(STORAGE_KEY(projectId), {} as StageSafetyData);
       const updated: StageSafetyData = {
         ...current,
         inspections: current.inspections.map((i) =>
@@ -210,7 +178,7 @@ export function useStageSafety(projectId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      persistData(updated);
+      saveToStorage(STORAGE_KEY(projectId), updated);
       mutate(updated, false);
     },
     [projectId, mutate]

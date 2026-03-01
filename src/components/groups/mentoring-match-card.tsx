@@ -41,6 +41,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMentoringMatch } from "@/hooks/use-mentoring-match";
 import type { MentoringMatchPair, MentoringMatchStatus } from "@/types";
 
@@ -714,7 +715,7 @@ export function MentoringMatchCard({
   function handleDeletePair(id: string) {
     const ok = deletePair(id);
     if (ok) toast.success("매칭이 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   }
 
   function handleStatusChange(pairId: string, status: MentoringMatchStatus) {
@@ -740,7 +741,7 @@ export function MentoringMatchCard({
   function handleDeleteSession(pairId: string, sessionId: string) {
     const ok = deleteSession(pairId, sessionId);
     if (ok) toast.success("세션이 삭제되었습니다.");
-    else toast.error("삭제에 실패했습니다.");
+    else toast.error(TOAST.DELETE_ERROR);
   }
 
   return (

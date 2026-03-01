@@ -4,35 +4,12 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateMemberAvailability } from "@/lib/swr/invalidate";
 import type { DayOfWeek, AvailabilitySlot, MemberAvailability } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const MAX_SLOTS = 21; // 하루 3개 x 7일
 
 function getStorageKey(groupId: string, userId: string): string {
   return `dancebase:availability:${groupId}:${userId}`;
-}
-
-function loadFromStorage(groupId: string, userId: string): MemberAvailability {
-  if (typeof window === "undefined") {
-    return { userId, slots: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, userId));
-    if (!raw) {
-      return { userId, slots: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as MemberAvailability;
-  } catch {
-    return { userId, slots: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveToStorage(
-  groupId: string,
-  userId: string,
-  data: MemberAvailability
-): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId, userId), JSON.stringify(data));
 }
 
 /**
@@ -60,7 +37,7 @@ function isOverlapping(
 export function useMemberAvailability(groupId: string, userId: string) {
   const { data, mutate } = useSWR(
     groupId && userId ? swrKeys.memberAvailability(groupId, userId) : null,
-    () => loadFromStorage(groupId, userId)
+    () => loadFromStorage<MemberAvailability>(getStorageKey(groupId, userId), {} as MemberAvailability)
   );
 
   const availability: MemberAvailability = data ?? {
@@ -87,7 +64,7 @@ export function useMemberAvailability(groupId: string, userId: string) {
       slots: [...availability.slots, slot],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(groupId, userId, updated);
+    saveToStorage(getStorageKey(groupId, userId), updated);
     mutate(updated, false);
     invalidateMemberAvailability(groupId, userId);
     return "ok";
@@ -109,7 +86,7 @@ export function useMemberAvailability(groupId: string, userId: string) {
       ),
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(groupId, userId, updated);
+    saveToStorage(getStorageKey(groupId, userId), updated);
     mutate(updated, false);
     invalidateMemberAvailability(groupId, userId);
   }
@@ -132,7 +109,7 @@ export function useMemberAvailability(groupId: string, userId: string) {
       slots: [],
       updatedAt: new Date().toISOString(),
     };
-    saveToStorage(groupId, userId, updated);
+    saveToStorage(getStorageKey(groupId, userId), updated);
     mutate(updated, false);
     invalidateMemberAvailability(groupId, userId);
   }

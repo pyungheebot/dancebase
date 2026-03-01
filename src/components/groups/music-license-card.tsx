@@ -41,6 +41,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import { useMusicLicense } from "@/hooks/use-music-license";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { MusicLicenseEntry, MusicLicenseType, MusicLicenseStatus } from "@/types";
@@ -245,7 +246,7 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
         if (ok) {
           toast.success("라이선스 정보가 수정되었습니다.");
         } else {
-          toast.error("수정에 실패했습니다.");
+          toast.error(TOAST.UPDATE_ERROR);
         }
       } else {
         addLicense({
@@ -274,7 +275,7 @@ export function MusicLicenseCard({ groupId }: { groupId: string }) {
     if (ok) {
       toast.success("라이선스가 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   };
 

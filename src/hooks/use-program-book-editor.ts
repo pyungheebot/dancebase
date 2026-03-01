@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   ProgramBookEditorData,
   ProgramBookItem,
@@ -18,26 +19,6 @@ const STORAGE_PREFIX = "dancebase:program-book-editor:";
 
 function storageKey(projectId: string): string {
   return `${STORAGE_PREFIX}${projectId}`;
-}
-
-function loadData(projectId: string): ProgramBookEditorData | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(storageKey(projectId));
-    if (!raw) return null;
-    return JSON.parse(raw) as ProgramBookEditorData;
-  } catch {
-    return null;
-  }
-}
-
-function saveData(projectId: string, data: ProgramBookEditorData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(projectId), JSON.stringify(data));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
 }
 
 function emptyData(projectId: string): ProgramBookEditorData {
@@ -75,18 +56,18 @@ function parseDurationMinutes(duration: string | null): number {
 export function useProgramBookEditor(projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.programBookEditor(projectId),
-    () => loadData(projectId),
+    () => loadFromStorage<ProgramBookEditorData | null>(storageKey(projectId), {} as ProgramBookEditorData | null),
     { fallbackData: null }
   );
 
   // 데이터가 없을 때 빈 객체를 기준으로 사용
   const current = (): ProgramBookEditorData => {
-    return loadData(projectId) ?? emptyData(projectId);
+    return loadFromStorage<ProgramBookEditorData | null>(storageKey(projectId), {} as ProgramBookEditorData | null) ?? emptyData(projectId);
   };
 
   const persist = (updated: ProgramBookEditorData) => {
     const stamped = { ...updated, updatedAt: new Date().toISOString() };
-    saveData(projectId, stamped);
+    saveToStorage(storageKey(projectId), stamped);
     mutate(stamped, false);
   };
 

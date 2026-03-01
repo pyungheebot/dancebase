@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceWorkshopData,
   DanceWorkshopEntry,
@@ -77,32 +78,12 @@ function getStorageKey(memberId: string): string {
   return swrKeys.danceWorkshop(memberId);
 }
 
-function loadData(memberId: string): DanceWorkshopData {
-  if (typeof window === "undefined") return { entries: [] };
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) return { entries: [] };
-    return JSON.parse(raw) as DanceWorkshopData;
-  } catch {
-    return { entries: [] };
-  }
-}
-
-function saveData(memberId: string, data: DanceWorkshopData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
-}
-
 // ============================================================
 // 훅
 // ============================================================
 
 export function useDanceWorkshop(memberId: string) {
-  const [entries, setEntries] = useState<DanceWorkshopEntry[]>(() => loadData(memberId).entries);
+  const [entries, setEntries] = useState<DanceWorkshopEntry[]>(() => loadFromStorage<DanceWorkshopData>(getStorageKey(memberId), { entries: [] }).entries);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
@@ -110,14 +91,14 @@ export function useDanceWorkshop(memberId: string) {
       setLoading(false);
       return;
     }
-    const data = loadData(memberId);
+    const data = loadFromStorage<DanceWorkshopData>(getStorageKey(memberId), { entries: [] });
     setEntries(data.entries);
   }, [memberId]);
 
   // 내부 persist 헬퍼
   const persist = useCallback(
     (nextEntries: DanceWorkshopEntry[]) => {
-      saveData(memberId, { entries: nextEntries });
+      saveToStorage(getStorageKey(memberId), { entries: nextEntries });
       setEntries(nextEntries);
     },
     [memberId]

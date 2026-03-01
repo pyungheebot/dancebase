@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import {
   NOTICEBOARD_STORAGE_KEY,
   DEFAULT_NOTICEBOARD_DATA,
@@ -14,52 +15,13 @@ import {
   type NoticeboardData,
 } from "@/types";
 
-function loadFromStorage(groupId: string): NoticeboardData {
-  if (typeof window === "undefined") return DEFAULT_NOTICEBOARD_DATA;
-  try {
-    const raw = localStorage.getItem(`${NOTICEBOARD_STORAGE_KEY}_${groupId}`);
-    if (!raw) return DEFAULT_NOTICEBOARD_DATA;
-    const parsed = JSON.parse(raw) as NoticeboardData;
-    const posts = (parsed.posts ?? []).map((post) => ({
-      id: post.id,
-      title: post.title ?? "",
-      content: post.content ?? "",
-      authorName: post.authorName ?? "",
-      createdAt: post.createdAt ?? new Date().toISOString(),
-      category: (post.category ?? "자유") as NoticeboardPostCategory,
-      comments: (post.comments ?? []).map((c: NoticeboardComment) => ({
-        id: c.id,
-        authorName: c.authorName ?? "",
-        content: c.content ?? "",
-        createdAt: c.createdAt ?? new Date().toISOString(),
-      })),
-    }));
-    return { posts };
-  } catch {
-    return DEFAULT_NOTICEBOARD_DATA;
-  }
-}
-
-async function saveToStorage(
-  groupId: string,
-  value: NoticeboardData
-): Promise<{ error: null | string }> {
-  try {
-    localStorage.setItem(
-      `${NOTICEBOARD_STORAGE_KEY}_${groupId}`,
-      JSON.stringify(value)
-    );
-    return { error: null };
-  } catch {
-    return { error: "저장 실패" };
-  }
-}
+const STORAGE_KEY = (groupId: string) => `${NOTICEBOARD_STORAGE_KEY}_${groupId}`;
 
 export function useGroupNoticeboard(groupId: string) {
   const swrKey = swrKeys.groupNoticeboard(groupId);
 
   const { data, isLoading, mutate } = useSWR(swrKey, () =>
-    loadFromStorage(groupId)
+    loadFromStorage<NoticeboardData>(STORAGE_KEY(groupId), DEFAULT_NOTICEBOARD_DATA)
   );
 
   const value = data ?? DEFAULT_NOTICEBOARD_DATA;
@@ -68,6 +30,15 @@ export function useGroupNoticeboard(groupId: string) {
   const posts = [...(value.posts ?? [])].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
+
+  function persist(newValue: NoticeboardData): boolean {
+    try {
+      saveToStorage(STORAGE_KEY(groupId), newValue);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
   // 게시글 추가
   const addPost = useCallback(
@@ -89,8 +60,7 @@ export function useGroupNoticeboard(groupId: string) {
       const newValue: NoticeboardData = {
         posts: [...(value.posts ?? []), newPost],
       };
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("게시글 추가에 실패했습니다");
         return false;
       }
@@ -111,8 +81,7 @@ export function useGroupNoticeboard(groupId: string) {
         p.id === id ? { ...p, ...updates } : p
       );
       const newValue: NoticeboardData = { posts: newPosts };
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("게시글 수정에 실패했습니다");
         return false;
       }
@@ -128,8 +97,7 @@ export function useGroupNoticeboard(groupId: string) {
     async (id: string) => {
       const newPosts = (value.posts ?? []).filter((p) => p.id !== id);
       const newValue: NoticeboardData = { posts: newPosts };
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("게시글 삭제에 실패했습니다");
         return false;
       }
@@ -158,8 +126,7 @@ export function useGroupNoticeboard(groupId: string) {
           : p
       );
       const newValue: NoticeboardData = { posts: newPosts };
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("댓글 추가에 실패했습니다");
         return false;
       }
@@ -179,8 +146,7 @@ export function useGroupNoticeboard(groupId: string) {
           : p
       );
       const newValue: NoticeboardData = { posts: newPosts };
-      const { error } = await saveToStorage(groupId, newValue);
-      if (error) {
+      if (!persist(newValue)) {
         toast.error("댓글 삭제에 실패했습니다");
         return false;
       }

@@ -5,36 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateSessionAutoFeedback } from "@/lib/swr/invalidate";
 import type { SessionAutoFeedback } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY = (groupId: string) =>
   `dancebase:session-feedback:${groupId}`;
 const MAX_FEEDBACKS = 50;
-
-function loadFromStorage(groupId: string): SessionAutoFeedback[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as SessionAutoFeedback[];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(groupId: string, feedbacks: SessionAutoFeedback[]) {
-  try {
-    // 최대 50개 유지 (최신순)
-    const trimmed = feedbacks
-      .slice()
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
-      .slice(0, MAX_FEEDBACKS);
-    localStorage.setItem(STORAGE_KEY(groupId), JSON.stringify(trimmed));
-  } catch {
-    // localStorage 쓰기 실패는 무시
-  }
-}
 
 function buildAutoSummary(
   attendanceRate: number,
@@ -63,7 +38,7 @@ function buildAutoSummary(
 export function useSessionAutoFeedback(groupId: string) {
   const { data, mutate } = useSWR(
     swrKeys.sessionAutoFeedback(groupId),
-    () => loadFromStorage(groupId),
+    () => loadFromStorage<SessionAutoFeedback[]>(STORAGE_KEY(groupId), []),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -141,30 +116,30 @@ export function useSessionAutoFeedback(groupId: string) {
    * 같은 scheduleId가 이미 있으면 덮어씁니다.
    */
   const saveFeedback = (feedback: SessionAutoFeedback) => {
-    const current = loadFromStorage(groupId);
+    const current = loadFromStorage<SessionAutoFeedback[]>(STORAGE_KEY(groupId), []);
     const filtered = current.filter((f) => f.scheduleId !== feedback.scheduleId);
     const updated = [feedback, ...filtered];
-    saveToStorage(groupId, updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     invalidateSessionAutoFeedback(groupId);
-    mutate(loadFromStorage(groupId));
+    mutate(loadFromStorage<SessionAutoFeedback[]>(STORAGE_KEY(groupId), []));
   };
 
   /**
    * 특정 피드백을 id로 삭제합니다.
    */
   const deleteFeedback = (feedbackId: string) => {
-    const current = loadFromStorage(groupId);
+    const current = loadFromStorage<SessionAutoFeedback[]>(STORAGE_KEY(groupId), []);
     const updated = current.filter((f) => f.id !== feedbackId);
-    saveToStorage(groupId, updated);
+    saveToStorage(STORAGE_KEY(groupId), updated);
     invalidateSessionAutoFeedback(groupId);
-    mutate(loadFromStorage(groupId));
+    mutate(loadFromStorage<SessionAutoFeedback[]>(STORAGE_KEY(groupId), []));
   };
 
   /**
    * 저장된 피드백 전체를 반환합니다. (최신순)
    */
   const getFeedbacks = (): SessionAutoFeedback[] => {
-    return loadFromStorage(groupId).sort(
+    return loadFromStorage<SessionAutoFeedback[]>(STORAGE_KEY(groupId), []).sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   DanceMilestoneData,
   DanceMilestoneGoal,
@@ -15,26 +16,6 @@ import type {
 
 function getStorageKey(memberId: string): string {
   return swrKeys.danceMilestone(memberId);
-}
-
-function loadData(memberId: string): DanceMilestoneData {
-  if (typeof window === "undefined") return { goals: [] };
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) return { goals: [] };
-    return JSON.parse(raw) as DanceMilestoneData;
-  } catch {
-    return { goals: [] };
-  }
-}
-
-function saveData(memberId: string, data: DanceMilestoneData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(memberId), JSON.stringify(data));
-  } catch {
-    // 저장 실패 시 무시
-  }
 }
 
 // ============================================================
@@ -52,7 +33,7 @@ export function calcGoalProgress(goal: DanceMilestoneGoal): number {
 // ============================================================
 
 export function useDanceMilestone(memberId: string) {
-  const [goals, setGoals] = useState<DanceMilestoneGoal[]>(() => loadData(memberId).goals);
+  const [goals, setGoals] = useState<DanceMilestoneGoal[]>(() => loadFromStorage<DanceMilestoneData>(getStorageKey(memberId), { goals: [] }).goals);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(() => {
@@ -60,14 +41,14 @@ export function useDanceMilestone(memberId: string) {
       setLoading(false);
       return;
     }
-    const data = loadData(memberId);
+    const data = loadFromStorage<DanceMilestoneData>(getStorageKey(memberId), { goals: [] });
     setGoals(data.goals);
   }, [memberId]);
 
   // 내부 persist 헬퍼
   const persist = useCallback(
     (nextGoals: DanceMilestoneGoal[]) => {
-      saveData(memberId, { goals: nextGoals });
+      saveToStorage(getStorageKey(memberId), { goals: nextGoals });
       setGoals(nextGoals);
     },
     [memberId]

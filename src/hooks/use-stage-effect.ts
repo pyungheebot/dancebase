@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   StageEffectData,
   StageEffectEntry,
@@ -20,33 +21,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:stage-effect:${groupId}:${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): StageEffectData {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) {
-      return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as StageEffectData;
-  } catch {
-    return { groupId, projectId, entries: [], updatedAt: new Date().toISOString() };
-  }
-}
-
-function saveData(data: StageEffectData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(data.groupId, data.projectId),
-      JSON.stringify(data)
-    );
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
 // ============================================
 // 훅
 // ============================================
@@ -54,7 +28,7 @@ function saveData(data: StageEffectData): void {
 export function useStageEffect(groupId: string, projectId: string) {
   const { data, isLoading, mutate } = useSWR(
     swrKeys.stageEffect(groupId, projectId),
-    () => loadData(groupId, projectId),
+    () => loadFromStorage<StageEffectData>(storageKey(groupId, projectId), {} as StageEffectData),
     {
       fallbackData: {
         groupId,
@@ -83,7 +57,7 @@ export function useStageEffect(groupId: string, projectId: string) {
       operator?: string;
       notes?: string;
     }): StageEffectEntry => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<StageEffectData>(storageKey(groupId, projectId), {} as StageEffectData);
       const now = new Date().toISOString();
       const newEntry: StageEffectEntry = {
         id: crypto.randomUUID(),
@@ -111,7 +85,7 @@ export function useStageEffect(groupId: string, projectId: string) {
         entries: updatedEntries,
         updatedAt: now,
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return newEntry;
     },
@@ -137,7 +111,7 @@ export function useStageEffect(groupId: string, projectId: string) {
         notes: string;
       }>
     ): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<StageEffectData>(storageKey(groupId, projectId), {} as StageEffectData);
       const idx = current.entries.findIndex((e) => e.id === entryId);
       if (idx === -1) return false;
 
@@ -161,7 +135,7 @@ export function useStageEffect(groupId: string, projectId: string) {
         entries: updatedEntries,
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },
@@ -171,7 +145,7 @@ export function useStageEffect(groupId: string, projectId: string) {
   // 큐 삭제
   const deleteEntry = useCallback(
     (entryId: string): boolean => {
-      const current = loadData(groupId, projectId);
+      const current = loadFromStorage<StageEffectData>(storageKey(groupId, projectId), {} as StageEffectData);
       const exists = current.entries.some((e) => e.id === entryId);
       if (!exists) return false;
 
@@ -180,7 +154,7 @@ export function useStageEffect(groupId: string, projectId: string) {
         entries: current.entries.filter((e) => e.id !== entryId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(updated);
+      saveToStorage(storageKey(groupId, projectId), updated);
       mutate(updated, false);
       return true;
     },

@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   ShowIntercomData,
   ShowIntercomChannel,
@@ -17,27 +18,6 @@ import type {
 
 function getStorageKey(projectId: string): string {
   return `dancebase:show-intercom:${projectId}`;
-}
-
-function loadFromStorage(projectId: string): ShowIntercomData {
-  const defaultData: ShowIntercomData = {
-    projectId,
-    channels: [],
-    updatedAt: new Date().toISOString(),
-  };
-  if (typeof window === "undefined") return defaultData;
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    if (!raw) return defaultData;
-    return JSON.parse(raw) as ShowIntercomData;
-  } catch {
-    return defaultData;
-  }
-}
-
-function saveToStorage(data: ShowIntercomData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
 }
 
 // ============================================
@@ -63,13 +43,13 @@ export type IntercomPersonInput = {
 export function useIntercom(projectId: string) {
   const { data, mutate } = useSWR(
     swrKeys.showIntercom(projectId),
-    () => loadFromStorage(projectId),
+    () => loadFromStorage<ShowIntercomData>(getStorageKey(projectId), {} as ShowIntercomData),
     { revalidateOnFocus: false }
   );
 
   const persist = useCallback(
     (next: ShowIntercomData) => {
-      saveToStorage(next);
+      saveToStorage(getStorageKey(projectId), next);
       mutate(next, false);
     },
     [mutate]

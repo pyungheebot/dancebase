@@ -36,6 +36,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TOAST } from "@/lib/toast-messages";
 import {
   usePracticeTimerLog,
 } from "@/hooks/use-practice-timer-log";
@@ -562,7 +563,7 @@ export function PracticeTimerLogCard({
     if (ok) {
       toast.success("기록이 삭제되었습니다.");
     } else {
-      toast.error("삭제에 실패했습니다.");
+      toast.error(TOAST.DELETE_ERROR);
     }
   }
 

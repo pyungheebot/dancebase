@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   VenueMgmtData,
   VenueMgmtVenue,
@@ -42,27 +43,6 @@ function getStorageKey(projectId: string): string {
   return `dancebase:venue-management:${projectId}`;
 }
 
-function loadFromStorage(projectId: string): VenueMgmtData {
-  const defaultData: VenueMgmtData = {
-    projectId,
-    venues: [],
-    updatedAt: new Date().toISOString(),
-  };
-  if (typeof window === "undefined") return defaultData;
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    if (!raw) return defaultData;
-    return JSON.parse(raw) as VenueMgmtData;
-  } catch {
-    return defaultData;
-  }
-}
-
-function saveToStorage(data: VenueMgmtData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(data.projectId), JSON.stringify(data));
-}
-
 // ============================================
 // 입력 타입
 // ============================================
@@ -86,13 +66,13 @@ export type VenueMgmtVenueInput = {
 export function useVenueManagement(projectId: string) {
   const { data, mutate } = useSWR(
     swrKeys.venueManagement(projectId),
-    () => loadFromStorage(projectId),
+    () => loadFromStorage<VenueMgmtData>(getStorageKey(projectId), {} as VenueMgmtData),
     { revalidateOnFocus: false }
   );
 
   const persist = useCallback(
     (next: VenueMgmtData) => {
-      saveToStorage(next);
+      saveToStorage(getStorageKey(projectId), next);
       mutate(next, false);
     },
     [mutate]

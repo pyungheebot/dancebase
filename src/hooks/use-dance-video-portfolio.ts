@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { DanceVideoItem, DanceVideoPortfolioData } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -15,23 +16,6 @@ function makeEmpty(memberId: string): DanceVideoPortfolioData {
     videos: [],
     updatedAt: new Date().toISOString(),
   };
-}
-
-function loadData(memberId: string): DanceVideoPortfolioData {
-  if (typeof window === "undefined") return makeEmpty(memberId);
-  try {
-    const key = swrKeys.danceVideoPortfolio(memberId);
-    const raw = localStorage.getItem(key);
-    if (!raw) return makeEmpty(memberId);
-    return JSON.parse(raw) as DanceVideoPortfolioData;
-  } catch {
-    return makeEmpty(memberId);
-  }
-}
-
-function saveData(data: DanceVideoPortfolioData): void {
-  const key = swrKeys.danceVideoPortfolio(data.memberId);
-  localStorage.setItem(key, JSON.stringify(data));
 }
 
 // ============================================================
@@ -114,10 +98,12 @@ function computeStats(videos: DanceVideoItem[]): VideoStats {
 // 훅
 // ============================================================
 
+const STORAGE_KEY = (id: string) => `dancebase:dance-video-portfolio:${id}`;
+
 export function useDanceVideoPortfolio(memberId: string) {
   const { data, mutate } = useSWR(
     memberId ? swrKeys.danceVideoPortfolio(memberId) : null,
-    () => loadData(memberId),
+    () => loadFromStorage<DanceVideoPortfolioData>(STORAGE_KEY(memberId), {} as DanceVideoPortfolioData),
     {
       fallbackData: makeEmpty(memberId),
       revalidateOnFocus: false,
@@ -143,7 +129,7 @@ export function useDanceVideoPortfolio(memberId: string) {
         videos: [newVideo, ...portfolioData.videos],
         updatedAt: new Date().toISOString(),
       };
-      saveData(next);
+      saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
     [portfolioData, mutate]
@@ -162,7 +148,7 @@ export function useDanceVideoPortfolio(memberId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      saveData(next);
+      saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
     [portfolioData, mutate]
@@ -176,7 +162,7 @@ export function useDanceVideoPortfolio(memberId: string) {
         videos: portfolioData.videos.filter((v) => v.id !== videoId),
         updatedAt: new Date().toISOString(),
       };
-      saveData(next);
+      saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
     [portfolioData, mutate]
@@ -192,7 +178,7 @@ export function useDanceVideoPortfolio(memberId: string) {
         ),
         updatedAt: new Date().toISOString(),
       };
-      saveData(next);
+      saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
     [portfolioData, mutate]

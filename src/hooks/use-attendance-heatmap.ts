@@ -3,32 +3,11 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { HeatmapDayData, AttendanceHeatmapData } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── localStorage 헬퍼 ───────────────────────────────────────
 
 const LS_KEY = (groupId: string) => `dancebase:heatmap:${groupId}`;
-
-/** localStorage에서 멤버 맵 로드 */
-function loadData(groupId: string): Record<string, HeatmapDayData[]> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return {};
-    return JSON.parse(raw) as Record<string, HeatmapDayData[]>;
-  } catch {
-    return {};
-  }
-}
-
-/** localStorage에 멤버 맵 저장 */
-function saveData(groupId: string, data: Record<string, HeatmapDayData[]>): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(data));
-  } catch {
-    /* ignore */
-  }
-}
 
 // ─── 날짜 헬퍼 ──────────────────────────────────────────────
 
@@ -140,7 +119,7 @@ function getHeatmapData(
 export function useAttendanceHeatmap(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.attendanceHeatmap(groupId) : null,
-    () => loadData(groupId),
+    () => loadFromStorage<Record<string, HeatmapDayData[]>>(LS_KEY(groupId), {} as Record<string, HeatmapDayData[]>),
     { revalidateOnFocus: false }
   );
 
@@ -151,7 +130,7 @@ export function useAttendanceHeatmap(groupId: string) {
   // ── 내부 업데이트 헬퍼 ───────────────────────────────────
 
   function update(next: Record<string, HeatmapDayData[]>): void {
-    saveData(groupId, next);
+    saveToStorage(LS_KEY(groupId), next);
     mutate(next, false);
   }
 
@@ -160,7 +139,7 @@ export function useAttendanceHeatmap(groupId: string) {
   function addMember(name: string): boolean {
     const trimmed = name.trim();
     if (!trimmed) return false;
-    const stored = loadData(groupId);
+    const stored = loadFromStorage<Record<string, HeatmapDayData[]>>(LS_KEY(groupId), {} as Record<string, HeatmapDayData[]>);
     if (trimmed in stored) return false;
     update({ ...stored, [trimmed]: [] });
     return true;
@@ -169,7 +148,7 @@ export function useAttendanceHeatmap(groupId: string) {
   // ── 멤버 삭제 ────────────────────────────────────────────
 
   function removeMember(name: string): boolean {
-    const stored = loadData(groupId);
+    const stored = loadFromStorage<Record<string, HeatmapDayData[]>>(LS_KEY(groupId), {} as Record<string, HeatmapDayData[]>);
     if (!(name in stored)) return false;
     const next = { ...stored };
     delete next[name];
@@ -184,7 +163,7 @@ export function useAttendanceHeatmap(groupId: string) {
     const trimmedActivity = activity.trim();
     if (!trimmedName || !date || !trimmedActivity) return false;
 
-    const stored = loadData(groupId);
+    const stored = loadFromStorage<Record<string, HeatmapDayData[]>>(LS_KEY(groupId), {} as Record<string, HeatmapDayData[]>);
     if (!(trimmedName in stored)) return false;
 
     const days = stored[trimmedName];
@@ -214,7 +193,7 @@ export function useAttendanceHeatmap(groupId: string) {
   // ── 활동 제거 ────────────────────────────────────────────
 
   function removeActivity(memberName: string, date: string, activity?: string): boolean {
-    const stored = loadData(groupId);
+    const stored = loadFromStorage<Record<string, HeatmapDayData[]>>(LS_KEY(groupId), {} as Record<string, HeatmapDayData[]>);
     if (!(memberName in stored)) return false;
 
     const days = stored[memberName];
@@ -246,7 +225,7 @@ export function useAttendanceHeatmap(groupId: string) {
   // ── 데모 데이터 생성 ─────────────────────────────────────
 
   function generateDemoDataForMember(memberName: string): boolean {
-    const stored = loadData(groupId);
+    const stored = loadFromStorage<Record<string, HeatmapDayData[]>>(LS_KEY(groupId), {} as Record<string, HeatmapDayData[]>);
     if (!(memberName in stored)) return false;
 
     const year = new Date().getFullYear();
