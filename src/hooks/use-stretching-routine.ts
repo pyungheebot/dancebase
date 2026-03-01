@@ -45,7 +45,7 @@ function saveLogs(memberId: string, logs: StretchingLog[]): void {
 
 // ─── 총 시간 계산 ─────────────────────────────────────────────
 
-function calcTotalMinutes(exercises: StretchingExercise[]): number {
+export function calcTotalMinutes(exercises: StretchingExercise[]): number {
   const totalSeconds = exercises.reduce(
     (sum, ex) => sum + ex.durationSeconds * ex.sets,
     0
@@ -55,7 +55,7 @@ function calcTotalMinutes(exercises: StretchingExercise[]): number {
 
 // ─── 연속 기록 계산 ───────────────────────────────────────────
 
-function calcStreakDays(logs: StretchingLog[]): number {
+export function calcStreakDays(logs: StretchingLog[]): number {
   if (logs.length === 0) return 0;
   const dates = [...new Set(logs.map((l) => l.date))].sort().reverse();
   const today = new Date().toISOString().split("T")[0];
