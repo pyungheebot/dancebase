@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, startTransition } from "react";
-import { format } from "date-fns";
+import { formatTime } from "@/lib/date-utils";
 import { formatShortDate } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -45,9 +45,9 @@ function ScheduleRow({ schedule }: { schedule: ScheduleWithDetails }) {
       <div className="text-xs text-muted-foreground w-32 shrink-0">
         <div>{formatShortDate(new Date(schedule.starts_at))}</div>
         <div>
-          {format(new Date(schedule.starts_at), "HH:mm")}
+          {formatTime(new Date(schedule.starts_at))}
           {" - "}
-          {format(new Date(schedule.ends_at), "HH:mm")}
+          {formatTime(new Date(schedule.ends_at))}
         </div>
       </div>
 

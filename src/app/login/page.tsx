@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth/auth-form";
+
+export const metadata: Metadata = {
+  title: "로그인 | Groop",
+  description: "Groop에 로그인하여 댄스 그룹을 관리하세요.",
+};
 
 export default async function LoginPage({
   searchParams,

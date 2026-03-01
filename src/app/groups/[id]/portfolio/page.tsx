@@ -1,5 +1,29 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { GroupPortfolioPage } from "@/components/groups/group-portfolio-page";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: group } = await supabase
+    .from("groups")
+    .select("name, description")
+    .eq("id", id)
+    .single();
+
+  return {
+    title: group ? `${group.name} 포트폴리오 | Groop` : "포트폴리오 | Groop",
+    description: group?.description ?? "댄스 그룹 포트폴리오",
+    openGraph: {
+      title: group ? `${group.name} 포트폴리오` : "그룹 포트폴리오",
+      description: group?.description ?? "댄스 그룹 포트폴리오",
+    },
+  };
+}
 
 export default async function GroupPortfolioRoute({
   params,

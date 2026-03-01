@@ -22,7 +22,7 @@ import { CardGridSkeleton } from "@/components/shared/page-skeleton";
 import { CardErrorBoundary } from "@/components/shared/card-error-boundary";
 import { Plus, Calendar, Bell, AlertCircle, CreditCard, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { formatTime } from "@/lib/date-utils";
 import { formatMonthDay, formatRelative } from "@/lib/date-utils";
 
 export default function DashboardPage() {
@@ -82,8 +82,8 @@ export default function DashboardPage() {
                 <ul className="space-y-2">
                   {todaySchedules.map((s) => (
                     <li key={s.id} className="flex items-start gap-2">
-                      <span className="text-xs text-muted-foreground shrink-0 pt-0.5 w-10" aria-label={`시간: ${format(new Date(s.starts_at), "HH:mm")}`}>
-                        {format(new Date(s.starts_at), "HH:mm")}
+                      <span className="text-xs text-muted-foreground shrink-0 pt-0.5 w-10" aria-label={`시간: ${formatTime(new Date(s.starts_at))}`}>
+                        {formatTime(new Date(s.starts_at))}
                       </span>
                       <div className="min-w-0">
                         <p className="text-xs font-medium truncate">{s.title}</p>

@@ -46,7 +46,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [fontScale, setFontScaleState] = useState<number>(DEFAULT_SETTINGS.fontScale);
   const [mounted, setMounted] = useState(false);
 
-  // 초기 로드: localStorage에서 읽기
+  // 초기 로드: localStorage에서 읽기 (마운트 시 1회)
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const saved = loadFromStorage<Partial<Settings>>("groop-settings", {});
     if (saved.theme) {
@@ -59,6 +60,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
     setMounted(true);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const persist = useCallback((updates: Partial<Settings>) => {
     try {

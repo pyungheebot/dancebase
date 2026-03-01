@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, DollarSign, MessageSquare } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Groop - 댄서를 위한 그룹 관리 서비스",
+  description: "일정 관리부터 출석 체크, 회비 정산, 게시판까지. 댄스 그룹 운영에 필요한 모든 것을 한 곳에서.",
+};
 
 export default async function RootPage() {
   const supabase = await createClient();
@@ -16,7 +22,7 @@ export default async function RootPage() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* 헤더 */}
       <header className="border-b px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight">DanceBase</h1>
+        <h1 className="text-xl font-bold tracking-tight">Groop</h1>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/login">로그인</Link>
@@ -94,7 +100,7 @@ export default async function RootPage() {
 
       {/* 푸터 */}
       <footer className="border-t px-6 py-4 text-center">
-        <p className="text-xs text-muted-foreground">DanceBase - 댄스 그룹 관리 플랫폼</p>
+        <p className="text-xs text-muted-foreground">Groop - 댄서를 위한 그룹 관리 서비스</p>
       </footer>
     </div>
   );

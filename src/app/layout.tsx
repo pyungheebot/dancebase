@@ -34,6 +34,19 @@ export const metadata: Metadata = {
   icons: {
     apple: "/icons/icon-192.svg",
   },
+  openGraph: {
+    title: "Groop - 댄서를 위한 그룹 관리 서비스",
+    description: "일정 관리, 출석 체크, 회비 정산, 게시판까지. 댄스 그룹 운영에 필요한 모든 것.",
+    url: "https://dancebase.app",
+    siteName: "Groop",
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Groop - 댄서를 위한 그룹 관리 서비스",
+    description: "일정 관리, 출석 체크, 회비 정산, 게시판까지. 댄스 그룹 운영에 필요한 모든 것.",
+  },
 };
 
 export default function RootLayout({
