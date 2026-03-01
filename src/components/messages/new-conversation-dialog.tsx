@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Search } from "lucide-react";
+import { useDialogForm } from "@/hooks/use-dialog-form";
 
 interface SearchResult {
   id: string;
@@ -32,7 +33,10 @@ export function NewConversationDialog({
 }: NewConversationDialogProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const [query, setQuery] = useState("");
+  const { values, setValue, handleOpenChange } = useDialogForm(
+    { query: "" },
+    { onClose: () => onOpenChange(false) }
+  );
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
 
@@ -58,20 +62,23 @@ export function NewConversationDialog({
   // 디바운스 검색
   useEffect(() => {
     const timer = setTimeout(() => {
-      search(query);
+      search(values.query);
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, search]);
+  }, [values.query, search]);
+
+  // 다이얼로그 닫힐 때 results도 초기화
+  useEffect(() => {
+    if (!open) setResults([]);
+  }, [open]);
 
   const handleSelect = (userId: string) => {
-    onOpenChange(false);
-    setQuery("");
-    setResults([]);
+    handleOpenChange(false);
     router.push(`/messages/${userId}`);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>새 대화</DialogTitle>
@@ -81,8 +88,8 @@ export function NewConversationDialog({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="이름으로 검색"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={values.query}
+            onChange={(e) => setValue("query", e.target.value)}
             className="pl-9"
             autoFocus
           />
@@ -93,7 +100,7 @@ export function NewConversationDialog({
             <div className="flex justify-center py-6">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
-          ) : results.length === 0 && query.trim() ? (
+          ) : results.length === 0 && values.query.trim() ? (
             <p className="text-sm text-muted-foreground text-center py-6">
               검색 결과가 없습니다
             </p>

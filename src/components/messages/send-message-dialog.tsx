@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { sanitizeText } from "@/lib/sanitize";
+import { useDialogForm } from "@/hooks/use-dialog-form";
 
 interface SendMessageDialogProps {
   receiverId: string;
@@ -29,14 +30,21 @@ export function SendMessageDialog({
   onOpenChange,
   defaultContent = "",
 }: SendMessageDialogProps) {
-  const [content, setContent] = useState(defaultContent);
+  const { values, setValue, handleOpenChange } = useDialogForm(
+    { content: defaultContent, sent: false },
+    { onClose: () => onOpenChange(false) }
+  );
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
   const { user } = useAuth();
   const supabase = createClient();
 
+  const handleClose = (value: boolean) => {
+    handleOpenChange(value);
+    if (!value) onOpenChange(false);
+  };
+
   const handleSend = async () => {
-    if (!content.trim() || sending) return;
+    if (!values.content.trim() || sending) return;
     setSending(true);
 
     if (!user) {
@@ -47,22 +55,14 @@ export function SendMessageDialog({
     const { error } = await supabase.from("messages").insert({
       sender_id: user.id,
       receiver_id: receiverId,
-      content: sanitizeText(content),
+      content: sanitizeText(values.content),
     });
 
     setSending(false);
     if (!error) {
-      setSent(true);
-      setContent("");
+      setValue("sent", true);
+      setValue("content", "");
     }
-  };
-
-  const handleClose = (value: boolean) => {
-    if (!value) {
-      setSent(false);
-      setContent(defaultContent);
-    }
-    onOpenChange(value);
   };
 
   return (
@@ -72,7 +72,7 @@ export function SendMessageDialog({
           <DialogTitle>{receiverName}님에게 메시지 보내기</DialogTitle>
         </DialogHeader>
 
-        {sent ? (
+        {values.sent ? (
           <div className="space-y-3 text-center py-2">
             <p className="text-sm text-muted-foreground">메시지를 보냈습니다</p>
             <div className="flex gap-2 justify-center">
@@ -89,19 +89,19 @@ export function SendMessageDialog({
             <div className="space-y-1">
               <Textarea
                 placeholder="메시지 내용을 입력하세요"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+                value={values.content}
+                onChange={(e) => setValue("content", e.target.value)}
                 maxLength={2000}
                 rows={4}
               />
               <p className="text-right text-[11px] text-muted-foreground tabular-nums">
-                {content.length} / 2000
+                {values.content.length} / 2000
               </p>
             </div>
             <Button
               className="w-full"
               onClick={handleSend}
-              disabled={!content.trim() || sending}
+              disabled={!values.content.trim() || sending}
             >
               {sending ? "전송 중..." : "보내기"}
             </Button>
