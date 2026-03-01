@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type { ChoreographyNote, ChoreographySection } from "@/types";
 
 const MAX_NOTES = 5;
@@ -15,12 +16,7 @@ function saveNotes(
   projectId: string,
   notes: ChoreographyNote[]
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(notes));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId, projectId), notes);
 }
 
 export function useChoreographyNotes(groupId: string, projectId: string) {

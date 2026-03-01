@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { ChoreoVersion, ChoreoVersionStatus, ChoreoVersionStore, ChoreoSectionNote } from "@/types";
 
 // ============================================
@@ -25,23 +26,14 @@ const DEFAULT_STORE: ChoreoVersionStore = {
 };
 
 function loadStore(groupId: string, projectId: string): ChoreoVersionStore {
-  if (typeof window === "undefined") return { ...DEFAULT_STORE };
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return { ...DEFAULT_STORE };
-    return JSON.parse(raw) as ChoreoVersionStore;
-  } catch {
-    return { ...DEFAULT_STORE };
-  }
+  return loadFromStorage<ChoreoVersionStore>(
+    storageKey(groupId, projectId),
+    { ...DEFAULT_STORE }
+  );
 }
 
 function saveStore(groupId: string, projectId: string, store: ChoreoVersionStore): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId, projectId), JSON.stringify(store));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId, projectId), store);
 }
 
 // ============================================

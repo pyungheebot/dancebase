@@ -2,35 +2,27 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   AttendanceForecastSession,
   AttendanceForecastResponse,
   AttendanceForecastIntent,
 } from "@/types";
 
-// ─── localStorage 헬퍼 ────────────────────────────────────────
+// ─── localStorage 키 ──────────────────────────────────────────
 
-function getStorageKey(groupId: string) {
-  return `dancebase:attendance-forecast:${groupId}`;
-}
+const storageKey = (groupId: string) =>
+  `dancebase:attendance-forecast:${groupId}`;
 
 function loadSessions(groupId: string): AttendanceForecastSession[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    // 기존 AttendanceForecastData 형태이면 무시하고 빈 배열 반환
-    if (!Array.isArray(parsed)) return [];
-    return parsed as AttendanceForecastSession[];
-  } catch {
-    return [];
-  }
+  const parsed = loadFromStorage<unknown>(storageKey(groupId), []);
+  // 기존 AttendanceForecastData 형태이면 무시하고 빈 배열 반환
+  if (!Array.isArray(parsed)) return [];
+  return parsed as AttendanceForecastSession[];
 }
 
 function saveSessions(groupId: string, sessions: AttendanceForecastSession[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(sessions));
+  saveToStorage(storageKey(groupId), sessions);
 }
 
 // ─── 유틸: 날짜 비교 ──────────────────────────────────────────

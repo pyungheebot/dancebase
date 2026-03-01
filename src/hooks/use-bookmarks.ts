@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { AuthResponse } from "@supabase/supabase-js";
 import type { BookmarkItem, BookmarkTargetType } from "@/types";
 
@@ -12,19 +13,11 @@ function getStorageKey(userId: string): string {
 }
 
 function loadBookmarks(userId: string): BookmarkItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(userId));
-    if (!raw) return [];
-    return JSON.parse(raw) as BookmarkItem[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<BookmarkItem[]>(getStorageKey(userId), []);
 }
 
 function saveBookmarks(userId: string, items: BookmarkItem[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(userId), JSON.stringify(items));
+  saveToStorage(getStorageKey(userId), items);
 }
 
 export function useBookmarks() {

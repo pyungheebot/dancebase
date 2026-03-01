@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { BattleMatch, BattleStats } from "@/types";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
@@ -9,19 +10,11 @@ import type { BattleMatch, BattleStats } from "@/types";
 const STORAGE_KEY = (groupId: string) => `dancebase:battles:${groupId}`;
 
 function loadMatches(groupId: string): BattleMatch[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as BattleMatch[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<BattleMatch[]>(STORAGE_KEY(groupId), []);
 }
 
 function saveMatches(groupId: string, matches: BattleMatch[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY(groupId), JSON.stringify(matches));
+  saveToStorage(STORAGE_KEY(groupId), matches);
 }
 
 // ─── 전적 계산 ───────────────────────────────────────────────

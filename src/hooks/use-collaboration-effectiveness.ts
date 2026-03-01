@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { CollabDimension, CollabEvaluation, CollabSummary } from "@/types";
 
 // ============================================
@@ -42,23 +43,11 @@ function storageKey(groupId: string): string {
 }
 
 function loadEvaluations(groupId: string): CollabEvaluation[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as CollabEvaluation[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<CollabEvaluation[]>(storageKey(groupId), []);
 }
 
 function saveEvaluations(groupId: string, evals: CollabEvaluation[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(evals));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId), evals);
 }
 
 // ============================================

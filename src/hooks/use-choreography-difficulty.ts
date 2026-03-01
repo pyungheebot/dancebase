@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   ChoreographyDifficultyEntry,
   DifficultyCategory,
@@ -41,14 +42,10 @@ function loadEntries(
   groupId: string,
   projectId: string
 ): ChoreographyDifficultyEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ChoreographyDifficultyEntry[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<ChoreographyDifficultyEntry[]>(
+    storageKey(groupId, projectId),
+    []
+  );
 }
 
 function saveEntries(
@@ -56,15 +53,7 @@ function saveEntries(
   projectId: string,
   entries: ChoreographyDifficultyEntry[]
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(groupId, projectId),
-      JSON.stringify(entries)
-    );
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId, projectId), entries);
 }
 
 // ============================================

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import {
   BOARD_REACTION_EMOJIS,
   type BoardReactionEmoji,
@@ -15,27 +16,15 @@ function getStorageKey(postId: string): string {
 }
 
 function loadReactions(postId: string): BoardReactionsData {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(postId));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as BoardReactionsData;
-    // 유효성 검증: emoji 목록에 없는 항목 필터링
-    return parsed.filter((entry) =>
-      (BOARD_REACTION_EMOJIS as readonly string[]).includes(entry.emoji)
-    );
-  } catch {
-    return [];
-  }
+  const parsed = loadFromStorage<BoardReactionsData>(getStorageKey(postId), []);
+  // 유효성 검증: emoji 목록에 없는 항목 필터링
+  return parsed.filter((entry) =>
+    (BOARD_REACTION_EMOJIS as readonly string[]).includes(entry.emoji)
+  );
 }
 
 function saveReactions(postId: string, data: BoardReactionsData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(postId), JSON.stringify(data));
-  } catch {
-    // localStorage 저장 실패 시 무시
-  }
+  saveToStorage(getStorageKey(postId), data);
 }
 
 /**

@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { BudgetScenario, ScenarioResult } from "@/types";
 
 const MAX_SCENARIOS = 5;
@@ -12,18 +13,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadScenarios(groupId: string): BudgetScenario[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as BudgetScenario[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<BudgetScenario[]>(getStorageKey(groupId), []);
 }
 
 function saveScenarios(groupId: string, scenarios: BudgetScenario[]): void {
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(scenarios));
+  saveToStorage(getStorageKey(groupId), scenarios);
 }
 
 function calcResult(scenario: BudgetScenario): ScenarioResult {

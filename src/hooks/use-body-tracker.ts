@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { BodyTrackerEntry } from "@/types";
 
 // ============================================
@@ -18,23 +19,11 @@ function storageKey(memberId: string): string {
 // ============================================
 
 function loadEntries(memberId: string): BodyTrackerEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(memberId));
-    if (!raw) return [];
-    return JSON.parse(raw) as BodyTrackerEntry[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<BodyTrackerEntry[]>(storageKey(memberId), []);
 }
 
 function saveEntries(memberId: string, entries: BodyTrackerEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(memberId), JSON.stringify(entries));
-  } catch {
-    // localStorage 쓰기 실패 시 무시
-  }
+  saveToStorage(storageKey(memberId), entries);
 }
 
 // ============================================

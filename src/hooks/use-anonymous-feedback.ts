@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type { AnonymousFeedback, FeedbackCategory } from "@/types";
 
 // ============================================
@@ -26,14 +27,8 @@ function storageKey(groupId: string): string {
 // localStorage 유틸
 // ============================================
 
-
 function saveAll(groupId: string, feedbacks: AnonymousFeedback[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(feedbacks));
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId), feedbacks);
 }
 
 // ============================================

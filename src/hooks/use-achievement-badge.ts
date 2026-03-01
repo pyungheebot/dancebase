@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   AchievementBadgeEntry,
   AchievementBadgeCategory,
@@ -9,31 +10,11 @@ import type {
 } from "@/types";
 
 // ============================================================
-// localStorage 유틸
+// localStorage 키
 // ============================================================
 
-function getStorageKey(memberId: string): string {
-  return `dancebase:achievement-badge:${memberId}`;
-}
-
-function loadEntries(memberId: string): AchievementBadgeEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    return raw ? (JSON.parse(raw) as AchievementBadgeEntry[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveEntries(memberId: string, entries: AchievementBadgeEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(memberId), JSON.stringify(entries));
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
-}
+const storageKey = (memberId: string) =>
+  `dancebase:achievement-badge:${memberId}`;
 
 // ============================================================
 // 훅
@@ -42,7 +23,7 @@ function saveEntries(memberId: string, entries: AchievementBadgeEntry[]): void {
 export function useAchievementBadge(memberId: string) {
   const { data, isLoading, mutate } = useSWR(
     memberId ? swrKeys.achievementBadge(memberId) : null,
-    async () => loadEntries(memberId)
+    async () => loadFromStorage<AchievementBadgeEntry[]>(storageKey(memberId), [])
   );
 
   const entries = data ?? [];
@@ -58,7 +39,7 @@ export function useAchievementBadge(memberId: string) {
       createdAt: new Date().toISOString(),
     };
     const updated = [newEntry, ...entries];
-    saveEntries(memberId, updated);
+    saveToStorage(storageKey(memberId), updated);
     await mutate(updated, false);
   }
 
@@ -70,14 +51,14 @@ export function useAchievementBadge(memberId: string) {
     const updated = entries.map((e) =>
       e.id === badgeId ? { ...e, level: newLevel } : e
     );
-    saveEntries(memberId, updated);
+    saveToStorage(storageKey(memberId), updated);
     await mutate(updated, false);
   }
 
   // ── 배지 삭제 ──
   async function deleteBadge(badgeId: string): Promise<void> {
     const updated = entries.filter((e) => e.id !== badgeId);
-    saveEntries(memberId, updated);
+    saveToStorage(storageKey(memberId), updated);
     await mutate(updated, false);
   }
 

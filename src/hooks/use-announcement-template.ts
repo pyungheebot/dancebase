@@ -5,6 +5,7 @@ import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   AnnouncementTemplateEntry,
   AnnouncementTemplateCategory,
@@ -12,34 +13,11 @@ import type {
 } from "@/types";
 
 // ============================================================
-// localStorage 유틸
+// localStorage 키
 // ============================================================
 
-function getStorageKey(groupId: string): string {
-  return `dancebase:announcement-template:${groupId}`;
-}
-
-function loadEntries(groupId: string): AnnouncementTemplateEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as AnnouncementTemplateEntry[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveEntries(
-  groupId: string,
-  entries: AnnouncementTemplateEntry[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(entries));
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
-}
+const storageKey = (groupId: string) =>
+  `dancebase:announcement-template:${groupId}`;
 
 // ============================================================
 // 변수 치환 유틸
@@ -93,7 +71,7 @@ export type UpdateAnnouncementTemplateInput =
 export function useAnnouncementTemplate(groupId: string) {
   const { data, isLoading, mutate } = useSWR(
     groupId ? swrKeys.announcementTemplate(groupId) : null,
-    async () => loadEntries(groupId)
+    async () => loadFromStorage<AnnouncementTemplateEntry[]>(storageKey(groupId), [])
   );
 
   const entries = useMemo(() => data ?? [], [data]);
@@ -147,7 +125,7 @@ export function useAnnouncementTemplate(groupId: string) {
       };
 
       const updated = [...entries, newEntry];
-      saveEntries(groupId, updated);
+      saveToStorage(storageKey(groupId),updated);
       await mutate(updated, false);
       toast.success(TOAST.TEMPLATE.ADDED);
       return true;
@@ -210,7 +188,7 @@ export function useAnnouncementTemplate(groupId: string) {
           : e
       );
 
-      saveEntries(groupId, updated);
+      saveToStorage(storageKey(groupId),updated);
       await mutate(updated, false);
       toast.success(TOAST.TEMPLATE.UPDATED);
       return true;
@@ -222,7 +200,7 @@ export function useAnnouncementTemplate(groupId: string) {
   const deleteTemplate = useCallback(
     async (id: string): Promise<boolean> => {
       const filtered = entries.filter((e) => e.id !== id);
-      saveEntries(groupId, filtered);
+      saveToStorage(storageKey(groupId),filtered);
       await mutate(filtered, false);
       toast.success(TOAST.TEMPLATE.DELETED);
       return true;
@@ -236,7 +214,7 @@ export function useAnnouncementTemplate(groupId: string) {
       const updated = entries.map((e) =>
         e.id === id ? { ...e, useCount: e.useCount + 1 } : e
       );
-      saveEntries(groupId, updated);
+      saveToStorage(storageKey(groupId),updated);
       await mutate(updated, false);
     },
     [groupId, entries, mutate]

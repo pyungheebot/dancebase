@@ -10,28 +10,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   ChevronDown,
   ChevronUp,
@@ -56,12 +40,12 @@ import type {
   MakeupHairArtist,
 } from "@/types";
 
+import { PlanDialog, TimelineDialog, ArtistDialog } from "./makeup-hair-dialogs";
+import { DonutChart } from "./makeup-hair-chart";
+
 // ============================================================
 // 상수
 // ============================================================
-
-const MAKEUP_TYPES: MakeupHairMakeupType[] = ["내추럴", "스테이지", "특수분장"];
-const HAIR_STYLES: MakeupHairStyle[] = ["업스타일", "다운스타일", "반묶음", "특수"];
 
 const MAKEUP_TYPE_COLORS: Record<MakeupHairMakeupType, string> = {
   "내추럴": "bg-green-100 text-green-700 border-green-200",
@@ -76,388 +60,7 @@ const HAIR_STYLE_COLORS: Record<MakeupHairStyle, string> = {
   "특수": "bg-amber-100 text-amber-700 border-amber-200",
 };
 
-// 도넛 차트 색상
 const DONUT_COLORS = ["#a855f7", "#22c55e", "#f97316"];
-
-// ============================================================
-// 플랜 다이얼로그
-// ============================================================
-
-interface PlanDialogProps {
-  open: boolean;
-  mode: "add" | "edit";
-  initial?: Partial<Omit<MakeupHairPlan, "id" | "createdAt">>;
-  onClose: () => void;
-  onSubmit: (data: Omit<MakeupHairPlan, "id" | "createdAt">) => void;
-}
-
-function PlanDialog({ open, mode, initial, onClose, onSubmit }: PlanDialogProps) {
-  const [memberName, setMemberName] = useState(initial?.memberName ?? "");
-  const [scene, setScene] = useState(String(initial?.scene ?? "1"));
-  const [makeupType, setMakeupType] = useState<MakeupHairMakeupType>(
-    initial?.makeupType ?? "내추럴"
-  );
-  const [hairStyle, setHairStyle] = useState<MakeupHairStyle>(
-    initial?.hairStyle ?? "업스타일"
-  );
-  const [colorTone, setColorTone] = useState(initial?.colorTone ?? "");
-  const [memo, setMemo] = useState(initial?.memo ?? "");
-
-  const handleSubmit = () => {
-    if (!memberName.trim()) {
-      toast.error(TOAST.MAKEUP_HAIR.MEMBER_REQUIRED);
-      return;
-    }
-    const sceneNum = parseInt(scene, 10);
-    if (isNaN(sceneNum) || sceneNum < 1) {
-      toast.error(TOAST.MAKEUP_HAIR.SCENE_NUMBER_REQUIRED);
-      return;
-    }
-    onSubmit({
-      memberName: memberName.trim(),
-      scene: sceneNum,
-      makeupType,
-      hairStyle,
-      colorTone: colorTone.trim() || null,
-      memo: memo.trim() || null,
-    });
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">
-            {mode === "add" ? "플랜 추가" : "플랜 편집"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-3 py-1">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">멤버명</Label>
-              <Input
-                className="h-8 text-xs"
-                placeholder="예: 김민지"
-                value={memberName}
-                onChange={(e) => setMemberName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">장면(Scene) 번호</Label>
-              <Input
-                className="h-8 text-xs"
-                type="number"
-                min={1}
-                placeholder="1"
-                value={scene}
-                onChange={(e) => setScene(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">분장 유형</Label>
-              <Select
-                value={makeupType}
-                onValueChange={(v) => setMakeupType(v as MakeupHairMakeupType)}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {MAKEUP_TYPES.map((t) => (
-                    <SelectItem key={t} value={t} className="text-xs">
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">헤어 스타일</Label>
-              <Select
-                value={hairStyle}
-                onValueChange={(v) => setHairStyle(v as MakeupHairStyle)}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {HAIR_STYLES.map((s) => (
-                    <SelectItem key={s} value={s} className="text-xs">
-                      {s}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">색상 톤 (선택)</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 웜톤, 쿨톤, 누드핑크"
-              value={colorTone}
-              onChange={(e) => setColorTone(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">특이사항 메모 (선택)</Label>
-            <Textarea
-              className="text-xs min-h-[52px] resize-none"
-              placeholder="알레르기, 주의사항 등"
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <DialogFooter className="gap-2">
-          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={onClose}>
-            취소
-          </Button>
-          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-            {mode === "add" ? "추가" : "저장"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ============================================================
-// 타임라인 다이얼로그
-// ============================================================
-
-interface TimelineDialogProps {
-  open: boolean;
-  mode: "add" | "edit";
-  initial?: Partial<Omit<MakeupHairTimelineEntry, "id">>;
-  onClose: () => void;
-  onSubmit: (data: Omit<MakeupHairTimelineEntry, "id">) => void;
-}
-
-function TimelineDialog({ open, mode, initial, onClose, onSubmit }: TimelineDialogProps) {
-  const [memberName, setMemberName] = useState(initial?.memberName ?? "");
-  const [startTime, setStartTime] = useState(initial?.startTime ?? "");
-  const [duration, setDuration] = useState(String(initial?.durationMinutes ?? "30"));
-
-  const handleSubmit = () => {
-    if (!memberName.trim()) {
-      toast.error(TOAST.MAKEUP_HAIR.MEMBER_REQUIRED);
-      return;
-    }
-    if (!startTime) {
-      toast.error(TOAST.MAKEUP_HAIR.START_TIME_REQUIRED);
-      return;
-    }
-    const dur = parseInt(duration, 10);
-    if (isNaN(dur) || dur < 1) {
-      toast.error(TOAST.MAKEUP_HAIR.DURATION_REQUIRED);
-      return;
-    }
-    onSubmit({
-      memberName: memberName.trim(),
-      startTime,
-      durationMinutes: dur,
-    });
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">
-            {mode === "add" ? "타임라인 추가" : "타임라인 편집"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-3 py-1">
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">멤버명</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 박서연"
-              value={memberName}
-              onChange={(e) => setMemberName(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">시작 시간</Label>
-              <Input
-                className="h-8 text-xs"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">소요 시간 (분)</Label>
-              <Input
-                className="h-8 text-xs"
-                type="number"
-                min={1}
-                placeholder="30"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter className="gap-2">
-          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={onClose}>
-            취소
-          </Button>
-          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-            {mode === "add" ? "추가" : "저장"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ============================================================
-// 아티스트 다이얼로그
-// ============================================================
-
-interface ArtistDialogProps {
-  open: boolean;
-  mode: "add" | "edit";
-  initial?: Partial<Omit<MakeupHairArtist, "id">>;
-  onClose: () => void;
-  onSubmit: (data: Omit<MakeupHairArtist, "id">) => void;
-}
-
-function ArtistDialog({ open, mode, initial, onClose, onSubmit }: ArtistDialogProps) {
-  const [name, setName] = useState(initial?.name ?? "");
-  const [contact, setContact] = useState(initial?.contact ?? "");
-  const [specialty, setSpecialty] = useState(initial?.specialty ?? "");
-
-  const handleSubmit = () => {
-    if (!name.trim()) {
-      toast.error(TOAST.MAKEUP_HAIR.ARTIST_REQUIRED);
-      return;
-    }
-    onSubmit({
-      name: name.trim(),
-      contact: contact.trim() || null,
-      specialty: specialty.trim() || null,
-    });
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-sm font-semibold">
-            {mode === "add" ? "아티스트 추가" : "아티스트 편집"}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-3 py-1">
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">이름</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 이수진"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">연락처 (선택)</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 010-1234-5678"
-              value={contact}
-              onChange={(e) => setContact(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">전문 분야 (선택)</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="예: 스테이지 메이크업, 헤어 스타일링"
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <DialogFooter className="gap-2">
-          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={onClose}>
-            취소
-          </Button>
-          <Button size="sm" className="h-7 text-xs" onClick={handleSubmit}>
-            {mode === "add" ? "추가" : "저장"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ============================================================
-// 도넛 차트 (CSS div 기반)
-// ============================================================
-
-interface DonutChartProps {
-  data: { label: string; value: number; color: string }[];
-  total: number;
-}
-
-function DonutChart({ data, total }: DonutChartProps) {
-  if (total === 0) {
-    return (
-      <div className="flex items-center justify-center w-20 h-20 rounded-full border-4 border-muted">
-        <span className="text-[10px] text-muted-foreground">없음</span>
-      </div>
-    );
-  }
-
-  // 각 세그먼트의 각도 계산 (원형 진행도 → 여러 색으로 분할)
-  const segments = data
-    .filter((d) => d.value > 0)
-    .reduce<{ label: string; value: number; color: string; pct: number; start: number }[]>(
-      (acc, d) => {
-        const pct = (d.value / total) * 100;
-        const start = acc.length > 0 ? acc[acc.length - 1].start + acc[acc.length - 1].pct : 0;
-        acc.push({ ...d, pct, start });
-        return acc;
-      },
-      []
-    );
-
-  // conic-gradient 문자열 생성
-  const gradient = segments
-    .map((s) => `${s.color} ${s.start.toFixed(1)}% ${(s.start + s.pct).toFixed(1)}%`)
-    .join(", ");
-
-  return (
-    <div className="relative w-20 h-20 flex-shrink-0">
-      <div
-        className="w-20 h-20 rounded-full"
-        style={{ background: `conic-gradient(${gradient})` }}
-      />
-      {/* 가운데 구멍 효과 */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
-          <span className="text-[10px] font-semibold text-foreground">{total}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ============================================================
 // 메인 컴포넌트
@@ -488,7 +91,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  // 탭 상태
   type TabType = "plans" | "timeline" | "checklist" | "artists" | "stats";
   const [activeTab, setActiveTab] = useState<TabType>("plans");
 
@@ -613,13 +215,11 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
     { label: "특수분장", value: stats.makeupTypeCounts["특수분장"], color: DONUT_COLORS[2] },
   ];
 
-  // 체크리스트 완료율
   const checklistPct =
     stats.checklistTotal > 0
       ? Math.round((stats.checklistDone / stats.checklistTotal) * 100)
       : 0;
 
-  // 탭 목록 - useMemo로 감싸 렌더마다 새 JSX 배열 생성 방지
   const tabs: { key: TabType; label: string; icon: React.ReactNode }[] = useMemo(() => [
     { key: "plans" as TabType, label: "플랜", icon: <Sparkles className="h-3 w-3" /> },
     { key: "timeline" as TabType, label: "타임라인", icon: <Clock className="h-3 w-3" /> },
@@ -628,7 +228,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
     { key: "stats" as TabType, label: "통계", icon: <BarChart2 className="h-3 w-3" /> },
   ], []);
 
-  // 타임라인 정렬 (시작 시간 순)
   const sortedTimeline = [...data.timeline].sort((a, b) =>
     a.startTime.localeCompare(b.startTime)
   );
@@ -831,7 +430,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
                                   {entry.durationMinutes}분 소요
                                 </span>
                               </div>
-                              {/* 간단한 시간 바 */}
                               <div className="flex-shrink-0 w-16 h-1.5 rounded-full bg-muted overflow-hidden">
                                 <div
                                   className="h-full rounded-full bg-pink-400"
@@ -879,7 +477,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
                         )}
                       </div>
 
-                      {/* 완료율 프로그레스 바 */}
                       {stats.checklistTotal > 0 && (
                         <div className="space-y-1">
                           <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
@@ -894,7 +491,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
                         </div>
                       )}
 
-                      {/* 아이템 추가 입력 */}
                       <div className="flex items-center gap-1.5">
                         <Input
                           className="h-8 text-xs flex-1"
@@ -1036,7 +632,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
                   {/* 통계 탭 */}
                   {activeTab === "stats" && (
                     <div className="space-y-4">
-                      {/* 분장 유형별 도넛 차트 */}
                       <div className="space-y-2">
                         <span className="text-xs font-medium text-muted-foreground">
                           분장 유형별 통계
@@ -1072,7 +667,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
                         )}
                       </div>
 
-                      {/* 준비물 완료율 */}
                       <div className="space-y-2">
                         <span className="text-xs font-medium text-muted-foreground">
                           준비물 완료율
@@ -1101,7 +695,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
                         )}
                       </div>
 
-                      {/* 아티스트 수 */}
                       <div className="flex items-center gap-3 p-2.5 rounded-md border bg-muted/20">
                         <User className="h-4 w-4 text-indigo-500 flex-shrink-0" />
                         <div className="flex-1">
@@ -1115,7 +708,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
                         </span>
                       </div>
 
-                      {/* 타임라인 항목 수 */}
                       <div className="flex items-center gap-3 p-2.5 rounded-md border bg-muted/20">
                         <Clock className="h-4 w-4 text-pink-500 flex-shrink-0" />
                         <div className="flex-1">
@@ -1137,7 +729,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
         </Card>
       </Collapsible>
 
-      {/* 플랜 다이얼로그 */}
       <PlanDialog
         open={planDialogOpen}
         mode={planDialogMode}
@@ -1157,7 +748,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
         onSubmit={handlePlanSubmit}
       />
 
-      {/* 타임라인 다이얼로그 */}
       <TimelineDialog
         open={timelineDialogOpen}
         mode={timelineDialogMode}
@@ -1174,7 +764,6 @@ export function MakeupHairCard({ projectId }: MakeupHairCardProps) {
         onSubmit={handleTimelineSubmit}
       />
 
-      {/* 아티스트 다이얼로그 */}
       <ArtistDialog
         open={artistDialogOpen}
         mode={artistDialogMode}

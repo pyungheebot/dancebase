@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   BackstageCommEntry,
   BackstageCommMessage,
@@ -21,13 +22,10 @@ function loadEntry(
   groupId: string,
   projectId: string
 ): BackstageCommEntry | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as BackstageCommEntry) : null;
-  } catch {
-    return null;
-  }
+  return loadFromStorage<BackstageCommEntry | null>(
+    getStorageKey(groupId, projectId),
+    null
+  );
 }
 
 function saveEntry(
@@ -35,11 +33,7 @@ function saveEntry(
   projectId: string,
   entry: BackstageCommEntry
 ): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(
-    getStorageKey(groupId, projectId),
-    JSON.stringify(entry)
-  );
+  saveToStorage(getStorageKey(groupId, projectId), entry);
 }
 
 function createEmptyEntry(

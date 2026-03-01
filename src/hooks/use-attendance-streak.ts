@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type { MemberStreak, StreakRecord } from "@/types";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
@@ -9,23 +10,11 @@ import type { MemberStreak, StreakRecord } from "@/types";
 const LS_KEY = (groupId: string) => `dancebase:streaks:${groupId}`;
 
 function loadMembers(groupId: string): MemberStreak[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MemberStreak[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<MemberStreak[]>(LS_KEY(groupId), []);
 }
 
 function saveMembers(groupId: string, members: MemberStreak[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(members));
-  } catch {
-    /* ignore */
-  }
+  saveToStorage(LS_KEY(groupId), members);
 }
 
 // ─── 스트릭 계산 헬퍼 ────────────────────────────────────────

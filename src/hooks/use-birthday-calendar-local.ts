@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   BirthdayCalendarStore,
   BirthdayCalendarEntry,
@@ -19,20 +20,14 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadStore(groupId: string): BirthdayCalendarStore {
-  if (typeof window === "undefined") {
-    return createEmptyStore(groupId);
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as BirthdayCalendarStore) : createEmptyStore(groupId);
-  } catch {
-    return createEmptyStore(groupId);
-  }
+  return loadFromStorage<BirthdayCalendarStore>(
+    getStorageKey(groupId),
+    createEmptyStore(groupId)
+  );
 }
 
 function saveStore(store: BirthdayCalendarStore): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(store.groupId), JSON.stringify(store));
+  saveToStorage(getStorageKey(store.groupId), store);
 }
 
 function createEmptyStore(groupId: string): BirthdayCalendarStore {

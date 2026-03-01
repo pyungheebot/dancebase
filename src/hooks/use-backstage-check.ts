@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   BackstageCheckSession,
   BackstageCheckItem,
@@ -15,14 +16,10 @@ function loadSessions(
   groupId: string,
   projectId: string
 ): BackstageCheckSession[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as BackstageCheckSession[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<BackstageCheckSession[]>(
+    getStorageKey(groupId, projectId),
+    []
+  );
 }
 
 function saveSessions(
@@ -30,15 +27,7 @@ function saveSessions(
   projectId: string,
   sessions: BackstageCheckSession[]
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      getStorageKey(groupId, projectId),
-      JSON.stringify(sessions)
-    );
-  } catch {
-    // 저장 실패 시 무시
-  }
+  saveToStorage(getStorageKey(groupId, projectId), sessions);
 }
 
 export function useBackstageCheck(groupId: string, projectId: string) {

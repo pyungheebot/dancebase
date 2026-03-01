@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { saveToStorage } from "@/lib/local-storage";
 import type { ChoreoSectionEntry, ChoreoSectionDifficulty } from "@/types";
 
 // ============================================
@@ -16,10 +17,7 @@ function saveSections(
   projectId: string,
   sections: ChoreoSectionEntry[]
 ): void {
-  localStorage.setItem(
-    getStorageKey(groupId, projectId),
-    JSON.stringify(sections)
-  );
+  saveToStorage(getStorageKey(groupId, projectId), sections);
 }
 
 // ============================================

@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 import type {
   AttendanceExceptionEntry,
   AttendanceExceptionType,
@@ -16,40 +17,13 @@ const LS_KEY = (groupId: string) =>
   `dancebase:attendance-exception:${groupId}`;
 
 // ============================================
-// localStorage 헬퍼
-// ============================================
-
-function loadEntries(groupId: string): AttendanceExceptionEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as AttendanceExceptionEntry[];
-  } catch {
-    return [];
-  }
-}
-
-function saveEntries(
-  groupId: string,
-  entries: AttendanceExceptionEntry[]
-): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(entries));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
-}
-
-// ============================================
 // 훅
 // ============================================
 
 export function useAttendanceException(groupId: string) {
   const { data, mutate } = useSWR(
     groupId ? swrKeys.attendanceException(groupId) : null,
-    () => loadEntries(groupId),
+    () => loadFromStorage<AttendanceExceptionEntry[]>(LS_KEY(groupId), []),
     { revalidateOnFocus: false }
   );
 
@@ -76,7 +50,7 @@ export function useAttendanceException(groupId: string) {
       createdAt: now,
     };
     const next = [...entries, newEntry];
-    saveEntries(groupId, next);
+    saveToStorage(LS_KEY(groupId),next);
     mutate(next, false);
   }, [entries, groupId, mutate]);
 
@@ -92,7 +66,7 @@ export function useAttendanceException(groupId: string) {
           }
         : e
     );
-    saveEntries(groupId, next);
+    saveToStorage(LS_KEY(groupId),next);
     mutate(next, false);
   }
 
@@ -102,7 +76,7 @@ export function useAttendanceException(groupId: string) {
     const next = entries.map((e) =>
       e.id === id ? { ...e, status: "rejected" as const } : e
     );
-    saveEntries(groupId, next);
+    saveToStorage(LS_KEY(groupId),next);
     mutate(next, false);
   }
 
@@ -110,7 +84,7 @@ export function useAttendanceException(groupId: string) {
 
   function deleteException(id: string): void {
     const next = entries.filter((e) => e.id !== id);
-    saveEntries(groupId, next);
+    saveToStorage(LS_KEY(groupId),next);
     mutate(next, false);
   }
 
