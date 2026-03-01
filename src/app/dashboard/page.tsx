@@ -10,7 +10,9 @@ import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed"
 import { MyMonthlySummaryCard } from "@/components/dashboard/my-monthly-summary-card";
 import { useGroups } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
-import { useNotifications } from "@/hooks/use-notifications";
+import useSWR from "swr";
+import { swrKeys } from "@/lib/swr/keys";
+import type { Notification } from "@/types";
 import { useTodaySchedules } from "@/hooks/use-schedule";
 import { useDeadlineProjects } from "@/hooks/use-deadline-projects";
 import { useUpcomingPayments } from "@/hooks/use-upcoming-payments";
@@ -29,7 +31,11 @@ export default function DashboardPage() {
   const { groups, loading } = useGroups();
   const { user } = useAuth();
   const { schedules: todaySchedules, loading: schedulesLoading } = useTodaySchedules();
-  const { notifications, loading: notificationsLoading } = useNotifications(5);
+  // Realtime 구독은 header.tsx의 useNotifications에서 담당 — 여기선 SWR 캐시만 읽기
+  const { data: notificationsData, isLoading: notificationsLoading } = useSWR<Notification[]>(
+    swrKeys.notifications()
+  );
+  const notifications = (notificationsData ?? []).slice(0, 5);
   const { projects: deadlineProjects, loading: deadlineLoading } = useDeadlineProjects();
   const { payments, unpaidPayments, loading: paymentsLoading } = useUpcomingPayments();
 

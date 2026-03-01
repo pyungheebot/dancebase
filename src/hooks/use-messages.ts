@@ -222,6 +222,12 @@ export function useUnreadCount() {
     },
   );
 
+  // 인스턴스별 고유 채널명 — header/sidebar 등 여러 곳에서 동시 마운트 시
+  // 같은 채널명으로 중복 구독하면 예측 불가능한 동작이 발생하므로 suffix로 구별
+  const channelNameRef = useRef(
+    `unread-count-realtime-${Math.random().toString(36).slice(2)}`
+  );
+
   // Realtime: 새 메시지 도착/읽음 처리 시 즉시 갱신
   const mutateRef = useRef(mutate);
   // ref 업데이트를 useEffect로 이동하여 렌더 중 ref 쓰기 방지
@@ -234,7 +240,7 @@ export function useUnreadCount() {
     const supabase = createClient();
 
     const channel = supabase
-      .channel("unread-count-realtime")
+      .channel(channelNameRef.current)
       .on(
         "postgres_changes",
         {

@@ -35,6 +35,12 @@ export function useNotifications(limit = 10) {
     }
   );
 
+  // 인스턴스별 고유 채널명 — 여러 컴포넌트에서 동시 마운트 시
+  // 같은 채널명으로 중복 구독하면 예측 불가능한 동작이 발생하므로 suffix로 구별
+  const channelNameRef = useRef(
+    `notifications-realtime-${Math.random().toString(36).slice(2)}`
+  );
+
   // Realtime 구독 채널 참조 (cleanup용)
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createClient>["channel"]
@@ -56,7 +62,7 @@ export function useNotifications(limit = 10) {
       if (channelRef.current) return;
 
       const channel = supabase
-        .channel("notifications-realtime")
+        .channel(channelNameRef.current)
         .on(
           "postgres_changes",
           {
