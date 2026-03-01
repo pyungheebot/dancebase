@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
@@ -44,6 +44,7 @@ import { ChevronDown, Download, Plus, Search, Tags, Trash2, TrendingUp, Users } 
 import { InviteGroupMembersDialog } from "@/components/members/invite-group-members-dialog";
 import { MemberAdvancedFilter } from "@/components/members/member-advanced-filter";
 import { useMemberFilter } from "@/hooks/use-member-filter";
+import { useQueryParams } from "@/hooks/use-query-params";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { exportToCsv } from "@/lib/export/csv-exporter";
@@ -122,23 +123,27 @@ export function MembersContent({
 
   if (isGroup) {
     return (
-      <GroupMembersContent
-        ctx={ctx}
-        currentUserId={currentUserId}
-        categories={categories}
-        inviteCode={inviteCode}
-        onUpdate={onUpdate}
-      />
+      <Suspense fallback={null}>
+        <GroupMembersContent
+          ctx={ctx}
+          currentUserId={currentUserId}
+          categories={categories}
+          inviteCode={inviteCode}
+          onUpdate={onUpdate}
+        />
+      </Suspense>
     );
   }
 
   return (
-    <ProjectMembersContent
-      ctx={ctx}
-      currentUserId={currentUserId}
-      parentMembers={parentMembers}
-      onUpdate={onUpdate}
-    />
+    <Suspense fallback={null}>
+      <ProjectMembersContent
+        ctx={ctx}
+        currentUserId={currentUserId}
+        parentMembers={parentMembers}
+        onUpdate={onUpdate}
+      />
+    </Suspense>
   );
 }
 
@@ -172,9 +177,20 @@ function GroupMembersContent({
 }) {
   const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState("name");
+
+  // URL 쿼리 파라미터 동기화 (검색어, 역할 필터, 정렬)
+  const [queryParams, setQueryParams] = useQueryParams({
+    q: "",
+    role: "all",
+    sort: "name",
+  });
+  const searchQuery = queryParams.q;
+  const roleFilter = queryParams.role;
+  const sortOrder = queryParams.sort;
+
+  const setSearchQuery = (v: string) => setQueryParams({ q: v });
+  const setRoleFilter = (v: string) => setQueryParams({ role: v });
+  const setSortOrder = (v: string) => setQueryParams({ sort: v });
 
   // 고급 필터
   const {
@@ -772,9 +788,20 @@ function ProjectMembersContent({
   const [selectedUserId, setSelectedUserId] = useState("");
   const { pending: submitting, execute } = useAsyncAction();
   const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [sortOrder, setSortOrder] = useState("name");
+
+  // URL 쿼리 파라미터 동기화 (검색어, 역할 필터, 정렬)
+  const [queryParams, setQueryParams] = useQueryParams({
+    q: "",
+    role: "all",
+    sort: "name",
+  });
+  const searchQuery = queryParams.q;
+  const roleFilter = queryParams.role;
+  const sortOrder = queryParams.sort;
+
+  const setSearchQuery = (v: string) => setQueryParams({ q: v });
+  const setRoleFilter = (v: string) => setQueryParams({ role: v });
+  const setSortOrder = (v: string) => setQueryParams({ sort: v });
 
   // 고급 필터
   const {

@@ -10,9 +10,9 @@ import { RecentActivityFeed } from "@/components/dashboard/recent-activity-feed"
 import { MyMonthlySummaryCard } from "@/components/dashboard/my-monthly-summary-card";
 import { useGroups } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
-import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { Notification } from "@/types";
+import { useSwrWithStale } from "@/hooks/use-swr-with-stale";
 import { useTodaySchedules } from "@/hooks/use-schedule";
 import { useDeadlineProjects } from "@/hooks/use-deadline-projects";
 import { useUpcomingPayments } from "@/hooks/use-upcoming-payments";
@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CardGridSkeleton } from "@/components/shared/page-skeleton";
 import { CardErrorBoundary } from "@/components/shared/card-error-boundary";
+import { StaleBanner } from "@/components/shared/stale-banner";
 import { Plus, Calendar, Bell, AlertCircle, CreditCard, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { formatTime } from "@/lib/date-utils";
@@ -32,9 +33,14 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { schedules: todaySchedules, loading: schedulesLoading } = useTodaySchedules();
   // Realtime 구독은 header.tsx의 useNotifications에서 담당 — 여기선 SWR 캐시만 읽기
-  const { data: notificationsData, isLoading: notificationsLoading } = useSWR<Notification[]>(
-    swrKeys.notifications()
-  );
+  const {
+    data: notificationsData,
+    error: notificationsError,
+    isValidating: notificationsValidating,
+    isLoading: notificationsLoading,
+    isStale: notificationsStale,
+    retry: retryNotifications,
+  } = useSwrWithStale<Notification[]>(swrKeys.notifications());
   const notifications = (notificationsData ?? []).slice(0, 5);
   const { projects: deadlineProjects, loading: deadlineLoading } = useDeadlineProjects();
   const { payments, unpaidPayments, loading: paymentsLoading } = useUpcomingPayments();
@@ -241,7 +247,14 @@ export default function DashboardPage() {
                 최근 알림
               </CardTitle>
             </CardHeader>
-            <CardContent aria-live="polite" aria-atomic="false">
+            <CardContent aria-live="polite" aria-atomic="false" className="space-y-3">
+              {notificationsStale && (
+                <StaleBanner
+                  error={notificationsError}
+                  isValidating={notificationsValidating}
+                  onRetry={retryNotifications}
+                />
+              )}
               {notificationsLoading ? (
                 <div className="space-y-2 py-1" aria-label="알림 불러오는 중" aria-busy="true">
                   <Skeleton className="h-4 w-full" />

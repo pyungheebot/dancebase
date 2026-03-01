@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useScrollRestore } from "@/hooks/use-scroll-restore";
+import { useQueryParams } from "@/hooks/use-query-params";
 import { createClient } from "@/lib/supabase/client";
 import { FinanceTransactionForm } from "@/components/groups/finance-transaction-form";
 import { FinanceCategoryManager } from "@/components/groups/finance-category-manager";
@@ -102,7 +103,15 @@ function formatMonthLabel(ym: string) {
   return `${year}년 ${parseInt(month, 10)}월`;
 }
 
-export function FinanceContent({
+export function FinanceContent(props: FinanceContentProps) {
+  return (
+    <Suspense fallback={null}>
+      <FinanceContentInner {...props} />
+    </Suspense>
+  );
+}
+
+function FinanceContentInner({
   ctx,
   financeRole,
   transactions,
@@ -147,12 +156,22 @@ export function FinanceContent({
 
   // 월 필터: 기본값은 현재 월
   const currentMonth = format(new Date(), "yyyy-MM");
-  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
 
-  // 거래 유형 필터: "all" | "income" | "expense"
-  const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
+  // URL 쿼리 파라미터 동기화 (탭, 월 필터, 거래 유형 필터)
+  const [queryParams, setQueryParams] = useQueryParams({
+    tab: "transactions",
+    month: currentMonth,
+    type: "all",
+  });
+  const activeTab = queryParams.tab;
+  const selectedMonth = queryParams.month;
+  const typeFilter = queryParams.type as "all" | "income" | "expense";
 
-  // 텍스트 검색
+  const setActiveTab = (v: string) => setQueryParams({ tab: v });
+  const setSelectedMonth = (v: string) => setQueryParams({ month: v });
+  const setTypeFilter = (v: "all" | "income" | "expense") => setQueryParams({ type: v });
+
+  // 텍스트 검색 (URL에 저장하지 않음 — 일시적 필터)
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const isManager = financeRole === "manager";
@@ -365,7 +384,7 @@ export function FinanceContent({
 
       {/* 거래 내역 / 납부 현황 / 예산 / 분할 정산 / 비용 분석 탭 */}
       <div className="mt-3">
-        <Tabs defaultValue="transactions">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full h-7 mb-3 flex-wrap">
             {/* 마우스 호버 시 인접 탭 컴포넌트 프리로드 */}
             <TabsTrigger
