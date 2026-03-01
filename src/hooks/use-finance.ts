@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { frequentConfig } from "@/lib/swr/cache-config";
 import { useIndependentEntityIds } from "@/hooks/use-independent-entities";
+import { useGroupContext } from "@/hooks/use-group-context";
 import type {
   FinanceCategory,
   FinanceTransactionWithDetails,
@@ -24,11 +25,14 @@ export function useFinance(groupId: string, projectId?: string | null) {
     !projectId ? groupId : undefined,
   );
 
+  // 역할 + 권한을 한 번의 RPC로 조회 (group_members + entity_permissions 통합)
+  const { role, hasPermission, loading: contextLoading } = useGroupContext(groupId);
+
   const { data, isLoading, mutate } = useSWR(
-    // 그룹 뷰: independentEntities 로드 완료 후 실행 / 프로젝트 뷰: 즉시 실행
+    // 그룹 뷰: independentEntities + context 로드 완료 후 실행 / 프로젝트 뷰: context 로드 완료 후 실행
     projectId !== undefined
-      ? swrKeys.finance(groupId, projectId)
-      : independentEntities !== undefined
+      ? !contextLoading ? swrKeys.finance(groupId, projectId) : null
+      : independentEntities !== undefined && !contextLoading
         ? swrKeys.finance(groupId, projectId)
         : null,
     async (): Promise<FinanceData> => {
@@ -40,30 +44,11 @@ export function useFinance(groupId: string, projectId?: string | null) {
         return { transactions: [], categories: [], financeRole: null };
       }
 
-      // 멤버 역할 + entity_permissions 병렬 조회
-      const [memberRes, permissionsRes] = await Promise.all([
-        supabase
-          .from("group_members")
-          .select("role")
-          .eq("group_id", groupId)
-          .eq("user_id", user.id)
-          .single(),
-        supabase
-          .from("entity_permissions")
-          .select("permission")
-          .eq("entity_type", "group")
-          .eq("entity_id", groupId)
-          .eq("user_id", user.id),
-      ]);
-
+      // useGroupContext에서 이미 역할 + 권한 조회 완료 (RPC 재호출 없음)
       let financeRole: FinanceRole = null;
-      const isLeader = memberRes.data?.role === "leader";
-      const permissions = (permissionsRes.data ?? []).map((p: { permission: string }) => p.permission);
-      if (isLeader) {
+      if (role === "leader" || hasPermission("finance_manage")) {
         financeRole = "manager";
-      } else if (permissions.includes("finance_manage")) {
-        financeRole = "manager";
-      } else if (permissions.includes("finance_view")) {
+      } else if (hasPermission("finance_view")) {
         financeRole = "viewer";
       }
 

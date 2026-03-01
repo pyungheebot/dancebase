@@ -31,16 +31,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AttendanceAnalytics } from "@/components/attendance/attendance-analytics";
-import { AttendanceComparisonChart } from "@/components/attendance/attendance-comparison-chart";
-import { AttendanceReportSection } from "@/components/attendance/attendance-report-section";
-import { AttendanceGoalCard } from "@/components/attendance/attendance-goal-card";
-import { WeeklyAttendanceSnapshot } from "@/components/attendance/weekly-attendance-snapshot";
-import { AttendanceStreakCard } from "@/components/attendance/attendance-streak-card";
-import { TeamChallengeCard } from "@/components/attendance/team-challenge-card";
+import { lazyLoad } from "@/lib/dynamic-import";
+
+// 탭 전환 시에만 필요한 무거운 컴포넌트 - dynamic import로 초기 번들 분리
+const AttendanceAnalytics       = lazyLoad(() => import("@/components/attendance/attendance-analytics").then(m => ({ default: m.AttendanceAnalytics })), { skeletonHeight: "h-64" });
+const AttendanceComparisonChart = lazyLoad(() => import("@/components/attendance/attendance-comparison-chart").then(m => ({ default: m.AttendanceComparisonChart })), { skeletonHeight: "h-48" });
+const AttendanceReportSection   = lazyLoad(() => import("@/components/attendance/attendance-report-section").then(m => ({ default: m.AttendanceReportSection })), { skeletonHeight: "h-48" });
+// 멤버별 탭에서만 사용되는 컴포넌트
+const AttendanceStreakCard       = lazyLoad(() => import("@/components/attendance/attendance-streak-card").then(m => ({ default: m.AttendanceStreakCard })), { skeletonHeight: "h-24" });
+const TeamChallengeCard         = lazyLoad(() => import("@/components/attendance/team-challenge-card").then(m => ({ default: m.TeamChallengeCard })), { skeletonHeight: "h-24" });
+const AttendanceGoalCard        = lazyLoad(() => import("@/components/attendance/attendance-goal-card").then(m => ({ default: m.AttendanceGoalCard })), { skeletonHeight: "h-24" });
+const WeeklyAttendanceSnapshot  = lazyLoad(() => import("@/components/attendance/weekly-attendance-snapshot").then(m => ({ default: m.WeeklyAttendanceSnapshot })), { skeletonHeight: "h-32" });
+// 다이얼로그 - 열기 전까지 불필요
+const ScheduleFeedbackDialog    = lazyLoad(() => import("@/components/schedule/schedule-feedback-dialog").then(m => ({ default: m.ScheduleFeedbackDialog })), { noLoading: true });
+
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { ScheduleCheckinSection } from "@/components/schedule/schedule-checkin-section";
-import { ScheduleFeedbackDialog } from "@/components/schedule/schedule-feedback-dialog";
 import { ScheduleFeedbackSummary } from "@/components/schedule/schedule-feedback-summary";
 import { ScheduleSetlistSection } from "@/components/schedule/schedule-setlist-section";
 import { PracticeTimer } from "@/components/schedule/practice-timer";
@@ -364,23 +370,60 @@ export function AttendanceContent({
       }}
     >
       <TabsList className="mb-4">
-        <TabsTrigger value="by-schedule" className="gap-1.5">
+        <TabsTrigger
+          value="by-schedule"
+          className="gap-1.5"
+          onMouseEnter={() => {
+            import("@/components/attendance/attendance-streak-card");
+            import("@/components/attendance/team-challenge-card");
+          }}
+        >
           <CalendarDays className="h-3.5 w-3.5" />
           일정별 보기
         </TabsTrigger>
-        <TabsTrigger value="by-member" className="gap-1.5">
+        <TabsTrigger
+          value="by-member"
+          className="gap-1.5"
+          onMouseEnter={() => {
+            import("@/components/attendance/attendance-streak-card");
+            import("@/components/attendance/team-challenge-card");
+            import("@/components/attendance/attendance-goal-card");
+            import("@/components/attendance/weekly-attendance-snapshot");
+            import("@/components/attendance/attendance-analytics");
+          }}
+        >
           <Users className="h-3.5 w-3.5" />
           멤버별 보기
         </TabsTrigger>
-        <TabsTrigger value="analytics" className="gap-1.5">
+        <TabsTrigger
+          value="analytics"
+          className="gap-1.5"
+          onMouseEnter={() => {
+            import("@/components/attendance/attendance-analytics");
+            import("@/components/attendance/attendance-comparison-chart");
+          }}
+        >
           <BarChart3 className="h-3.5 w-3.5" />
           분석
         </TabsTrigger>
-        <TabsTrigger value="comparison" className="gap-1.5">
+        <TabsTrigger
+          value="comparison"
+          className="gap-1.5"
+          onMouseEnter={() => {
+            import("@/components/attendance/attendance-comparison-chart");
+            import("@/components/attendance/attendance-report-section");
+          }}
+        >
           <GitCompareArrows className="h-3.5 w-3.5" />
           비교
         </TabsTrigger>
-        <TabsTrigger value="report" className="gap-1.5">
+        <TabsTrigger
+          value="report"
+          className="gap-1.5"
+          onMouseEnter={() => {
+            import("@/components/attendance/attendance-report-section");
+          }}
+        >
           <FileBarChart2 className="h-3.5 w-3.5" />
           리포트
         </TabsTrigger>

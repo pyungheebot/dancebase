@@ -6,22 +6,24 @@ import { Loader2, CalendarDays, CalendarCheck, Copy, CalendarSearch, ClipboardCh
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import dynamic from "next/dynamic";
-import { Skeleton } from "@/components/ui/skeleton";
+import { lazyLoad } from "@/lib/dynamic-import";
 
 // CalendarView는 36KB의 무거운 컴포넌트 - dynamic import로 초기 번들 분리
-const CalendarView = dynamic(
+const CalendarView = lazyLoad(
   () => import("@/components/schedule/calendar-view").then(m => ({ default: m.CalendarView })),
-  { loading: () => <Skeleton className="h-96 w-full rounded-lg" /> }
+  { skeletonHeight: "h-96" }
 );
-import { ScheduleYearlyCalendar } from "@/components/schedule/schedule-yearly-calendar";
+// 연간 탭 전환 시에만 필요한 컴포넌트
+const ScheduleYearlyCalendar  = lazyLoad(() => import("@/components/schedule/schedule-yearly-calendar").then(m => ({ default: m.ScheduleYearlyCalendar })), { skeletonHeight: "h-64" });
+// 다이얼로그/시트 - 버튼 클릭 전까지 불필요
+const BulkRsvpDialog          = lazyLoad(() => import("@/components/schedule/bulk-rsvp-dialog").then(m => ({ default: m.BulkRsvpDialog })), { noLoading: true });
+const ScheduleCopyDialog      = lazyLoad(() => import("@/components/schedule/schedule-copy-dialog").then(m => ({ default: m.ScheduleCopyDialog })), { noLoading: true });
+const AvailabilityPollDialog  = lazyLoad(() => import("@/components/schedule/availability-poll-dialog").then(m => ({ default: m.AvailabilityPollDialog })), { noLoading: true });
+const PreRsvpPoll             = lazyLoad(() => import("@/components/schedule/pre-rsvp-poll").then(m => ({ default: m.PreRsvpPoll })), { noLoading: true });
+const ScheduleTemplateList    = lazyLoad(() => import("@/components/schedule/schedule-template-list").then(m => ({ default: m.ScheduleTemplateList })), { noLoading: true });
+
 import { ScheduleForm } from "@/components/schedule/schedule-form";
-import { ScheduleTemplateList } from "@/components/schedule/schedule-template-list";
 import { OptimalTimeHint } from "@/components/schedule/optimal-time-hint";
-import { BulkRsvpDialog } from "@/components/schedule/bulk-rsvp-dialog";
-import { ScheduleCopyDialog } from "@/components/schedule/schedule-copy-dialog";
-import { AvailabilityPollDialog } from "@/components/schedule/availability-poll-dialog";
-import { PreRsvpPoll } from "@/components/schedule/pre-rsvp-poll";
 import { ScheduleIcsSubscribe } from "@/components/schedule/schedule-ics-subscribe";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import { EmptyState } from "@/components/shared/empty-state";

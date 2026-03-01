@@ -1,10 +1,14 @@
 "use client";
 
+import { lazyLoad } from "@/lib/dynamic-import";
+
+// 버튼 클릭 전까지 불필요한 시트/패널 컴포넌트 - dynamic import로 초기 번들 분리
+const BoardTrash              = lazyLoad(() => import("@/components/board/board-trash").then(m => ({ default: m.BoardTrash })), { noLoading: true });
+const ContentModerationPanel  = lazyLoad(() => import("@/components/board/content-moderation-panel").then(m => ({ default: m.ContentModerationPanel })), { noLoading: true });
+const BookmarkedPostsSheet    = lazyLoad(() => import("@/components/board/bookmarked-posts-sheet").then(m => ({ default: m.BookmarkedPostsSheet })), { noLoading: true });
+const PollDecisionLog         = lazyLoad(() => import("@/components/board/poll-decision-log").then(m => ({ default: m.PollDecisionLog })), { noLoading: true });
+
 import { BoardPostList } from "@/components/board/board-post-list";
-import { BoardTrash } from "@/components/board/board-trash";
-import { ContentModerationPanel } from "@/components/board/content-moderation-panel";
-import { BookmarkedPostsSheet } from "@/components/board/bookmarked-posts-sheet";
-import { PollDecisionLog } from "@/components/board/poll-decision-log";
 import { IndependentToggle } from "@/components/shared/independent-toggle";
 import type { EntityContext } from "@/types/entity-context";
 

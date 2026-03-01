@@ -1,0 +1,181 @@
+/** 재무/회비 관련 토스트 메시지 */
+export const FINANCE_TOAST = {
+  TRANSACTION_DELETE_ERROR: "거래 삭제에 실패했습니다",
+  TRANSACTION_DELETED: "거래가 삭제되었습니다",
+  DEADLINE_SAVE_ERROR: "납부 기한 저장에 실패했습니다",
+  BUDGET_INCOME_REQUIRED: "올바른 수입 예산 금액을 입력해주세요",
+  BUDGET_EXPENSE_REQUIRED: "올바른 지출 예산 금액을 입력해주세요",
+  BUDGET_LOGIN_REQUIRED: "로그인이 필요합니다",
+  BUDGET_SAVE_ERROR: "예산 저장에 실패했습니다",
+  BUDGET_SAVED: "예산이 저장되었습니다",
+  BUDGET_DELETE_ERROR: "예산 삭제에 실패했습니다",
+  BUDGET_DELETED: "예산이 삭제되었습니다",
+  GOAL_NAME_REQUIRED: "목표명을 입력해주세요",
+  GOAL_AMOUNT_REQUIRED: "올바른 목표 금액을 입력해주세요",
+  GOAL_SAVED: "수입 목표가 설정되었습니다",
+  GOAL_DELETED: "목표가 삭제되었습니다",
+  MONTHLY_BUDGET_REQUIRED: "올바른 예산 금액을 입력해주세요",
+  MONTHLY_BUDGET_SAVED: "월 예산이 설정되었습니다",
+  MONTHLY_BUDGET_DELETED: "예산 목표가 삭제되었습니다",
+  SETTLEMENT_TITLE_REQUIRED: "제목을 입력해주세요",
+  SETTLEMENT_AMOUNT_REQUIRED: "금액을 입력해주세요",
+  SETTLEMENT_MEMBER_REQUIRED: "최소 1명 이상의 멤버를 선택해주세요",
+  SETTLEMENT_SEND_ERROR: "정산 요청 발송에 실패했습니다",
+  SETTLEMENT_SENT: "정산 요청이 발송되었습니다",
+  SETTLEMENT_CONFIRM_ERROR: "납부 확인에 실패했습니다",
+  SETTLEMENT_CONFIRMED: "납부가 확인되었습니다",
+  SETTLEMENT_CLOSE_ERROR: "정산 요청 종료에 실패했습니다",
+  SETTLEMENT_CLOSED: "정산 요청이 종료되었습니다",
+  SETTLEMENT_REMINDER_ERROR: "리마인더 발송에 실패했습니다",
+  SETTLEMENT_REMINDER_SENT: "리마인더가 발송되었습니다",
+  SETTLEMENT_STATUS_ERROR: "정산 상태 변경에 실패했습니다",
+  PAYMENT_NOTIFY_ERROR: "납부 완료 처리에 실패했습니다",
+  PAYMENT_NOTIFIED: "납부 완료를 알렸습니다. 리더 확인 후 처리됩니다.",
+  REMINDER_SAVE_ERROR: "알림 설정 저장에 실패했습니다",
+  REMINDER_SAVED: "알림 설정이 저장되었습니다",
+  REMINDER_UNPAID_ERROR: "미납 멤버 조회에 실패했습니다",
+  REMINDER_NO_DATA: "납부 데이터가 없어 발송할 대상이 없습니다",
+  REMINDER_MEMBER_ERROR: "멤버 목록 조회에 실패했습니다",
+  REMINDER_NO_UNPAID: "미납 멤버가 없습니다",
+  REMINDER_SEND_ERROR: "알림 발송에 실패했습니다",
+  REMINDER_MEMBER_SELECT: "알림을 보낼 멤버를 선택해주세요",
+  SPLIT_TITLE_REQUIRED: "제목을 입력해주세요",
+  SPLIT_AMOUNT_REQUIRED: "총액을 입력해주세요",
+  SPLIT_MEMBER_REQUIRED: "참여 멤버를 한 명 이상 선택해주세요",
+  SPLIT_CREATE_ERROR: "분할 정산 생성에 실패했습니다",
+  SPLIT_MEMBER_ADD_ERROR: "참여 멤버 등록에 실패했습니다",
+  SPLIT_CREATED: "분할 정산이 생성되었습니다",
+  EXPENSE_DESC_REQUIRED: "항목 설명을 입력해주세요",
+  EXPENSE_AMOUNT_REQUIRED: "금액을 입력해주세요",
+  EXPENSE_PAYER_REQUIRED: "지불자를 선택해주세요",
+  EXPENSE_TARGET_REQUIRED: "분할 대상을 한 명 이상 선택해주세요",
+  EXPENSE_SESSION_NAME_REQUIRED: "세션 이름을 입력해주세요",
+  EXPENSE_ITEM_MAX: "항목은 세션당 최대 20개까지 추가할 수 있습니다",
+  EXPENSE_ITEM_DELETED: "항목이 삭제되었습니다",
+  SCENARIO_NAME_REQUIRED: "시나리오 이름을 입력해주세요.",
+  SCENARIO_ADDED: "시나리오가 추가되었습니다.",
+  SCENARIO_UPDATED: "시나리오가 수정되었습니다.",
+  SCENARIO_DELETED: "시나리오가 삭제되었습니다.",
+  REVENUE_MEMBER_NAME_REQUIRED: "멤버 이름을 입력해주세요",
+  REVENUE_WEIGHT_REQUIRED: "가중치는 0보다 커야 합니다",
+  REVENUE_MEMBER_DUPLICATE: "이미 추가된 멤버입니다",
+  REVENUE_EVENT_NAME_REQUIRED: "이벤트명을 입력해주세요",
+  REVENUE_DATE_REQUIRED: "날짜를 선택해주세요",
+  REVENUE_AMOUNT_REQUIRED: "총 수익 금액을 올바르게 입력해주세요",
+  REVENUE_PARTICIPANT_REQUIRED: "참여자를 1명 이상 추가해주세요",
+  REVENUE_REGISTERED: "수익이 등록되었습니다",
+  REVENUE_DELETED: "수익 항목이 삭제되었습니다",
+  PRESET_NAME_REQUIRED: "프리셋 이름을 입력해주세요",
+  PRESET_AMOUNT_REQUIRED: "총액을 입력해주세요",
+  PRESET_CREATED: "프리셋이 생성되었습니다",
+  PRESET_UPDATED: "프리셋이 수정되었습니다",
+  PRESET_DELETED: "프리셋이 삭제되었습니다",
+  PAYMENT_METHOD_NAME_REQUIRED: "표시 이름을 입력해주세요",
+  PAYMENT_METHOD_ADD_ERROR: "정산 수단 추가에 실패했습니다",
+  PAYMENT_METHOD_ADDED: "정산 수단이 추가되었습니다",
+  PAYMENT_METHOD_UPDATE_ERROR: "정산 수단 수정에 실패했습니다",
+  PAYMENT_METHOD_UPDATED: "정산 수단이 수정되었습니다",
+  PAYMENT_METHOD_DELETE_ERROR: "정산 수단 삭제에 실패했습니다",
+  PAYMENT_METHOD_DELETED: "정산 수단이 삭제되었습니다",
+  DELINQUENCY_MEMBER_SELECT: "알림을 보낼 멤버를 선택해주세요",
+  DELINQUENCY_SEND_ERROR: "알림 발송에 실패했습니다",
+  SPONSOR_NAME_REQUIRED: "스폰서 이름을 입력해주세요",
+  SPONSOR_AMOUNT_REQUIRED: "올바른 지원 금액을 입력해주세요",
+  SPONSOR_ADDED: "스폰서가 추가되었습니다",
+  SPONSOR_ADD_ERROR: "스폰서 추가에 실패했습니다",
+  SPONSOR_STATUS_ERROR: "상태 변경에 실패했습니다",
+  RECEIPT_TITLE_REQUIRED: "제목을 입력해 주세요.",
+  RECEIPT_AMOUNT_REQUIRED: "유효한 금액을 입력해 주세요.",
+  RECEIPT_SUBMITTER_REQUIRED: "제출자를 입력해 주세요.",
+  RECEIPT_DATE_REQUIRED: "날짜를 선택해 주세요.",
+  RECEIPT_REGISTERED: "영수증이 등록되었습니다.",
+  RECEIPT_APPROVED: "영수증을 승인했습니다.",
+  RECEIPT_REJECTED: "영수증을 거절했습니다.",
+  RECEIPT_REFUNDED: "환급 처리되었습니다.",
+  RECEIPT_DELETED: "영수증이 삭제되었습니다.",
+  FUNDRAISING_AMOUNT_REQUIRED: "올바른 목표 금액을 입력해주세요.",
+  FUNDRAISING_DONATION_AMOUNT_REQUIRED: "올바른 기부 금액을 입력해주세요.",
+} as const;
+
+/** 그룹 예산 토스트 메시지 */
+export const GROUP_BUDGET_TOAST = {
+  TRANSACTION_DELETED: "거래가 삭제되었습니다",
+  CATEGORY_REQUIRED: "카테고리를 선택해주세요",
+  CONTENT_REQUIRED: "내용을 입력해주세요",
+  AMOUNT_INVALID: "올바른 금액을 입력해주세요",
+  DATE_REQUIRED: "날짜를 선택해주세요",
+  CATEGORY_NAME_REQUIRED: "카테고리명을 입력해주세요",
+  CATEGORY_ADDED: "카테고리가 추가되었습니다",
+  BUDGET_LIMIT_RELEASED: "예산 한도가 해제되었습니다",
+  MONTHLY_BUDGET_SET: "월별 예산 한도가 설정되었습니다",
+} as const;
+
+/** 예산 플래너 토스트 메시지 */
+export const BUDGET_PLANNER_TOAST = {
+  PLAN_NAME_REQUIRED: "계획 이름을 입력해주세요.",
+  ITEM_NAME_REQUIRED: "항목 이름을 입력해주세요.",
+  BUDGET_AMOUNT_REQUIRED: "유효한 예산 금액을 입력해주세요.",
+  ACTUAL_AMOUNT_REQUIRED: "유효한 실제 지출 금액을 입력해주세요.",
+  PLAN_ADDED: "예산 계획이 추가되었습니다.",
+  PLAN_UPDATED: "예산 계획이 수정되었습니다.",
+  PLAN_DELETED: "예산 계획이 삭제되었습니다.",
+  BUDGET_ITEM_ADDED: "예산 항목이 추가되었습니다.",
+  BUDGET_ITEM_UPDATED: "예산 항목이 수정되었습니다.",
+  BUDGET_ITEM_DELETED: "항목이 삭제되었습니다.",
+} as const;
+
+/** 회원비 토스트 메시지 */
+export const MEMBERSHIP_FEE_TOAST = {
+  AMOUNT_REQUIRED: "납부 금액을 입력해주세요.",
+  DEADLINE_REQUIRED: "납부 기한을 선택해주세요.",
+} as const;
+
+/** 회원비 카드 토스트 메시지 */
+export const MEMBERSHIP_FEE_CARD_TOAST = {
+  NO_MEMBERS: "멤버 목록이 없습니다.",
+  AMOUNT_INVALID: "올바른 금액을 입력해주세요.",
+  FEE_SAVED: "월 회비 금액이 저장됐습니다.",
+} as const;
+
+/** 모금 토스트 메시지 */
+export const FUNDRAISING_TOAST = {
+  GOAL_ADDED: "모금 목표가 추가되었습니다.",
+  GOAL_UPDATED: "모금 목표가 수정되었습니다.",
+  GOAL_DELETED: "모금 목표가 삭제되었습니다.",
+  GOAL_ADD_ERROR: "모금 목표 추가에 실패했습니다.",
+  GOAL_UPDATE_ERROR: "모금 목표 수정에 실패했습니다.",
+  GOAL_DELETE_ERROR: "모금 목표 삭제에 실패했습니다.",
+  CANCELLED: "모금이 취소되었습니다.",
+  CANCEL_ERROR: "모금 취소에 실패했습니다.",
+  GOAL_ACHIEVED: "목표 금액을 달성했습니다! 모금이 완료되었습니다.",
+  AMOUNT_REQUIRED: "목표 금액은 0보다 커야 합니다.",
+  ALREADY_CANCELLED: "이미 취소된 목표입니다.",
+  ACTIVE_ONLY: "활성 상태의 목표에만 기부를 추가할 수 있습니다.",
+  DONATION_ADDED: "기부금이 추가되었습니다.",
+  DONATION_ADD_ERROR: "기부금 추가에 실패했습니다.",
+  DONOR_REQUIRED: "기부자 이름을 입력해주세요.",
+  DONATION_AMOUNT_REQUIRED: "기부 금액은 0보다 커야 합니다.",
+} as const;
+
+/** 회비 추적기 토스트 메시지 */
+export const DUES_TRACKER_TOAST = {
+  SHOW_NAME_REQUIRED: "공연/연습명을 입력해주세요.",
+} as const;
+
+/** 지출 승인 토스트 메시지 */
+export const EXPENSE_APPROVAL_TOAST = {
+  RECOMMENDATION_REQUIRED: "권장사항을 입력해주세요.",
+} as const;
+
+/** 그룹 회비 추적기 토스트 메시지 */
+export const GROUP_DUES_TOAST = {
+  DUPLICATE_NAME: "이미 추가된 이름입니다.",
+  YEAR_MONTH_INVALID: "올바른 년도/월을 입력해주세요.",
+  AMOUNT_REQUIRED: "납부 금액을 입력해주세요.",
+  DUE_DATE_REQUIRED: "납부 기한을 선택해주세요.",
+  PERIOD_EXISTS: "이미 해당 월의 납부 기간이 존재합니다.",
+  STATUS_ERROR: "상태 변경에 실패했습니다.",
+  MEMBER_REQUIRED: "멤버를 선택해주세요.",
+  BULK_ERROR: "일괄 변경에 실패했습니다.",
+  MEMBER_ADD_ERROR: "멤버 추가에 실패했습니다.",
+} as const;

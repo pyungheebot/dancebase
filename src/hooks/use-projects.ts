@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { staticConfig } from "@/lib/swr/cache-config";
+import { useGroupContext } from "@/hooks/use-group-context";
 import type { Project, ProjectMemberWithProfile, ProjectSharedGroup } from "@/types";
 import { invalidateSharedGroups } from "@/lib/swr/invalidate";
 
@@ -13,6 +14,9 @@ interface ProjectsData {
 }
 
 export function useProjects(groupId: string) {
+  // 역할 + 권한을 한 번의 RPC로 조회 (group_members + entity_permissions 통합)
+  const { isLeader, hasPermission, loading: contextLoading } = useGroupContext(groupId);
+
   const fetcher = async (): Promise<ProjectsData> => {
     const supabase = createClient();
     const {
@@ -22,30 +26,26 @@ export function useProjects(groupId: string) {
       return { projects: [], canManage: false };
     }
 
-    const [projectsRes, membershipRes, permissionsRes] = await Promise.all([
-      supabase.rpc("get_group_projects", {
-        p_group_id: groupId,
-        p_user_id: user.id,
-      }),
-      supabase.from("group_members").select("role").eq("group_id", groupId).eq("user_id", user.id).single(),
-      supabase.from("entity_permissions").select("permission").eq("entity_type", "group").eq("entity_id", groupId).eq("user_id", user.id).eq("permission", "project_manage"),
-    ]);
+    // 프로젝트 목록만 조회 (역할/권한은 useGroupContext에서 이미 확보)
+    const projectsRes = await supabase.rpc("get_group_projects", {
+      p_group_id: groupId,
+      p_user_id: user.id,
+    });
 
-    if (projectsRes.error || membershipRes.error) {
+    if (projectsRes.error) {
       return { projects: [], canManage: false };
     }
 
     const projects = (projectsRes.data ?? []) as (Project & { member_count: number; is_shared: boolean })[];
 
-    const isLeader = membershipRes.data?.role === "leader";
-    const isProjectManager = (permissionsRes.data ?? []).length > 0;
-    const canManage = isLeader || isProjectManager;
+    const canManage = isLeader || hasPermission("project_manage");
 
     return { projects, canManage };
   };
 
   const { data, isLoading, mutate } = useSWR(
-    swrKeys.projects(groupId),
+    // context 로드 완료 후 실행
+    !contextLoading ? swrKeys.projects(groupId) : null,
     fetcher,
     staticConfig,
   );
