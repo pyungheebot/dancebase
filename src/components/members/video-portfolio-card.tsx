@@ -308,7 +308,6 @@ function EntryItem({ entry, onEdit, onDelete }: EntryItemProps) {
             width={56}
             height={40}
             className="w-14 h-10 object-cover rounded flex-shrink-0 border"
-            unoptimized
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";
             }}

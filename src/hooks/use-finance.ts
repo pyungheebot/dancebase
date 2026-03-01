@@ -61,7 +61,7 @@ export function useFinance(groupId: string, projectId?: string | null) {
       const [catsRes, txnsRes] = await Promise.all([
         supabase
           .from("finance_categories")
-          .select("*")
+          .select("id, group_id, project_id, name, sort_order, fee_rate, created_at")
           .eq("group_id", groupId)
           .eq("project_id", projectId)
           .order("sort_order")
@@ -90,7 +90,7 @@ export function useFinance(groupId: string, projectId?: string | null) {
       // 카테고리 + 거래내역 병렬 조회
       let catQuery = supabase
         .from("finance_categories")
-        .select("*")
+        .select("id, group_id, project_id, name, sort_order, fee_rate, created_at")
         .eq("group_id", groupId)
         .order("sort_order")
         .order("name");

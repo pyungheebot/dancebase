@@ -56,7 +56,6 @@ function MemberAvatar({
           width={size === "sm" ? 24 : 20}
           height={size === "sm" ? 24 : 20}
           className="h-full w-full object-cover"
-          unoptimized
         />
       ) : (
         <span>{name.charAt(0).toUpperCase()}</span>

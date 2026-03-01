@@ -10,7 +10,7 @@ export function useSchedules(groupId: string, projectId?: string | null) {
     const supabase = createClient();
     let query = supabase
       .from("schedules")
-      .select("*")
+      .select("id, group_id, project_id, title, description, location, address, latitude, longitude, attendance_method, starts_at, ends_at, created_by, late_threshold, attendance_deadline, require_checkout, recurrence_id, max_attendees")
       .eq("group_id", groupId)
       .order("starts_at", { ascending: true });
 
@@ -70,7 +70,7 @@ export function useTodaySchedules() {
 
       const { data } = await supabase
         .from("schedules")
-        .select("*")
+        .select("id, group_id, project_id, title, description, location, address, latitude, longitude, attendance_method, starts_at, ends_at, created_by, late_threshold, attendance_deadline, require_checkout, recurrence_id, max_attendees")
         .in("group_id", groupIds)
         .gte("starts_at", startOfDay)
         .lt("starts_at", endOfDay)
@@ -92,7 +92,7 @@ export function useAttendance(scheduleId: string) {
     const supabase = createClient();
     const { data } = await supabase
       .from("attendance")
-      .select("*, profiles(*)")
+      .select("id, schedule_id, user_id, status, checked_at, check_in_latitude, check_in_longitude, checked_out_at, check_out_latitude, check_out_longitude, excuse_reason, excuse_status, profiles(*)")
       .eq("schedule_id", scheduleId);
 
     return (data ?? []) as AttendanceWithProfile[];

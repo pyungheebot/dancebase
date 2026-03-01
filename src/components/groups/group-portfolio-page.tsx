@@ -288,7 +288,6 @@ export function GroupPortfolioPage({ groupId }: { groupId: string }) {
                         width={48}
                         height={48}
                         className="h-12 w-12 rounded-full object-cover border"
-                        unoptimized
                       />
                     ) : (
                       <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-sm font-semibold border">

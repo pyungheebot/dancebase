@@ -214,8 +214,8 @@ function HighlightItem({
             src={highlight.photoUrl}
             alt={highlight.title}
             fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover"
-            unoptimized
           />
         </div>
       )}

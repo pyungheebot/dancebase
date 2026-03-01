@@ -59,7 +59,6 @@ function ImageLightbox({ attachments, initialIndex, onClose }: LightboxProps) {
           width={800}
           height={600}
           className="max-w-full max-h-[80vh] object-contain rounded-lg"
-          unoptimized
         />
 
         <div className="flex items-center gap-2 text-white">
@@ -130,8 +129,8 @@ export function BoardPostAttachments({ postId }: BoardPostAttachmentsProps) {
                   src={attachment.file_url}
                   alt={attachment.file_name}
                   fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover"
-                  unoptimized
                 />
               </button>
             ))}

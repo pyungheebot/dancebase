@@ -125,7 +125,6 @@ function MemberPreviewContent({
             width={36}
             height={36}
             className="h-9 w-9 rounded-full object-cover shrink-0 border border-border"
-            unoptimized
           />
         ) : (
           <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center shrink-0 border border-border">

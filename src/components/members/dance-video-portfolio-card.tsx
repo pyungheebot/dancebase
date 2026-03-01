@@ -378,8 +378,8 @@ function VideoCard({ video, onEdit, onDelete, onToggleFeatured }: VideoCardProps
             src={video.thumbnailUrl}
             alt={video.title}
             fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover"
-            unoptimized
           />
         ) : (
           <Video className="h-8 w-8 text-muted-foreground/40" />

@@ -159,7 +159,6 @@ export function InviteModal({ inviteCode }: InviteModalProps) {
                   width={200}
                   height={200}
                   className="block"
-                  unoptimized
                 />
               </div>
               <Button

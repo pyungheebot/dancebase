@@ -58,7 +58,7 @@ function InitialAvatar({
   return (
     <div className="h-6 w-6 shrink-0 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
       {avatarUrl ? (
-        <Image src={avatarUrl} alt={name} width={24} height={24} className="h-full w-full object-cover" unoptimized />
+        <Image src={avatarUrl} alt={name} width={24} height={24} className="h-full w-full object-cover" />
       ) : (
         <span className="text-[10px] font-bold text-primary">{initial}</span>
       )}

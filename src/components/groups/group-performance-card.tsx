@@ -141,7 +141,6 @@ function TopContributorChip({
             width={28}
             height={28}
             className="h-full w-full object-cover"
-            unoptimized
           />
         ) : (
           <span className="text-[11px] font-bold text-primary">{initial}</span>

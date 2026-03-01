@@ -270,8 +270,8 @@ function PhotoGrid({ photos, onDelete }: PhotoGridProps) {
                 src={photo.imageUrl}
                 alt={photo.title}
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
-                unoptimized
               />
             </div>
           ) : (
@@ -402,7 +402,6 @@ function AlbumRow({
                 width={40}
                 height={40}
                 className="w-full h-full object-cover"
-                unoptimized
               />
             ) : (
               <FolderOpen className="h-5 w-5 text-gray-300" />

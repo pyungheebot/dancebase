@@ -58,8 +58,8 @@ function MediaCard({ item, onDelete }: MediaCardProps) {
         src={thumb}
         alt={item.title}
         fill
+        sizes="(max-width: 768px) 50vw, 33vw"
         className="object-cover"
-        unoptimized
         onError={(e) => {
           (e.currentTarget as HTMLImageElement).src =
             "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23e5e7eb'/%3E%3C/svg%3E";

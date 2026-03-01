@@ -9,6 +9,8 @@ import type { Conversation, Message } from "@/types";
 
 export function useConversations() {
   const { user } = useAuth();
+  // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 자동 갱신
+  // Realtime subscription이 주 업데이트 채널이므로 refreshInterval 미사용
   const { data, isLoading, mutate } = useSWR(
     swrKeys.conversations(),
     async () => {
@@ -60,6 +62,7 @@ export function useConversations() {
 }
 
 export function useConversation(partnerId: string) {
+  // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 최신 메시지 자동 갱신
   const { data, isLoading, mutate } = useSWR(
     swrKeys.conversation(partnerId),
     async () => {
@@ -126,6 +129,8 @@ export function useConversation(partnerId: string) {
 
 export function useUnreadCount() {
   const { user } = useAuth();
+  // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 미읽은 수 즉시 갱신
+  // Realtime INSERT/UPDATE 구독으로 실시간 갱신도 병행
   const { data, mutate } = useSWR(
     swrKeys.unreadCount(),
     async () => {

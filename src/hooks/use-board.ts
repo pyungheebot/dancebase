@@ -157,17 +157,17 @@ export function useBoardPost(postId: string) {
       const [postRes, commentsRes, pollRes] = await Promise.all([
         supabase
           .from("board_posts")
-          .select("*, profiles(id, name, avatar_url)")
+          .select("id, group_id, project_id, category, author_id, title, content, is_pinned, pinned_at, pinned_by, published_at, created_at, updated_at, deleted_at, profiles(id, name, avatar_url)")
           .eq("id", postId)
           .single(),
         supabase
           .from("board_comments")
-          .select("*, profiles(id, name, avatar_url)")
+          .select("id, post_id, author_id, content, parent_id, is_hidden, created_at, profiles(id, name, avatar_url)")
           .eq("post_id", postId)
           .order("created_at", { ascending: true }),
         supabase
           .from("board_polls")
-          .select("*")
+          .select("id, post_id, allow_multiple, ends_at")
           .eq("post_id", postId)
           .maybeSingle(),
       ]);
@@ -224,7 +224,7 @@ export function useBoardPostAttachments(postId: string) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("board_post_attachments")
-        .select("*")
+        .select("id, post_id, file_url, file_name, file_type, file_size, created_at")
         .eq("post_id", postId)
         .order("created_at", { ascending: true });
 
@@ -251,7 +251,7 @@ export function useBoardPostLikes(postId: string) {
 
       const { data: likes, error } = await supabase
         .from("board_post_likes")
-        .select("*")
+        .select("id, post_id, user_id, created_at")
         .eq("post_id", postId);
 
       if (error) return { likes: [] as BoardPostLike[], likedByMe: false };
@@ -285,7 +285,7 @@ export function useBoardCategories(groupId: string) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("board_categories")
-        .select("*")
+        .select("id, group_id, name, sort_order, created_at")
         .eq("group_id", groupId)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true });

@@ -27,8 +27,11 @@ export function useNotifications(limit = 10) {
 
       return (data as Notification[]) ?? [];
     },
-    // 폴링 주기 60초 → 120초 (Realtime이 주 업데이트 채널)
-    { refreshInterval: 120000 }
+    {
+      // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 알림 자동 갱신
+      // refreshInterval: Realtime이 주 채널이지만 보조 폴링으로 놓친 이벤트 보완
+      refreshInterval: 120000,
+    }
   );
 
   // Realtime 구독 채널 참조 (cleanup용)
@@ -154,8 +157,12 @@ export function useUnreadNotificationCount() {
 
       return count ?? 0;
     },
-    // 폴링 주기 유지 (unread count는 Realtime invalidateNotifications()에서도 갱신됨)
-    { refreshInterval: 30000 }
+    {
+      // revalidateOnFocus: 글로벌 true 상속 → 탭 복귀 시 배지 수 즉시 갱신
+      // refreshInterval: invalidateNotifications()로 Realtime 갱신되지만
+      //   Realtime 구독 없는 이 훅은 폴링으로 보완 (30초)
+      refreshInterval: 30000,
+    }
   );
 
   return {

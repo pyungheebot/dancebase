@@ -130,7 +130,7 @@ function MemberAvatar({
       className={`h-8 w-8 shrink-0 rounded-full overflow-hidden flex items-center justify-center font-bold text-xs ${config.bgColor} ${config.textColor}`}
     >
       {avatarUrl ? (
-        <Image src={avatarUrl} alt={name} width={32} height={32} className="h-full w-full object-cover" unoptimized />
+        <Image src={avatarUrl} alt={name} width={32} height={32} className="h-full w-full object-cover" />
       ) : (
         <span>{initial}</span>
       )}
