@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -73,14 +73,14 @@ export function useGroupPenalty(groupId: string) {
     () => loadData(groupId)
   );
 
-  const current: GroupPenaltyData = data ?? {
+  const current: GroupPenaltyData = useMemo(() => data ?? {
     groupId,
     rules: [],
     records: [],
     monthlyResetEnabled: false,
     lastResetAt: null,
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, groupId]);
 
   const persist = useCallback(
     (next: GroupPenaltyData) => {

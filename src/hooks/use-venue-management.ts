@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
@@ -98,11 +98,11 @@ export function useVenueManagement(projectId: string) {
     [mutate]
   );
 
-  const current: VenueMgmtData = data ?? {
+  const current: VenueMgmtData = useMemo(() => data ?? {
     projectId,
     venues: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, projectId]);
 
   // 공연장 추가
   const addVenue = useCallback(

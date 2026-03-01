@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { LostFoundData, LostFoundItem, LostFoundStatus } from "@/types";
@@ -47,11 +47,11 @@ export function useGroupLostFound(groupId: string) {
     () => loadData(groupId)
   );
 
-  const current: LostFoundData = data ?? {
+  const current: LostFoundData = useMemo(() => data ?? {
     groupId,
     items: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, groupId]);
 
   const persist = useCallback(
     (next: LostFoundData) => {

@@ -6,7 +6,7 @@ import type {
   ShowRiderData,
   ShowRiderItem,
   ShowRiderCategory,
-  ShowRiderPriority,
+
   ShowRiderStatus,
 } from "@/types";
 

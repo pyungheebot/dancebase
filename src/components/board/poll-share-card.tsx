@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Share2, Download, Image } from "lucide-react";
+import { Share2, Download, Image as ImageIcon } from "lucide-react";
+import NextImage from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -119,7 +120,7 @@ export function PollShareCard({
         <DialogContent className="max-w-[640px] p-4">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold flex items-center gap-1.5">
-              <Image className="h-4 w-4" />
+              <ImageIcon className="h-4 w-4" aria-hidden="true" />
               투표 결과 공유
             </DialogTitle>
           </DialogHeader>
@@ -130,11 +131,14 @@ export function PollShareCard({
               <span className="text-xs text-muted-foreground">이미지 생성 중...</span>
             )}
             {!generating && previewSrc && (
-              <img
+              <NextImage
                 src={previewSrc}
                 alt="투표 결과 미리보기"
+                width={640}
+                height={340}
                 className="w-full h-auto rounded"
                 style={{ maxHeight: 340 }}
+                unoptimized
               />
             )}
             {!generating && !previewSrc && (

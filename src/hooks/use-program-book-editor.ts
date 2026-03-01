@@ -6,7 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import type {
   ProgramBookEditorData,
   ProgramBookItem,
-  ProgramBookItemType,
+
   ProgramBookCast,
 } from "@/types";
 

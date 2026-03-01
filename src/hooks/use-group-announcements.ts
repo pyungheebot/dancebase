@@ -19,17 +19,6 @@ function getReadKey(groupId: string) {
   return `${READ_KEY_PREFIX}${groupId}`;
 }
 
-function loadAnnouncements(groupId: string): GroupAnnouncementItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getAnnouncementsKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as GroupAnnouncementItem[];
-  } catch {
-    return [];
-  }
-}
-
 function saveAnnouncements(
   groupId: string,
   items: GroupAnnouncementItem[]
@@ -42,17 +31,6 @@ function saveAnnouncements(
     );
   } catch {
     // localStorage 용량 초과 등의 경우 무시
-  }
-}
-
-function loadReadIds(groupId: string): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = localStorage.getItem(getReadKey(groupId));
-    if (!raw) return new Set();
-    return new Set(JSON.parse(raw) as string[]);
-  } catch {
-    return new Set();
   }
 }
 
@@ -80,7 +58,6 @@ export function useGroupAnnouncements(groupId: string) {
     []
   );
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
-
 
   const persistAndUpdate = useCallback(
     (newItems: GroupAnnouncementItem[]) => {

@@ -79,17 +79,6 @@ function makeEmpty(memberId: string): DanceAuditionEntry {
   };
 }
 
-function loadData(memberId: string): DanceAuditionEntry {
-  if (typeof window === "undefined") return makeEmpty(memberId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) return makeEmpty(memberId);
-    return JSON.parse(raw) as DanceAuditionEntry;
-  } catch {
-    return makeEmpty(memberId);
-  }
-}
-
 function saveData(entry: DanceAuditionEntry): void {
   localStorage.setItem(getStorageKey(entry.memberId), JSON.stringify(entry));
 }
@@ -116,7 +105,6 @@ export function useDanceAudition(memberId: string) {
   const [entry, setEntry] = useState<DanceAuditionEntry>(() =>
     makeEmpty(memberId)
   );
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateEntry = useCallback(

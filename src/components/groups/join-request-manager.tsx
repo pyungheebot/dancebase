@@ -43,7 +43,7 @@ export function JoinRequestManager({ groupId, groupName }: Props) {
 
   const { requests, loading, refetch } = useJoinRequests(groupId, activeTab);
 
-  const pendingRequests = useMemo(
+  const _pendingRequests = useMemo(
     () => requests.filter((r) => r.status === "pending"),
     [requests]
   );

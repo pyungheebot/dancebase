@@ -113,7 +113,7 @@ function TransactionDialog({
 
   const isEdit = !!initial;
 
-  const filteredCategories = categories.filter((c) =>
+  const _filteredCategories = categories.filter((c) =>
     form.type === "income"
       ? ["회비", "기타수입"].includes(c.name)
       : !["기타수입"].includes(c.name) || c.name === "기타수입"

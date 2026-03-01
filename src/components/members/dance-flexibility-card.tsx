@@ -38,7 +38,7 @@ import {
 import {
   useDanceFlexibility,
   FLEX_PART_META,
-  FLEX_PARTS,
+
   calcFlexProgress,
   calcOverallProgress,
 } from "@/hooks/use-dance-flexibility";

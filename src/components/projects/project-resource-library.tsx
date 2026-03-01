@@ -5,7 +5,7 @@ import {
   Library,
   Music,
   Video,
-  Image,
+  Image as ImageIcon,
   FileText,
   Plus,
   ExternalLink,
@@ -75,7 +75,7 @@ function TypeIcon({
     case "video":
       return <Video className={className} />;
     case "image":
-      return <Image className={className} />;
+      return <ImageIcon className={className} aria-hidden="true" />;
     case "document":
       return <FileText className={className} />;
   }

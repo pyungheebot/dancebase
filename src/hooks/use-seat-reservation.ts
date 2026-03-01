@@ -5,7 +5,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import type {
   SeatReservationLayout,
   SeatReservationEntry,
-  SeatReservationStatus,
+
 } from "@/types";
 
 // ============================================================

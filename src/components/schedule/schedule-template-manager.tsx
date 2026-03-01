@@ -425,7 +425,7 @@ export function ScheduleTemplateManager({
     addTemplate,
     saveFromSchedule,
     deleteTemplate,
-    getFormDataFromTemplate,
+
   } = useLocalScheduleTemplates(groupId);
 
   const handleApply = (formData: ScheduleTemplateFormData) => {

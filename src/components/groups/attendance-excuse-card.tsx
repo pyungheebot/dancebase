@@ -10,9 +10,9 @@ import {
   Trash2,
   CheckCircle2,
   XCircle,
-  Clock,
+
   User,
-  Calendar,
+
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,18 +55,6 @@ import type {
 
 // ─── 헬퍼 ───────────────────────────────────────────────────
 
-function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
-}
-
 function formatDateTime(iso: string): string {
   try {
     return new Date(iso).toLocaleString("ko-KR", {
@@ -92,7 +80,7 @@ interface ExcuseItemRowProps {
 
 function ExcuseItemRow({
   item,
-  approverName,
+
   onApprove,
   onReject,
   onRemove,

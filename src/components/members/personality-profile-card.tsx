@@ -44,7 +44,7 @@ const ALL_ROLES: PersonalityDanceRole[] = [
   "performer",
 ];
 
-const TRAIT_NAMES: PersonalityTrait["trait"][] = [
+const _TRAIT_NAMES: PersonalityTrait["trait"][] = [
   "리더십",
   "창의성",
   "체력",

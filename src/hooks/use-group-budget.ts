@@ -114,13 +114,13 @@ export function useGroupBudget(groupId: string) {
     { revalidateOnFocus: false }
   );
 
-  const budgetData: GroupBudgetData = data ?? {
+  const budgetData: GroupBudgetData = useMemo(() => data ?? {
     groupId,
     transactions: [],
     categories: DEFAULT_CATEGORIES,
     monthlyBudgetLimit: null,
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, groupId]);
 
   // ── 내부 저장 헬퍼 ──────────────────────────────────────
 

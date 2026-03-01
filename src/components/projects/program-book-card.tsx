@@ -35,7 +35,7 @@ import {
   Trash2,
   Pencil,
   ChevronUp,
-  Image,
+  Image as ImageIcon,
   MessageCircle,
   List,
   Users,
@@ -93,7 +93,7 @@ function SectionTypeIcon({
   const cls = className ?? "h-3.5 w-3.5";
   switch (type) {
     case "cover":
-      return <Image className={cls} />;
+      return <ImageIcon className={cls} aria-hidden="true" />;
     case "greeting":
       return <MessageCircle className={cls} />;
     case "program_list":

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -50,7 +50,7 @@ export function useGroupPracticeJournal(groupId: string) {
     { fallbackData: [] }
   );
 
-  const entries = data ?? [];
+  const entries = useMemo(() => data ?? [], [data]);
 
   // 일지 추가
   const addEntry = useCallback(

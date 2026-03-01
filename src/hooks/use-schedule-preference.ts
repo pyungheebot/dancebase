@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import type {
   MemberSchedulePreference,
   TimeSlotEntry,
-  TimeSlotPreference,
+
   WeekDayIndex,
   OptimalSlotResult,
 } from "@/types";
@@ -27,17 +27,6 @@ type StorageData = {
   preferences: MemberSchedulePreference[];
 };
 
-function loadData(groupId: string): StorageData {
-  if (typeof window === "undefined") return { preferences: [] };
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return { preferences: [] };
-    return JSON.parse(raw) as StorageData;
-  } catch {
-    return { preferences: [] };
-  }
-}
-
 function saveData(groupId: string, data: StorageData): void {
   localStorage.setItem(getStorageKey(groupId), JSON.stringify(data));
 }
@@ -51,7 +40,6 @@ export function useSchedulePreference(
   totalMemberCount?: number
 ) {
   const [data, setData] = useState<StorageData>({ preferences: [] });
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateData = useCallback(

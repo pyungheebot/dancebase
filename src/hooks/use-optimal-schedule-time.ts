@@ -121,12 +121,12 @@ export function useOptimalScheduleTime(
       const uniqueMemberCount = new Set(
         (attendanceRows as { user_id: string }[]).map((a) => a.user_id)
       ).size;
-      const totalMembers =
+      const _totalMembers =
         (memberCountData as unknown as { count: number } | null)?.count ??
         Math.max(uniqueMemberCount, 1);
 
       // 4. schedule_id -> starts_at 매핑
-      const scheduleMap = new Map<string, string>(
+      const _scheduleMap = new Map<string, string>(
         scheduleRows.map((s: { id: string; starts_at: string }) => [
           s.id,
           s.starts_at,

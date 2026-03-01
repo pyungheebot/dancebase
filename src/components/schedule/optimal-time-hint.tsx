@@ -2,7 +2,7 @@
 
 import { Sparkles, TrendingUp } from "lucide-react";
 import { useOptimalScheduleTime } from "@/hooks/use-optimal-schedule-time";
-import type { DayOfWeek } from "@/hooks/use-optimal-schedule-time";
+
 
 type OptimalTimeHintProps = {
   groupId: string;

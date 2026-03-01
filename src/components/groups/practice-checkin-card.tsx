@@ -362,7 +362,7 @@ export function PracticeCheckinCard({ groupId, memberNames }: Props) {
 
   const {
     sessions,
-    records,
+
     activeSession,
     totalSessions,
     averageAttendanceRate,

@@ -53,7 +53,7 @@ export function useMemberEngagement(groupId: string, members: EntityMember[]) {
       if (postErr) throw new Error("게시글 데이터를 불러오지 못했습니다");
 
       // 댓글 최근 활동일 (board_comments는 post_id 기반 → 그룹 게시글의 post_id로 필터)
-      const postIds = (postRows ?? []).map((p: { author_id: string; created_at: string }) => p.author_id);
+      const _postIds = (postRows ?? []).map((p: { author_id: string; created_at: string }) => p.author_id);
 
       // 그룹 내 board_posts의 ID 목록 조회
       const { data: groupPostIds, error: groupPostIdsErr } = await supabase

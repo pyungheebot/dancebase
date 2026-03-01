@@ -47,7 +47,7 @@ function saveFeedbacks(groupId: string, feedbacks: PeerFeedback[]): void {
 export function usePeerFeedback(groupId: string) {
   const [feedbacks, setFeedbacks] = useState<PeerFeedback[]>(() => loadFeedbacks(groupId));
 
-  const reload = useCallback(() => {
+  const _reload = useCallback(() => {
     if (!groupId) return;
     const data = loadFeedbacks(groupId);
     setFeedbacks(data);

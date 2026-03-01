@@ -94,7 +94,7 @@ type LineChartProps = {
 
 function SkillLineChart({ monthlyAvgTrend, categoryTrend }: LineChartProps) {
   const CHART_H = 100; // px (Y축 높이)
-  const CHART_W = 100; // % 너비 기준
+  const _CHART_W = 100; // % 너비 기준
   const Y_MIN = 1;
   const Y_MAX = 5;
 

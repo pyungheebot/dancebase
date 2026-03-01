@@ -6,7 +6,7 @@ import {
   ChevronDown,
   ChevronUp,
   Plus,
-  Trash2,
+
   Trophy,
   Users,
   TrendingUp,

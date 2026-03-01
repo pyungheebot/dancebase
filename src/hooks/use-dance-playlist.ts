@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -101,11 +101,11 @@ export function useDancePlaylist(memberId: string) {
     () => loadData(memberId)
   );
 
-  const current: MyPlaylistData = data ?? {
+  const current: MyPlaylistData = useMemo(() => data ?? {
     memberId,
     playlists: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, memberId]);
 
   const persist = useCallback(
     (next: MyPlaylistData) => {

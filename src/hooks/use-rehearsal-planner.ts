@@ -77,13 +77,6 @@ const WEEK_TEMPLATES: Record<number, WeekTemplate> = {
 // 유틸 함수
 // ============================================
 
-/** YYYY-MM-DD 기준으로 n일 뒤/앞의 날짜를 YYYY-MM-DD로 반환 */
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
-}
-
 /** 주차 범위 레이블 생성: "D-42 ~ D-36" */
 function makeWeekLabel(weekNumber: number): string {
   // weekNumber 6 → D-42~D-36, weekNumber 1 → D-7~D-1
@@ -93,7 +86,7 @@ function makeWeekLabel(weekNumber: number): string {
 }
 
 /** 6주 RehearsalWeek 배열 생성 */
-function buildWeeks(performanceDate: string): RehearsalWeek[] {
+function buildWeeks(_performanceDate: string): RehearsalWeek[] {
   return [6, 5, 4, 3, 2, 1].map((wn) => {
     const tmpl = WEEK_TEMPLATES[wn];
     const checks: RehearsalCheckItem[] = tmpl.checks.map((title, idx) => ({
@@ -125,7 +118,6 @@ export function useRehearsalPlanner(groupId: string, projectId: string) {
   const [plan, setPlan] = useState<RehearsalPlan | null>(null);
 
   // 마운트 시 localStorage에서 불러오기
-
 
   /** localStorage에 저장하고 state 업데이트 */
   const persist = useCallback(

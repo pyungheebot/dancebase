@@ -26,17 +26,6 @@ type StorageData = {
   records: MemberRewardRecord[];
 };
 
-function loadData(groupId: string): StorageData {
-  if (typeof window === "undefined") return { rules: [], records: [] };
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return { rules: [], records: [] };
-    return JSON.parse(raw) as StorageData;
-  } catch {
-    return { rules: [], records: [] };
-  }
-}
-
 function saveData(groupId: string, data: StorageData): void {
   localStorage.setItem(getStorageKey(groupId), JSON.stringify(data));
 }
@@ -47,7 +36,6 @@ function saveData(groupId: string, data: StorageData): void {
 
 export function useAttendanceReward(groupId: string) {
   const [data, setData] = useState<StorageData>({ rules: [], records: [] });
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateData = useCallback(

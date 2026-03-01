@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import {useCallback} from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { PerformanceSetlistData, PerformanceSetlistItem, SetlistItemType } from "@/types";

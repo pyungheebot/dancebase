@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Image,
+  Image as ImageIcon,
   ChevronDown,
   ChevronRight,
   Plus,
@@ -865,7 +865,7 @@ export function PosterManagementCard({
       <CollapsibleTrigger asChild>
         <div className="flex items-center justify-between p-3 rounded-lg border bg-white hover:bg-gray-50 cursor-pointer transition-colors">
           <div className="flex items-center gap-2">
-            <Image className="h-4 w-4 text-indigo-500" />
+            <ImageIcon className="h-4 w-4 text-indigo-500" aria-hidden="true" />
             <span className="text-sm font-medium text-gray-800">
               공연 포스터 관리
             </span>
@@ -927,7 +927,7 @@ export function PosterManagementCard({
             </div>
           ) : projects.length === 0 && !showAddForm ? (
             <div className="text-center py-6">
-              <Image className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+              <ImageIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" aria-hidden="true" />
               <p className="text-xs text-gray-400">등록된 포스터 프로젝트가 없습니다.</p>
               <Button
                 size="sm"

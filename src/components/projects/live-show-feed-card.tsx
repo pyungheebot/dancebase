@@ -132,10 +132,6 @@ function formatTimestamp(iso: string): string {
   }
 }
 
-function nowIso(): string {
-  return new Date().toISOString();
-}
-
 function nowDatetimeLocal(): string {
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");

@@ -418,7 +418,7 @@ function MemberListPanel({
   selectedMemberId,
   onSelectMember,
   onAddMember,
-  onRemoveMember,
+
 }: MemberListPanelProps) {
   const [addOpen, setAddOpen] = useState(false);
   const [memberName, setMemberName] = useState("");

@@ -32,7 +32,7 @@ function saveSessions(projectId: string, sessions: RunthroughSession[]): void {
 export function useRunthroughSession(projectId: string) {
   const [sessions, setSessions] = useState<RunthroughSession[]>([]);
   const [currentSession, setCurrentSession] = useState<RunthroughSession | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [mounted] = useState(false);
 
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -43,7 +43,7 @@ export function useGroupWishlistV2(groupId: string) {
     { revalidateOnFocus: false }
   );
 
-  const items: GroupWishItem[] = data ?? [];
+  const items: GroupWishItem[] = useMemo(() => data ?? [], [data]);
 
   // ── 내부 업데이트 헬퍼 ───────────────────────────────────
 

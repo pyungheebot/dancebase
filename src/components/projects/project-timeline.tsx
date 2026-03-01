@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useProjectTimeline } from "@/hooks/use-project-timeline";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { Calendar, ArrowRight, Loader2, FolderOpen } from "lucide-react";
 
 interface ProjectTimelineProps {
@@ -91,7 +91,7 @@ export function ProjectTimeline({ groupId }: ProjectTimelineProps) {
             </div>
             {/* 월 헤더 */}
             <div className="relative flex" style={{ width: totalGridWidth }}>
-              {months.map((m, i) => (
+              {months.map((m) => (
                 <div
                   key={`${m.year}-${m.month}`}
                   className="shrink-0 flex items-center justify-center border-r last:border-r-0"

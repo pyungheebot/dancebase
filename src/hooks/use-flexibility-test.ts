@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
   FlexibilityTestItem,
-  FlexibilityTestItemKey,
+
   FlexibilityTestUnit,
   FlexibilityTestRecord,
   FlexibilityTestEntry,

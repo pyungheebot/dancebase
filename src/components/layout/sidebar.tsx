@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/popover";
 import {
   LayoutDashboard,
-  Users,
+
   Plus,
   Calendar,
   UserCircle,
@@ -68,8 +68,6 @@ function getActiveAncestorIds(tree: GroupTreeNode[], pathname: string): Set<stri
 
 function buildGroupTree(groups: { id: string; name: string; parent_group_id?: string | null }[]): GroupTreeNode[] {
   const nodeMap = new Map<string, GroupTreeNode>();
-  const groupIdSet = new Set(groups.map((g) => g.id));
-
   for (const g of groups) {
     nodeMap.set(g.id, { id: g.id, name: g.name, parent_group_id: g.parent_group_id ?? null, children: [] });
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -74,14 +74,14 @@ export function useMakeupHair(projectId: string) {
     () => loadData(projectId)
   );
 
-  const current: MakeupHairData = data ?? {
+  const current: MakeupHairData = useMemo(() => data ?? {
     projectId,
     plans: [],
     timeline: [],
     checklist: [],
     artists: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, projectId]);
 
   const persist = useCallback(
     (next: MakeupHairData) => {

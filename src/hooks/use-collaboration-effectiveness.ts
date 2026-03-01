@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { CollabDimension, CollabEvaluation, CollabSummary } from "@/types";
@@ -122,7 +122,7 @@ export function useCollaborationEffectiveness(
     () => loadEvaluations(groupId)
   );
 
-  const evaluations: CollabEvaluation[] = data ?? [];
+  const evaluations: CollabEvaluation[] = useMemo(() => data ?? [], [data]);
 
   // 멤버별 요약 계산
   const summaries: CollabSummary[] = (() => {

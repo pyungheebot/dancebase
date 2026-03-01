@@ -35,7 +35,6 @@ export function useScrollRestore() {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey]);
 
   // 스크롤 이벤트 리스너 등록 (debounce 300ms)

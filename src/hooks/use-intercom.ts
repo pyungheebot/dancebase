@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
@@ -75,11 +75,11 @@ export function useIntercom(projectId: string) {
     [mutate]
   );
 
-  const current: ShowIntercomData = data ?? {
+  const current: ShowIntercomData = useMemo(() => data ?? {
     projectId,
     channels: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, projectId]);
 
   // 채널 추가
   const addChannel = useCallback(

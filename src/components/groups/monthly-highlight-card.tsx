@@ -16,7 +16,7 @@ import {
   Trash2,
   ThumbsUp,
   BarChart2,
-  Image,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -508,7 +508,7 @@ function AddHighlightDialog({
           {/* 사진 URL */}
           <div>
             <Label className="text-xs flex items-center gap-1">
-              <Image className="h-3 w-3" />
+              <ImageIcon className="h-3 w-3" aria-hidden="true" />
               사진 URL (선택)
             </Label>
             <Input

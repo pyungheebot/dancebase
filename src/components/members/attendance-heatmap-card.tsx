@@ -145,7 +145,7 @@ function HeatmapTooltip({
   count: number;
   activities: string[];
 }) {
-  const [y, m, d] = date.split("-");
+  const [m, d] = date.split("-");
   const label = `${parseInt(m)}월 ${parseInt(d)}일`;
 
   return (

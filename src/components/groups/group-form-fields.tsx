@@ -18,10 +18,10 @@ import { X } from "lucide-react";
 import type { GroupType, GroupVisibility, GroupJoinPolicy } from "@/types";
 import { GROUP_TYPES } from "@/types";
 import {
-  validateRequired,
-  validateMinLength,
-  validateMaxLength,
-  validatePositiveNumber,
+
+
+
+
 } from "@/lib/validation";
 
 const COMMON_GENRES = [

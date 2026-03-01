@@ -75,19 +75,6 @@ function getStorageKey(groupId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}`;
 }
 
-function loadData(groupId: string): AttendanceExcuseEntry {
-  if (typeof window === "undefined") {
-    return makeEmpty(groupId);
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return makeEmpty(groupId);
-    return JSON.parse(raw) as AttendanceExcuseEntry;
-  } catch {
-    return makeEmpty(groupId);
-  }
-}
-
 function saveData(entry: AttendanceExcuseEntry): void {
   localStorage.setItem(getStorageKey(entry.groupId), JSON.stringify(entry));
 }
@@ -110,7 +97,6 @@ export function useAttendanceExcuse(groupId: string) {
   const [entry, setEntry] = useState<AttendanceExcuseEntry>(() =>
     makeEmpty(groupId)
   );
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateEntry = useCallback(

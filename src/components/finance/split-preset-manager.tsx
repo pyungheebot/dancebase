@@ -517,7 +517,7 @@ export function SplitPresetManager({
   const [editingPreset, setEditingPreset] = useState<SplitPreset | null>(null);
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
 
-  const selectedPreset = presets.find((p) => p.id === selectedPresetId) ?? null;
+  const _selectedPreset = presets.find((p) => p.id === selectedPresetId) ?? null;
 
   const handleCreate = (
     name: string,

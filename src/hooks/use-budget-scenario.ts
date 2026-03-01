@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { BudgetScenario, ScenarioResult } from "@/types";
@@ -53,7 +53,7 @@ export function useBudgetScenario(groupId: string) {
     { fallbackData: [] }
   );
 
-  const list = scenarios ?? [];
+  const list = useMemo(() => scenarios ?? [], [scenarios]);
 
   // 결과 계산 (전체 시나리오)
   const results: ScenarioResult[] = list.map(calcResult);

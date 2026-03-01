@@ -892,7 +892,7 @@ function StatsSummary({
 export function DanceStyleAnalysisCard({ memberId }: { memberId: string }) {
   const {
     snapshots,
-    stats,
+
     addSnapshot,
     updateSnapshot,
     deleteSnapshot,

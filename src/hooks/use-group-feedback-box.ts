@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -51,11 +51,11 @@ export function useGroupFeedbackBox(groupId: string) {
     () => loadData(groupId)
   );
 
-  const current: AnonFeedbackData = data ?? {
+  const current: AnonFeedbackData = useMemo(() => data ?? {
     groupId,
     feedbacks: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, groupId]);
 
   const persist = useCallback(
     (next: AnonFeedbackData) => {

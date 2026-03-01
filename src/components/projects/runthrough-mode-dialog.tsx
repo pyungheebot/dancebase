@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import {useState, useEffect, useRef} from "react";
 import { useRunthroughSession } from "@/hooks/use-runthrough-session";
 import type { RunthroughSession } from "@/types";
 import {
@@ -23,7 +23,7 @@ import {
   StickyNote,
   Clock,
   Trash2,
-  ChevronDown,
+
   ChevronRight,
 } from "lucide-react";
 

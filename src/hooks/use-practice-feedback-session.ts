@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -120,7 +120,7 @@ export function usePracticeFeedbackSession(groupId: string) {
     }
   );
 
-  const sessions: PracticeFeedbackSession[] = data?.sessions ?? [];
+  const sessions: PracticeFeedbackSession[] = useMemo(() => data?.sessions ?? [], [data?.sessions]);
 
   // 세션 생성
   const createSession = useCallback(

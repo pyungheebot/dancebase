@@ -165,7 +165,7 @@ export function SocialCalendarCard({
   memberNames?: string[];
 }) {
   const {
-    posts,
+
     loading,
     addPost,
     updatePost,

@@ -11,7 +11,7 @@ import {
   Trash2,
   AlertTriangle,
   History,
-  X,
+
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,7 +164,7 @@ function ItemRow({
   onDelete,
   onRent,
   onReturn,
-  memberNames,
+
 }: {
   item: EquipmentRentalItem;
   onEdit: (item: EquipmentRentalItem) => void;

@@ -158,7 +158,7 @@ export function FilteredActivityTimeline({
   const [filter, setFilter] = useState<FilteredActivityFilterType>("all");
   const [daysBack, setDaysBack] = useState(30);
 
-  const { items, loading, filterByTypes, refetch } =
+  const { items, loading, filterByTypes } =
     useFilteredActivityTimeline(groupId, daysBack);
 
   // 필터 적용

@@ -31,7 +31,7 @@ import {
   Trash2,
   ChevronDown,
   ChevronRight,
-  Gauge,
+
   Hand,
   X,
   Volume2,
@@ -43,11 +43,6 @@ import { formatYearMonthDay } from "@/lib/date-utils";
 // ============================================
 // 유틸리티
 // ============================================
-
-function formatBpmCategory(bpm: number): string {
-  const cat = classifyTempo(bpm);
-  return `${TEMPO_CATEGORY_LABELS[cat]} (${bpm} BPM)`;
-}
 
 // ============================================
 // 섹션 입력 서브컴포넌트

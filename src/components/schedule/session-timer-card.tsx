@@ -138,7 +138,7 @@ function DonutChart({
 
       {/* 구간별 호 */}
       {arcs.map((arc, idx) => {
-        const isCurrentSeg = idx === currentSegmentIndex && isRunning;
+        const _isCurrentSeg = idx === currentSegmentIndex && isRunning;
         return (
           <path
             key={arc.seg.id}

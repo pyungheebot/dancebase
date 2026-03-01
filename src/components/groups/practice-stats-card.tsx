@@ -211,7 +211,7 @@ export function PracticeStatsCard({ groupId }: PracticeStatsCardProps) {
 
                   {/* 점 + 숫자 */}
                   <div className="absolute inset-0 flex">
-                    {monthly.map((stat, idx) => {
+                    {monthly.map((stat) => {
                       const pct =
                         maxAttendees > 0
                           ? (stat.avgAttendees / maxAttendees) * 80

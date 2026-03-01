@@ -1,0 +1,52 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function Loading() {
+  return (
+    <div className="space-y-4 p-4 md:p-6">
+      {/* 엔티티 헤더 */}
+      <div className="space-y-1.5 mb-2">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-3 w-24" />
+      </div>
+
+      {/* 탭 네비게이션 */}
+      <div className="flex gap-1 mb-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-7 w-16" />
+        ))}
+      </div>
+
+      <Skeleton className="h-4 w-20 mb-2" />
+
+      {/* 일정 선택 */}
+      <Skeleton className="h-9 w-full mb-4" />
+
+      {/* 출석 현황 요약 */}
+      <div className="flex gap-3 mb-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex-1 rounded border p-2 space-y-1">
+            <Skeleton className="h-3 w-10" />
+            <Skeleton className="h-5 w-6" />
+          </div>
+        ))}
+      </div>
+
+      {/* 멤버 출석 목록 */}
+      <div className="divide-y border rounded-lg">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex items-center justify-between gap-3 px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-7 w-7 rounded-full" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <div className="flex gap-1">
+              {Array.from({ length: 4 }).map((_, j) => (
+                <Skeleton key={j} className="h-6 w-12 rounded" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

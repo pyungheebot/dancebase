@@ -11,17 +11,6 @@ function getStorageKey(groupId: string) {
   return `${STORAGE_PREFIX}${groupId}`;
 }
 
-function loadDocuments(groupId: string): WikiDocument[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as WikiDocument[];
-  } catch {
-    return [];
-  }
-}
-
 function saveDocuments(groupId: string, docs: WikiDocument[]) {
   if (typeof window === "undefined") return;
   try {
@@ -41,7 +30,6 @@ export function useGroupWiki(groupId: string) {
   const [documents, setDocuments] = useState<WikiDocument[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<WikiCategory | "all">("all");
-
 
   // 필터링된 문서 목록
   const filteredDocuments = documents.filter((doc) => {

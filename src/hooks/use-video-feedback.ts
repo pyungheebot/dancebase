@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { VideoFeedbackItem, VideoFeedbackTimestamp } from "@/types";
@@ -50,7 +50,7 @@ export function useVideoFeedback(groupId: string, projectId: string) {
     loadData(groupId, projectId)
   );
 
-  const videos: VideoFeedbackItem[] = data ?? [];
+  const videos: VideoFeedbackItem[] = useMemo(() => data ?? [], [data]);
 
   /** 내부 상태 + localStorage 동기 업데이트 */
   const update = useCallback(

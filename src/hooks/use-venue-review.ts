@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { VenueReviewEntry } from "@/types";
 
@@ -35,7 +35,7 @@ export function useVenueReview(groupId: string) {
     { fallbackData: [] }
   );
 
-  const reviews: VenueReviewEntry[] = data ?? [];
+  const reviews: VenueReviewEntry[] = useMemo(() => data ?? [], [data]);
 
   // ── 저장 헬퍼 ─────────────────────────────────────────────
 

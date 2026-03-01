@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Paperclip, X, FileText, Clock } from "lucide-react";
+import NextImage from "next/image";
 import { toast } from "sonner";
 import { BoardScheduleInput } from "./board-schedule-input";
 
@@ -146,7 +147,7 @@ export function BoardPostForm({
         });
       }
     }
-  }, [open, mode, initialData, writeCategories]);
+  }, [open, mode, initialData, writeCategories, clearDraft, hasDraft, restoreDraft]);
 
   // 다이얼로그 닫힐 때 미리보기 URL 정리
   useEffect(() => {
@@ -155,7 +156,7 @@ export function BoardPostForm({
         if (pf.previewUrl) URL.revokeObjectURL(pf.previewUrl);
       });
     }
-  }, [open]);
+  }, [open, pendingFiles]);
 
   const isVote = category === "투표";
 
@@ -585,10 +586,13 @@ export function BoardPostForm({
                   className="flex items-center gap-2 rounded-md border px-2.5 py-1.5 bg-muted/40"
                 >
                   {pf.previewUrl ? (
-                    <img
+                    <NextImage
                       src={pf.previewUrl}
                       alt={pf.file.name}
+                      width={32}
+                      height={32}
                       className="h-8 w-8 rounded object-cover shrink-0 border"
+                      unoptimized
                     />
                   ) : (
                     <FileText className="h-4 w-4 text-muted-foreground shrink-0" />

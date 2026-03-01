@@ -32,9 +32,9 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
+
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+
 import { useWaiverManagement } from "@/hooks/use-waiver-management";
 import type { WaiverType, WaiverTemplate, WaiverSignature } from "@/types";
 
@@ -93,7 +93,7 @@ function WaiverListTab({
   signatures,
   onDelete,
   onSelectForSign,
-  isExpired,
+
   getSignedCount,
 }: {
   templates: WaiverTemplate[];
@@ -598,10 +598,10 @@ export function WaiverManagementCard({ groupId }: WaiverManagementCardProps) {
     removeTemplate,
     sign,
     unsign,
-    getSignaturesByWaiver,
+
     getSignedCount,
     isExpired,
-    refetch,
+
   } = useWaiverManagement(groupId);
 
   // ─── 핸들러 ──────────────────────────────────────────────────────

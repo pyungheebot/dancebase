@@ -23,17 +23,6 @@ function getStorageKey(groupId: string): string {
   return `${STORAGE_PREFIX}${groupId}`;
 }
 
-function loadStore(groupId: string): ReturnOnboardingStore {
-  if (typeof window === "undefined") return { checkItems: [], sessions: [] };
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return { checkItems: [], sessions: [] };
-    return JSON.parse(raw) as ReturnOnboardingStore;
-  } catch {
-    return { checkItems: [], sessions: [] };
-  }
-}
-
 function saveStore(groupId: string, store: ReturnOnboardingStore): void {
   if (typeof window === "undefined") return;
   try {
@@ -50,7 +39,6 @@ function saveStore(groupId: string, store: ReturnOnboardingStore): void {
 export function useReturnOnboarding(groupId: string) {
   const [checkItems, setCheckItems] = useState<OnboardingCheckItem[]>([]);
   const [sessions, setSessions] = useState<MemberOnboardingSession[]>([]);
-
 
   // 저장 + 상태 업데이트 헬퍼
   const persist = useCallback(

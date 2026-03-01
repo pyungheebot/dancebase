@@ -15,17 +15,6 @@ function storageKey(groupId: string, userId: string): string {
 // 내부 유틸
 // ============================================
 
-function loadCard(groupId: string, userId: string): MemberIntroCardV2 | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, userId));
-    if (!raw) return null;
-    return JSON.parse(raw) as MemberIntroCardV2;
-  } catch {
-    return null;
-  }
-}
-
 function persistCard(groupId: string, userId: string, card: MemberIntroCardV2): void {
   if (typeof window === "undefined") return;
   try {
@@ -67,8 +56,7 @@ export function validateIntroCard(card: Partial<MemberIntroCardV2>): string | nu
 
 export function useMemberIntroCard(groupId: string, userId: string) {
   const [intro, setIntro] = useState<MemberIntroCardV2 | null>(null);
-  const [loaded, setLoaded] = useState(false);
-
+  const [loaded] = useState(false);
 
   // 카드 저장
   const saveIntro = useCallback(

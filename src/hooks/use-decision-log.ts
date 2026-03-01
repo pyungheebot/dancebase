@@ -15,17 +15,6 @@ function getStorageKey(groupId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}`;
 }
 
-function loadItems(groupId: string): DecisionLogItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as DecisionLogItem[];
-  } catch {
-    return [];
-  }
-}
-
 function saveItems(groupId: string, items: DecisionLogItem[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -51,7 +40,6 @@ export function useDecisionLog(groupId: string) {
   const [impactFilter, setImpactFilter] = useState<DecisionImpact | "all">(
     "all"
   );
-
 
   // 필터링된 항목
   const filteredItems = items.filter((item) => {

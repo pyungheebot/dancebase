@@ -97,7 +97,7 @@ export function saveRecentPage(href: string, label: string) {
 export function useCommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [recentPages, setRecentPages] = useState<RecentPage[]>([]);
+  const [recentPages] = useState<RecentPage[]>([]);
 
   // 팔레트가 열릴 때 최근 방문 페이지 로드
 

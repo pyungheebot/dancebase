@@ -7,7 +7,7 @@ import {
   Plus,
   Trash2,
   Users,
-  Image,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -396,7 +396,7 @@ export function EventGalleryPanel({ groupId }: EventGalleryPanelProps) {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
-          <Image className="h-3 w-3" />
+          <ImageIcon className="h-3 w-3" aria-hidden="true" />
           이벤트 갤러리
           {totalCount > 0 && (
             <span className="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-medium min-w-[16px] h-4 px-1">
@@ -411,7 +411,7 @@ export function EventGalleryPanel({ groupId }: EventGalleryPanelProps) {
         <SheetHeader className="px-4 pt-4 pb-3 border-b shrink-0">
           <div className="flex items-center justify-between gap-2">
             <SheetTitle className="text-sm flex items-center gap-1.5">
-              <Image className="h-4 w-4 text-muted-foreground" />
+              <ImageIcon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               이벤트 갤러리
               {totalCount > 0 && (
                 <Badge
@@ -451,7 +451,7 @@ export function EventGalleryPanel({ groupId }: EventGalleryPanelProps) {
             </div>
           ) : filteredEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
-              <Image className="h-8 w-8 text-muted-foreground/40" />
+              <ImageIcon className="h-8 w-8 text-muted-foreground/40" aria-hidden="true" />
               <p className="text-xs font-medium text-muted-foreground">
                 {tagFilter !== "all"
                   ? `${TAG_LABELS[tagFilter as EventTag]} 이벤트가 없습니다`

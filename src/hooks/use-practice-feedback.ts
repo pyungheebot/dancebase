@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { PracticeFeedbackEntry, PracticeFeedbackMood } from "@/types";
@@ -44,7 +44,7 @@ export function usePracticeFeedback(groupId: string) {
     { fallbackData: [] }
   );
 
-  const entries = data ?? [];
+  const entries = useMemo(() => data ?? [], [data]);
 
   // 피드백 추가
   const addFeedback = useCallback(

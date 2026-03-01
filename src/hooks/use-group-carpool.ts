@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -52,11 +52,11 @@ export function useGroupCarPool(groupId: string) {
     () => loadData(groupId)
   );
 
-  const current: CarPoolData = data ?? {
+  const current: CarPoolData = useMemo(() => data ?? {
     groupId,
     carpools: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, groupId]);
 
   const persist = useCallback(
     (next: CarPoolData) => {

@@ -214,7 +214,7 @@ const KPT_CONFIG: Record<
   },
 };
 
-function KptColumn({ category, items, authorName, onAdd, onVote }: KptColumnProps) {
+function KptColumn({ category, items, onAdd, onVote }: KptColumnProps) {
   const [input, setInput] = useState("");
   const cfg = KPT_CONFIG[category];
   const filtered = items.filter((i) => i.category === category);

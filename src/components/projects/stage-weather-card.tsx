@@ -50,7 +50,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useStageWeather, calcSafety } from "@/hooks/use-stage-weather";
+import {useStageWeather} from "@/hooks/use-stage-weather";
 import type {
   StageWeatherCondition,
   StageWeatherSafety,

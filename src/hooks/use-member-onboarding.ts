@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import {useState, useCallback} from "react";
 
 // ============================================
 // 타입 정의
@@ -13,43 +13,6 @@ export type OnboardingItem = {
   isDone: boolean;
   link?: string;
 };
-
-// ============================================
-// 기본 체크리스트 항목
-// ============================================
-
-const DEFAULT_ITEMS: Omit<OnboardingItem, "isDone">[] = [
-  {
-    id: "intro-card",
-    title: "자기소개 카드 작성",
-    description: "멤버 탭에서 자기소개를 작성해보세요",
-    link: "members",
-  },
-  {
-    id: "check-schedule",
-    title: "첫 일정 확인하기",
-    description: "일정 탭에서 다가오는 연습을 확인하세요",
-    link: "schedule",
-  },
-  {
-    id: "first-rsvp",
-    title: "첫 RSVP 응답하기",
-    description: "일정에 참석 여부를 응답해보세요",
-    link: "schedule",
-  },
-  {
-    id: "group-rules",
-    title: "그룹 규칙 확인하기",
-    description: "그룹 규칙을 확인해보세요",
-    link: "settings",
-  },
-  {
-    id: "first-post",
-    title: "첫 게시글 작성하기",
-    description: "게시판에 인사글을 남겨보세요",
-    link: "board",
-  },
-];
 
 // ============================================
 // localStorage 키 헬퍼
@@ -74,7 +37,7 @@ export function useMemberOnboarding(
 ) {
   const [items, setItems] = useState<OnboardingItem[]>([]);
   const [isDismissed, setIsDismissed] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [mounted] = useState(false);
 
   // 가입 후 7일 이내인지 확인
   const isNewMember = (() => {

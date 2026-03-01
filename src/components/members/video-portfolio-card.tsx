@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import NextImage from "next/image";
 import {
   Video,
   Plus,
@@ -308,10 +309,13 @@ function EntryItem({ entry, onEdit, onDelete }: EntryItemProps) {
       <div className="flex items-start gap-2">
         {/* 썸네일 */}
         {entry.thumbnailUrl ? (
-          <img
+          <NextImage
             src={entry.thumbnailUrl}
             alt={entry.title}
+            width={56}
+            height={40}
             className="w-14 h-10 object-cover rounded flex-shrink-0 border"
+            unoptimized
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";
             }}

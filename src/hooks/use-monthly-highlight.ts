@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -103,7 +103,7 @@ export function useMonthlyHighlight(groupId: string) {
     { revalidateOnFocus: false, revalidateOnReconnect: false }
   );
 
-  const highlights: MonthlyHighlight[] = data?.highlights ?? [];
+  const highlights: MonthlyHighlight[] = useMemo(() => data?.highlights ?? [], [data?.highlights]);
 
   // 하이라이트 추가
   const addHighlight = useCallback(

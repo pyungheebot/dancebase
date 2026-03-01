@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import {useCallback, useMemo} from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MilestoneTask, ProjectMilestoneCard } from "@/types";

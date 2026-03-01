@@ -43,7 +43,7 @@ function applyFontScale(scale: number) {
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(DEFAULT_SETTINGS.theme);
   const [fontScale, setFontScaleState] = useState<number>(DEFAULT_SETTINGS.fontScale);
-  const [mounted, setMounted] = useState(false);
+  const [mounted] = useState(false);
 
   // 초기 로드: localStorage에서 읽기
 

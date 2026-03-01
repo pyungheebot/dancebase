@@ -33,17 +33,6 @@ export function getTodayStr(): string {
 // 저장/불러오기
 // ============================================
 
-function loadEntries(groupId: string, userId: string): MasteryCurveEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, userId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MasteryCurveEntry[];
-  } catch {
-    return [];
-  }
-}
-
 function saveEntries(
   groupId: string,
   userId: string,
@@ -108,7 +97,6 @@ export function estimateCompletionDate(
 
 export function useMasteryCurve(groupId: string, userId: string) {
   const [entries, setEntries] = useState<MasteryCurveEntry[]>([]);
-
 
   // 내부 저장 + 상태 갱신
   const persist = useCallback(

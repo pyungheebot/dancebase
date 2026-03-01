@@ -17,8 +17,8 @@ import {
   Clock,
   Banknote,
   FileText,
-  CheckSquare,
-  Square,
+
+
   MoreVertical,
   Check,
   X,
@@ -489,7 +489,7 @@ function VenueItem({
   const [expanded, setExpanded] = useState(false);
   const statusCfg = BOOKING_STATUS_CONFIG[venue.rental.bookingStatus];
 
-  const facilityGroups = useMemo(() => {
+  const _facilityGroups = useMemo(() => {
     const available = venue.facilities.filter((f) => f.available);
     const unavailable = venue.facilities.filter((f) => !f.available);
     return { available, unavailable };

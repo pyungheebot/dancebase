@@ -53,7 +53,7 @@ import {
   User,
   MapPin,
   Clapperboard,
-  BarChart3,
+
 } from "lucide-react";
 import { useStagePropManagement, type StagePropInput } from "@/hooks/use-stage-prop";
 import type { StagePropItem, StagePropCategory, StagePropItemStatus } from "@/types";

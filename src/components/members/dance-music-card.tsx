@@ -10,12 +10,12 @@ import {
   ChevronUp,
   Star,
   Link2,
-  Tag,
+
   X,
   ListMusic,
   BarChart2,
   Heart,
-  Pencil,
+
   Check,
 } from "lucide-react";
 import {

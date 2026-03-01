@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Play } from "lucide-react";
+import NextImage from "next/image";
 
 /** 11자리 YouTube video ID 검증 */
 function isValidVideoId(id: string): boolean {
@@ -87,11 +88,12 @@ export function YouTubeEmbed({
           className="absolute inset-0 w-full h-full group cursor-pointer"
           aria-label="영상 재생"
         >
-          <img
+          <NextImage
             src={thumbUrl}
             alt="YouTube 썸네일"
-            className="w-full h-full object-cover"
-            loading="lazy"
+            fill
+            className="object-cover"
+            unoptimized
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
             <div className="h-12 w-12 rounded-full bg-red-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">

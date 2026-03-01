@@ -86,7 +86,7 @@ function PairCard({
 // ============================================
 
 function MatchingResultTab({
-  groupId,
+
   members,
   membersLoading,
   currentPairs,

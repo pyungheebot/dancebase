@@ -236,7 +236,7 @@ export function AttendanceComparisonChart({ ctx }: AttendanceComparisonChartProp
                   {/* 월별 바 그룹 */}
                   <div className="absolute inset-0 flex items-end">
                     {months.map(({ yearMonth, month }) => {
-                      const membersInMonth = data.filter(
+                      const _membersInMonth = data.filter(
                         (m) => m.monthlyRates.find((r) => r.yearMonth === yearMonth)
                       );
                       return (

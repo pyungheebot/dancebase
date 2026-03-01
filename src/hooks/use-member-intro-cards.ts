@@ -15,17 +15,6 @@ function storageKey(groupId: string): string {
 // 내부 유틸
 // ============================================
 
-function loadCards(groupId: string): MemberIntroCard[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MemberIntroCard[];
-  } catch {
-    return [];
-  }
-}
-
 function persistCards(groupId: string, cards: MemberIntroCard[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -41,7 +30,6 @@ function persistCards(groupId: string, cards: MemberIntroCard[]): void {
 
 export function useMemberIntroCards(groupId: string) {
   const [introCards, setIntroCards] = useState<MemberIntroCard[]>([]);
-
 
   // 특정 유저의 카드 조회
   const getCard = useCallback(

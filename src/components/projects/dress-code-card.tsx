@@ -526,7 +526,7 @@ export function DressCodeCard({
     sets,
     loading,
     addSet,
-    updateSet,
+
     deleteSet,
     addGuide,
     updateGuide,

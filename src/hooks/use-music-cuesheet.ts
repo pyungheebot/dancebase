@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MusicCuesheet, CueEntry, CueAction } from "@/types";
@@ -79,7 +79,7 @@ export function useMusicCuesheet(groupId: string, projectId: string) {
     loadData(groupId, projectId)
   );
 
-  const cuesheets: MusicCuesheet[] = data ?? [];
+  const cuesheets: MusicCuesheet[] = useMemo(() => data ?? [], [data]);
 
   /** 내부 상태 + localStorage 동기 업데이트 */
   const update = useCallback(

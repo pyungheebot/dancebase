@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { CalendarEvent, CalendarEventType } from "@/types";
@@ -59,7 +59,7 @@ export function useEventCalendar(groupId: string) {
     { revalidateOnFocus: false }
   );
 
-  const allEvents: CalendarEvent[] = events ?? [];
+  const allEvents: CalendarEvent[] = useMemo(() => events ?? [], [events]);
 
   // ── CRUD ────────────────────────────────────────────────
 

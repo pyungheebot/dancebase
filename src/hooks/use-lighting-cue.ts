@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -74,7 +74,7 @@ export function useLightingCue(groupId: string, projectId: string) {
     loadData(groupId, projectId)
   );
 
-  const cues: LightingCueEntry[] = data ?? [];
+  const cues: LightingCueEntry[] = useMemo(() => data ?? [], [data]);
 
   /** 내부 상태 + localStorage 동기 업데이트 */
   const update = useCallback(

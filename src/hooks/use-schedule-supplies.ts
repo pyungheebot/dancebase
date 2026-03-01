@@ -10,17 +10,6 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function loadFromStorage(groupId: string): ScheduleSupplyList | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}${groupId}`);
-    if (!raw) return null;
-    return JSON.parse(raw) as ScheduleSupplyList;
-  } catch {
-    return null;
-  }
-}
-
 function saveToStorage(list: ScheduleSupplyList): void {
   if (typeof window === "undefined") return;
   try {
@@ -35,7 +24,6 @@ function saveToStorage(list: ScheduleSupplyList): void {
 
 export function useScheduleSupplies(groupId: string, scheduleId: string) {
   const [allItems, setAllItems] = useState<ScheduleSupplyItem[]>([]);
-
 
   /** 저장 헬퍼: 전체 items 배열을 받아 storage에 저장하고 state 갱신 */
   function persist(nextItems: ScheduleSupplyItem[]) {

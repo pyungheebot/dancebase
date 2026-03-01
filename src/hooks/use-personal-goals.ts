@@ -21,17 +21,6 @@ function storageKey(groupId: string, userId: string): string {
 // 로컬 스토리지 유틸
 // ============================================
 
-function loadFromStorage(groupId: string, userId: string): PersonalGoalItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, userId));
-    if (!raw) return [];
-    return JSON.parse(raw) as PersonalGoalItem[];
-  } catch {
-    return [];
-  }
-}
-
 function saveToStorage(
   groupId: string,
   userId: string,
@@ -54,7 +43,6 @@ function saveToStorage(
 
 export function usePersonalGoals(groupId: string, userId: string) {
   const [goals, setGoals] = useState<PersonalGoalItem[]>([]);
-
 
   // 내부 상태 + 스토리지 동시 업데이트
   const persist = useCallback(

@@ -29,7 +29,7 @@ import {
   ChevronDown,
   ChevronUp,
   Plus,
-  Trash2,
+
   Armchair,
   X,
   Lock,

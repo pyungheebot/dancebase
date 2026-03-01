@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -71,7 +71,7 @@ export function useVideoPortfolio(memberId: string) {
     }
   );
 
-  const entries: VideoPortfolioEntry[] = data?.entries ?? [];
+  const entries: VideoPortfolioEntry[] = useMemo(() => data?.entries ?? [], [data?.entries]);
 
   // 영상 추가
   const addEntry = useCallback(

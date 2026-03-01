@@ -103,8 +103,8 @@ export function MembersContent({
   ctx,
   currentUserId,
   categories = [],
-  categoryMap = {},
-  categoryColorMap = {},
+  categoryMap: _categoryMap = {},
+  categoryColorMap: _categoryColorMap = {},
   inviteCode,
   parentMembers = [],
   onUpdate,
@@ -750,7 +750,7 @@ function GroupMembersContent({
 
 function ProjectMembersContent({
   ctx,
-  currentUserId,
+
   parentMembers,
   onUpdate,
 }: {

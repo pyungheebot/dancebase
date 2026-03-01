@@ -111,17 +111,6 @@ function makeEmpty(memberId: string): DanceConditionEntry {
   };
 }
 
-function loadData(memberId: string): DanceConditionEntry {
-  if (typeof window === "undefined") return makeEmpty(memberId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) return makeEmpty(memberId);
-    return JSON.parse(raw) as DanceConditionEntry;
-  } catch {
-    return makeEmpty(memberId);
-  }
-}
-
 function saveData(entry: DanceConditionEntry): void {
   localStorage.setItem(getStorageKey(entry.memberId), JSON.stringify(entry));
 }
@@ -167,7 +156,6 @@ export function useDanceCondition(memberId: string) {
   const [entry, setEntry] = useState<DanceConditionEntry>(() =>
     makeEmpty(memberId)
   );
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateEntry = useCallback(

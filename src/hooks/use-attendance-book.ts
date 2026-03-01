@@ -6,7 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import type {
   AttendanceBookData,
   AttendanceSheet,
-  AttendanceRecord,
+
   BookAttendanceStatus,
 } from "@/types";
 

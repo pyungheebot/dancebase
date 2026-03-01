@@ -77,7 +77,7 @@ const QUESTION_COLORS: Record<AudienceSurveyQuestion, string> = {
   revisit: "text-green-600",
 };
 
-const SCORE_LABELS: Record<number, string> = {
+const _SCORE_LABELS: Record<number, string> = {
   1: "매우 불만족",
   2: "불만족",
   3: "보통",

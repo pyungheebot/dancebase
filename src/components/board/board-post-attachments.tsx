@@ -5,6 +5,7 @@ import { useBoardPostAttachments } from "@/hooks/use-board";
 import { formatFileSize, isImageType } from "@/lib/utils";
 import type { BoardPostAttachment } from "@/types";
 import { FileText, FileImage, Download, X, ChevronLeft, ChevronRight, Paperclip } from "lucide-react";
+import NextImage from "next/image";
 import { Button } from "@/components/ui/button";
 
 interface BoardPostAttachmentsProps {
@@ -52,10 +53,13 @@ function ImageLightbox({ attachments, initialIndex, onClose }: LightboxProps) {
           <X className="h-4 w-4" />
         </Button>
 
-        <img
+        <NextImage
           src={img.file_url}
           alt={img.file_name}
+          width={800}
+          height={600}
           className="max-w-full max-h-[80vh] object-contain rounded-lg"
+          unoptimized
         />
 
         <div className="flex items-center gap-2 text-white">
@@ -122,10 +126,12 @@ export function BoardPostAttachments({ postId }: BoardPostAttachmentsProps) {
                 onClick={() => setLightboxIndex(imageIndexOf(attachment))}
                 aria-label={`이미지 보기: ${attachment.file_name}`}
               >
-                <img
+                <NextImage
                   src={attachment.file_url}
                   alt={attachment.file_name}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  unoptimized
                 />
               </button>
             ))}

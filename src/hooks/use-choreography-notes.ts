@@ -10,17 +10,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:choreo-notes:${groupId}:${projectId}`;
 }
 
-function loadNotes(groupId: string, projectId: string): ChoreographyNote[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ChoreographyNote[];
-  } catch {
-    return [];
-  }
-}
-
 function saveNotes(
   groupId: string,
   projectId: string,
@@ -36,7 +25,6 @@ function saveNotes(
 
 export function useChoreographyNotes(groupId: string, projectId: string) {
   const [notes, setNotes] = useState<ChoreographyNote[]>([]);
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateNotes = useCallback(

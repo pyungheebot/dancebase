@@ -21,13 +21,6 @@ function getStorageKey(groupId: string): string {
 // 캠페인 상태 자동 계산 (만료 처리)
 // ============================================
 
-function resolveStatus(campaign: EngagementCampaign): EngagementCampaignStatus {
-  if (campaign.status === "completed") return "completed";
-  const today = new Date().toISOString().slice(0, 10);
-  if (campaign.endDate < today) return "expired";
-  return "active";
-}
-
 // ============================================
 // 신규 캠페인 폼 타입
 // ============================================
@@ -49,7 +42,6 @@ export function useEngagementCampaign(groupId: string) {
   const [campaigns, setCampaigns] = useState<EngagementCampaign[]>([]);
 
   // ---- 초기 로드 ----
-
 
   // ---- 저장 헬퍼 ----
   const persist = useCallback(

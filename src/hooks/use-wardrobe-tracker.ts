@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -51,11 +51,11 @@ export function useWardrobeTracker(projectId: string) {
     () => loadData(projectId)
   );
 
-  const current: WardrobeTrackerData = data ?? {
+  const current: WardrobeTrackerData = useMemo(() => data ?? {
     projectId,
     items: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, projectId]);
 
   const persist = useCallback(
     (next: WardrobeTrackerData) => {

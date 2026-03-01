@@ -77,7 +77,6 @@ export function AttendanceCertificateDialog({
   const handlePrint = useCallback(() => {
     if (!printRef.current) return;
     const printContents = printRef.current.innerHTML;
-    const originalContents = document.body.innerHTML;
 
     // 인쇄 전용 iframe 방식
     const iframe = document.createElement("iframe");

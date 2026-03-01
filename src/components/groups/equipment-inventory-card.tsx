@@ -416,7 +416,7 @@ export function EquipmentInventoryCard({ groupId }: EquipmentInventoryCardProps)
     activeCheckoutCount,
     overdueCount,
     goodRate,
-    categories,
+
     refetch,
   } = useEquipmentInventory(groupId);
 

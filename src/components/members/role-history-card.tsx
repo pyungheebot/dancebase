@@ -131,23 +131,6 @@ function formatDate(dateStr: string): string {
 }
 
 // ============================================
-// 역할 배지 컴포넌트
-// ============================================
-
-function RoleBadge({ role, customTitle }: { role: MemberRoleType; customTitle?: string }) {
-  const meta = ROLE_META[role];
-  const label = role === "other" && customTitle ? customTitle : meta.label;
-  return (
-    <Badge
-      variant="outline"
-      className={`text-[10px] px-1.5 py-0 border ${meta.badgeClass}`}
-    >
-      {label}
-    </Badge>
-  );
-}
-
-// ============================================
 // 역할 배정 다이얼로그
 // ============================================
 
@@ -431,7 +414,7 @@ export function RoleHistoryCard({ groupId, memberNames }: RoleHistoryCardProps) 
     loading,
     deleteEntry,
     getByMember,
-    getMembersByRole,
+
     stats,
     refetch,
   } = useRoleHistory(groupId);

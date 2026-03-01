@@ -18,7 +18,7 @@ export function useFollow(targetUserId: string) {
       ? swrKeys.followStatus(targetUserId)
       : null;
 
-  const { data, isLoading, mutate } = useSWR(
+  const { data, mutate } = useSWR(
     swrKey,
     async () => {
       const supabase = createClient();

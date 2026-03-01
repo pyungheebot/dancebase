@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -199,7 +199,7 @@ function GateCard({
   onDecrement: (id: string) => void;
   onResetCount: (id: string) => void;
 }) {
-  const statusCfg = STATUS_CONFIG[gate.status];
+  const _statusCfg = STATUS_CONFIG[gate.status];
 
   return (
     <div

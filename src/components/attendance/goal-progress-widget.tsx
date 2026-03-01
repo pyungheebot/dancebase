@@ -155,7 +155,7 @@ interface GoalProgressWidgetProps {
 }
 
 export function GoalProgressWidget({ groupId, userId }: GoalProgressWidgetProps) {
-  const { data, loading, setGoal, clearGoal } = useGoalProgressTracker(groupId, userId);
+  const { data, loading, setGoal } = useGoalProgressTracker(groupId, userId);
   const [collapsed, setCollapsed] = useState(false);
   const [showChangeGoal, setShowChangeGoal] = useState(false);
 

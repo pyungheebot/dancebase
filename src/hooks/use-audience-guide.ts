@@ -44,19 +44,6 @@ function getStorageKey(groupId: string, projectId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}-${projectId}`;
 }
 
-function loadData(groupId: string, projectId: string): AudienceGuideEntry {
-  if (typeof window === "undefined") {
-    return makeEmpty(groupId, projectId);
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    if (!raw) return makeEmpty(groupId, projectId);
-    return JSON.parse(raw) as AudienceGuideEntry;
-  } catch {
-    return makeEmpty(groupId, projectId);
-  }
-}
-
 function saveData(entry: AudienceGuideEntry): void {
   localStorage.setItem(
     getStorageKey(entry.groupId, entry.projectId),
@@ -85,7 +72,6 @@ export function useAudienceGuide(groupId: string, projectId: string) {
   const [entry, setEntry] = useState<AudienceGuideEntry>(() =>
     makeEmpty(groupId, projectId)
   );
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateEntry = useCallback(

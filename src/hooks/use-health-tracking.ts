@@ -15,17 +15,6 @@ function storageKey(groupId: string, userId: string): string {
 // 로컬 스토리지 유틸
 // ============================================
 
-function loadRecords(groupId: string, userId: string): InjuryRecord[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, userId));
-    if (!raw) return [];
-    return JSON.parse(raw) as InjuryRecord[];
-  } catch {
-    return [];
-  }
-}
-
 function saveRecords(groupId: string, userId: string, records: InjuryRecord[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -41,7 +30,6 @@ function saveRecords(groupId: string, userId: string, records: InjuryRecord[]): 
 
 export function useHealthTracking(groupId: string, userId: string) {
   const [records, setRecords] = useState<InjuryRecord[]>([]);
-
 
   // 부상 추가
   const addInjury = useCallback(

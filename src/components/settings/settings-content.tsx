@@ -76,7 +76,7 @@ type SettingsContentProps = {
 export function SettingsContent({
   ctx,
   group,
-  financeRole,
+
   project,
 }: SettingsContentProps) {
   const isGroup = !ctx.projectId;
@@ -169,7 +169,7 @@ export function SettingsContent({
         end_date: project.end_date ?? "",
       });
     }
-  }, [isGroup, project]);
+  }, [isGroup, project, ctx.features]);
 
   // 가입 신청 목록 불러오기 (그룹 전용)
   useEffect(() => {

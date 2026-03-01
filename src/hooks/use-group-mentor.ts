@@ -6,7 +6,7 @@ import type {
   GroupMentorMatch,
   GroupMentorSession,
   GroupMentorStatus,
-  GroupMentorField,
+
 } from "@/types";
 
 // ============================================================

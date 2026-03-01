@@ -247,7 +247,7 @@ function VoteBar({ votes }: VoteBarProps) {
   const total = votes.length;
   const agree = votes.filter((v) => v.choice === "agree").length;
   const disagree = votes.filter((v) => v.choice === "disagree").length;
-  const abstain = votes.filter((v) => v.choice === "abstain").length;
+  const _abstain = votes.filter((v) => v.choice === "abstain").length;
 
   const pct = (n: number) =>
     total === 0 ? 0 : Math.round((n / total) * 100);

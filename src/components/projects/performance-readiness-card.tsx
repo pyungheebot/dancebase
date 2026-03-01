@@ -394,7 +394,7 @@ interface CategorySectionProps {
 function CategorySection({
   category,
   items,
-  checklistId,
+
   onToggle,
   onDelete,
 }: CategorySectionProps) {

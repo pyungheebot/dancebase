@@ -9,17 +9,6 @@ function storageKey(groupId: string, projectId: string): string {
   return `dancebase:formations:${groupId}:${projectId}`;
 }
 
-function loadProject(groupId: string, projectId: string): FormationProject {
-  if (typeof window === "undefined") return { scenes: [], updatedAt: "" };
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return { scenes: [], updatedAt: "" };
-    return JSON.parse(raw) as FormationProject;
-  } catch {
-    return { scenes: [], updatedAt: "" };
-  }
-}
-
 function saveProject(
   groupId: string,
   projectId: string,
@@ -35,7 +24,6 @@ function saveProject(
 
 export function useFormationEditor(groupId: string, projectId: string) {
   const [project, setProject] = useState<FormationProject>({ scenes: [], updatedAt: "" });
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateProject = useCallback(

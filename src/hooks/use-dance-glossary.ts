@@ -240,34 +240,36 @@ export function useDanceGlossary(groupId: string) {
 
 // ─── 하위 호환: 기존 dance-glossary-card.tsx 가 사용하는 인터페이스 ──
 // GlossaryTerm / GlossaryCategory 기반의 카드는 별도 레거시 훅 사용
+
+const LEGACY_KEY = (id: string) => `dancebase:glossary:${id}`;
+
+function loadLegacy(id: string): GlossaryTerm[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(LEGACY_KEY(id));
+    if (!raw) return [];
+    return JSON.parse(raw) as GlossaryTerm[];
+  } catch {
+    return [];
+  }
+}
+
+function saveLegacy(id: string, terms: GlossaryTerm[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LEGACY_KEY(id), JSON.stringify(terms));
+  } catch {
+    // ignore
+  }
+}
+
+function sortLegacy(terms: GlossaryTerm[]): GlossaryTerm[] {
+  return [...terms].sort((a, b) =>
+    a.term.localeCompare(b.term, "ko", { sensitivity: "base" })
+  );
+}
+
 export function useDanceGlossaryLegacy(groupId: string) {
-  const LEGACY_KEY = (id: string) => `dancebase:glossary:${id}`;
-
-  function loadLegacy(id: string): GlossaryTerm[] {
-    if (typeof window === "undefined") return [];
-    try {
-      const raw = localStorage.getItem(LEGACY_KEY(id));
-      if (!raw) return [];
-      return JSON.parse(raw) as GlossaryTerm[];
-    } catch {
-      return [];
-    }
-  }
-
-  function saveLegacy(id: string, terms: GlossaryTerm[]): void {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem(LEGACY_KEY(id), JSON.stringify(terms));
-    } catch {
-      // ignore
-    }
-  }
-
-  function sortLegacy(terms: GlossaryTerm[]): GlossaryTerm[] {
-    return [...terms].sort((a, b) =>
-      a.term.localeCompare(b.term, "ko", { sensitivity: "base" })
-    );
-  }
 
   const { data, isLoading, mutate } = useSWR(
     swrKeys.danceGlossary(groupId),
@@ -360,11 +362,11 @@ export function useDanceGlossaryLegacy(groupId: string) {
     indexGroups,
     indexKeys,
     searchQuery: "",
-    setSearchQuery: (_: string) => {},
+    setSearchQuery: (_str: string) => {},
     selectedCategory: "all" as GlossaryCategory | "all",
-    setSelectedCategory: (_: GlossaryCategory | "all") => {},
+    setSelectedCategory: (_cat: GlossaryCategory | "all") => {},
     selectedDifficulty: "all" as GlossaryTerm["difficulty"] | "all",
-    setSelectedDifficulty: (_: GlossaryTerm["difficulty"] | "all") => {},
+    setSelectedDifficulty: (_diff: GlossaryTerm["difficulty"] | "all") => {},
     addTerm: addTermLegacy,
     updateTerm: updateTermLegacy,
     deleteTerm: deleteTermLegacy,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import NextImage from "next/image";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import {
   Video,
@@ -373,10 +374,12 @@ function VideoCard({ video, onEdit, onDelete, onToggleFeatured }: VideoCardProps
       {/* 썸네일 영역 */}
       <div className="relative aspect-video bg-muted/40 flex items-center justify-center">
         {video.thumbnailUrl ? (
-          <img
+          <NextImage
             src={video.thumbnailUrl}
             alt={video.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            unoptimized
           />
         ) : (
           <Video className="h-8 w-8 text-muted-foreground/40" />

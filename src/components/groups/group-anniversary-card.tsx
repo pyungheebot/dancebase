@@ -12,11 +12,11 @@ import {
   Star,
   Sparkles,
   Bell,
-  BellOff,
+
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  AlertCircle,
+
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -480,7 +480,7 @@ export function GroupAnniversaryCard({ groupId }: { groupId: string }) {
     addAnniversary,
     updateAnniversary,
     deleteAnniversary,
-    TYPE_LABELS,
+
   } = useGroupAnniversary(groupId);
 
   const [dialogOpen, setDialogOpen] = useState(false);

@@ -608,7 +608,7 @@ export function AnnouncementTemplateCard({
   onUseTemplate,
 }: AnnouncementTemplateCardProps) {
   const {
-    entries,
+
     loading,
     addTemplate,
     updateTemplate,

@@ -38,7 +38,7 @@ export function SubgroupList({ groupId, canManage }: SubgroupListProps) {
 
   const [editTarget, setEditTarget] = useState<SubgroupItem | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const [_deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;

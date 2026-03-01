@@ -20,31 +20,9 @@ function getReadStorageKey(groupId: string, userId: string) {
   return `${READ_KEY_PREFIX}${groupId}:${userId}`;
 }
 
-function loadNotices(groupId: string): GroupNotice[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getNoticesStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as GroupNotice[];
-  } catch {
-    return [];
-  }
-}
-
 function saveNotices(groupId: string, notices: GroupNotice[]) {
   if (typeof window === "undefined") return;
   localStorage.setItem(getNoticesStorageKey(groupId), JSON.stringify(notices));
-}
-
-function loadReadSet(groupId: string, userId: string): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = localStorage.getItem(getReadStorageKey(groupId, userId));
-    if (!raw) return new Set();
-    return new Set(JSON.parse(raw) as string[]);
-  } catch {
-    return new Set();
-  }
 }
 
 function saveReadSet(groupId: string, userId: string, readSet: Set<string>) {
@@ -63,8 +41,6 @@ function isExpired(notice: GroupNotice): boolean {
 export function useGroupNotices(groupId: string, userId: string) {
   const [notices, setNotices] = useState<GroupNotice[]>([]);
   const [readSet, setReadSet] = useState<Set<string>>(new Set());
-
-
 
   const activeNotices = notices
     .filter((n) => !isExpired(n))

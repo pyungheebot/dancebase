@@ -164,7 +164,7 @@ export function useMembershipFee(groupId: string) {
 
     const totalExpected = payments
       .filter((p) => p.status !== "exempt")
-      .reduce((_, __) => _ + store.monthlyFee, 0);
+      .reduce((_) => _ + store.monthlyFee, 0);
 
     const collectionRate =
       total > 0 ? Math.round((paidCount / total) * 100) : 0;

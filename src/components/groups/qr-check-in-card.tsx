@@ -485,7 +485,7 @@ function StatsPanel({
 export function QrCheckInCard({ groupId, memberNames = [] }: Props) {
   const {
     sessions,
-    records,
+
     loading,
     createSession,
     endSession,

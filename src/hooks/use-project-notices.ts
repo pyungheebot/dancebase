@@ -9,19 +9,6 @@ function getStorageKey(projectId: string): string {
   return `project-notices-${projectId}`;
 }
 
-function loadNotices(projectId: string): ProjectNotice[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(projectId));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as ProjectNotice[];
-  } catch {
-    return [];
-  }
-}
-
 function saveNotices(projectId: string, notices: ProjectNotice[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -33,10 +20,9 @@ function saveNotices(projectId: string, notices: ProjectNotice[]): void {
 
 export function useProjectNotices(projectId: string) {
   const [notices, setNotices] = useState<ProjectNotice[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const [mounted] = useState(false);
 
   // 마운트 후 localStorage에서 불러오기
-
 
   // urgent 공지를 상단 고정, 그 다음 createdAt 내림차순 정렬
   const sortedNotices = [...notices].sort((a, b) => {

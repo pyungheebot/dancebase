@@ -11,17 +11,6 @@ function getStorageKey(groupId: string, projectId: string): string {
   return `dancebase:choreo-section:${groupId}:${projectId}`;
 }
 
-function loadSections(groupId: string, projectId: string): ChoreoSectionEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ChoreoSectionEntry[];
-  } catch {
-    return [];
-  }
-}
-
 function saveSections(
   groupId: string,
   projectId: string,

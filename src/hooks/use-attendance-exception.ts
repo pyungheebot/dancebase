@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -53,7 +53,7 @@ export function useAttendanceException(groupId: string) {
     { revalidateOnFocus: false }
   );
 
-  const entries: AttendanceExceptionEntry[] = data ?? [];
+  const entries: AttendanceExceptionEntry[] = useMemo(() => data ?? [], [data]);
 
   // ── 예외 추가 ────────────────────────────────────────────
 

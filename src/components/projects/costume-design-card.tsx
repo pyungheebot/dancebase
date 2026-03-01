@@ -357,7 +357,7 @@ function DesignDetail({
   currentUser,
   onChangeStatus,
   onToggleVote,
-  onDelete,
+
   onAddComment,
   onDeleteComment,
 }: DesignDetailProps) {

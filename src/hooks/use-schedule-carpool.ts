@@ -4,7 +4,7 @@ import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { invalidateScheduleCarpool } from "@/lib/swr/invalidate";
-import type { CarpoolOffer, CarpoolRequest, CarpoolRequestStatus, Profile } from "@/types";
+import type {CarpoolOffer, CarpoolRequest, Profile} from "@/types";
 
 export type CarpoolRequestWithProfile = CarpoolRequest & {
   profiles: Pick<Profile, "id" | "name" | "avatar_url">;

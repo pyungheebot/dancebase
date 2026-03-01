@@ -580,13 +580,13 @@ export function DanceGlossaryCard({ groupId }: DanceGlossaryCardProps) {
     entries,
     totalTerms,
     categoryDistribution,
-    indexGroups,
-    indexKeys,
+
+
     addTerm,
     updateTerm,
     deleteTerm,
     searchTerms,
-    getByCategory,
+
   } = useDanceGlossary(groupId);
 
   // 필터링된 목록 계산

@@ -64,17 +64,6 @@ function getStorageKey(groupId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}`;
 }
 
-function loadRulesFromStorage(groupId: string): NotificationRule[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as NotificationRule[];
-  } catch {
-    return [];
-  }
-}
-
 function saveRulesToStorage(groupId: string, rules: NotificationRule[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -93,7 +82,6 @@ export function useNotificationRules(groupId: string) {
   const [userRules, setUserRules] = useState<NotificationRule[]>([]);
 
   // 마운트 시 localStorage에서 사용자 규칙 로드
-
 
   // 기본 규칙 + 사용자 규칙 합산
   const allRules = useMemo(

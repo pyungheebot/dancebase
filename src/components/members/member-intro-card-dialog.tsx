@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { User, Pencil, Heart, Music, Star, MessageCircle } from "lucide-react";
+import {User, Pencil, Music, Star, MessageCircle} from "lucide-react";
 import { toast } from "sonner";
 import { useMemberIntroCards } from "@/hooks/use-member-intro-cards";
 import { formatYearMonthDay } from "@/lib/date-utils";

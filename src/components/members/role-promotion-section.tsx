@@ -70,7 +70,7 @@ export function RolePromotionSection({
 
   // 승격 확인 다이얼로그 상태
   const [promoteTarget, setPromoteTarget] = useState<PromotionCandidate | null>(null);
-  const [promoting, setPromoting] = useState(false);
+  const [_promoting, setPromoting] = useState(false);
 
   // 표시할 후보 (무시 목록 제외)
   const visibleCandidates = hydrated

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { GrowthTrajectory, GrowthDataPoint, GrowthDimension } from "@/types";
@@ -111,7 +111,7 @@ export function useGrowthTrajectory(groupId: string) {
     (): GrowthTrajectory[] => loadData(groupId)
   );
 
-  const trajectories = data ?? [];
+  const trajectories = useMemo(() => data ?? [], [data]);
 
   /** 멤버 추가 (초기 3개월 데이터포인트 자동 생성) */
   const addTrajectory = useCallback((memberName: string, goal: number): GrowthTrajectory | null => {

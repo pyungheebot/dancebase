@@ -11,17 +11,6 @@ function getStorageKey(groupId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}`;
 }
 
-function loadEvents(groupId: string): GroupEvent[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as GroupEvent[];
-  } catch {
-    return [];
-  }
-}
-
 function saveEvents(groupId: string, events: GroupEvent[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -50,7 +39,6 @@ export function useEventGallery(groupId: string) {
   const [events, setEvents] = useState<GroupEvent[]>([]);
   const [tagFilter, setTagFilter] = useState<EventTag | "all">("all");
   const [yearFilter, setYearFilter] = useState<number | "all">("all");
-
 
   // 저장 + 상태 업데이트
   const persistAndUpdate = useCallback(

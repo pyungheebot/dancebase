@@ -155,12 +155,6 @@ function CreateSplitDialog({
     });
   };
 
-  const getMemberName = (userId: string) => {
-    const member = groupMembers.find((m) => m.user_id === userId);
-    if (!member) return userId;
-    return nicknameMap[userId] || member.profiles.name;
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">

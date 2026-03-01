@@ -21,18 +21,6 @@ function getStorageKey(groupId: string): string {
 // localStorage 읽기/쓰기 유틸
 // ============================================
 
-function loadFromStorage(groupId: string): GroupGuidelineItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    const parsed: GroupGuidelinesData = JSON.parse(raw);
-    return Array.isArray(parsed.items) ? parsed.items : [];
-  } catch {
-    return [];
-  }
-}
-
 function saveToStorage(groupId: string, items: GroupGuidelineItem[]): void {
   if (typeof window === "undefined") return;
   const data: GroupGuidelinesData = { items };
@@ -47,7 +35,6 @@ export function useGroupGuidelines(groupId: string) {
   const [items, setItems] = useState<GroupGuidelineItem[]>([]);
 
   // 마운트 시 로드
-
 
   // 항목 추가
   const addItem = useCallback(

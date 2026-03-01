@@ -6,7 +6,7 @@ import type {
   PerfTicketTier,
   PerfTicketAllocation,
   PerfTicketData,
-  PerfAllocationStatus,
+
 } from "@/types";
 
 // ============================================================

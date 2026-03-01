@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
@@ -58,11 +58,11 @@ export function useGroupMusicLibrary(groupId: string) {
     [mutate]
   );
 
-  const current: GroupMusicLibraryData = data ?? {
+  const current: GroupMusicLibraryData = useMemo(() => data ?? {
     groupId,
     tracks: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, groupId]);
 
   // ── 트랙 추가 ──────────────────────────────────────
   const addTrack = useCallback(

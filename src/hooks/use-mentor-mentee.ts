@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { swrKeys } from "@/lib/swr/keys";
+
 import type { MentorMenteeMatch, MentorMenteeStatus, MemberSkill } from "@/types";
 
 // ============================================
@@ -63,7 +63,7 @@ export function useMentorMentee(groupId: string) {
   const [skillsLoading, setSkillsLoading] = useState(false);
 
   // localStorage에서 매칭 불러오기
-  const reload = useCallback(() => {
+  const _reload = useCallback(() => {
     if (!groupId) return;
     setMatches(loadMatches(groupId));
   }, [groupId]);

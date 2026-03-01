@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
@@ -95,7 +95,7 @@ export function useMeetingMinutesMemo(groupId: string) {
     { fallbackData: [] }
   );
 
-  const entries = data ?? [];
+  const entries = useMemo(() => data ?? [], [data]);
 
   // 회의록 추가
   const addMinutes = useCallback(

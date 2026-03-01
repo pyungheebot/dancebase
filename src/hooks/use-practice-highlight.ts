@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -58,7 +58,7 @@ export function usePracticeHighlight(groupId: string) {
     }
   );
 
-  const entries: PracticeHighlightEntry[] = data?.entries ?? [];
+  const entries: PracticeHighlightEntry[] = useMemo(() => data?.entries ?? [], [data?.entries]);
 
   // 하이라이트 추가
   const addEntry = useCallback(

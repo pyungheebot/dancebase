@@ -9,19 +9,6 @@ function getStorageKey(groupId: string): string {
   return `poll-decisions-${groupId}`;
 }
 
-function loadDecisions(groupId: string): PollDecision[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as PollDecision[];
-  } catch {
-    return [];
-  }
-}
-
 function saveDecisions(groupId: string, decisions: PollDecision[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -33,10 +20,9 @@ function saveDecisions(groupId: string, decisions: PollDecision[]): void {
 
 export function usePollDecisions(groupId: string) {
   const [decisions, setDecisions] = useState<PollDecision[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const [mounted] = useState(false);
 
   // 마운트 후 localStorage에서 불러오기
-
 
   // 시계열 내림차순 정렬 (최신순)
   const sortedDecisions = [...decisions].sort(

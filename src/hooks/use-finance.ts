@@ -121,8 +121,8 @@ export function useFinance(groupId: string, projectId?: string | null) {
     fetcher,
   );
 
-  const transactions = data?.transactions ?? [];
-  const categories = data?.categories ?? [];
+  const transactions = useMemo(() => data?.transactions ?? [], [data?.transactions]);
+  const categories = useMemo(() => data?.categories ?? [], [data?.categories]);
   const financeRole = data?.financeRole ?? null;
 
   // 통계 계산

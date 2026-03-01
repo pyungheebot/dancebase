@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -58,7 +58,7 @@ export function useReadReceipt(groupId: string) {
     }
   );
 
-  const announcements: ReadReceiptAnnouncement[] = data?.announcements ?? [];
+  const announcements: ReadReceiptAnnouncement[] = useMemo(() => data?.announcements ?? [], [data?.announcements]);
 
   // 공지 추가
   const addAnnouncement = useCallback(

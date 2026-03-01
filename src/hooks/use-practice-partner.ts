@@ -36,19 +36,6 @@ function getStorageKey(groupId: string): string {
   return `${STORAGE_KEY_PREFIX}${groupId}`;
 }
 
-function loadData(groupId: string): PracticePartnerEntry {
-  if (typeof window === "undefined") {
-    return makeEmpty(groupId);
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return makeEmpty(groupId);
-    return JSON.parse(raw) as PracticePartnerEntry;
-  } catch {
-    return makeEmpty(groupId);
-  }
-}
-
 function saveData(entry: PracticePartnerEntry): void {
   localStorage.setItem(getStorageKey(entry.groupId), JSON.stringify(entry));
 }
@@ -72,7 +59,6 @@ export function usePracticePartner(groupId: string) {
   const [entry, setEntry] = useState<PracticePartnerEntry>(() =>
     makeEmpty(groupId)
   );
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateEntry = useCallback(

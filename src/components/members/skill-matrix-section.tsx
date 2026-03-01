@@ -16,11 +16,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+
 import { Plus, Trash2, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import type { EntityMember } from "@/types/entity-context";
-import type { MemberSkill } from "@/types";
+
 
 // 기본 스킬 제안 목록
 const SUGGESTED_SKILLS = [

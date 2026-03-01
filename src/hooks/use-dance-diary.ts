@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { DiaryCardData, DiaryCardEntry, DiaryCardEmotion } from "@/types";
@@ -40,7 +40,7 @@ export function useDanceDiary(memberId: string) {
     { revalidateOnFocus: false }
   );
 
-  const entries = data?.entries ?? [];
+  const entries = useMemo(() => data?.entries ?? [], [data?.entries]);
 
   // 최신순 정렬된 항목
   const sortedEntries = [...entries].sort(

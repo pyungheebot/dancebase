@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Link from "next/link";
+import NextImage from "next/image";
 import { User, Calendar, BarChart3, ExternalLink, FileText, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -118,10 +119,13 @@ function MemberPreviewContent({
       <div className="flex items-center gap-2.5">
         {/* 아바타 */}
         {preview.avatarUrl ? (
-          <img
+          <NextImage
             src={preview.avatarUrl}
             alt={preview.name}
+            width={36}
+            height={36}
             className="h-9 w-9 rounded-full object-cover shrink-0 border border-border"
+            unoptimized
           />
         ) : (
           <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center shrink-0 border border-border">

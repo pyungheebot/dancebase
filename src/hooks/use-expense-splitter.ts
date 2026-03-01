@@ -10,17 +10,6 @@ function storageKey(groupId: string): string {
   return `dancebase:expense-split:${groupId}`;
 }
 
-function loadSessions(groupId: string): ExpenseSplitSession[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ExpenseSplitSession[];
-  } catch {
-    return [];
-  }
-}
-
 function saveSessions(groupId: string, sessions: ExpenseSplitSession[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -98,7 +87,6 @@ export function calculateSettlements(items: ExpenseSplitItem[]): Settlement[] {
 
 export function useExpenseSplitter(groupId: string) {
   const [sessions, setSessions] = useState<ExpenseSplitSession[]>([]);
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateSessions = useCallback(

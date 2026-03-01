@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Loader2, Users, ChevronRight, CalendarRange, MoreVertical, Settings, Trash2, Check, FolderOpen, Plus, List, GanttChart } from "lucide-react";
+import {Loader2, Users, ChevronRight, CalendarRange, MoreVertical, Settings, Trash2, Check, FolderOpen, List, GanttChart} from "lucide-react";
 import { ProjectForm } from "./project-form";
 import { ProjectDuplicateDialog } from "./project-duplicate-dialog";
 import { ProjectTimeline } from "./project-timeline";
@@ -108,7 +108,7 @@ export function ProjectList({ groupId }: ProjectListProps) {
   const [statusFilter, setStatusFilter] = useState<string>("전체");
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const deleteConfirm = useDeleteConfirm<{ id: string; name: string }>();
-  const { pending: isDeleting, execute: executeDelete } = useAsyncAction();
+  const { pending: _isDeleting, execute: executeDelete } = useAsyncAction();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const router = useRouter();
 

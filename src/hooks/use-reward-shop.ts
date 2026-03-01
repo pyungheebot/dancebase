@@ -95,7 +95,7 @@ function saveTxList(groupId: string, list: PointEntry[]): void {
 // ============================================
 export function useRewardShop(groupId: string) {
   const [shopData, setShopData] = useState<RewardShopData>(() => loadShopData(groupId));
-  const [txList, setTxList] = useState<PointEntry[]>(() => loadTxList(groupId));
+  const [_txList, setTxList] = useState<PointEntry[]>(() => loadTxList(groupId));
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserName, setCurrentUserName] = useState<string>("");
 
@@ -157,7 +157,7 @@ export function useRewardShop(groupId: string) {
       saveTxList(groupId, updated);
       setTxList(updated);
     },
-    [groupId]
+    [groupId, setTxList]
   );
 
   const getMyTransactions = useCallback((): PointEntry[] => {

@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Edit3,
   X,
-  Check,
+
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -896,7 +896,7 @@ export function PracticeEvaluationCard({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {stats.topPerformers.map((performer, idx) => {
-                    const medals = ["gold", "silver", "bronze"] as const;
+                    const _medals = ["gold", "silver", "bronze"] as const;
                     const medalColors = [
                       "text-yellow-500",
                       "text-gray-400",

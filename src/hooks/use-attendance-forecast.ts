@@ -58,7 +58,7 @@ function randomInt(min: number, max: number): number {
  * 멤버 한 명의 요일별 출석 패턴을 랜덤 생성합니다.
  * 멤버마다 "선호 요일"을 1~2개 정해 해당 요일 출석률을 높입니다.
  */
-function generatePatterns(memberId: string): AttendancePattern[] {
+function generatePatterns(_memberId: string): AttendancePattern[] {
   // 멤버 ID 기반 시드값으로 일관된 패턴 생성 (재생성 시 변화 허용)
   const favDayCount = randomInt(1, 2);
   const favDayIndices = new Set<number>();

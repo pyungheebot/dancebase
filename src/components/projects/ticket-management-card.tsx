@@ -102,18 +102,6 @@ function formatPrice(amount: number): string {
   return amount.toLocaleString("ko-KR") + "원";
 }
 
-function formatDate(iso: string): string {
-  if (!iso) return "";
-  try {
-    return new Date(iso).toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
-}
 
 function formatDateTime(iso: string): string {
   if (!iso) return "";

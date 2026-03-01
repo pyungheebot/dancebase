@@ -153,11 +153,6 @@ function SponsorDialog({
     if (initial) setForm(initial);
   });
 
-  function handleOpen() {
-    setForm(initial ?? EMPTY_FORM);
-    setNewBenefit("");
-  }
-
   // Dialog가 열릴 때 폼 초기화
   if (!open) return null;
 

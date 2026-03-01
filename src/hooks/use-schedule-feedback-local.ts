@@ -12,17 +12,6 @@ function getStorageKey(groupId: string): string {
   return `dancebase:schedule-feedback:${groupId}`;
 }
 
-function loadAll(groupId: string): ScheduleFeedbackItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ScheduleFeedbackItem[];
-  } catch {
-    return [];
-  }
-}
-
 function saveAll(groupId: string, items: ScheduleFeedbackItem[]): void {
   try {
     localStorage.setItem(getStorageKey(groupId), JSON.stringify(items));
@@ -42,7 +31,6 @@ export function useScheduleFeedbackLocal(
   const [allItems, setAllItems] = useState<ScheduleFeedbackItem[]>([]);
 
   // 마운트 시 localStorage에서 로드
-
 
   // 해당 scheduleId에 해당하는 피드백만 필터링 (최신순, 최대 10개)
   const feedbacks = allItems

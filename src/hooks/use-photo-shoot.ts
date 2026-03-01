@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
@@ -77,12 +77,12 @@ export function usePhotoShoot(projectId: string) {
   );
 
   // 현재 데이터
-  const current: PhotoShootData = data ?? {
+  const current: PhotoShootData = useMemo(() => data ?? {
     projectId,
     plans: [],
     photographerName: null,
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, projectId]);
 
   // 계획 추가
   const addPlan = useCallback(

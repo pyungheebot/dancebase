@@ -35,7 +35,7 @@ const TARGET_TYPE_LABELS: Record<BroadcastTargetType, string> = {
   all: "전체 (참석 제외)",
 };
 
-const TARGET_TYPE_DESCRIPTIONS: Record<BroadcastTargetType, string> = {
+const _TARGET_TYPE_DESCRIPTIONS: Record<BroadcastTargetType, string> = {
   no_response: "아직 RSVP를 하지 않은 멤버",
   not_going: "불참으로 응답한 멤버",
   maybe: "미정으로 응답한 멤버",

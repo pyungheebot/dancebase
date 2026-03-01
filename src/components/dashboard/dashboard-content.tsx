@@ -37,7 +37,7 @@ type DashboardContentProps = {
   financeRole?: FinanceRole | null;
 };
 
-export function DashboardContent({ ctx, financeRole }: DashboardContentProps) {
+export function DashboardContent({ ctx }: DashboardContentProps) {
   const isGroup = ctx.entityType === "group";
   const { basePath, groupId, projectId, entityId, members, features } = ctx;
 

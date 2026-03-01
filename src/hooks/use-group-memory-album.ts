@@ -11,17 +11,6 @@ function getKey(groupId: string) {
   return `${STORAGE_KEY_PREFIX}${groupId}`;
 }
 
-function loadItems(groupId: string): GroupMemoryItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getKey(groupId));
-    if (!raw) return [];
-    return (JSON.parse(raw) as GroupMemoryItem[]).sort((a, b) => (a.date > b.date ? -1 : 1));
-  } catch {
-    return [];
-  }
-}
-
 function saveItems(groupId: string, items: GroupMemoryItem[]) {
   if (typeof window === "undefined") return;
   try {
@@ -33,8 +22,6 @@ export function useGroupMemoryAlbum(groupId: string) {
   const [items, setItems] = useState<GroupMemoryItem[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<MemoryCategory | "all">("all");
   const [yearFilter, setYearFilter] = useState<string>("all");
-
-
 
   const addItem = useCallback(
     (input: { title: string; description: string; date: string; category: MemoryCategory; emoji: string }) => {

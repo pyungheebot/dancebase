@@ -38,7 +38,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
+
 import { useDanceNutrition } from "@/hooks/use-dance-nutrition";
 import { DanceNutritionEntry, DanceNutritionMealTime } from "@/types";
 

@@ -74,10 +74,6 @@ function formatDate(dateStr: string): string {
   return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
 }
 
-function formatShortDate(dateStr: string): string {
-  const [, m, d] = dateStr.split("-");
-  return `${parseInt(m)}/${parseInt(d)}`;
-}
 
 function formatWeekLabel(weekStart: string): string {
   const [, m, d] = weekStart.split("-");
@@ -637,7 +633,7 @@ export function DanceConditionCard({ memberId }: { memberId: string }) {
       ? TrendingDown
       : Minus;
 
-  const trendColor =
+  const _trendColor =
     trend === "up"
       ? "text-green-600"
       : trend === "down"

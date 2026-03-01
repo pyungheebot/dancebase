@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import NextImage from "next/image";
 import {
   Image as ImageIcon,
   Video,
@@ -53,12 +54,14 @@ function MediaCard({ item, onDelete }: MediaCardProps) {
   return (
     <div className="group relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 aspect-square">
       {/* 썸네일 / 이미지 */}
-      <img
+      <NextImage
         src={thumb}
         alt={item.title}
-        className="w-full h-full object-cover"
+        fill
+        className="object-cover"
+        unoptimized
         onError={(e) => {
-          (e.target as HTMLImageElement).src =
+          (e.currentTarget as HTMLImageElement).src =
             "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23e5e7eb'/%3E%3C/svg%3E";
         }}
       />

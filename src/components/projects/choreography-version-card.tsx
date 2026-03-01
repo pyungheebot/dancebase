@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   ChevronDown,
   ChevronRight,
@@ -325,7 +325,7 @@ interface VersionItemProps {
 function VersionItem({
   version,
   isCurrent,
-  isFirst,
+
   isLast,
   compareMode,
   selectedForCompare,

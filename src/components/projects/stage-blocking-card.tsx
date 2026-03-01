@@ -45,7 +45,7 @@ import {
   Trash2,
   Pencil,
   MoreVertical,
-  ChevronUp,
+
   ChevronDown,
   ChevronRight,
   AlertTriangle,

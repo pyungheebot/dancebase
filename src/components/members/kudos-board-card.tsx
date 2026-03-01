@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ChevronDown, ChevronUp, Send, Trash2, Trophy, X } from "lucide-react";
+import {ChevronDown, ChevronUp, Send, Trophy, X} from "lucide-react";
 import { useKudosBoard, KUDOS_CATEGORY_EMOJI, KUDOS_CATEGORY_LABEL } from "@/hooks/use-kudos-board";
 import { KudosCategory } from "@/types";
 

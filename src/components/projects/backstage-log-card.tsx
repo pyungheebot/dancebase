@@ -114,18 +114,7 @@ function formatTime(isoString: string): string {
   }
 }
 
-function formatDate(isoString: string): string {
-  try {
-    const d = new Date(isoString);
-    return d.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  } catch {
-    return "-";
-  }
-}
+
 
 // ============================================================
 // 세션 생성 다이얼로그

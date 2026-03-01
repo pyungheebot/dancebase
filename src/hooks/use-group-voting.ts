@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -51,11 +51,11 @@ export function useGroupVoting(groupId: string) {
     () => loadData(groupId)
   );
 
-  const current: GroupVotingCardData = data ?? {
+  const current: GroupVotingCardData = useMemo(() => data ?? {
     groupId,
     votes: [],
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, groupId]);
 
   const persist = useCallback(
     (next: GroupVotingCardData) => {

@@ -13,17 +13,6 @@ function generateId(): string {
   return `note_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function loadAll(groupId: string): ScheduleNoteItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as ScheduleNoteItem[];
-  } catch {
-    return [];
-  }
-}
-
 function saveAll(groupId: string, items: ScheduleNoteItem[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -37,7 +26,6 @@ export function useScheduleNotes(groupId: string, scheduleId: string) {
   const [allItems, setAllItems] = useState<ScheduleNoteItem[]>([]);
 
   // 마운트 시 localStorage에서 전체 로드
-
 
   // 해당 scheduleId에 해당하는 메모만 필터링 (최신순)
   const notes = allItems

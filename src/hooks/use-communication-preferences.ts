@@ -15,20 +15,6 @@ function getStorageKey(groupId: string, userId: string): string {
   return `dancebase:comm-prefs:${groupId}:${userId}`;
 }
 
-function loadPreference(
-  groupId: string,
-  userId: string
-): CommunicationPreference | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, userId));
-    if (!raw) return null;
-    return JSON.parse(raw) as CommunicationPreference;
-  } catch {
-    return null;
-  }
-}
-
 function savePreference(
   groupId: string,
   userId: string,
@@ -55,8 +41,6 @@ const DEFAULT_PREFERENCE: Omit<CommunicationPreference, "userId" | "updatedAt"> 
 
 export function useCommunicationPreferences(groupId: string, userId: string) {
   const [preference, setPreference] = useState<CommunicationPreference | null>(null);
-
-
 
   const updatePreferences = useCallback(
     (updates: Partial<Omit<CommunicationPreference, "userId" | "updatedAt">>): boolean => {

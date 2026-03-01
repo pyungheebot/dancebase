@@ -813,7 +813,7 @@ export function PerformanceTicketCard({ projectId }: { projectId: string }) {
                             </tr>
                           </thead>
                           <tbody>
-                            {allocations.map((alloc, idx) => {
+                            {allocations.map((alloc) => {
                               const tier = tiers.find(
                                 (t) => t.id === alloc.tierId
                               );

@@ -112,7 +112,7 @@ export function ScheduleForm({
   editScope = "this",
   hideDeleteButton = false,
   prefill,
-  existingSchedules: _existingSchedules = [],
+  existingSchedules: _es = [],
 }: ScheduleFormProps) {
   const isEdit = mode === "edit";
 

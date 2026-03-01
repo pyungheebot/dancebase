@@ -106,7 +106,7 @@ export function useGroupPracticeFeedback(groupId: string) {
     { fallbackData: { groupId, entries: [], updatedAt: "" } }
   );
 
-  const entries: GroupPracticeFeedbackEntry[] = data?.entries ?? [];
+  const entries: GroupPracticeFeedbackEntry[] = useMemo(() => data?.entries ?? [], [data?.entries]);
 
   // 내부 persist 헬퍼
   const persist = useCallback(

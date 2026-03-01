@@ -323,7 +323,7 @@ interface Top3SectionProps {
   onDelete: (id: string) => void;
 }
 
-function Top3Section({ top3, onLike, onDelete }: Top3SectionProps) {
+function Top3Section({ top3, onLike }: Top3SectionProps) {
   const [open, setOpen] = useState(false);
 
   if (top3.length === 0) return null;

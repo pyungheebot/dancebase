@@ -8,18 +8,6 @@ const MAX_TEAM_NAME_LENGTH = 20;
 const STORAGE_KEY = (groupId: string) =>
   `dancebase:dynamic-teams:${groupId}`;
 
-function loadFromStorage(groupId: string): DynamicTeamsData {
-  if (typeof window === "undefined") return { teams: [] };
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(groupId));
-    if (!raw) return { teams: [] };
-    const parsed = JSON.parse(raw) as DynamicTeamsData;
-    return parsed;
-  } catch {
-    return { teams: [] };
-  }
-}
-
 function saveToStorage(groupId: string, data: DynamicTeamsData): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEY(groupId), JSON.stringify(data));
@@ -27,7 +15,6 @@ function saveToStorage(groupId: string, data: DynamicTeamsData): void {
 
 export function useDynamicTeams(groupId: string) {
   const [data, setData] = useState<DynamicTeamsData>({ teams: [] });
-
 
   // 저장 및 상태 갱신
   const persist = useCallback(

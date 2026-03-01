@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemberInteractionScore } from "@/hooks/use-member-interaction-score";
-import { ChevronDown, ChevronUp, TrendingUp, Minus, TrendingDown } from "lucide-react";
+import {ChevronDown, ChevronUp} from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const LEVEL_CONFIG = {

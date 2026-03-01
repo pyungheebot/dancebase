@@ -22,7 +22,7 @@ type StepTemplate = {
   skills: string[];
 };
 
-function buildSteps(genre: string, currentLevel: string, targetLevel: string): LearningStep[] {
+function buildSteps(genre: string, currentLevel: string, _targetLevel: string): LearningStep[] {
   const baseTemplates: StepTemplate[] = [
     {
       order: 1,

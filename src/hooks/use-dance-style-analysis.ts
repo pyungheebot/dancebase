@@ -122,17 +122,6 @@ function makeEmpty(memberId: string): DanceStyleAnalysisData {
   };
 }
 
-function loadData(memberId: string): DanceStyleAnalysisData {
-  if (typeof window === "undefined") return makeEmpty(memberId);
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    if (!raw) return makeEmpty(memberId);
-    return JSON.parse(raw) as DanceStyleAnalysisData;
-  } catch {
-    return makeEmpty(memberId);
-  }
-}
-
 function saveData(data: DanceStyleAnalysisData): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(getStorageKey(data.memberId), JSON.stringify(data));
@@ -192,7 +181,6 @@ export function useDanceStyleAnalysis(memberId: string) {
   const [data, setData] = useState<DanceStyleAnalysisData>(() =>
     makeEmpty(memberId)
   );
-
 
   // 상태 업데이트 + localStorage 동기화
   const updateData = useCallback(

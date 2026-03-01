@@ -26,16 +26,6 @@ function storageKey(groupId: string): string {
 // localStorage 유틸
 // ============================================
 
-function loadAll(groupId: string): AnonymousFeedback[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as AnonymousFeedback[];
-  } catch {
-    return [];
-  }
-}
 
 function saveAll(groupId: string, feedbacks: AnonymousFeedback[]): void {
   if (typeof window === "undefined") return;

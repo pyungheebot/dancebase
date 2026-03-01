@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { ThankYouCategory, ThankYouMessage } from "@/types";
@@ -44,7 +44,7 @@ export function useThankYouBoard(groupId: string) {
     { fallbackData: [] }
   );
 
-  const messages = data ?? [];
+  const messages = useMemo(() => data ?? [], [data]);
 
   // 메시지 보내기
   const sendMessage = useCallback(

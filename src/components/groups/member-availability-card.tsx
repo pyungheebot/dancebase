@@ -5,7 +5,7 @@ import {
   useMemberAvailabilitySchedule,
   AVAILABILITY_DAY_LABELS,
   AVAILABILITY_DAY_ORDER,
-  AVAILABILITY_LEVEL_LABELS,
+
   AVAILABILITY_TIME_SLOTS,
 } from "@/hooks/use-member-availability-schedule";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,13 +43,13 @@ import {
   ChevronDown,
   ChevronUp,
   Plus,
-  Trash2,
+
   UserPlus,
   X,
   Users,
   Clock,
   Pencil,
-  Check,
+
 } from "lucide-react";
 import { toast } from "sonner";
 import type {

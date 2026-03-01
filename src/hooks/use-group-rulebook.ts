@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
@@ -74,13 +74,13 @@ export function useGroupRulebook(groupId: string) {
   );
 
   // 현재 데이터 (초기화 전이면 빈 상태 반환)
-  const current: GroupRulebookData = data ?? {
+  const current: GroupRulebookData = useMemo(() => data ?? {
     groupId,
     sections: [],
     version: "v1.0",
     effectiveDate: null,
     updatedAt: new Date().toISOString(),
-  };
+  }, [data, groupId]);
 
   // 섹션 추가
   const addSection = useCallback(

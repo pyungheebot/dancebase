@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import {useState, useCallback} from "react";
 import { ACTIVITY_POINT_DEFAULTS } from "@/types";
 import type {
   RewardItem,

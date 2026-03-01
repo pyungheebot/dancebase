@@ -34,7 +34,7 @@ const STATUS_COLORS: Record<ShowCueStatus, string> = {
   완료: "bg-green-100 text-green-700 border-green-200",
 };
 
-const STATUS_BADGE_VARIANT: Record<ShowCueStatus, string> = {
+const _STATUS_BADGE_VARIANT: Record<ShowCueStatus, string> = {
   대기: "secondary",
   진행중: "default",
   완료: "outline",

@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger,
+
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -111,20 +111,6 @@ function getConditionMeta(type: NotificationConditionType): ConditionMeta {
   );
 }
 
-// ============================================
-// 조건 요약 텍스트 생성
-// ============================================
-
-function summarizeConditions(conditions: NotificationCondition[]): string {
-  if (conditions.length === 0) return "조건 없음";
-  return conditions
-    .map((c) => {
-      const meta = getConditionMeta(c.type);
-      if (!meta.hasValue) return meta.label;
-      return `${meta.label} ${c.value ?? "?"}${meta.valueUnit ?? ""}`;
-    })
-    .join(" & ");
-}
 
 // ============================================
 // 빈 조건 항목

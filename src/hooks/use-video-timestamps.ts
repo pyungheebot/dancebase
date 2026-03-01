@@ -7,19 +7,6 @@ function getStorageKey(groupId: string): string {
   return `video-timestamps-${groupId}`;
 }
 
-function loadAll(groupId: string): VideoTimestamp[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as VideoTimestamp[];
-  } catch {
-    return [];
-  }
-}
-
 function saveAll(groupId: string, items: VideoTimestamp[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -68,9 +55,7 @@ export function parseTimestamp(str: string): number {
 
 export function useVideoTimestamps(groupId: string, videoId: string) {
   const [all, setAll] = useState<VideoTimestamp[]>([]);
-  const [mounted, setMounted] = useState(false);
-
-
+  const [mounted] = useState(false);
 
   // 특정 videoId 필터 후 시간순 정렬
   const timestamps = all

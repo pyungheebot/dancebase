@@ -520,7 +520,7 @@ function MatchCard({
   match,
   onEdit,
   onDelete,
-  onStatusChange,
+
   onAddSession,
   onDeleteSession,
 }: MatchCardProps) {

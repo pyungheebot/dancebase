@@ -84,21 +84,6 @@ function getPredictionLabel(
 // 집계 맵에서 특정 userId 전체 출석률 계산 (전체 요일·시간대 통합)
 // ────────────────────────────────────────────────────────────────────────────
 
-function calcOverallRate(
-  userId: string,
-  aggregateMap: Map<string, AggregateEntry>,
-): number {
-  let present = 0;
-  let total = 0;
-  for (const [key, entry] of aggregateMap.entries()) {
-    if (key.startsWith(`${userId}-overall`)) {
-      present += entry.present;
-      total += entry.total;
-    }
-  }
-  return total > 0 ? Math.round((present / total) * 100) : 50;
-}
-
 // ────────────────────────────────────────────────────────────────────────────
 // Hook
 // ────────────────────────────────────────────────────────────────────────────

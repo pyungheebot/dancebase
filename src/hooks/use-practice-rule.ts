@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -59,7 +59,7 @@ export function usePracticeRule(groupId: string) {
     async () => loadEntries(groupId)
   );
 
-  const entries = data ?? [];
+  const entries = useMemo(() => data ?? [], [data]);
 
   // ── 규칙 추가 ──
   const addRule = useCallback(

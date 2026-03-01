@@ -112,7 +112,7 @@ export function InactiveMembersSection({ ctx }: InactiveMembersSectionProps) {
 
     for (const engagement of targets) {
       const { userId } = engagement.member;
-      const name = engagement.member.nickname || engagement.member.profile.name;
+      const _name = engagement.member.nickname || engagement.member.profile.name;
       setSendingIds((prev) => new Set(prev).add(userId));
       try {
         await createNotification({

@@ -17,17 +17,6 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function loadFromStorage(scheduleId: string): ScheduleChecklist | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}${scheduleId}`);
-    if (!raw) return null;
-    return JSON.parse(raw) as ScheduleChecklist;
-  } catch {
-    return null;
-  }
-}
-
 function saveToStorage(checklist: ScheduleChecklist): void {
   if (typeof window === "undefined") return;
   try {
@@ -42,7 +31,6 @@ function saveToStorage(checklist: ScheduleChecklist): void {
 
 export function useScheduleChecklist(scheduleId: string) {
   const [items, setItems] = useState<ScheduleCheckItem[]>([]);
-
 
   /** 저장 헬퍼 */
   const persist = useCallback(

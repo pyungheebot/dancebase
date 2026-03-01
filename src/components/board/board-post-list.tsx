@@ -7,7 +7,7 @@ import { useScrollRestore } from "@/hooks/use-scroll-restore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, Heart, Pin, FolderOpen, Search, ChevronLeft, ChevronRight, FileText, SearchX, Bookmark, BookmarkCheck } from "lucide-react";
+import {MessageSquare, Heart, Pin, FolderOpen, Search, ChevronLeft, ChevronRight, FileText, SearchX} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BoardPostForm } from "./board-post-form";
 import { BoardNoticeBanner } from "./board-notice-banner";

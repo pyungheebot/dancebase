@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { useEntitySettings } from "@/hooks/use-entity-settings";
 import {
@@ -21,7 +21,7 @@ export function useGroupLinks(groupId: string) {
     DEFAULT_GROUP_LINKS_SETTING
   );
 
-  const links = value.links ?? [];
+  const links = useMemo(() => value.links ?? [], [value.links]);
 
   const addLink = useCallback(
     async (link: Omit<GroupLink, "id" | "order">) => {

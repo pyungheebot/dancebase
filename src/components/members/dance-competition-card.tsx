@@ -16,7 +16,7 @@ import {
   Music2,
   BarChart2,
   Filter,
-  Users,
+
   StickyNote,
   Medal,
   Link,

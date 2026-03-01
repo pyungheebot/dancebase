@@ -628,7 +628,7 @@ export function UnifiedCalendarCard({
   groupId,
   memberNames,
 }: UnifiedCalendarCardProps) {
-  const { events, addEvent, deleteEvent, getByDate, getByMonth, getUpcoming, stats } =
+  const { addEvent, deleteEvent, getByDate, getByMonth, getUpcoming, stats } =
     useUnifiedCalendar(groupId);
 
   const [open, setOpen] = useState(true);

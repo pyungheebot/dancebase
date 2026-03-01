@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { swrKeys } from "@/lib/swr/keys";
 import type {
@@ -69,7 +69,7 @@ export function useEmergencyContact(groupId: string) {
     async () => loadEntries(groupId)
   );
 
-  const entries = data ?? [];
+  const entries = useMemo(() => data ?? [], [data]);
 
   // ── 항목 추가 ──
   const addContact = useCallback(

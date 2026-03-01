@@ -15,17 +15,6 @@ function storageKey(groupId: string, writerId: string): string {
 // 내부 유틸
 // ============================================
 
-function loadFromStorage(groupId: string, writerId: string): MemberNoteV2[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, writerId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MemberNoteV2[];
-  } catch {
-    return [];
-  }
-}
-
 function saveToStorage(groupId: string, writerId: string, notes: MemberNoteV2[]): void {
   if (typeof window === "undefined") return;
   try {
@@ -48,7 +37,6 @@ function sortByUpdated(notes: MemberNoteV2[]): MemberNoteV2[] {
 
 export function useMemberNotes(groupId: string, writerId: string) {
   const [notes, setNotes] = useState<MemberNoteV2[]>([]);
-
 
   // 메모 추가
   const addNote = useCallback(

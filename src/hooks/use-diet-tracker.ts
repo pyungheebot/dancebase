@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { DietTrackerMeal, DietTrackerWater, DietTrackerDayLog, DietMealType } from "@/types";
+import type {DietTrackerMeal, DietTrackerWater, DietTrackerDayLog} from "@/types";
 
 // ============================================================
 // localStorage 헬퍼
