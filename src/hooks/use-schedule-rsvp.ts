@@ -6,7 +6,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import type { ScheduleRsvpSummary, ScheduleRsvpResponse } from "@/types";
 
 export function useScheduleRsvp(scheduleId: string | null) {
-  const { data, isLoading, mutate } = useSWR(
+  const { data, isLoading, mutate } = useSWR<ScheduleRsvpSummary | null>(
     scheduleId ? swrKeys.scheduleRsvp(scheduleId) : null,
     async () => {
       if (!scheduleId) return null;
@@ -40,9 +40,91 @@ export function useScheduleRsvp(scheduleId: string | null) {
     }
   );
 
+  // 낙관적 업데이트 헬퍼: 카운트를 새 응답 기준으로 재계산
+  const buildOptimisticData = (
+    current: ScheduleRsvpSummary | null | undefined,
+    newResponse: ScheduleRsvpResponse | null
+  ): ScheduleRsvpSummary | null => {
+    const prev = current ?? { going: 0, not_going: 0, maybe: 0, my_response: null };
+    const prevResponse = prev.my_response;
+
+    // 이전 응답 카운트 차감
+    const decremented = {
+      going: prevResponse === "going" ? Math.max(0, prev.going - 1) : prev.going,
+      not_going: prevResponse === "not_going" ? Math.max(0, prev.not_going - 1) : prev.not_going,
+      maybe: prevResponse === "maybe" ? Math.max(0, prev.maybe - 1) : prev.maybe,
+    };
+
+    // 새 응답 카운트 증가
+    return {
+      going: newResponse === "going" ? decremented.going + 1 : decremented.going,
+      not_going: newResponse === "not_going" ? decremented.not_going + 1 : decremented.not_going,
+      maybe: newResponse === "maybe" ? decremented.maybe + 1 : decremented.maybe,
+      my_response: newResponse,
+    };
+  };
+
+  // RSVP 제출 (낙관적 업데이트 + 서버 요청 + 실패 시 롤백)
+  const submitRsvp = async (userId: string, response: ScheduleRsvpResponse) => {
+    if (!scheduleId) return;
+    const previousData = data;
+
+    // 1. 낙관적 업데이트: 즉시 로컬 상태 변경 (revalidate 없이)
+    await mutate(buildOptimisticData(data, response), { revalidate: false });
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.from("schedule_rsvp").upsert(
+        {
+          schedule_id: scheduleId,
+          user_id: userId,
+          response,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "schedule_id,user_id" }
+      );
+      if (error) throw error;
+
+      // 2. 서버 상태로 최종 재검증
+      await mutate();
+    } catch (err) {
+      // 3. 실패 시 이전 상태로 롤백
+      await mutate(previousData, { revalidate: false });
+      throw err;
+    }
+  };
+
+  // RSVP 취소 (낙관적 업데이트 + 서버 요청 + 실패 시 롤백)
+  const cancelRsvp = async (userId: string) => {
+    if (!scheduleId) return;
+    const previousData = data;
+
+    // 1. 낙관적 업데이트: my_response를 null로 즉시 변경
+    await mutate(buildOptimisticData(data, null), { revalidate: false });
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("schedule_rsvp")
+        .delete()
+        .eq("schedule_id", scheduleId)
+        .eq("user_id", userId);
+      if (error) throw error;
+
+      // 2. 서버 상태로 최종 재검증
+      await mutate();
+    } catch (err) {
+      // 3. 실패 시 이전 상태로 롤백
+      await mutate(previousData, { revalidate: false });
+      throw err;
+    }
+  };
+
   return {
     rsvp: data ?? null,
     loading: isLoading,
     refetch: () => mutate(),
+    submitRsvp,
+    cancelRsvp,
   };
 }

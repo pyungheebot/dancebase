@@ -36,7 +36,6 @@ import { ScheduleCostSummary } from "./schedule-cost-summary";
 import { useScheduleRsvp } from "@/hooks/use-schedule-rsvp";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
-import { invalidateScheduleRsvp } from "@/lib/swr/invalidate";
 import { toast } from "sonner";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import type { Schedule, ScheduleRsvpResponse } from "@/types";
@@ -73,29 +72,21 @@ type CalendarViewProps = {
 
 // RSVP + 대기 명단 통합 섹션
 function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
-  const { rsvp, loading, refetch } = useScheduleRsvp(schedule.id);
+  const { rsvp, loading, submitRsvp, cancelRsvp } = useScheduleRsvp(schedule.id);
   const { pending: submitting, execute } = useAsyncAction();
   const { user } = useAuth();
 
   const handleRsvp = async (response: ScheduleRsvpResponse) => {
-    const supabase = createClient();
     if (!user) {
       toast.error("로그인이 필요합니다");
       return;
     }
 
     if (rsvp?.my_response === response) {
+      // 같은 응답 클릭 시 취소
       await execute(async () => {
         try {
-          const { error } = await supabase
-            .from("schedule_rsvp")
-            .delete()
-            .eq("schedule_id", schedule.id)
-            .eq("user_id", user.id);
-
-          if (error) throw error;
-          invalidateScheduleRsvp(schedule.id);
-          refetch();
+          await cancelRsvp(user.id);
           toast.success("RSVP를 취소했습니다");
         } catch {
           toast.error("RSVP 취소에 실패했습니다");
@@ -104,27 +95,15 @@ function RsvpSectionWithWaitlist({ schedule }: { schedule: Schedule }) {
       return;
     }
 
+    const labels: Record<ScheduleRsvpResponse, string> = {
+      going: "참석",
+      not_going: "불참",
+      maybe: "미정",
+    };
+
     await execute(async () => {
       try {
-        const { error } = await supabase.from("schedule_rsvp").upsert(
-          {
-            schedule_id: schedule.id,
-            user_id: user.id,
-            response,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "schedule_id,user_id" }
-        );
-
-        if (error) throw error;
-        invalidateScheduleRsvp(schedule.id);
-        refetch();
-
-        const labels: Record<ScheduleRsvpResponse, string> = {
-          going: "참석",
-          not_going: "불참",
-          maybe: "미정",
-        };
+        await submitRsvp(user.id, response);
         toast.success(`"${labels[response]}"으로 응답했습니다`);
       } catch {
         toast.error("RSVP 응답에 실패했습니다");

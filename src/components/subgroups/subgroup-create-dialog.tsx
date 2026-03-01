@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,7 @@ interface SubgroupCreateDialogProps {
 export function SubgroupCreateDialog({ parentGroupId, onCreated }: SubgroupCreateDialogProps) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<GroupFormValues>(DEFAULT_GROUP_FORM_VALUES);
-  const [loading, setLoading] = useState(false);
+  const { pending, execute } = useAsyncAction();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -38,9 +39,8 @@ export function SubgroupCreateDialog({ parentGroupId, onCreated }: SubgroupCreat
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
 
-    try {
+    await execute(async () => {
       const supabase = createClient();
       const { data: groupId, error: rpcError } = await supabase.rpc(
         "create_group_with_leader",
@@ -71,12 +71,10 @@ export function SubgroupCreateDialog({ parentGroupId, onCreated }: SubgroupCreat
       setForm(DEFAULT_GROUP_FORM_VALUES);
       onCreated?.();
       router.push(`/groups/${groupId}`);
-    } catch (err) {
+    }).catch((err) => {
       const message = err instanceof Error ? err.message : JSON.stringify(err);
       setError(`오류: ${message}`);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -94,8 +92,8 @@ export function SubgroupCreateDialog({ parentGroupId, onCreated }: SubgroupCreat
         <form onSubmit={handleSubmit} className="space-y-4">
           <GroupFormFields values={form} onChange={handleChange} />
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading || !form.name.trim()}>
-            {loading ? "생성 중..." : "하위그룹 만들기"}
+          <Button type="submit" className="w-full" disabled={pending || !form.name.trim()}>
+            {pending ? "생성 중..." : "하위그룹 만들기"}
           </Button>
         </form>
       </DialogContent>

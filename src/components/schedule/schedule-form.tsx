@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/use-auth";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,7 +112,8 @@ export function ScheduleForm({
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
-  const [loading, setLoading] = useState(false);
+  const submitAction = useAsyncAction();
+  const deleteAction = useAsyncAction();
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [fields, setFields] = useState<ScheduleFieldValues>(DEFAULT_FIELDS);
   const [date, setDate] = useState("");
@@ -215,12 +217,10 @@ export function ScheduleForm({
     e.preventDefault();
     if (!validateScheduleForm()) return;
     setError(null);
-    setLoading(true);
 
-    try {
+    await submitAction.execute(async () => {
       if (fields.attendanceMethod === "location" && (fields.latitude == null || fields.longitude == null)) {
         setError("위치 기반 출석을 사용하려면 주소를 검색해주세요.");
-        setLoading(false);
         return;
       }
 
@@ -338,7 +338,6 @@ export function ScheduleForm({
         if (recurringValue.enabled) {
           if (recurringDateStrings.length === 0) {
             setError("생성할 일정이 없습니다. 반복 설정을 확인해주세요.");
-            setLoading(false);
             return;
           }
 
@@ -364,27 +363,22 @@ export function ScheduleForm({
       setOpen(false);
       if (!isEdit) resetForm();
       onCreated();
-    } catch {
+    }).catch(() => {
       setError(isEdit ? "일정 수정에 실패했습니다" : "일정 생성에 실패했습니다");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleDelete = async () => {
     if (!schedule) return;
-    setLoading(true);
-    try {
+    await deleteAction.execute(async () => {
       await supabase.from("attendance").delete().eq("schedule_id", schedule.id);
       const { error } = await supabase.from("schedules").delete().eq("id", schedule.id);
       if (error) throw error;
       setOpen(false);
       onCreated();
-    } catch {
+    }).catch(() => {
       setError("일정 삭제에 실패했습니다");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const dateSection = isEdit ? (
@@ -493,7 +487,7 @@ export function ScheduleForm({
           <div className="flex gap-2">
             {!hideDeleteButton && (
               <>
-                <Button type="button" variant="destructive" size="sm" className="h-8 text-sm" disabled={loading} onClick={() => setDeleteConfirmOpen(true)}>
+                <Button type="button" variant="destructive" size="sm" className="h-8 text-sm" disabled={deleteAction.pending} onClick={() => setDeleteConfirmOpen(true)}>
                   <Trash2 className="h-3 w-3 mr-1" />
                   삭제
                 </Button>
@@ -507,13 +501,13 @@ export function ScheduleForm({
                 />
               </>
             )}
-            <Button type="submit" className="flex-1 h-8 text-sm" disabled={loading || !isScheduleFormValid}>
-              {loading ? "저장 중..." : "저장"}
+            <Button type="submit" className="flex-1 h-8 text-sm" disabled={submitAction.pending || !isScheduleFormValid}>
+              {submitAction.pending ? "저장 중..." : "저장"}
             </Button>
           </div>
         ) : (
-          <Button type="submit" className="w-full h-8 text-sm" disabled={loading || !isScheduleFormValid}>
-            {loading ? "생성 중..." : "등록"}
+          <Button type="submit" className="w-full h-8 text-sm" disabled={submitAction.pending || !isScheduleFormValid}>
+            {submitAction.pending ? "생성 중..." : "등록"}
           </Button>
         )}
       </form>

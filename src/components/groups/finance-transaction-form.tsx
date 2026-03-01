@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,7 +75,7 @@ export function FinanceTransactionForm({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [loading, setLoading] = useState(false);
+  const { pending, execute } = useAsyncAction();
   const [amountError, setAmountError] = useState<string | null>(null);
   const [titleError, setTitleError] = useState<string | null>(null);
   const supabase = createClient();
@@ -136,52 +137,51 @@ export function FinanceTransactionForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    setLoading(true);
 
-    if (isEdit && initialData) {
-      const { error } = await supabase
-        .from("finance_transactions")
-        .update({
-          type,
+    await execute(async () => {
+      if (isEdit && initialData) {
+        const { error } = await supabase
+          .from("finance_transactions")
+          .update({
+            type,
+            category_id: categoryId || null,
+            paid_by: (type === "income" && paidBy && paidBy !== "none") ? paidBy : null,
+            amount: parseInt(amount),
+            title,
+            description: description || null,
+            transaction_date: date,
+          })
+          .eq("id", initialData.id);
+
+        if (error) {
+          toast.error("거래 수정에 실패했습니다");
+          return;
+        }
+        setOpen(false);
+        onSuccess();
+      } else {
+        const { error } = await supabase.from("finance_transactions").insert({
+          group_id: groupId,
+          project_id: projectId || null,
           category_id: categoryId || null,
+          type,
           paid_by: (type === "income" && paidBy && paidBy !== "none") ? paidBy : null,
           amount: parseInt(amount),
           title,
           description: description || null,
           transaction_date: date,
-        })
-        .eq("id", initialData.id);
+          created_by: user?.id,
+        });
 
-      setLoading(false);
-      if (!error) {
-        setOpen(false);
-        onSuccess();
-      } else {
-        toast.error("거래 수정에 실패했습니다");
-      }
-    } else {
-      const { error } = await supabase.from("finance_transactions").insert({
-        group_id: groupId,
-        project_id: projectId || null,
-        category_id: categoryId || null,
-        type,
-        paid_by: (type === "income" && paidBy && paidBy !== "none") ? paidBy : null,
-        amount: parseInt(amount),
-        title,
-        description: description || null,
-        transaction_date: date,
-        created_by: user?.id,
-      });
-
-      setLoading(false);
-      if (!error) {
+        if (error) {
+          toast.error("거래 추가에 실패했습니다");
+          return;
+        }
         reset();
         setOpen(false);
         onSuccess();
-      } else {
-        toast.error("거래 추가에 실패했습니다");
       }
-    }
+    });
   };
 
   const dialogContent = (
@@ -329,8 +329,8 @@ export function FinanceTransactionForm({
           />
         </div>
 
-        <Button type="submit" className="w-full h-8 text-sm" disabled={loading || !isFormValid}>
-          {loading ? "저장 중..." : isEdit ? "수정" : "저장"}
+        <Button type="submit" className="w-full h-8 text-sm" disabled={pending || !isFormValid}>
+          {pending ? "저장 중..." : isEdit ? "수정" : "저장"}
         </Button>
       </form>
     </DialogContent>

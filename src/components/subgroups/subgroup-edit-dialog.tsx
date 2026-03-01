@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, startTransition } from "react";
+import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +37,7 @@ export function SubgroupEditDialog({
 }: SubgroupEditDialogProps) {
   const [name, setName] = useState(subgroup.name);
   const [description, setDescription] = useState(subgroup.description ?? "");
-  const [loading, setLoading] = useState(false);
+  const { pending, execute } = useAsyncAction();
 
   useEffect(() => {
     if (open) {
@@ -51,25 +52,25 @@ export function SubgroupEditDialog({
     e.preventDefault();
     if (!name.trim()) return;
 
-    setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("groups")
-      .update({
-        name: name.trim(),
-        description: description.trim() || null,
-      })
-      .eq("id", subgroup.id);
+    await execute(async () => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("groups")
+        .update({
+          name: name.trim(),
+          description: description.trim() || null,
+        })
+        .eq("id", subgroup.id);
 
-    if (error) {
-      toast.error("하위그룹 수정에 실패했습니다");
-    } else {
+      if (error) {
+        toast.error("하위그룹 수정에 실패했습니다");
+        return;
+      }
       toast.success("하위그룹이 수정되었습니다");
       invalidateSubgroups(parentGroupId);
       onOpenChange(false);
       onUpdated?.();
-    }
-    setLoading(false);
+    });
   };
 
   return (
@@ -107,9 +108,9 @@ export function SubgroupEditDialog({
           <Button
             type="submit"
             className="w-full"
-            disabled={loading || !name.trim()}
+            disabled={pending || !name.trim()}
           >
-            {loading ? "저장 중..." : "저장"}
+            {pending ? "저장 중..." : "저장"}
           </Button>
         </form>
       </DialogContent>

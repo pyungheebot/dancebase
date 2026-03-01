@@ -109,7 +109,7 @@ export function CommandPalette() {
                   </span>
                   <span className="flex-1 truncate">{item.label}</span>
                   {item.shortcut && (
-                    <CommandShortcut>{item.shortcut}</CommandShortcut>
+                    <CommandShortcut>G → {item.shortcut}</CommandShortcut>
                   )}
                 </CommandItem>
               ))}
