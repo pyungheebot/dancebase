@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { realtimeConfig } from "@/lib/swr/cache-config";
 import { useAuth } from "@/hooks/use-auth";
+import { useRealtime } from "@/hooks/use-realtime";
 import type { Conversation, Message } from "@/types";
 import logger from "@/lib/logger";
 
@@ -22,39 +23,36 @@ export function useConversations() {
     realtimeConfig,
   );
 
-  // Realtime: 메시지 INSERT/UPDATE 시 목록 자동 갱신
-  useEffect(() => {
-    if (!user) return;
-    const supabase = createClient();
+  // mutate를 ref로 유지 — subscriptions useMemo 의존성에서 제외하여 재구독 방지
+  const mutateRef = useRef(mutate);
+  mutateRef.current = mutate;
 
-    const channel = supabase
-      .channel("conversation-list-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `receiver_id=eq.${user.id}`,
-        },
-        () => mutate()
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `sender_id=eq.${user.id}`,
-        },
-        () => mutate()
-      )
-      .subscribe();
+  // subscriptions 배열을 useMemo로 안정화 (user.id가 바뀔 때만 재생성)
+  const subscriptions = useMemo(
+    () =>
+      user
+        ? [
+            {
+              event: "INSERT" as const,
+              table: "messages",
+              filter: `receiver_id=eq.${user.id}`,
+              callback: () => mutateRef.current(),
+            },
+            {
+              event: "INSERT" as const,
+              table: "messages",
+              filter: `sender_id=eq.${user.id}`,
+              callback: () => mutateRef.current(),
+            },
+          ]
+        : [],
+    [user]
+  );
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, mutate]);
+  // useRealtime: 자동 구독/해제, cleanup 자동 처리
+  useRealtime("conversation-list-realtime", subscriptions, {
+    enabled: !!user,
+  });
 
   return {
     conversations: data ?? [],
@@ -225,51 +223,38 @@ export function useUnreadCount() {
     realtimeConfig,
   );
 
-  // 인스턴스별 고유 채널명 — header/sidebar 등 여러 곳에서 동시 마운트 시
-  // 같은 채널명으로 중복 구독하면 예측 불가능한 동작이 발생하므로 suffix로 구별
-  const channelNameRef = useRef(
-    `unread-count-realtime-${Math.random().toString(36).slice(2)}`
+  // mutate를 ref로 유지 — subscriptions useMemo 의존성에서 제외하여 재구독 방지
+  const mutateRef = useRef(mutate);
+  mutateRef.current = mutate;
+
+  // subscriptions 배열을 useMemo로 안정화 (user.id가 바뀔 때만 재생성)
+  const subscriptions = useMemo(
+    () =>
+      user
+        ? [
+            {
+              event: "INSERT" as const,
+              table: "messages",
+              filter: `receiver_id=eq.${user.id}`,
+              callback: () => mutateRef.current(),
+            },
+            {
+              event: "UPDATE" as const,
+              table: "messages",
+              filter: `receiver_id=eq.${user.id}`,
+              callback: () => mutateRef.current(),
+            },
+          ]
+        : [],
+    [user]
   );
 
-  // Realtime: 새 메시지 도착/읽음 처리 시 즉시 갱신
-  const mutateRef = useRef(mutate);
-  // ref 업데이트를 useEffect로 이동하여 렌더 중 ref 쓰기 방지
-  useEffect(() => {
-    mutateRef.current = mutate;
+  // header/sidebar 등 여러 곳에서 동시 마운트 시 채널명이 같으면
+  // Supabase가 동일 채널로 처리하므로 중복 구독 없이 안전하게 동작함
+  // (useRealtime 내부에서 channelKey 기준으로 단일 채널 관리)
+  useRealtime(`unread-count-${user?.id ?? "anonymous"}`, subscriptions, {
+    enabled: !!user,
   });
-
-  useEffect(() => {
-    if (!user) return;
-    const supabase = createClient();
-
-    const channel = supabase
-      .channel(channelNameRef.current)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `receiver_id=eq.${user.id}`,
-        },
-        () => mutateRef.current()
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `receiver_id=eq.${user.id}`,
-        },
-        () => mutateRef.current()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
 
   return {
     count: data ?? 0,

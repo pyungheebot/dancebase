@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useEffect, useState, useMemo, useCallback, memo } from "react";
+import { useRef, useState, useMemo, useCallback, memo, useEffect } from "react";
 import Link from "next/link";
 import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { formatYearMonthDay } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { useConversation } from "@/hooks/use-messages";
 import { useAuth } from "@/hooks/use-auth";
+import { useRealtime } from "@/hooks/use-realtime";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, MessageCircle, Send, CheckCheck } from "lucide-react";
@@ -183,49 +184,56 @@ export function ChatView({ partnerId }: ChatViewProps) {
     });
   }, [loadMore]);
 
-  // Realtime 구독: 새 메시지 수신 + 읽음 상태 업데이트
-  useEffect(() => {
-    if (!user) return;
-    const supabase = supabaseRef.current;
+  // refetch / partnerName을 ref로 유지 — subscriptions useMemo 의존성에서 제외
+  const refetchRef = useRef(refetch);
+  refetchRef.current = refetch;
+  const partnerNameRef = useRef(partnerName);
+  partnerNameRef.current = partnerName;
 
-    const channel = supabase
-      .channel(`chat:${partnerId}:${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `receiver_id=eq.${user.id}`,
-        },
-        (payload: { new: Record<string, unknown> }) => {
-          if (payload.new && payload.new.sender_id === partnerId) {
-            refetch();
-            setLiveAnnouncement(`${partnerName ?? "상대방"}님의 새 메시지가 도착했습니다`);
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `sender_id=eq.${user.id}`,
-        },
-        (payload: { new: Record<string, unknown> }) => {
-          // 상대방이 내 메시지를 읽었을 때 read_at 업데이트 반영
-          if (payload.new && payload.new.receiver_id === partnerId && payload.new.read_at) {
-            refetch();
-          }
-        }
-      )
-      .subscribe();
+  // subscriptions 배열을 useMemo로 안정화 (user.id, partnerId가 바뀔 때만 재생성)
+  const chatSubscriptions = useMemo(
+    () =>
+      user
+        ? [
+            {
+              event: "INSERT" as const,
+              table: "messages",
+              filter: `receiver_id=eq.${user.id}`,
+              callback: (payload: { new: Record<string, unknown> }) => {
+                if (payload.new && payload.new.sender_id === partnerId) {
+                  refetchRef.current();
+                  setLiveAnnouncement(
+                    `${partnerNameRef.current ?? "상대방"}님의 새 메시지가 도착했습니다`
+                  );
+                }
+              },
+            },
+            {
+              event: "UPDATE" as const,
+              table: "messages",
+              filter: `sender_id=eq.${user.id}`,
+              callback: (payload: { new: Record<string, unknown> }) => {
+                // 상대방이 내 메시지를 읽었을 때 read_at 업데이트 반영
+                if (
+                  payload.new &&
+                  payload.new.receiver_id === partnerId &&
+                  payload.new.read_at
+                ) {
+                  refetchRef.current();
+                }
+              },
+            },
+          ]
+        : [],
+    [user, partnerId]
+  );
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, partnerId, refetch]);
+  // Realtime 구독: 새 메시지 수신 + 읽음 상태 업데이트 (자동 cleanup)
+  useRealtime(
+    user ? `chat:${partnerId}:${user.id}` : "chat:anonymous",
+    chatSubscriptions,
+    { enabled: !!user }
+  );
 
   const handleSend = useCallback(async () => {
     if (!content.trim() || sending || !user) return;

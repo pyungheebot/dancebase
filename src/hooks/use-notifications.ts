@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useMemo } from "react";
 import useSWR from "swr";
 import { createClient } from "@/lib/supabase/client";
 import { swrKeys } from "@/lib/swr/keys";
 import { realtimeConfig } from "@/lib/swr/cache-config";
 import { invalidateNotifications } from "@/lib/swr/invalidate";
 import { optimisticMutateMany, type OptimisticTarget } from "@/lib/swr/optimistic";
+import { useRealtime } from "@/hooks/use-realtime";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import type { Notification } from "@/types";
@@ -38,61 +39,46 @@ export function useNotifications(limit = 10) {
     }
   );
 
-  // 인스턴스별 고유 채널명 — 여러 컴포넌트에서 동시 마운트 시
-  // 같은 채널명으로 중복 구독하면 예측 불가능한 동작이 발생하므로 suffix로 구별
-  const channelNameRef = useRef(
-    `notifications-realtime-${Math.random().toString(36).slice(2)}`
+  // 유저 ID는 SWR 데이터 자체에 포함되지 않으므로 별도로 가져옴
+  // 구독 필터에 userId가 필요하기 때문에 notifications SWR 키를 통해 간접 파악하거나
+  // 아래처럼 useSWR로 userId를 별도 관리한다.
+  // 단순화: swrKeys.notifications()가 userId 없이 전역 키이므로
+  // userId를 얻기 위한 별도 SWR (revalidateOnFocus: false, 캐시만 참조)
+  const { data: userId } = useSWR<string | null>(
+    "auth-user-id-for-notifications",
+    async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      return user?.id ?? null;
+    },
+    { revalidateOnFocus: false, revalidateOnReconnect: false }
   );
 
-  // Realtime 구독 채널 참조 (cleanup용)
-  const channelRef = useRef<ReturnType<
-    ReturnType<typeof createClient>["channel"]
-  > | null>(null);
+  // subscriptions 배열을 useMemo로 안정화 (userId가 바뀔 때만 재생성)
+  const subscriptions = useMemo(
+    () =>
+      userId
+        ? [
+            {
+              event: "INSERT" as const,
+              table: "notifications",
+              filter: `user_id=eq.${userId}`,
+              // 새 알림 수신 시 SWR 캐시 즉시 갱신
+              callback: () => {
+                invalidateNotifications();
+              },
+            },
+          ]
+        : [],
+    [userId]
+  );
 
-  useEffect(() => {
-    const supabase = createClient();
-    let active = true;
-
-    // async/await로 유저 확인 후 구독 (then 콜백 타입 추론 우회)
-    void (async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData.user;
-
-      // 로그인 안 된 경우 구독하지 않음
-      if (!user || !active) return;
-
-      // 이미 구독 중이면 중복 구독 방지
-      if (channelRef.current) return;
-
-      const channel = supabase
-        .channel(channelNameRef.current)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "notifications",
-            filter: `user_id=eq.${user.id}`,
-          },
-          () => {
-            // 새 알림 수신 시 SWR 캐시 즉시 갱신
-            invalidateNotifications();
-          }
-        )
-        .subscribe();
-
-      channelRef.current = channel;
-    })();
-
-    return () => {
-      // 컴포넌트 언마운트 시 구독 해제 (메모리 누수 방지)
-      active = false;
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-    };
-  }, []);
+  // useRealtime: 자동 구독/해제, cleanup 자동 처리
+  useRealtime(`notifications-${userId ?? "anonymous"}`, subscriptions, {
+    enabled: !!userId,
+  });
 
   const markAsRead = async (notificationId: string) => {
     const supabase = createClient();
