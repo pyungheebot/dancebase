@@ -38,11 +38,6 @@ const MONTH_NAMES = [
 ];
 
 // ─── 유틸 ──────────────────────────────────────────────────────
-function formatMonthDay(birthday: string): string {
-  const [mm, dd] = birthday.split("-");
-  return `${Number(mm)}월 ${Number(dd)}일`;
-}
-
 function getDDayLabel(dDay: number): { text: string; color: string } {
   if (dDay === 0) return { text: "D-Day", color: "bg-pink-500 text-white" };
   if (dDay <= 7) return { text: `D-${dDay}`, color: "bg-orange-400 text-white" };

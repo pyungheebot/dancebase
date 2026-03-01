@@ -194,7 +194,6 @@ export function GroupEnergyTrackerCard({
   groupId,
   currentUserId = "익명",
 }: GroupEnergyTrackerCardProps) {
-  const [open, setOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
 
   // 폼 상태

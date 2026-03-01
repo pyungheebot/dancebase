@@ -120,7 +120,6 @@ export function ReturnOnboardingCard({
     averageCompletionRate,
   } = useReturnOnboarding(groupId);
 
-  const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"sessions" | "items">("sessions");
 
   // 새 세션 시작 다이얼로그

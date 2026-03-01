@@ -287,6 +287,12 @@ const MemberListItem = memo(function MemberListItem({
   );
 });
 
+const ROLE_LABELS: Record<string, string> = {
+  leader: "그룹장",
+  sub_leader: "부그룹장",
+  member: "멤버",
+};
+
 type MemberListProps = {
   members: GroupMemberWithProfile[];
   myRole: "leader" | "sub_leader" | "member" | null;
@@ -321,12 +327,6 @@ export function MemberList({
   const supabase = createClient();
   const { hasCard } = useMemberIntroCards(groupId);
 
-  const ROLE_LABELS: Record<string, string> = {
-    leader: "그룹장",
-    sub_leader: "부그룹장",
-    member: "멤버",
-  };
-
   const handleRoleChange = useCallback(async (memberId: string, newRole: string) => {
     setUpdating(memberId);
     const { error } = await supabase
@@ -337,14 +337,13 @@ export function MemberList({
     toast.success(`역할이 ${ROLE_LABELS[newRole] ?? newRole}(으)로 변경되었습니다`);
     onUpdate();
     setUpdating(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onUpdate]);
+  }, [onUpdate, supabase]);
 
   const handleRemoveMember = useCallback(async (memberId: string) => {
     const { error } = await supabase.from("group_members").delete().eq("id", memberId);
     if (error) { toast.error("멤버 제거에 실패했습니다"); return; }
     onUpdate();
-  }, [onUpdate]);
+  }, [onUpdate, supabase]);
 
   const startEditNickname = useCallback((member: GroupMemberWithProfile) => {
     setEditingNickname(member.id);
@@ -361,7 +360,7 @@ export function MemberList({
     setEditingNickname(null);
     setNicknameValue("");
     onUpdate();
-  }, [nicknameValue, onUpdate]);
+  }, [nicknameValue, onUpdate, supabase]);
 
   const cancelEditNickname = useCallback(() => {
     setEditingNickname(null);
@@ -375,7 +374,7 @@ export function MemberList({
       .eq("id", memberId);
     if (error) { toast.error("카테고리 변경에 실패했습니다"); return; }
     onUpdate();
-  }, [onUpdate]);
+  }, [onUpdate, supabase]);
 
   const handleRemoveRequest = useCallback((memberId: string) => {
     setRemoveMemberId(memberId);

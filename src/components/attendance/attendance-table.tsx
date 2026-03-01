@@ -440,7 +440,7 @@ export function AttendanceTable({
 
     onUpdate();
     setUpdating(null);
-  }, [attendance, schedule, onUpdate]);
+  }, [schedule, onUpdate, getAttendance, supabase]);
 
   const handleLocationCheck = useCallback(async () => {
     setGpsError(null);
@@ -534,7 +534,7 @@ export function AttendanceTable({
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }, [attendance, schedule, currentUserId, onUpdate]);
+  }, [schedule, currentUserId, onUpdate, getAttendance, supabase]);
 
   const handleCheckout = useCallback(async (userId: string) => {
     setUpdating(userId);
@@ -587,7 +587,7 @@ export function AttendanceTable({
       onUpdate();
       setUpdating(null);
     }
-  }, [schedule, onUpdate]);
+  }, [schedule, onUpdate, supabase]);
 
   const handleExcuseDialogOpen = useCallback(() => {
     setExcuseDialogOpen(true);

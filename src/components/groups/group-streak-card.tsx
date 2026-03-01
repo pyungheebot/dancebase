@@ -42,7 +42,6 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
   const { streakData, loading, addMember, removeMember, upsertRecord } =
     useGroupStreak(groupId);
 
-  const [open, setOpen] = useState(true);
   const [newMemberName, setNewMemberName] = useState("");
   const [addingMember, setAddingMember] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
