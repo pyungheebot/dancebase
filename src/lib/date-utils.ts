@@ -88,3 +88,31 @@ export function formatTime(date: Date | string): string {
 export function formatRelative(date: Date | string): string {
   return formatDistanceToNow(toDate(date), { locale: ko, addSuffix: true });
 }
+
+// ============================================================
+// 날짜 필터링 / 정렬 헬퍼
+// ============================================================
+
+/**
+ * date 필드가 있는 배열을 YYYY-MM 또는 YYYY 접두사로 필터링
+ * @param items - { date: string } 형태의 아이템 배열
+ * @param prefix - 필터링할 날짜 접두사 (예: "2026-03", "2026")
+ * @returns prefix로 시작하는 아이템만 포함한 새 배열
+ * @example filterByDatePrefix(events, "2026-03")
+ */
+export function filterByDatePrefix<T extends { date: string }>(
+  items: T[],
+  prefix: string
+): T[] {
+  return items.filter((item) => item.date.startsWith(prefix));
+}
+
+/**
+ * date 필드가 있는 배열을 오름차순으로 정렬 (원본 배열 불변)
+ * @param items - { date: string } 형태의 아이템 배열
+ * @returns date 오름차순으로 정렬된 새 배열
+ * @example sortByDate(events)
+ */
+export function sortByDate<T extends { date: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => a.date.localeCompare(b.date));
+}

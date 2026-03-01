@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { UnifiedCalendarEvent, UnifiedEventType } from "@/types";
+import { filterByDatePrefix } from "@/lib/date-utils";
 
 // ============================================================
 // 상수
@@ -182,14 +183,12 @@ export function useUnifiedCalendar(groupId: string) {
   const getByMonth = useCallback(
     (year: number, month: number): UnifiedCalendarEvent[] => {
       const prefix = `${year}-${String(month).padStart(2, "0")}`;
-      return events
-        .filter((e) => e.date.startsWith(prefix))
-        .sort((a, b) => {
-          if (a.date !== b.date) return a.date.localeCompare(b.date);
-          if (a.isAllDay && !b.isAllDay) return -1;
-          if (!a.isAllDay && b.isAllDay) return 1;
-          return a.startTime.localeCompare(b.startTime);
-        });
+      return filterByDatePrefix(events, prefix).sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        if (a.isAllDay && !b.isAllDay) return -1;
+        if (!a.isAllDay && b.isAllDay) return 1;
+        return a.startTime.localeCompare(b.startTime);
+      });
     },
     [events]
   );

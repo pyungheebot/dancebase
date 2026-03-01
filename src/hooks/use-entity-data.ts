@@ -7,6 +7,7 @@ import { useGroupDetail } from "@/hooks/use-groups";
 import { useGroupAncestors } from "@/hooks/use-subgroups";
 import { useProjectDetail } from "@/hooks/use-projects";
 import { buildEntityContext } from "@/lib/entity-utils";
+import { castRows } from "@/lib/type-guards";
 import type { EntityContext } from "@/types/entity-context";
 import type { FinanceRole } from "@/types";
 
@@ -33,8 +34,16 @@ function useEntityMeta(entityType: "group" | "project", entityId: string, groupI
       ]);
 
       return {
-        features: (featuresRes.data ?? []) as { feature: string; enabled: boolean; independent: boolean }[],
-        permissions: (permsRes.data ?? []) as { permission: string }[],
+        features: castRows<{ feature: string; enabled: boolean; independent: boolean }>(
+          featuresRes.data,
+          ["feature", "enabled", "independent"],
+          "use-entity-data/features"
+        ),
+        permissions: castRows<{ permission: string }>(
+          permsRes.data,
+          ["permission"],
+          "use-entity-data/permissions"
+        ),
       };
     },
   );

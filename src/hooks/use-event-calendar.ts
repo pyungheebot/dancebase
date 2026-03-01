@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { CalendarEvent, CalendarEventType } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
+import { filterByDatePrefix } from "@/lib/date-utils";
 
 // ============================================
 // 상수 및 localStorage 키
@@ -89,12 +90,10 @@ export function useEventCalendar(groupId: string) {
   /** 특정 연월의 이벤트 반환 (month: 1~12) */
   function getEventsByMonth(year: number, month: number): CalendarEvent[] {
     const prefix = toYMD(year, month, 1).slice(0, 7); // YYYY-MM
-    return allEvents
-      .filter((e) => e.date.startsWith(prefix))
-      .sort((a, b) => {
-        if (a.date !== b.date) return a.date.localeCompare(b.date);
-        return a.time.localeCompare(b.time);
-      });
+    return filterByDatePrefix(allEvents, prefix).sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return a.time.localeCompare(b.time);
+    });
   }
 
   /** 특정 날짜(YYYY-MM-DD)의 이벤트 반환 */
@@ -122,9 +121,7 @@ export function useEventCalendar(groupId: string) {
   const thisMonthPrefix = today.slice(0, 7); // YYYY-MM
 
   const totalEvents = allEvents.length;
-  const thisMonthCount = allEvents.filter((e) =>
-    e.date.startsWith(thisMonthPrefix)
-  ).length;
+  const thisMonthCount = filterByDatePrefix(allEvents, thisMonthPrefix).length;
 
   const upcomingEvents = allEvents
     .filter((e) => e.date >= today)

@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
+import { filterByDatePrefix } from "@/lib/date-utils";
 import type { BodyTrackerEntry } from "@/types";
 
 // ============================================
@@ -156,7 +157,7 @@ export function useBodyTracker(memberId: string): UseBodyTrackerReturn {
   const getByMonth = useCallback(
     (year: number, month: number): BodyTrackerEntry[] => {
       const prefix = `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`;
-      return entries.filter((e) => e.date.startsWith(prefix));
+      return filterByDatePrefix(entries, prefix);
     },
     [entries]
   );

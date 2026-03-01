@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
+import { filterByDatePrefix } from "@/lib/date-utils";
 import type {
   GroupCalendarEvent,
   GroupEventCalendarData,
@@ -286,12 +287,10 @@ export function useGroupEventCalendar(groupId: string) {
   const getEventsByMonth = useCallback(
     (year: number, month: number): GroupCalendarEvent[] => {
       const prefix = `${year}-${String(month).padStart(2, "0")}`;
-      return events
-        .filter((e) => e.date.startsWith(prefix))
-        .sort((a, b) => {
-          if (a.date !== b.date) return a.date.localeCompare(b.date);
-          return a.time.localeCompare(b.time);
-        });
+      return filterByDatePrefix(events, prefix).sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return a.time.localeCompare(b.time);
+      });
     },
     [events]
   );

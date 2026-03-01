@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { useCallback } from "react";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MentalWellnessEntry } from "@/types";
+import { filterByDatePrefix } from "@/lib/date-utils";
 
 // ============================================
 // localStorage 키
@@ -196,7 +197,7 @@ export function useMentalWellness(memberId: string): UseMentalWellnessReturn {
   const getByMonth = useCallback(
     (year: number, month: number): MentalWellnessEntry[] => {
       const prefix = `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`;
-      return entries.filter((e) => e.date.startsWith(prefix));
+      return filterByDatePrefix(entries, prefix);
     },
     [entries]
   );

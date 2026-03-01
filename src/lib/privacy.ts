@@ -1,4 +1,5 @@
 import type { Profile, PublicProfile, PrivacyField, PrivacySettings } from "@/types";
+import { isRecord } from "@/lib/type-guards";
 
 type FilterOptions = {
   viewerId: string | null;
@@ -83,7 +84,10 @@ export function filterProfileByPrivacy(
     // "private" → visible stays false
 
     if (visible) {
-      (result as Record<string, unknown>)[field] = profile[field];
+      const mutableResult = result as Record<string, unknown>;
+      if (isRecord(mutableResult)) {
+        mutableResult[field] = profile[field];
+      }
     }
   }
 

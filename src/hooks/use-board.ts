@@ -7,6 +7,7 @@ import { swrKeys } from "@/lib/swr/keys";
 import { frequentConfig, immutableConfig, staticConfig } from "@/lib/swr/cache-config";
 import { useIndependentEntityIds } from "@/hooks/use-independent-entities";
 import { BOARD_CATEGORIES } from "@/types";
+import { castRows } from "@/lib/type-guards";
 import type {
   BoardPostWithDetails,
   BoardPost,
@@ -115,13 +116,18 @@ export function useBoard(groupId: string, projectId?: string | null) {
       const { data: rawData, count } = await query;
 
       if (rawData) {
-        const posts = ((rawData as RawBoardPost[]).map((post) => ({
+        const mapped = (rawData as RawBoardPost[]).map((post) => ({
           ...post,
           comment_count: post.board_comments?.[0]?.count ?? 0,
           like_count: post.board_post_likes?.[0]?.count ?? 0,
           board_comments: undefined,
           board_post_likes: undefined,
-        })) as unknown) as BoardPostWithDetails[];
+        }));
+        const posts = castRows<BoardPostWithDetails>(
+          mapped,
+          ["id", "group_id", "title", "comment_count", "like_count"],
+          "use-board"
+        );
         return { posts, totalCount: count ?? 0 };
       }
 
