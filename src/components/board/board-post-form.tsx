@@ -530,6 +530,7 @@ export function BoardPostForm({
             placeholder="내용을 입력하세요"
             value={state.content}
             maxLength={10000}
+            showCharCount={true}
             onChange={(e) => {
               setField("content", e.target.value);
               if (mode === "create") {

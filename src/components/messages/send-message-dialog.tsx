@@ -86,17 +86,15 @@ export function SendMessageDialog({
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="space-y-1">
+            <div>
               <Textarea
                 placeholder="메시지 내용을 입력하세요"
                 value={values.content}
                 onChange={(e) => setValue("content", e.target.value)}
                 maxLength={2000}
+                showCharCount={true}
                 rows={4}
               />
-              <p className="text-right text-[11px] text-muted-foreground tabular-nums">
-                {values.content.length} / 2000
-              </p>
             </div>
             <Button
               className="w-full"

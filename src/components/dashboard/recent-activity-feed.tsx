@@ -2,9 +2,10 @@
 
 import { memo } from "react";
 import Link from "next/link";
-import { FileText, MessageSquare, Calendar } from "lucide-react";
+import { FileText, MessageSquare, Calendar, Loader2, ChevronDown } from "lucide-react";
 import { formatRelative } from "@/lib/date-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRecentActivityFeed } from "@/hooks/use-recent-activity-feed";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -86,6 +87,41 @@ function ActivityFeedSkeleton() {
   );
 }
 
+// ─── 더 보기 버튼 ─────────────────────────────────────────────────────────────
+
+function LoadMoreButton({
+  onClick,
+  loading,
+}: {
+  onClick: () => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="pt-2 flex justify-center">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7 text-xs text-muted-foreground hover:text-foreground gap-1"
+        onClick={onClick}
+        disabled={loading}
+        aria-label="활동 피드 더 보기"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+            불러오는 중...
+          </>
+        ) : (
+          <>
+            <ChevronDown className="h-3 w-3" aria-hidden="true" />
+            더 보기
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}
+
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 type RecentActivityFeedProps = {
@@ -94,7 +130,10 @@ type RecentActivityFeedProps = {
 };
 
 export function RecentActivityFeed({ groupIds, limit = 20 }: RecentActivityFeedProps) {
-  const { items, loading } = useRecentActivityFeed(groupIds, limit);
+  const { items, loading, hasMore, loadMore, loadingMore } = useRecentActivityFeed(
+    groupIds,
+    limit
+  );
 
   return (
     <Card>
@@ -110,11 +149,16 @@ export function RecentActivityFeed({ groupIds, limit = 20 }: RecentActivityFeedP
         ) : items.length === 0 ? (
           <EmptyState icon={FileText} title="최근 활동이 없습니다" />
         ) : (
-          <ul className="space-y-0.5">
-            {items.map((item) => (
-              <ActivityItem key={item.id} item={item} />
-            ))}
-          </ul>
+          <>
+            <ul className="space-y-0.5">
+              {items.map((item) => (
+                <ActivityItem key={item.id} item={item} />
+              ))}
+            </ul>
+            {hasMore && (
+              <LoadMoreButton onClick={loadMore} loading={loadingMore} />
+            )}
+          </>
         )}
       </CardContent>
     </Card>

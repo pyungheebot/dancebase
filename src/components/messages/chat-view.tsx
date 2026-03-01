@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRealtime } from "@/hooks/use-realtime";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, MessageCircle, Send, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 import { ChatSkeleton } from "@/components/messages/chat-skeleton";
@@ -399,8 +400,8 @@ export function ChatView({ partnerId }: ChatViewProps) {
       {/* 입력 영역 */}
       <div className="px-4 py-3 shrink-0">
         <div className="flex items-end gap-2">
-          <div className="flex-1 flex flex-col gap-0.5">
-            <textarea
+          <div className="flex-1">
+            <Textarea
               ref={inputRef}
               placeholder="메시지 입력..."
               value={content}
@@ -412,15 +413,11 @@ export function ChatView({ partnerId }: ChatViewProps) {
                 }
               }}
               maxLength={2000}
+              showCharCount={content.length > 1800}
               aria-label="메시지 입력"
-              className="min-h-[40px] max-h-[120px] resize-none rounded-2xl border bg-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-full"
+              className="min-h-[40px] max-h-[120px] resize-none rounded-2xl border bg-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-input w-full"
               rows={1}
             />
-            {content.length > 1800 && (
-              <p className="text-right text-[10px] text-muted-foreground tabular-nums pr-1">
-                {content.length} / 2000
-              </p>
-            )}
           </div>
           <Button
             size="icon"
