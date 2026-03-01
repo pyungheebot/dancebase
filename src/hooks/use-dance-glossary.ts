@@ -9,6 +9,7 @@ import type {
   GlossaryTerm,
   GlossaryCategory,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── localStorage 스토리지 키 ─────────────────────────────────
 function storageKey(groupId: string): string {
@@ -17,23 +18,11 @@ function storageKey(groupId: string): string {
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 function loadEntries(groupId: string): DanceGlossaryEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as DanceGlossaryEntry[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<DanceGlossaryEntry[]>(storageKey(groupId), []);
 }
 
 function saveEntries(groupId: string, entries: DanceGlossaryEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(storageKey(groupId), JSON.stringify(entries));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
+  saveToStorage(storageKey(groupId), entries);
 }
 
 // ─── 가나다/알파벳 정렬 ──────────────────────────────────────
@@ -244,23 +233,11 @@ export function useDanceGlossary(groupId: string) {
 const LEGACY_KEY = (id: string) => `dancebase:glossary:${id}`;
 
 function loadLegacy(id: string): GlossaryTerm[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LEGACY_KEY(id));
-    if (!raw) return [];
-    return JSON.parse(raw) as GlossaryTerm[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<GlossaryTerm[]>(LEGACY_KEY(id), []);
 }
 
 function saveLegacy(id: string, terms: GlossaryTerm[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LEGACY_KEY(id), JSON.stringify(terms));
-  } catch {
-    // ignore
-  }
+  saveToStorage(LEGACY_KEY(id), terms);
 }
 
 function sortLegacy(terms: GlossaryTerm[]): GlossaryTerm[] {

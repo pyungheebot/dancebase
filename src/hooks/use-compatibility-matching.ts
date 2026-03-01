@@ -7,6 +7,7 @@ import type {
   MemberCompatibilityProfile,
   CompatibilityPairResult,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // 상수
@@ -32,26 +33,14 @@ const LS_KEY = (groupId: string) =>
 // ============================================
 
 function loadProfiles(groupId: string): MemberCompatibilityProfile[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as MemberCompatibilityProfile[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<MemberCompatibilityProfile[]>(LS_KEY(groupId), []);
 }
 
 function saveProfiles(
   groupId: string,
   profiles: MemberCompatibilityProfile[]
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(profiles));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
+  saveToStorage(LS_KEY(groupId), profiles);
 }
 
 // ============================================

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import { swrKeys } from "@/lib/swr/keys";
 import type { CostumeChangeEntry, CostumeChangeLocation } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 유틸
@@ -19,13 +20,7 @@ function loadEntries(
   groupId: string,
   projectId: string
 ): CostumeChangeEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as CostumeChangeEntry[]) : [];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<CostumeChangeEntry[]>(getStorageKey(groupId, projectId), []);
 }
 
 function saveEntries(
@@ -33,15 +28,7 @@ function saveEntries(
   projectId: string,
   entries: CostumeChangeEntry[]
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      getStorageKey(groupId, projectId),
-      JSON.stringify(entries)
-    );
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
+  saveToStorage(getStorageKey(groupId, projectId), entries);
 }
 
 // ============================================================

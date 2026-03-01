@@ -11,6 +11,7 @@ import type {
   ReportMetricValue,
   ReportPeriod,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // 지표 메타 정보
 export const REPORT_METRIC_META: Record<
@@ -40,19 +41,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadReports(groupId: string): CustomReportConfig[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as CustomReportConfig[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<CustomReportConfig[]>(getStorageKey(groupId), []);
 }
 
 function saveReports(groupId: string, reports: CustomReportConfig[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(reports));
+  saveToStorage(getStorageKey(groupId), reports);
 }
 
 function getPeriodStartDate(period: ReportPeriod): string | null {

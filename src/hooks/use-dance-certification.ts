@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { DanceCertItem, DanceCertKind } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── 상수 ────────────────────────────────────────────────────
 
@@ -52,23 +53,11 @@ export const DANCE_CERT_KINDS: DanceCertKind[] = [
 const LS_KEY = (memberId: string) => `dancebase:dance-cert:${memberId}`;
 
 function loadItems(memberId: string): DanceCertItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(memberId));
-    if (!raw) return [];
-    return JSON.parse(raw) as DanceCertItem[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<DanceCertItem[]>(LS_KEY(memberId), []);
 }
 
 function saveItems(memberId: string, items: DanceCertItem[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(memberId), JSON.stringify(items));
-  } catch {
-    /* ignore */
-  }
+  saveToStorage(LS_KEY(memberId), items);
 }
 
 // ─── 만료 관련 유틸 ───────────────────────────────────────────

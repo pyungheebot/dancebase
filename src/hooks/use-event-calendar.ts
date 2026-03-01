@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { CalendarEvent, CalendarEventType } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // 상수 및 localStorage 키
@@ -17,22 +18,11 @@ const LS_KEY = (groupId: string) =>
 // ============================================
 
 function loadEvents(groupId: string): CalendarEvent[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    return raw ? (JSON.parse(raw) as CalendarEvent[]) : [];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<CalendarEvent[]>(LS_KEY(groupId), []);
 }
 
 function saveEvents(groupId: string, events: CalendarEvent[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(events));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
+  saveToStorage(LS_KEY(groupId), events);
 }
 
 // ============================================

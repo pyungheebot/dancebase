@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { DancePortfolioEntry, PortfolioEntryType } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -13,18 +14,11 @@ function getStorageKey(memberId: string): string {
 }
 
 function loadEntries(memberId: string): DancePortfolioEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    return raw ? (JSON.parse(raw) as DancePortfolioEntry[]) : [];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<DancePortfolioEntry[]>(getStorageKey(memberId), []);
 }
 
 function persistEntries(memberId: string, entries: DancePortfolioEntry[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(memberId), JSON.stringify(entries));
+  saveToStorage(getStorageKey(memberId), entries);
 }
 
 // ============================================================

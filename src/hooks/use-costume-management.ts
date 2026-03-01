@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { CostumeItem, CostumeAssignment, CostumeStore, CostumeStatus } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // 상수
@@ -27,28 +28,14 @@ function storageKey(groupId: string, projectId: string): string {
 }
 
 function loadStore(groupId: string, projectId: string): CostumeStore {
-  if (typeof window === "undefined") {
-    return { items: [], assignments: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(storageKey(groupId, projectId));
-    if (!raw) return { items: [], assignments: [], updatedAt: new Date().toISOString() };
-    return JSON.parse(raw) as CostumeStore;
-  } catch {
-    return { items: [], assignments: [], updatedAt: new Date().toISOString() };
-  }
+  return loadFromStorage<CostumeStore>(
+    storageKey(groupId, projectId),
+    { items: [], assignments: [], updatedAt: new Date().toISOString() }
+  );
 }
 
 function saveStore(groupId: string, projectId: string, store: CostumeStore): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      storageKey(groupId, projectId),
-      JSON.stringify({ ...store, updatedAt: new Date().toISOString() })
-    );
-  } catch {
-    // 무시
-  }
+  saveToStorage(storageKey(groupId, projectId), { ...store, updatedAt: new Date().toISOString() });
 }
 
 // ============================================

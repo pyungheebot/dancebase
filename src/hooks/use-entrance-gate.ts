@@ -11,6 +11,7 @@ import type {
   EntranceGateStatus,
   EntranceGateType,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 유틸
@@ -21,28 +22,14 @@ function getStorageKey(groupId: string, projectId: string): string {
 }
 
 function loadSheet(groupId: string, projectId: string): EntranceGateSheet {
-  if (typeof window === "undefined") {
-    return { groupId, projectId, gates: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    if (raw) return JSON.parse(raw) as EntranceGateSheet;
-  } catch {
-    // 파싱 실패 시 빈 시트 반환
-  }
-  return { groupId, projectId, gates: [], updatedAt: new Date().toISOString() };
+  return loadFromStorage<EntranceGateSheet>(
+    getStorageKey(groupId, projectId),
+    { groupId, projectId, gates: [], updatedAt: new Date().toISOString() }
+  );
 }
 
 function saveSheet(sheet: EntranceGateSheet): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(
-      getStorageKey(sheet.groupId, sheet.projectId),
-      JSON.stringify(sheet)
-    );
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
+  saveToStorage(getStorageKey(sheet.groupId, sheet.projectId), sheet);
 }
 
 // ============================================================

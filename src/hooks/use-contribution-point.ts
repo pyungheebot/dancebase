@@ -11,6 +11,7 @@ import type {
   ContributionPointStore,
   ContributionPointTransaction,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 유틸
@@ -21,25 +22,14 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadStore(groupId: string): ContributionPointStore {
-  if (typeof window === "undefined") {
-    return { groupId, transactions: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (raw) return JSON.parse(raw) as ContributionPointStore;
-  } catch {
-    // 파싱 실패 시 빈 스토어 반환
-  }
-  return { groupId, transactions: [], updatedAt: new Date().toISOString() };
+  return loadFromStorage<ContributionPointStore>(
+    getStorageKey(groupId),
+    { groupId, transactions: [], updatedAt: new Date().toISOString() }
+  );
 }
 
 function saveStore(store: ContributionPointStore): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(store.groupId), JSON.stringify(store));
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
+  saveToStorage(getStorageKey(store.groupId), store);
 }
 
 // ============================================================

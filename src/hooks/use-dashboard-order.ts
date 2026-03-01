@@ -7,6 +7,7 @@ import {
   PROJECT_DASHBOARD_CARDS,
   DEFAULT_PROJECT_DASHBOARD_CARDS,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // 대시보드 카드 순서 아이템 타입
 export type DashboardOrderItem = {
@@ -22,34 +23,21 @@ function getStorageKey(groupId: string): string {
 
 // localStorage에서 카드 순서를 불러옴
 function loadOrder(groupId: string, defaultIds: string[]): string[] {
-  if (typeof window === "undefined") return defaultIds;
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return defaultIds;
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return defaultIds;
-    // 저장된 순서에 없는 새 카드를 뒤에 추가
-    const saved = parsed as string[];
-    const merged = saved.filter((id) => defaultIds.includes(id));
-    for (const id of defaultIds) {
-      if (!merged.includes(id)) {
-        merged.push(id);
-      }
+  const parsed = loadFromStorage<string[]>(getStorageKey(groupId), []);
+  if (!Array.isArray(parsed) || parsed.length === 0) return defaultIds;
+  // 저장된 순서에 없는 새 카드를 뒤에 추가
+  const merged = parsed.filter((id) => defaultIds.includes(id));
+  for (const id of defaultIds) {
+    if (!merged.includes(id)) {
+      merged.push(id);
     }
-    return merged;
-  } catch {
-    return defaultIds;
   }
+  return merged;
 }
 
 // localStorage에 카드 순서를 저장
 function saveOrder(groupId: string, ids: string[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(ids));
-  } catch {
-    // 저장 실패 무시
-  }
+  saveToStorage(getStorageKey(groupId), ids);
 }
 
 type UseDashboardOrderParams = {

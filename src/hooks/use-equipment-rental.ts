@@ -7,6 +7,7 @@ import type {
   EquipmentRentalRecord,
   EquipmentRentalStatus,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_PREFIX = "dancebase:equipment-rental:";
 
@@ -15,19 +16,11 @@ function getStorageKey(groupId: string) {
 }
 
 function loadItems(groupId: string): EquipmentRentalItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as EquipmentRentalItem[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<EquipmentRentalItem[]>(getStorageKey(groupId), []);
 }
 
 function saveItems(groupId: string, items: EquipmentRentalItem[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(items));
+  saveToStorage(getStorageKey(groupId), items);
 }
 
 function computeStatus(item: EquipmentRentalItem): EquipmentRentalStatus {

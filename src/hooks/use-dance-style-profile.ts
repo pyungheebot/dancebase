@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { MemberDanceStyleProfile, DanceStyleEntry, DanceStyleLevel } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -13,18 +14,11 @@ function getStorageKey(memberId: string): string {
 }
 
 function loadProfile(memberId: string): MemberDanceStyleProfile | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    return raw ? (JSON.parse(raw) as MemberDanceStyleProfile) : null;
-  } catch {
-    return null;
-  }
+  return loadFromStorage<MemberDanceStyleProfile | null>(getStorageKey(memberId), null);
 }
 
 function persistProfile(profile: MemberDanceStyleProfile): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(profile.memberId), JSON.stringify(profile));
+  saveToStorage(getStorageKey(profile.memberId), profile);
 }
 
 function createEmptyProfile(memberId: string): MemberDanceStyleProfile {

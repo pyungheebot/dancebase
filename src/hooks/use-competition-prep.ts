@@ -7,6 +7,7 @@ import type {
   CompetitionPrepItem,
   CompetitionPrepCategory,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 유틸
@@ -17,18 +18,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadEvents(groupId: string): CompetitionPrepEvent[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as CompetitionPrepEvent[]) : [];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<CompetitionPrepEvent[]>(getStorageKey(groupId), []);
 }
 
 function saveEvents(groupId: string, events: CompetitionPrepEvent[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(groupId), JSON.stringify(events));
+  saveToStorage(getStorageKey(groupId), events);
 }
 
 // ============================================================

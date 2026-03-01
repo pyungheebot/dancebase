@@ -8,6 +8,7 @@ import type {
   StyleCompatibilityResult,
 } from "@/types";
 import { DANCE_STYLE_DIMENSIONS } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 유틸
@@ -18,19 +19,11 @@ function storageKey(groupId: string): string {
 }
 
 function loadProfiles(groupId: string): DanceStyleProfile[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(storageKey(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as DanceStyleProfile[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<DanceStyleProfile[]>(storageKey(groupId), []);
 }
 
 function saveProfiles(groupId: string, profiles: DanceStyleProfile[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(storageKey(groupId), JSON.stringify(profiles));
+  saveToStorage(storageKey(groupId), profiles);
 }
 
 // ============================================

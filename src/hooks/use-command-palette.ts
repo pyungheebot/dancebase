@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { CommandItem, RecentPage } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const RECENT_PAGES_KEY = "dancebase:recent-pages";
 const MAX_RECENT_PAGES = 5;
@@ -71,28 +72,16 @@ const STATIC_COMMANDS: CommandItem[] = [
 ];
 
 function loadRecentPages(): RecentPage[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(RECENT_PAGES_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as RecentPage[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<RecentPage[]>(RECENT_PAGES_KEY, []);
 }
 
 export function saveRecentPage(href: string, label: string) {
-  if (typeof window === "undefined") return;
-  try {
-    const pages = loadRecentPages().filter((p) => p.href !== href);
-    const updated: RecentPage[] = [
-      { href, label, visitedAt: Date.now() },
-      ...pages,
-    ].slice(0, MAX_RECENT_PAGES);
-    localStorage.setItem(RECENT_PAGES_KEY, JSON.stringify(updated));
-  } catch {
-    // localStorage 접근 실패 시 무시
-  }
+  const pages = loadRecentPages().filter((p) => p.href !== href);
+  const updated: RecentPage[] = [
+    { href, label, visitedAt: Date.now() },
+    ...pages,
+  ].slice(0, MAX_RECENT_PAGES);
+  saveToStorage(RECENT_PAGES_KEY, updated);
 }
 
 function isInputFocused(e: KeyboardEvent): boolean {

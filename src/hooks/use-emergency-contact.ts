@@ -11,6 +11,7 @@ import type {
   EmergencyContactRelation,
   EmergencyContactPerson,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 유틸
@@ -21,22 +22,11 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadEntries(groupId: string): EmergencyContactEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    return raw ? (JSON.parse(raw) as EmergencyContactEntry[]) : [];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<EmergencyContactEntry[]>(getStorageKey(groupId), []);
 }
 
 function saveEntries(groupId: string, entries: EmergencyContactEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(entries));
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
+  saveToStorage(getStorageKey(groupId), entries);
 }
 
 // ============================================================

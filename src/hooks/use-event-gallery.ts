@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
 import type { GroupEvent, EventTag } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY_PREFIX = "dancebase:event-gallery:";
 const MAX_EVENTS = 100;
@@ -13,12 +14,7 @@ function getStorageKey(groupId: string): string {
 }
 
 function saveEvents(groupId: string, events: GroupEvent[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(events));
-  } catch {
-    // localStorage 용량 초과 등의 경우 무시
-  }
+  saveToStorage(getStorageKey(groupId), events);
 }
 
 function sortByDateDesc(events: GroupEvent[]): GroupEvent[] {

@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { EncorePlan, EncoreSong } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 유틸
@@ -13,13 +14,7 @@ function getStorageKey(groupId: string, projectId: string): string {
 }
 
 function loadPlans(groupId: string, projectId: string): EncorePlan[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId, projectId));
-    return raw ? (JSON.parse(raw) as EncorePlan[]) : [];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<EncorePlan[]>(getStorageKey(groupId, projectId), []);
 }
 
 function savePlans(
@@ -27,11 +22,7 @@ function savePlans(
   projectId: string,
   plans: EncorePlan[]
 ): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(
-    getStorageKey(groupId, projectId),
-    JSON.stringify(plans)
-  );
+  saveToStorage(getStorageKey(groupId, projectId), plans);
 }
 
 // ============================================================

@@ -6,6 +6,7 @@ import type {
   CommPreferredTime,
   CommChannel,
 } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 유틸
@@ -20,12 +21,7 @@ function savePreference(
   userId: string,
   pref: CommunicationPreference
 ): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId, userId), JSON.stringify(pref));
-  } catch {
-    // localStorage 저장 실패 무시
-  }
+  saveToStorage(getStorageKey(groupId, userId), pref);
 }
 
 const DEFAULT_PREFERENCE: Omit<CommunicationPreference, "userId" | "updatedAt"> = {

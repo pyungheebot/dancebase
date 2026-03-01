@@ -4,27 +4,19 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import { DiaryCardData, DiaryCardEntry, DiaryCardEmotion } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── 로컬스토리지 헬퍼 ──────────────────────────────────────────────────────────
 
 function loadDiaryData(memberId: string): DiaryCardData {
-  if (typeof window === "undefined") {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
-  try {
-    const raw = localStorage.getItem(`dance-diary-${memberId}`);
-    if (!raw) {
-      return { memberId, entries: [], updatedAt: new Date().toISOString() };
-    }
-    return JSON.parse(raw) as DiaryCardData;
-  } catch {
-    return { memberId, entries: [], updatedAt: new Date().toISOString() };
-  }
+  return loadFromStorage<DiaryCardData>(
+    `dance-diary-${memberId}`,
+    { memberId, entries: [], updatedAt: new Date().toISOString() }
+  );
 }
 
 function saveDiaryData(data: DiaryCardData): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(`dance-diary-${data.memberId}`, JSON.stringify(data));
+  saveToStorage(`dance-diary-${data.memberId}`, data);
 }
 
 function generateId(): string {

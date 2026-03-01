@@ -10,6 +10,7 @@ import type {
   DanceProfileInspirationEntry,
   DanceProfileBpmRange,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // localStorage 헬퍼
@@ -20,22 +21,11 @@ function getStorageKey(memberId: string): string {
 }
 
 function loadProfile(memberId: string): DanceStyleProfileV2 | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(getStorageKey(memberId));
-    return raw ? (JSON.parse(raw) as DanceStyleProfileV2) : null;
-  } catch {
-    return null;
-  }
+  return loadFromStorage<DanceStyleProfileV2 | null>(getStorageKey(memberId), null);
 }
 
 function persistProfile(profile: DanceStyleProfileV2): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(profile.memberId), JSON.stringify(profile));
-  } catch {
-    // 무시
-  }
+  saveToStorage(getStorageKey(profile.memberId), profile);
 }
 
 function createEmptyProfile(memberId: string): DanceStyleProfileV2 {

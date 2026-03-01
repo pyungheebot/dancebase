@@ -8,6 +8,7 @@ import type {
   EngagementCampaignMemo,
 } from "@/types";
 import { ENGAGEMENT_CAMPAIGN_MAX } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // localStorage 키
@@ -47,7 +48,7 @@ export function useEngagementCampaign(groupId: string) {
   const persist = useCallback(
     (next: EngagementCampaign[]) => {
       setCampaigns(next);
-      localStorage.setItem(getStorageKey(groupId), JSON.stringify(next));
+      saveToStorage(getStorageKey(groupId), next);
     },
     [groupId],
   );

@@ -12,6 +12,7 @@ import type {
   EquipmentChecklistEntry,
   EquipmentChecklistPhase,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================================
 // 기본 템플릿 항목
@@ -50,35 +51,19 @@ function getStorageKey(groupId: string): string {
 }
 
 function loadSheet(groupId: string): EquipmentChecklistSheet {
-  if (typeof window === "undefined") {
-    return {
+  return loadFromStorage<EquipmentChecklistSheet>(
+    getStorageKey(groupId),
+    {
       groupId,
       items: buildDefaultItems(),
       records: [],
       updatedAt: new Date().toISOString(),
-    };
-  }
-  try {
-    const raw = localStorage.getItem(getStorageKey(groupId));
-    if (raw) return JSON.parse(raw) as EquipmentChecklistSheet;
-  } catch {
-    // 파싱 실패 시 기본값 반환
-  }
-  return {
-    groupId,
-    items: buildDefaultItems(),
-    records: [],
-    updatedAt: new Date().toISOString(),
-  };
+    }
+  );
 }
 
 function saveSheet(sheet: EquipmentChecklistSheet): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(sheet.groupId), JSON.stringify(sheet));
-  } catch {
-    // localStorage 쓰기 실패 무시
-  }
+  saveToStorage(getStorageKey(sheet.groupId), sheet);
 }
 
 // ============================================================

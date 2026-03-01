@@ -11,6 +11,7 @@ import {
   DASHBOARD_WIDGETS,
   DEFAULT_DASHBOARD_LAYOUT,
 } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ============================================
 // 상수
@@ -23,47 +24,34 @@ const STORAGE_KEY = "dancebase:dashboard-layout";
 // ============================================
 
 function loadLayoutFromStorage(): DashboardLayout {
-  if (typeof window === "undefined") return DEFAULT_DASHBOARD_LAYOUT;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_DASHBOARD_LAYOUT;
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return DEFAULT_DASHBOARD_LAYOUT;
+  const parsed = loadFromStorage<DashboardWidgetItem[]>(STORAGE_KEY, []);
+  if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_DASHBOARD_LAYOUT;
 
-    const saved = parsed as DashboardWidgetItem[];
-    const allIds = DASHBOARD_WIDGETS.map((w) => w.id);
+  const allIds = DASHBOARD_WIDGETS.map((w) => w.id);
 
-    // 저장된 항목 중 유효한 ID만 유지
-    const merged: DashboardLayout = saved.filter((item) =>
-      allIds.includes(item.id)
-    );
+  // 저장된 항목 중 유효한 ID만 유지
+  const merged: DashboardLayout = parsed.filter((item) =>
+    allIds.includes(item.id)
+  );
 
-    // 새로 추가된 위젯(저장 목록에 없는 위젯)을 뒤에 추가
-    const savedIds = merged.map((item) => item.id);
-    const maxOrder = merged.reduce((max, item) => Math.max(max, item.order), -1);
-    let nextOrder = maxOrder + 1;
+  // 새로 추가된 위젯(저장 목록에 없는 위젯)을 뒤에 추가
+  const savedIds = merged.map((item) => item.id);
+  const maxOrder = merged.reduce((max, item) => Math.max(max, item.order), -1);
+  let nextOrder = maxOrder + 1;
 
-    for (const widget of DASHBOARD_WIDGETS) {
-      if (!savedIds.includes(widget.id)) {
-        merged.push({ id: widget.id, visible: true, order: nextOrder });
-        nextOrder += 1;
-      }
+  for (const widget of DASHBOARD_WIDGETS) {
+    if (!savedIds.includes(widget.id)) {
+      merged.push({ id: widget.id, visible: true, order: nextOrder });
+      nextOrder += 1;
     }
-
-    // order 기준 정렬
-    return merged.sort((a, b) => a.order - b.order);
-  } catch {
-    return DEFAULT_DASHBOARD_LAYOUT;
   }
+
+  // order 기준 정렬
+  return merged.sort((a, b) => a.order - b.order);
 }
 
 function saveLayoutToStorage(layout: DashboardLayout): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
-  } catch {
-    // 저장 실패 무시
-  }
+  saveToStorage(STORAGE_KEY, layout);
 }
 
 // ============================================

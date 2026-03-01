@@ -8,6 +8,7 @@ import type {
   DecisionCategory,
   DecisionImpact,
 } from "@/types";
+import { saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY_PREFIX = "dancebase:decision-log:";
 const MAX_ITEMS = 100;
@@ -17,12 +18,7 @@ function getStorageKey(groupId: string): string {
 }
 
 function saveItems(groupId: string, items: DecisionLogItem[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(getStorageKey(groupId), JSON.stringify(items));
-  } catch {
-    // localStorage 용량 초과 등의 경우 무시
-  }
+  saveToStorage(getStorageKey(groupId), items);
 }
 
 export type DecisionLogInput = {

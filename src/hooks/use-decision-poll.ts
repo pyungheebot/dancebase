@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swr/keys";
 import type { DecisionPoll, PollVote, PollVoteChoice } from "@/types";
+import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 // ─── localStorage 헬퍼 ────────────────────────────────────────
 
@@ -10,23 +11,11 @@ const LS_KEY = (groupId: string) =>
   `dancebase:decision-polls:${groupId}`;
 
 function loadPolls(groupId: string): DecisionPoll[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_KEY(groupId));
-    if (!raw) return [];
-    return JSON.parse(raw) as DecisionPoll[];
-  } catch {
-    return [];
-  }
+  return loadFromStorage<DecisionPoll[]>(LS_KEY(groupId), []);
 }
 
 function savePolls(groupId: string, polls: DecisionPoll[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LS_KEY(groupId), JSON.stringify(polls));
-  } catch {
-    /* ignore */
-  }
+  saveToStorage(LS_KEY(groupId), polls);
 }
 
 // ─── 결과 계산 ────────────────────────────────────────────────
