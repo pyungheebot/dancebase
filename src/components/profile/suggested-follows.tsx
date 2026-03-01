@@ -2,7 +2,7 @@
 
 import { useSuggestedFollows } from "@/hooks/use-follow";
 import { FollowButton } from "@/components/profile/follow-button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
@@ -27,12 +27,12 @@ export function SuggestedFollows() {
                 href={`/users/${s.id}`}
                 className="flex items-center gap-2 min-w-0 flex-1"
               >
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={s.avatar_url ?? undefined} />
-                  <AvatarFallback className="text-[10px]">
-                    {s.name?.charAt(0)?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  name={s.name || "U"}
+                  avatarUrl={s.avatar_url}
+                  size="xs"
+                  className="h-6 w-6"
+                />
                 <div className="min-w-0">
                   <p className="text-xs font-medium truncate">{s.name}</p>
                   <p className="text-[10px] text-muted-foreground">

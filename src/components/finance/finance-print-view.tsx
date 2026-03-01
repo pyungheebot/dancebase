@@ -7,6 +7,7 @@ import {
   thStyle,
   tdStyle,
 } from "@/components/shared/print-layout";
+import { PRINT_COLORS } from "@/lib/print-styles";
 import { formatYearMonthDay } from "@/lib/date-utils";
 
 type Props = {
@@ -61,17 +62,17 @@ export function FinancePrintView({
         <PrintSummaryCard
           label="총 수입"
           value={`+${totalIncome.toLocaleString("ko-KR")}원`}
-          valueColor="#16a34a"
+          valueColor={PRINT_COLORS.success}
         />
         <PrintSummaryCard
           label="총 지출"
           value={`-${totalExpense.toLocaleString("ko-KR")}원`}
-          valueColor="#ef4444"
+          valueColor={PRINT_COLORS.error}
         />
         <PrintSummaryCard
           label="잔액"
           value={`${balance >= 0 ? "+" : ""}${balance.toLocaleString("ko-KR")}원`}
-          valueColor={balance >= 0 ? "#2563eb" : "#ef4444"}
+          valueColor={balance >= 0 ? PRINT_COLORS.info : PRINT_COLORS.error}
         />
       </div>
 
@@ -81,7 +82,7 @@ export function FinancePrintView({
           fontSize: "13px",
           fontWeight: "600",
           marginBottom: "8px",
-          borderLeft: "3px solid #000",
+          borderLeft: `3px solid ${PRINT_COLORS.black}`,
           paddingLeft: "8px",
         }}
       >
@@ -96,7 +97,7 @@ export function FinancePrintView({
         }}
       >
         <thead>
-          <tr style={{ backgroundColor: "#f3f4f6" }}>
+          <tr style={{ backgroundColor: PRINT_COLORS.headerBg }}>
             <th style={thStyle({ width: "80px", textAlign: "center" })}>
               날짜
             </th>
@@ -126,11 +127,11 @@ export function FinancePrintView({
               <tr
                 key={txn.id}
                 style={{
-                  backgroundColor: idx % 2 === 0 ? "#fff" : "#f9fafb",
-                  borderBottom: "1px solid #e5e7eb",
+                  backgroundColor: idx % 2 === 0 ? PRINT_COLORS.white : PRINT_COLORS.rowAltBg,
+                  borderBottom: `1px solid ${PRINT_COLORS.border}`,
                 }}
               >
-                <td style={tdStyle({ textAlign: "center", color: "#6b7280" })}>
+                <td style={tdStyle({ textAlign: "center", color: PRINT_COLORS.muted })}>
                   {txn.transaction_date ?? ""}
                 </td>
                 <td style={tdStyle({ textAlign: "center" })}>
@@ -140,7 +141,7 @@ export function FinancePrintView({
                 <td
                   style={tdStyle({
                     textAlign: "right",
-                    color: txn.type === "income" ? "#16a34a" : "transparent",
+                    color: txn.type === "income" ? PRINT_COLORS.success : "transparent",
                     fontWeight: txn.type === "income" ? "600" : "400",
                   })}
                 >
@@ -151,7 +152,7 @@ export function FinancePrintView({
                 <td
                   style={tdStyle({
                     textAlign: "right",
-                    color: txn.type === "expense" ? "#ef4444" : "transparent",
+                    color: txn.type === "expense" ? PRINT_COLORS.error : "transparent",
                     fontWeight: txn.type === "expense" ? "600" : "400",
                   })}
                 >
@@ -159,7 +160,7 @@ export function FinancePrintView({
                     ? `-${txn.amount.toLocaleString("ko-KR")}`
                     : ""}
                 </td>
-                <td style={tdStyle({ textAlign: "center", color: "#6b7280" })}>
+                <td style={tdStyle({ textAlign: "center", color: PRINT_COLORS.muted })}>
                   {payerName}
                 </td>
               </tr>
@@ -169,8 +170,8 @@ export function FinancePrintView({
         <tfoot>
           <tr
             style={{
-              borderTop: "2px solid #d1d5db",
-              backgroundColor: "#f3f4f6",
+              borderTop: `2px solid ${PRINT_COLORS.borderStrong}`,
+              backgroundColor: PRINT_COLORS.headerBg,
             }}
           >
             <td colSpan={3} style={tdStyle({ fontWeight: "600" })}>
@@ -180,7 +181,7 @@ export function FinancePrintView({
               style={tdStyle({
                 textAlign: "right",
                 fontWeight: "700",
-                color: "#16a34a",
+                color: PRINT_COLORS.success,
               })}
             >
               +{totalIncome.toLocaleString("ko-KR")}
@@ -189,7 +190,7 @@ export function FinancePrintView({
               style={tdStyle({
                 textAlign: "right",
                 fontWeight: "700",
-                color: "#ef4444",
+                color: PRINT_COLORS.error,
               })}
             >
               -{totalExpense.toLocaleString("ko-KR")}

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Send, Users, UserCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { TOAST } from "@/lib/toast-messages";
@@ -65,12 +65,12 @@ function CandidateRow({
         onCheckedChange={(value) => onCheckedChange(value === true)}
         onClick={(e) => e.stopPropagation()}
       />
-      <Avatar className="h-6 w-6 shrink-0">
-        <AvatarImage src={candidate.avatarUrl ?? undefined} />
-        <AvatarFallback className="text-[10px]">
-          {candidate.name.slice(0, 1)}
-        </AvatarFallback>
-      </Avatar>
+      <UserAvatar
+        name={candidate.name}
+        avatarUrl={candidate.avatarUrl}
+        size="xs"
+        className="h-6 w-6 shrink-0"
+      />
       <label
         htmlFor={`winback-${candidate.userId}`}
         className="flex-1 text-xs font-medium cursor-pointer truncate"

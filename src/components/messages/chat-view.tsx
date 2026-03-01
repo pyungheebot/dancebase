@@ -7,7 +7,7 @@ import { formatYearMonthDay } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
 import { useConversation } from "@/hooks/use-messages";
 import { useAuth } from "@/hooks/use-auth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Send, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -57,14 +57,12 @@ const MessageBubble = memo(function MessageBubble({
       {!isMine && (
         <div className="w-8 shrink-0 mr-2">
           {isFirstInGroup && (
-            <Avatar className="h-8 w-8">
-              {partnerAvatarUrl && (
-                <AvatarImage src={partnerAvatarUrl} />
-              )}
-              <AvatarFallback className="text-xs">
-                {partnerName?.charAt(0)?.toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              name={partnerName || "U"}
+              avatarUrl={partnerAvatarUrl}
+              size="md"
+              className="h-8 w-8"
+            />
           )}
         </div>
       )}
@@ -335,12 +333,12 @@ export function ChatView({ partnerId }: ChatViewProps) {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <Avatar className="h-8 w-8">
-          {partnerAvatarUrl && <AvatarImage src={partnerAvatarUrl} />}
-          <AvatarFallback className="text-xs">
-            {partnerName?.charAt(0)?.toUpperCase() || "U"}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          name={partnerName || "U"}
+          avatarUrl={partnerAvatarUrl}
+          size="md"
+          className="h-8 w-8"
+        />
         <span className="text-sm font-semibold">{partnerName}</span>
       </div>
 

@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Search } from "lucide-react";
 
@@ -105,14 +105,11 @@ export function NewConversationDialog({
                   onClick={() => handleSelect(profile.id)}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-muted transition-colors text-left"
                 >
-                  <Avatar className="h-10 w-10">
-                    {profile.avatar_url && (
-                      <AvatarImage src={profile.avatar_url} />
-                    )}
-                    <AvatarFallback>
-                      {profile.name?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar
+                    name={profile.name || "U"}
+                    avatarUrl={profile.avatar_url}
+                    size="md"
+                  />
                   <span className="text-sm font-medium">{profile.name}</span>
                 </button>
               ))}

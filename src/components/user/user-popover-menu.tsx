@@ -12,7 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -96,17 +96,16 @@ function MiniProfile({ userId, displayName }: { userId: string; displayName: str
   const avatarUrl = profile?.avatar_url ?? null;
   const genres = profile?.dance_genre ?? [];
   const bio = profile?.bio ?? null;
-  const initials = name.slice(0, 2);
 
   return (
     <div className="px-3 pt-3 pb-2">
       <div className="flex items-center gap-2.5 mb-2">
-        <Avatar className="h-10 w-10 shrink-0">
-          {avatarUrl ? (
-            <AvatarImage src={avatarUrl} alt={name} />
-          ) : null}
-          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          name={name}
+          avatarUrl={avatarUrl}
+          size="md"
+          className="shrink-0"
+        />
         <div className="min-w-0">
           <p className="text-sm font-semibold leading-tight truncate">{name}</p>
           {genres.length > 0 && (

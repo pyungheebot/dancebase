@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ClipboardList } from "lucide-react";
 import { useActivityLog } from "@/hooks/use-activity-log";
@@ -147,10 +147,12 @@ export function ActivityLogSection({ entityType, entityId }: ActivityLogSectionP
                   className="flex items-start gap-2.5 p-2 rounded-lg border bg-muted/20 hover:bg-muted/40 transition-colors"
                 >
                   {/* 아바타 */}
-                  <Avatar className="h-7 w-7 flex-shrink-0 mt-0.5">
-                    {actorAvatar && <AvatarImage src={actorAvatar} alt={actorName} />}
-                    <AvatarFallback className="text-[10px]">{actorInitial}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar
+                    name={actorName}
+                    avatarUrl={actorAvatar}
+                    size="sm"
+                    className="flex-shrink-0 mt-0.5"
+                  />
 
                   {/* 내용 */}
                   <div className="flex-1 min-w-0">

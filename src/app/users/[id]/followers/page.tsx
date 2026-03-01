@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AppLayout } from "@/components/layout/app-layout";
 import { useFollowList } from "@/hooks/use-follow";
 import { useAuth } from "@/hooks/use-auth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,12 +51,12 @@ export default function FollowersPage({
                   href={`/users/${profile.id}`}
                   className="flex items-center gap-2 min-w-0 flex-1"
                 >
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={profile.avatar_url ?? undefined} />
-                    <AvatarFallback className="text-[10px]">
-                      {profile.name?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar
+                    name={profile.name || "U"}
+                    avatarUrl={profile.avatar_url}
+                    size="xs"
+                    className="h-6 w-6"
+                  />
                   <div className="min-w-0">
                     <p className="text-xs font-medium truncate">{profile.name}</p>
                     {profile.dance_genre?.length > 0 && (

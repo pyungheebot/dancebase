@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -61,11 +61,11 @@ export function GroupMemberManageSection({
               joinRequests.map((req) => (
                 <div key={req.id} className="flex items-center justify-between p-2 rounded-lg border">
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs">
-                        {req.profiles.name?.charAt(0)?.toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      name={req.profiles.name || "U"}
+                      size="md"
+                      className="h-8 w-8"
+                    />
                     <div>
                       <p className="text-sm font-medium">{req.profiles.name}</p>
                       <p className="text-[11px] text-muted-foreground">
@@ -132,12 +132,12 @@ export function GroupMemberManageSection({
                     className="flex items-center justify-between px-2.5 py-2 rounded-md border bg-muted/30"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <Avatar className="h-7 w-7 shrink-0">
-                        <AvatarImage src={member.profile.avatar_url ?? undefined} alt={member.profile.name} />
-                        <AvatarFallback className="text-[10px]">
-                          {member.profile.name?.charAt(0)?.toUpperCase() || "U"}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar
+                        name={member.profile.name || "U"}
+                        avatarUrl={member.profile.avatar_url}
+                        size="sm"
+                        className="shrink-0"
+                      />
                       <div className="min-w-0">
                         <p className="text-xs font-medium truncate">
                           {member.nickname || member.profile.name}

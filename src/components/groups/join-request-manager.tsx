@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -326,12 +326,12 @@ export function JoinRequestManager({ groupId, groupName }: Props) {
                 </div>
 
                 {/* 프로필 아바타 */}
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarImage src={req.profiles.avatar_url ?? undefined} />
-                  <AvatarFallback className="text-xs">
-                    {req.profiles.name?.charAt(0)?.toUpperCase() ?? "U"}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  name={req.profiles.name || "U"}
+                  avatarUrl={req.profiles.avatar_url}
+                  size="md"
+                  className="h-8 w-8 shrink-0"
+                />
 
                 {/* 이름 + 신청일 */}
                 <div className="flex-1 min-w-0">

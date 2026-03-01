@@ -7,16 +7,11 @@ import {
   thStyle,
   tdStyle,
 } from "@/components/shared/print-layout";
+import { PRINT_COLORS, rateColor } from "@/lib/print-styles";
 
 type Props = {
   data: PdfReportData;
 };
-
-function rateColor(rate: number): string {
-  if (rate >= 80) return "#16a34a"; // green-600
-  if (rate >= 50) return "#ca8a04"; // yellow-600
-  return "#ef4444"; // red-500
-}
 
 export function AttendancePrintView({ data }: Props) {
   const { header, memberRows, summary } = data;
@@ -31,7 +26,7 @@ export function AttendancePrintView({ data }: Props) {
         <p
           style={{
             fontSize: "10px",
-            color: "#9ca3af",
+            color: PRINT_COLORS.faint,
             marginTop: "10px",
           }}
         >
@@ -73,7 +68,7 @@ export function AttendancePrintView({ data }: Props) {
           fontSize: "13px",
           fontWeight: "600",
           marginBottom: "8px",
-          borderLeft: "3px solid #000",
+          borderLeft: `3px solid ${PRINT_COLORS.black}`,
           paddingLeft: "8px",
         }}
       >
@@ -88,7 +83,7 @@ export function AttendancePrintView({ data }: Props) {
         }}
       >
         <thead>
-          <tr style={{ backgroundColor: "#f3f4f6" }}>
+          <tr style={{ backgroundColor: PRINT_COLORS.headerBg }}>
             <th style={thStyle({ width: "40px", textAlign: "center" })}>
               순위
             </th>
@@ -115,11 +110,11 @@ export function AttendancePrintView({ data }: Props) {
             <tr
               key={row.name}
               style={{
-                backgroundColor: idx % 2 === 0 ? "#fff" : "#f9fafb",
-                borderBottom: "1px solid #e5e7eb",
+                backgroundColor: idx % 2 === 0 ? PRINT_COLORS.white : PRINT_COLORS.rowAltBg,
+                borderBottom: `1px solid ${PRINT_COLORS.border}`,
               }}
             >
-              <td style={tdStyle({ textAlign: "center", color: "#6b7280" })}>
+              <td style={tdStyle({ textAlign: "center", color: PRINT_COLORS.muted })}>
                 {row.rank}
               </td>
               <td style={tdStyle({ fontWeight: "500" })}>
@@ -129,8 +124,8 @@ export function AttendancePrintView({ data }: Props) {
                     style={{
                       marginLeft: "6px",
                       fontSize: "10px",
-                      color: "#92400e",
-                      backgroundColor: "#fef3c7",
+                      color: PRINT_COLORS.badgeText,
+                      backgroundColor: PRINT_COLORS.badgeBg,
                       padding: "1px 5px",
                       borderRadius: "4px",
                     }}
@@ -142,7 +137,7 @@ export function AttendancePrintView({ data }: Props) {
               <td
                 style={tdStyle({
                   textAlign: "center",
-                  color: "#16a34a",
+                  color: PRINT_COLORS.success,
                   fontWeight: "600",
                 })}
               >
@@ -151,7 +146,7 @@ export function AttendancePrintView({ data }: Props) {
               <td
                 style={tdStyle({
                   textAlign: "center",
-                  color: "#ca8a04",
+                  color: PRINT_COLORS.warning,
                   fontWeight: "600",
                 })}
               >
@@ -160,7 +155,7 @@ export function AttendancePrintView({ data }: Props) {
               <td
                 style={tdStyle({
                   textAlign: "center",
-                  color: "#ef4444",
+                  color: PRINT_COLORS.error,
                   fontWeight: "600",
                 })}
               >
@@ -169,7 +164,7 @@ export function AttendancePrintView({ data }: Props) {
               <td
                 style={tdStyle({
                   textAlign: "center",
-                  color: "#6b7280",
+                  color: PRINT_COLORS.muted,
                 })}
               >
                 {row.total}회

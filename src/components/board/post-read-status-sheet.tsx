@@ -5,7 +5,7 @@ import { formatKo } from "@/lib/date-utils";
 import { Eye, EyeOff, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -114,14 +114,12 @@ export function PostReadStatusSheet({
                         key={member.userId}
                         className="flex items-center gap-2.5 py-1.5 rounded-md"
                       >
-                        <Avatar className="h-7 w-7 shrink-0">
-                          {member.avatarUrl && (
-                            <AvatarImage src={member.avatarUrl} alt={member.name} />
-                          )}
-                          <AvatarFallback className="text-[10px]">
-                            {member.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                          name={member.name}
+                          avatarUrl={member.avatarUrl}
+                          size="sm"
+                          className="shrink-0"
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{member.name}</p>
                           {member.readAt && (
@@ -161,14 +159,12 @@ export function PostReadStatusSheet({
                         key={member.userId}
                         className="flex items-center gap-2.5 py-1.5 rounded-md opacity-60"
                       >
-                        <Avatar className="h-7 w-7 shrink-0">
-                          {member.avatarUrl && (
-                            <AvatarImage src={member.avatarUrl} alt={member.name} />
-                          )}
-                          <AvatarFallback className="text-[10px]">
-                            {member.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                          name={member.name}
+                          avatarUrl={member.avatarUrl}
+                          size="sm"
+                          className="shrink-0"
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs truncate">{member.name}</p>
                         </div>

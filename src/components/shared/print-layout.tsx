@@ -3,6 +3,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PRINT_COLORS, printTableStyles } from "@/lib/print-styles";
 
 // ============================================
 // PrintLayout
@@ -70,8 +71,8 @@ export function PrintLayout({
               left: 0;
               top: 0;
               width: 100%;
-              background-color: #ffffff !important;
-              color: #000000 !important;
+              background-color: ${PRINT_COLORS.white} !important;
+              color: ${PRINT_COLORS.black} !important;
             }
             .print\\:hidden {
               display: none !important;
@@ -84,7 +85,7 @@ export function PrintLayout({
           {/* ===== 보고서 헤더 ===== */}
           <div
             style={{
-              borderBottom: "2px solid #000",
+              borderBottom: `2px solid ${PRINT_COLORS.black}`,
               paddingBottom: "12px",
               marginBottom: "16px",
             }}
@@ -106,16 +107,16 @@ export function PrintLayout({
               }}
             >
               <div>
-                <p style={{ fontSize: "13px", margin: "2px 0", color: "#374151" }}>
+                <p style={{ fontSize: "13px", margin: "2px 0", color: PRINT_COLORS.dark }}>
                   <span style={{ fontWeight: "600" }}>그룹:</span>{" "}
                   {groupName}
                 </p>
-                <p style={{ fontSize: "13px", margin: "2px 0", color: "#374151" }}>
+                <p style={{ fontSize: "13px", margin: "2px 0", color: PRINT_COLORS.dark }}>
                   <span style={{ fontWeight: "600" }}>기간:</span>{" "}
                   {periodLabel}
                 </p>
               </div>
-              <p style={{ fontSize: "11px", color: "#6b7280", margin: 0 }}>
+              <p style={{ fontSize: "11px", color: PRINT_COLORS.muted, margin: 0 }}>
                 생성일: {generatedAt}
               </p>
             </div>
@@ -132,11 +133,11 @@ export function PrintLayout({
             style={{
               marginTop: "24px",
               paddingTop: "10px",
-              borderTop: "1px solid #d1d5db",
+              borderTop: `1px solid ${PRINT_COLORS.borderStrong}`,
               display: "flex",
               justifyContent: "space-between",
               fontSize: "10px",
-              color: "#9ca3af",
+              color: PRINT_COLORS.faint,
             }}
           >
             <span>Groop - 댄스 그룹 관리 플랫폼</span>
@@ -164,13 +165,13 @@ export function PrintSummaryCard({
   return (
     <div
       style={{
-        border: "1px solid #e5e7eb",
+        border: `1px solid ${PRINT_COLORS.border}`,
         borderRadius: "6px",
         padding: "10px 12px",
-        backgroundColor: "#f9fafb",
+        backgroundColor: PRINT_COLORS.rowAltBg,
       }}
     >
-      <p style={{ fontSize: "10px", color: "#6b7280", margin: "0 0 4px 0" }}>
+      <p style={{ fontSize: "10px", color: PRINT_COLORS.muted, margin: "0 0 4px 0" }}>
         {label}
       </p>
       <p
@@ -188,23 +189,13 @@ export function PrintSummaryCard({
 }
 
 // ============================================
-// 헬퍼: 스타일 객체
+// 헬퍼: 스타일 객체 (하위 호환 export)
 // ============================================
 
 export function thStyle(extra: CSSProperties = {}): CSSProperties {
-  return {
-    padding: "7px 8px",
-    fontSize: "11px",
-    fontWeight: "600",
-    borderBottom: "2px solid #d1d5db",
-    ...extra,
-  };
+  return printTableStyles.th(extra);
 }
 
 export function tdStyle(extra: CSSProperties = {}): CSSProperties {
-  return {
-    padding: "6px 8px",
-    fontSize: "12px",
-    ...extra,
-  };
+  return printTableStyles.td(extra);
 }

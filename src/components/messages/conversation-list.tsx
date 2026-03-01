@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { formatRelative } from "@/lib/date-utils";
 import { useConversations } from "@/hooks/use-messages";
 import { useScrollRestoreRef } from "@/hooks/use-scroll-restore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Loader2, MessageCircle, SquarePen } from "lucide-react";
 import { NewConversationDialog } from "./new-conversation-dialog";
@@ -68,14 +68,11 @@ export function ConversationList() {
                 >
                   {/* 아바타 + 읽지 않음 표시 */}
                   <div className="relative shrink-0">
-                    <Avatar className="h-12 w-12">
-                      {conv.partner_avatar_url && (
-                        <AvatarImage src={conv.partner_avatar_url} />
-                      )}
-                      <AvatarFallback className="text-base">
-                        {conv.partner_name?.charAt(0)?.toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      name={conv.partner_name || "U"}
+                      avatarUrl={conv.partner_avatar_url}
+                      size="lg"
+                    />
                     {hasUnread && (
                       <span
                         className="absolute top-0 right-0 h-3 w-3 rounded-full bg-blue-500 border-2 border-background"

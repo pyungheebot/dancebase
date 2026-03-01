@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Loader2, Users, Shuffle, BarChart3, ArrowRight } from "lucide-react";
 import { useAttendanceTeamBalance } from "@/hooks/use-attendance-team-balance";
 import { TEAM_BALANCER_COLORS } from "@/types";
@@ -32,14 +32,6 @@ type Props = {
 
 const TEAM_COUNT_OPTIONS = [2, 3, 4] as const;
 type TeamCountOption = (typeof TEAM_COUNT_OPTIONS)[number];
-
-// ============================================
-// 아바타 이니셜 추출
-// ============================================
-
-function getInitials(name: string): string {
-  return name.slice(0, 1).toUpperCase();
-}
 
 // ============================================
 // 출석률 색상
@@ -172,17 +164,12 @@ export function AttendanceTeamBalancer({ open, onOpenChange, groupId, members }:
                         key={member.userId}
                         className="flex items-center gap-2"
                       >
-                        <Avatar className="h-6 w-6 flex-shrink-0">
-                          {member.avatarUrl && (
-                            <AvatarImage
-                              src={member.avatarUrl}
-                              alt={member.name}
-                            />
-                          )}
-                          <AvatarFallback className="text-[10px]">
-                            {getInitials(member.name)}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                          name={member.name}
+                          avatarUrl={member.avatarUrl}
+                          size="xs"
+                          className="h-6 w-6 flex-shrink-0"
+                        />
                         <span className="text-xs flex-1 truncate">
                           {member.name}
                         </span>
