@@ -144,7 +144,7 @@ export function useDanceClassLog(memberId: string) {
         return next;
       });
     },
-    []
+    [memberId]
   );
 
   // ──────────────────────────────────────────

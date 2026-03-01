@@ -9,8 +9,6 @@ import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
 const STORAGE_KEY = (groupId: string) =>
   `dancebase:session-feedback:${groupId}`;
-const MAX_FEEDBACKS = 50;
-
 function buildAutoSummary(
   attendanceRate: number,
   presentCount: number,

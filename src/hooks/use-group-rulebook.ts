@@ -33,7 +33,7 @@ export function useGroupRulebook(groupId: string) {
       saveToStorage(getStorageKey(groupId), next);
       mutate(next, false);
     },
-    [mutate]
+    [groupId, mutate]
   );
 
   // 현재 데이터 (초기화 전이면 빈 상태 반환)

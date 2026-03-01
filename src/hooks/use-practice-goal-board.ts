@@ -63,7 +63,7 @@ export function usePracticeGoalBoard(groupId: string) {
       saveToStorage(storageKey(groupId), withTs);
       mutate(withTs, false);
     },
-    [mutate]
+    [groupId, mutate]
   );
 
   // ── 목표 추가 ────────────────────────────────────────────

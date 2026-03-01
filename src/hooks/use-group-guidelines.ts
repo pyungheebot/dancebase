@@ -6,7 +6,6 @@ import { saveToStorage } from "@/lib/local-storage";
 import {
   type GroupGuidelineItem,
   type GroupGuidelineCategory,
-  type GroupGuidelinesData,
   GROUP_GUIDELINE_MAX,
 } from "@/types";
 

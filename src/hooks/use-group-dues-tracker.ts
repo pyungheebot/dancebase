@@ -40,7 +40,7 @@ export function useGroupDuesTracker(groupId: string) {
       saveToStorage(LS_KEY(groupId), next);
       mutate(next, false);
     },
-    [mutate]
+    [groupId, mutate]
   );
 
   // ── 납부 기간 추가 ───────────────────────────────────────

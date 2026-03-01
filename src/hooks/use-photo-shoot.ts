@@ -52,7 +52,7 @@ export function usePhotoShoot(projectId: string) {
       saveToStorage(getStorageKey(projectId), next);
       mutate(next, false);
     },
-    [mutate]
+    [projectId, mutate]
   );
 
   // 현재 데이터

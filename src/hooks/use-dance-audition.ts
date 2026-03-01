@@ -108,11 +108,11 @@ export function useDanceAudition(memberId: string) {
     (updater: (prev: DanceAuditionEntry) => DanceAuditionEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveToStorage(getStorageKey(entry.memberId), next);
+        saveToStorage(getStorageKey(memberId), next);
         return next;
       });
     },
-    []
+    [memberId]
   );
 
   // ──────────────────────────────────────────

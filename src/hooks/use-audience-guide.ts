@@ -72,11 +72,11 @@ export function useAudienceGuide(groupId: string, projectId: string) {
     (updater: (prev: AudienceGuideEntry) => AudienceGuideEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveToStorage(getStorageKey(entry.groupId, entry.projectId), next);
+        saveToStorage(getStorageKey(groupId, projectId), next);
         return next;
       });
     },
-    []
+    [groupId, projectId]
   );
 
   // ============================================================

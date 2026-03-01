@@ -62,11 +62,11 @@ export function usePracticePartner(groupId: string) {
     (updater: (prev: PracticePartnerEntry) => PracticePartnerEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveToStorage(getStorageKey(entry.groupId), next);
+        saveToStorage(getStorageKey(groupId), next);
         return next;
       });
     },
-    []
+    [groupId]
   );
 
   // ============================================

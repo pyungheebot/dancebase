@@ -52,7 +52,7 @@ export function useIntercom(projectId: string) {
       saveToStorage(getStorageKey(projectId), next);
       mutate(next, false);
     },
-    [mutate]
+    [projectId, mutate]
   );
 
   const current: ShowIntercomData = useMemo(() => data ?? {

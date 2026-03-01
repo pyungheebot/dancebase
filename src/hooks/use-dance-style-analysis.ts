@@ -183,11 +183,11 @@ export function useDanceStyleAnalysis(memberId: string) {
     (updater: (prev: DanceStyleAnalysisData) => DanceStyleAnalysisData) => {
       setData((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveToStorage(getStorageKey(data.memberId), next);
+        saveToStorage(getStorageKey(memberId), next);
         return next;
       });
     },
-    []
+    [memberId]
   );
 
   // ──────────────────────────────────────────

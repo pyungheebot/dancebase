@@ -149,7 +149,7 @@ export function useDanceConditionLog(memberId: string) {
       saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
-    [journalData, mutate]
+    [journalData, memberId, mutate]
   );
 
   /** 기록 수정 */
@@ -168,7 +168,7 @@ export function useDanceConditionLog(memberId: string) {
       saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
-    [journalData, mutate]
+    [journalData, memberId, mutate]
   );
 
   /** 기록 삭제 */
@@ -182,7 +182,7 @@ export function useDanceConditionLog(memberId: string) {
       saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
-    [journalData, mutate]
+    [journalData, memberId, mutate]
   );
 
   // ──────────────────────────────────────────

@@ -83,7 +83,7 @@ export function InviteToProjectDialog({
       }
     };
     fetchMyRoles();
-  }, [supabase, open, projects]);
+  }, [supabase, open, projects, user]);
 
   const isGroupLeader = myGroupRole === "leader";
   const availableProjects = projects.filter(

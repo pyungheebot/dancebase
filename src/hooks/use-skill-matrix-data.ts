@@ -93,7 +93,7 @@ export function useSkillMatrixData(groupId: string) {
       saveToStorage(storageKey(groupId), withTs);
       mutate(withTs, false);
     },
-    [mutate]
+    [groupId, mutate]
   );
 
   // ── 기술 추가 ────────────────────────────────────────────

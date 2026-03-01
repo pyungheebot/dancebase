@@ -75,7 +75,7 @@ export function useVenueManagement(projectId: string) {
       saveToStorage(getStorageKey(projectId), next);
       mutate(next, false);
     },
-    [mutate]
+    [projectId, mutate]
   );
 
   const current: VenueMgmtData = useMemo(() => data ?? {

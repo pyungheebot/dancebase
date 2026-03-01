@@ -132,7 +132,7 @@ export function useDanceVideoPortfolio(memberId: string) {
       saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
-    [portfolioData, mutate]
+    [portfolioData, memberId, mutate]
   );
 
   /** 영상 수정 */
@@ -151,7 +151,7 @@ export function useDanceVideoPortfolio(memberId: string) {
       saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
-    [portfolioData, mutate]
+    [portfolioData, memberId, mutate]
   );
 
   /** 영상 삭제 */
@@ -165,7 +165,7 @@ export function useDanceVideoPortfolio(memberId: string) {
       saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
-    [portfolioData, mutate]
+    [portfolioData, memberId, mutate]
   );
 
   /** 대표 영상 토글 */
@@ -181,7 +181,7 @@ export function useDanceVideoPortfolio(memberId: string) {
       saveToStorage(STORAGE_KEY(memberId), next);
       mutate(next, false);
     },
-    [portfolioData, mutate]
+    [portfolioData, memberId, mutate]
   );
 
   // ──────────────────────────────────────────

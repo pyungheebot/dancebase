@@ -36,7 +36,7 @@ export function useGroupMusicLibrary(groupId: string) {
       saveToStorage(getStorageKey(groupId), next);
       mutate(next, false);
     },
-    [mutate]
+    [groupId, mutate]
   );
 
   const current: GroupMusicLibraryData = useMemo(() => data ?? {

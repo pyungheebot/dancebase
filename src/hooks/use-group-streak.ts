@@ -5,8 +5,6 @@ import { swrKeys } from "@/lib/swr/keys";
 import { StreakTrackData, StreakTrackMember, StreakTrackRecord } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
-const STORAGE_KEY_PREFIX = "group-streak-";
-
 /** 날짜 배열에서 현재 연속 스트릭 계산 */
 const STORAGE_KEY = (groupId: string) => `${groupId}${groupId}`;
 

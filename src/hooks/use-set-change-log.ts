@@ -5,8 +5,6 @@ import { swrKeys } from "@/lib/swr/keys";
 import type { SetChangeLogData, SetChangeItem } from "@/types";
 import { loadFromStorage, saveToStorage } from "@/lib/local-storage";
 
-const STORAGE_PREFIX = "set-change-log-";
-
 const STORAGE_KEY = (projectId: string) => `${projectId}${projectId}`;
 
 export function useSetChangeLog(projectId: string) {

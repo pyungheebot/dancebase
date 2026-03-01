@@ -31,14 +31,14 @@ export function useGroupNoticeboard(groupId: string) {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  function persist(newValue: NoticeboardData): boolean {
+  const persist = useCallback((newValue: NoticeboardData): boolean => {
     try {
       saveToStorage(STORAGE_KEY(groupId), newValue);
       return true;
     } catch {
       return false;
     }
-  }
+  }, [groupId]);
 
   // 게시글 추가
   const addPost = useCallback(
@@ -68,7 +68,7 @@ export function useGroupNoticeboard(groupId: string) {
       toast.success("게시글이 등록되었습니다");
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   // 게시글 수정
@@ -89,7 +89,7 @@ export function useGroupNoticeboard(groupId: string) {
       toast.success("게시글이 수정되었습니다");
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   // 게시글 삭제
@@ -105,7 +105,7 @@ export function useGroupNoticeboard(groupId: string) {
       toast.success("게시글이 삭제되었습니다");
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   // 댓글 추가
@@ -134,7 +134,7 @@ export function useGroupNoticeboard(groupId: string) {
       toast.success("댓글이 등록되었습니다");
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   // 댓글 삭제
@@ -154,7 +154,7 @@ export function useGroupNoticeboard(groupId: string) {
       toast.success("댓글이 삭제되었습니다");
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   // 카테고리별 통계

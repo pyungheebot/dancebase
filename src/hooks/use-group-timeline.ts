@@ -11,8 +11,6 @@ import type {
   GroupTimelineImportance,
 } from "@/types";
 
-const STORAGE_PREFIX = "group-timeline-";
-
 const STORAGE_KEY = (groupId: string) => `${groupId}${groupId}`;
 
 export function useGroupTimeline(groupId: string) {

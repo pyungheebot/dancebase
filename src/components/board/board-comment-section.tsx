@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { formatKo } from "@/lib/date-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
@@ -222,7 +222,6 @@ export function BoardCommentSection({
 }: BoardCommentSectionProps) {
   const [content, setContent] = useState("");
   const { pending: submitting, execute: executeSubmit } = useAsyncAction();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const { pending: editSaving, execute: executeEdit } = useAsyncAction();
@@ -236,10 +235,8 @@ export function BoardCommentSection({
   const supabase = createClient();
   const { user } = useAuth();
 
-  // 현재 유저 확인
-  useEffect(() => {
-    if (user) setCurrentUserId(user.id);
-  }, [user]);
+  // 현재 유저 ID (파생값으로 처리)
+  const currentUserId = user?.id ?? null;
 
   // 댓글 제출 (parent_id 포함)
   const handleSubmit = async (parentId: string | null = null) => {

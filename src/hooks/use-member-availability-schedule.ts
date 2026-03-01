@@ -208,7 +208,7 @@ export function useMemberAvailabilitySchedule(groupId: string) {
       saveToStorage(storageKey(groupId), withTs);
       mutate(withTs, false);
     },
-    [mutate]
+    [groupId, mutate]
   );
 
   // ── 멤버 추가 ────────────────────────────────────────────

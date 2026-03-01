@@ -70,11 +70,11 @@ export function useRoleAssignment(groupId: string) {
     (updater: (prev: RoleAssignmentEntry) => RoleAssignmentEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveToStorage(getStorageKey(entry.groupId), next);
+        saveToStorage(getStorageKey(groupId), next);
         return next;
       });
     },
-    []
+    [groupId]
   );
 
   // ============================================

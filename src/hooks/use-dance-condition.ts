@@ -159,11 +159,11 @@ export function useDanceCondition(memberId: string) {
     (updater: (prev: DanceConditionEntry) => DanceConditionEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveToStorage(getStorageKey(entry.memberId), next);
+        saveToStorage(getStorageKey(memberId), next);
         return next;
       });
     },
-    []
+    [memberId]
   );
 
   // ──────────────────────────────────────────

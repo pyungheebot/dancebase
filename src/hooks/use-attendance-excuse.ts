@@ -100,11 +100,11 @@ export function useAttendanceExcuse(groupId: string) {
     (updater: (prev: AttendanceExcuseEntry) => AttendanceExcuseEntry) => {
       setEntry((prev) => {
         const next = updater({ ...prev, updatedAt: new Date().toISOString() });
-        saveToStorage(getStorageKey(entry.groupId), next);
+        saveToStorage(getStorageKey(groupId), next);
         return next;
       });
     },
-    []
+    [groupId]
   );
 
   // ============================================

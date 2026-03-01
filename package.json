@@ -13,7 +13,6 @@
     "db:status": "supabase migration list --linked"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.97.0",
     "class-variance-authority": "^0.7.1",
@@ -30,8 +29,7 @@
     "react-hook-form": "^7.71.2",
     "sonner": "^2.0.7",
     "swr": "^2.4.0",
-    "tailwind-merge": "^3.5.0",
-    "zod": "^4.3.6"
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

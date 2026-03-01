@@ -31,14 +31,14 @@ export function useGroupFaq(groupId: string) {
     return a.order - b.order;
   });
 
-  function persist(newValue: GroupFaqSettingValue): boolean {
+  const persist = useCallback((newValue: GroupFaqSettingValue): boolean => {
     try {
       saveToStorage(STORAGE_KEY(groupId), newValue);
       return true;
     } catch {
       return false;
     }
-  }
+  }, [groupId]);
 
   const addFaq = useCallback(
     async (faq: {
@@ -72,7 +72,7 @@ export function useGroupFaq(groupId: string) {
       toast.success("FAQ가 추가되었습니다");
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   const updateFaq = useCallback(
@@ -94,7 +94,7 @@ export function useGroupFaq(groupId: string) {
       toast.success("FAQ가 수정되었습니다");
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   const deleteFaq = useCallback(
@@ -113,7 +113,7 @@ export function useGroupFaq(groupId: string) {
       toast.success("FAQ가 삭제되었습니다");
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   const togglePin = useCallback(
@@ -131,7 +131,7 @@ export function useGroupFaq(groupId: string) {
       await mutate(newValue);
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   const moveFaq = useCallback(
@@ -163,7 +163,7 @@ export function useGroupFaq(groupId: string) {
       await mutate(newValue);
       return true;
     },
-    [value, groupId, mutate]
+    [value, persist, mutate]
   );
 
   // 카테고리별 항목 수 통계

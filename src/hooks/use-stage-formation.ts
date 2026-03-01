@@ -10,13 +10,6 @@ import type {
 } from "@/types";
 
 // ============================================================
-// 기본값
-// ============================================================
-
-const DEFAULT_STAGE_WIDTH = 10;
-const DEFAULT_STAGE_DEPTH = 8;
-
-// ============================================================
 // localStorage 헬퍼
 // ============================================================
 
@@ -61,7 +54,7 @@ export function useStageFormation(projectId: string) {
       saveToStorage(storageKey(projectId), next);
       setData(next);
     },
-    []
+    [projectId]
   );
 
   // ──────────────────────────────────────────
