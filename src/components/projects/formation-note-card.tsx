@@ -35,7 +35,6 @@ import {
   Plus,
   Trash2,
   ChevronLeft,
-  ChevronRight as ChevronRightIcon,
   Users,
   Clock,
 } from "lucide-react";
@@ -711,7 +710,7 @@ export function FormationNoteCard({
                           onClick={handleNext}
                         >
                           다음
-                          <ChevronRightIcon className="h-3 w-3 ml-0.5" />
+                          <ChevronRight className="h-3 w-3 ml-0.5" />
                         </Button>
                       </div>
                     </div>

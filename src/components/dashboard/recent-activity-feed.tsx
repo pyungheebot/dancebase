@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import { FileText, MessageSquare, Calendar } from "lucide-react";
 import { formatRelative } from "@/lib/date-utils";
@@ -38,9 +39,9 @@ function buildHref(item: ActivityFeedItem): string {
   return `/groups/${item.groupId}`;
 }
 
-// ─── 개별 항목 ────────────────────────────────────────────────────────────────
+// ─── 개별 항목 (동일 props로 반복 렌더링되므로 memo 적용) ────────────────────
 
-function ActivityItem({ item }: { item: ActivityFeedItem }) {
+const ActivityItem = memo(function ActivityItem({ item }: { item: ActivityFeedItem }) {
   const Icon = ICON_MAP[item.type];
   const iconColor = ICON_COLOR_MAP[item.type];
   const href = buildHref(item);
@@ -65,7 +66,7 @@ function ActivityItem({ item }: { item: ActivityFeedItem }) {
       </Link>
     </li>
   );
-}
+});
 
 // ─── 로딩 스켈레톤 ────────────────────────────────────────────────────────────
 

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import type { BoardCommentInsert, BoardCommentUpdate } from "@/types/database-helpers";
 
 // ============================================
 // 게시판 댓글 서비스
@@ -14,12 +15,13 @@ export async function createComment(data: {
   parentId: string | null;
 }): Promise<void> {
   const supabase = createClient();
-  const { error } = await supabase.from("board_comments").insert({
+  const insert: BoardCommentInsert = {
     post_id: data.postId,
     author_id: data.authorId,
     content: data.content,
     parent_id: data.parentId,
-  });
+  };
+  const { error } = await supabase.from("board_comments").insert(insert);
   if (error) throw error;
 }
 
@@ -31,9 +33,10 @@ export async function updateComment(
   content: string
 ): Promise<void> {
   const supabase = createClient();
+  const update: BoardCommentUpdate = { content: content.trim() };
   const { error } = await supabase
     .from("board_comments")
-    .update({ content: content.trim() })
+    .update(update)
     .eq("id", commentId);
   if (error) throw error;
 }

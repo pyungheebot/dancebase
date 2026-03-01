@@ -27,8 +27,6 @@ import {
   Trash2,
   ChevronUp,
   ChevronLeft,
-  ChevronRight as ChevronRightIcon,
-  ChevronDown as ChevronDownIcon,
   Copy,
   UserPlus,
 } from "lucide-react";
@@ -330,7 +328,7 @@ function SelectedMemberControl({
             onClick={() => onMove(0, STEP)}
             title="아래로"
           >
-            <ChevronDownIcon className="h-3 w-3" />
+            <ChevronDown className="h-3 w-3" />
           </Button>
           <Button
             variant="outline"
@@ -339,7 +337,7 @@ function SelectedMemberControl({
             onClick={() => onMove(STEP, 0)}
             title="오른쪽"
           >
-            <ChevronRightIcon className="h-3 w-3" />
+            <ChevronRight className="h-3 w-3" />
           </Button>
         </div>
       </div>

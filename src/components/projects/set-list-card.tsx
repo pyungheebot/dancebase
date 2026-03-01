@@ -34,7 +34,6 @@ import {
   Plus,
   Trash2,
   ChevronUp,
-  ChevronDown as ChevronDownIcon,
   Mic2,
   Coffee,
   Star,
@@ -682,7 +681,7 @@ export function SetListCard({
                               title="아래로 이동"
                               aria-label="아래로 이동"
                             >
-                              <ChevronDownIcon className="h-3 w-3" />
+                              <ChevronDown className="h-3 w-3" />
                             </Button>
                             <Button
                               variant="ghost"

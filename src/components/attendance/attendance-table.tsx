@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -83,7 +83,8 @@ type AttendanceRowProps = {
   groupId?: string;
   categoryMap?: Record<string, string>;
   categoryColorMap?: Record<string, string>;
-  updating: string | null;
+  /** 이 행의 멤버가 현재 업데이트 중인지 여부 (전체 updating 상태 대신 boolean으로 최소화) */
+  isUpdating: boolean;
   onStatusChange: (userId: string, status: AttendanceStatus) => void;
   onCheckout: (userId: string) => void;
   onLocationCheck: () => void;
@@ -100,7 +101,7 @@ const AttendanceRow = memo(function AttendanceRow({
   groupId,
   categoryMap,
   categoryColorMap,
-  updating,
+  isUpdating,
   onStatusChange,
   onCheckout,
   onLocationCheck,
@@ -181,7 +182,7 @@ const AttendanceRow = memo(function AttendanceRow({
               variant="ghost"
               className="h-6 px-1.5 text-[10px]"
               onClick={() => onCheckout(member.user_id)}
-              disabled={updating === member.user_id}
+              disabled={isUpdating}
             >
               <LogOut className="h-3 w-3 mr-0.5" />
               종료확인
@@ -193,7 +194,7 @@ const AttendanceRow = memo(function AttendanceRow({
           <Select
             value={record?.status || "absent"}
             onValueChange={(value) => onStatusChange(member.user_id, value as AttendanceStatus)}
-            disabled={updating === member.user_id}
+            disabled={isUpdating}
           >
             <SelectTrigger className="w-20 h-7 text-xs">
               <SelectValue />
@@ -249,9 +250,9 @@ const AttendanceRow = memo(function AttendanceRow({
                     variant="outline"
                     className="h-6 text-[10px]"
                     onClick={() => onCheckout(currentUserId)}
-                    disabled={updating === currentUserId}
+                    disabled={isUpdating}
                   >
-                    {updating === currentUserId ? (
+                    {isUpdating ? (
                       <Loader2 className="h-3 w-3 animate-spin mr-0.5" />
                     ) : (
                       <LogOut className="h-3 w-3 mr-0.5" />
@@ -269,9 +270,9 @@ const AttendanceRow = memo(function AttendanceRow({
                   size="sm"
                   variant="outline"
                   onClick={onLocationCheck}
-                  disabled={updating === currentUserId}
+                  disabled={isUpdating}
                 >
-                  {updating === currentUserId ? (
+                  {isUpdating ? (
                     <Loader2 className="h-3 w-3 animate-spin mr-1" />
                   ) : (
                     <MapPin className="h-3 w-3 mr-1" />
@@ -326,9 +327,9 @@ const AttendanceRow = memo(function AttendanceRow({
                 variant="outline"
                 className="h-6 text-[10px]"
                 onClick={() => onCheckout(currentUserId)}
-                disabled={updating === currentUserId}
+                disabled={isUpdating}
               >
-                {updating === currentUserId ? (
+                {isUpdating ? (
                   <Loader2 className="h-3 w-3 animate-spin mr-0.5" />
                 ) : (
                   <LogOut className="h-3 w-3 mr-0.5" />
@@ -342,7 +343,7 @@ const AttendanceRow = memo(function AttendanceRow({
             <Select
               value={record?.status || "absent"}
               onValueChange={(value) => onStatusChange(member.user_id, value as AttendanceStatus)}
-              disabled={updating === member.user_id}
+              disabled={isUpdating}
             >
               <SelectTrigger className="w-20 h-7 text-xs">
                 <SelectValue />
@@ -415,8 +416,25 @@ export function AttendanceTable({
   const [excuseDialogOpen, setExcuseDialogOpen] = useState(false);
   const supabase = createClient();
 
-  const getAttendance = useCallback((userId: string) =>
-    attendance.find((a) => a.user_id === userId), [attendance]);
+  // attendance 배열을 Map으로 캐싱하여 O(1) 룩업
+  const attendanceMap = useMemo(
+    () => new Map(attendance.map((a) => [a.user_id, a])),
+    [attendance]
+  );
+
+  const getAttendance = useCallback(
+    (userId: string) => attendanceMap.get(userId),
+    [attendanceMap]
+  );
+
+  // 출석 통계 계산 캐싱 (출석/지각/조퇴/결석 카운트)
+  const attendanceStats = useMemo(() => {
+    const present = attendance.filter((a) => a.status === "present").length;
+    const late = attendance.filter((a) => a.status === "late").length;
+    const earlyLeave = attendance.filter((a) => a.status === "early_leave").length;
+    const absent = attendance.filter((a) => a.status === "absent").length;
+    return { present, late, earlyLeave, absent, total: attendance.length };
+  }, [attendance]);
 
   const handleStatusChange = useCallback(async (userId: string, status: AttendanceStatus) => {
     setUpdating(userId);
@@ -602,6 +620,25 @@ export function AttendanceTable({
         </div>
       )}
 
+      {/* 출석 통계 요약 (멤버가 있을 때만 표시) */}
+      {members.length > 0 && attendanceStats.total > 0 && (
+        <div className="flex items-center gap-1.5 px-0.5">
+          <span className="text-[10px] text-muted-foreground">출석 현황:</span>
+          {attendanceStats.present > 0 && (
+            <Badge variant="default" className="text-[10px] px-1.5 py-0">출석 {attendanceStats.present}</Badge>
+          )}
+          {attendanceStats.late > 0 && (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">지각 {attendanceStats.late}</Badge>
+          )}
+          {attendanceStats.earlyLeave > 0 && (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">조퇴 {attendanceStats.earlyLeave}</Badge>
+          )}
+          {attendanceStats.absent > 0 && (
+            <Badge variant="destructive" className="text-[10px] px-1.5 py-0">결석 {attendanceStats.absent}</Badge>
+          )}
+        </div>
+      )}
+
       {members.map((member) => (
         <AttendanceRow
           key={member.user_id}
@@ -613,7 +650,7 @@ export function AttendanceTable({
           groupId={groupId}
           categoryMap={categoryMap}
           categoryColorMap={categoryColorMap}
-          updating={updating}
+          isUpdating={updating === member.user_id}
           onStatusChange={handleStatusChange}
           onCheckout={handleCheckout}
           onLocationCheck={handleLocationCheck}

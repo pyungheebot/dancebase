@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, startTransition } from "react";
+import { useEffect, useState, useCallback, useMemo, startTransition, memo } from "react";
 import { formatTime } from "@/lib/date-utils";
 import { formatShortDate } from "@/lib/date-utils";
 import { createClient } from "@/lib/supabase/client";
@@ -24,7 +24,7 @@ type ScheduleWithDetails = Schedule & {
   member_count: number;
 };
 
-function ScheduleRow({ schedule }: { schedule: ScheduleWithDetails }) {
+const ScheduleRow = memo(function ScheduleRow({ schedule }: { schedule: ScheduleWithDetails }) {
   const href = schedule.projects
     ? `/groups/${schedule.group_id}/projects/${schedule.projects.id}/attendance?schedule=${schedule.id}`
     : `/groups/${schedule.group_id}/attendance?schedule=${schedule.id}`;
@@ -103,7 +103,7 @@ function ScheduleRow({ schedule }: { schedule: ScheduleWithDetails }) {
       )}
     </Link>
   );
-}
+});
 
 export default function AllSchedulesPage() {
   const [schedules, setSchedules] = useState<ScheduleWithDetails[]>([]);
@@ -171,17 +171,22 @@ export default function AllSchedulesPage() {
     startTransition(() => { fetchSchedules(); });
   }, [fetchSchedules]);
 
-  const now = new Date();
-  const upcoming = schedules.filter((s) => new Date(s.starts_at) >= now);
-  const ongoing = schedules.filter(
-    (s) => new Date(s.starts_at) < now && new Date(s.ends_at) >= now
-  );
-  const past = schedules
-    .filter((s) => new Date(s.ends_at) < now)
-    .sort(
-      (a, b) =>
-        new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()
-    );
+  // schedules 변경 시에만 재계산 (now는 렌더링 시점 기준으로 단일 계산)
+  const { upcoming, ongoing, past } = useMemo(() => {
+    const now = new Date();
+    return {
+      upcoming: schedules.filter((s) => new Date(s.starts_at) >= now),
+      ongoing: schedules.filter(
+        (s) => new Date(s.starts_at) < now && new Date(s.ends_at) >= now
+      ),
+      past: schedules
+        .filter((s) => new Date(s.ends_at) < now)
+        .sort(
+          (a, b) =>
+            new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()
+        ),
+    };
+  }, [schedules]);
 
   return (
     <AppLayout>

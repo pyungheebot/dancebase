@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import type { AttendanceStatus } from "@/types";
+import type { AttendanceInsert, AttendanceRow } from "@/types/database-helpers";
 
 // ============================================
 // 출석 서비스
@@ -15,7 +16,7 @@ export async function bulkUpsertAttendance(
 ): Promise<void> {
   const supabase = createClient();
   const now = new Date().toISOString();
-  const upsertData = userIds.map((userId) => ({
+  const upsertData: AttendanceInsert[] = userIds.map((userId) => ({
     schedule_id: scheduleId,
     user_id: userId,
     status,
@@ -46,14 +47,17 @@ export async function bulkDeleteAttendance(
 /**
  * 특정 일정의 출석 기록 전체 조회
  */
-export async function getAttendanceBySchedule(scheduleId: string) {
+export async function getAttendanceBySchedule(
+  scheduleId: string
+): Promise<(AttendanceRow & { profiles: { id: string; name: string; avatar_url: string | null } | null })[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("attendance")
     .select("*, profiles(id, name, avatar_url)")
     .eq("schedule_id", scheduleId);
   if (error) throw error;
-  return data ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data ?? []) as any;
 }
 
 /**
@@ -65,16 +69,14 @@ export async function upsertAttendance(
   status: AttendanceStatus
 ): Promise<void> {
   const supabase = createClient();
+  const record: AttendanceInsert = {
+    schedule_id: scheduleId,
+    user_id: userId,
+    status,
+    checked_at: new Date().toISOString(),
+  };
   const { error } = await supabase
     .from("attendance")
-    .upsert(
-      {
-        schedule_id: scheduleId,
-        user_id: userId,
-        status,
-        checked_at: new Date().toISOString(),
-      },
-      { onConflict: "schedule_id,user_id" }
-    );
+    .upsert(record, { onConflict: "schedule_id,user_id" });
   if (error) throw error;
 }
