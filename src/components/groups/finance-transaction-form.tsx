@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useReducer, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { createClient } from "@/lib/supabase/client";
@@ -48,6 +48,54 @@ type Props = {
   onOpenChange?: (open: boolean) => void;
 };
 
+// ── State / Action 타입 ────────────────────────────────────────────────────
+
+type FormState = {
+  type: "income" | "expense";
+  categoryId: string;
+  paidBy: string;
+  amount: string;
+  title: string;
+  description: string;
+  date: string;
+  amountError: string | null;
+  titleError: string | null;
+};
+
+type FormAction =
+  | { type: "SET_FIELD"; field: keyof FormState; value: FormState[keyof FormState] }
+  | { type: "RESET" }
+  | { type: "SET_INITIAL"; state: Partial<FormState> };
+
+const todayStr = () => new Date().toISOString().split("T")[0];
+
+const INITIAL_STATE: FormState = {
+  type: "income",
+  categoryId: "",
+  paidBy: "",
+  amount: "",
+  title: "",
+  description: "",
+  date: todayStr(),
+  amountError: null,
+  titleError: null,
+};
+
+function formReducer(state: FormState, action: FormAction): FormState {
+  switch (action.type) {
+    case "SET_FIELD":
+      return { ...state, [action.field]: action.value };
+    case "RESET":
+      return { ...INITIAL_STATE, date: todayStr() };
+    case "SET_INITIAL":
+      return { ...state, ...action.state };
+    default:
+      return state;
+  }
+}
+
+// ── 컴포넌트 ──────────────────────────────────────────────────────────────
+
 export function FinanceTransactionForm({
   groupId,
   projectId,
@@ -64,75 +112,68 @@ export function FinanceTransactionForm({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const amountInputRef = useRef<HTMLInputElement>(null);
 
-  const [internalOpen, setInternalOpen] = useState(false);
+  const [internalOpen, dispatchOpen] = useReducer(
+    (_: boolean, v: boolean) => v,
+    false
+  );
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  const setOpen = controlledOnOpenChange || setInternalOpen;
+  const setOpen = controlledOnOpenChange || ((v: boolean) => dispatchOpen(v));
 
-  const [type, setType] = useState<"income" | "expense">("income");
-  const [categoryId, setCategoryId] = useState("");
-  const [paidBy, setPaidBy] = useState<string>("");
-  const [amount, setAmount] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [state, dispatch] = useReducer(formReducer, INITIAL_STATE);
   const { pending, execute } = useAsyncAction();
-  const [amountError, setAmountError] = useState<string | null>(null);
-  const [titleError, setTitleError] = useState<string | null>(null);
   const supabase = createClient();
   const { user } = useAuth();
 
+  // 헬퍼
+  const setField = <K extends keyof FormState>(field: K, value: FormState[K]) =>
+    dispatch({ type: "SET_FIELD", field, value });
+
   // 선택된 카테고리의 fee_rate 계산
   const selectedCategory = useMemo(
-    () => categories.find((c) => c.id === categoryId) ?? null,
-    [categories, categoryId]
+    () => categories.find((c) => c.id === state.categoryId) ?? null,
+    [categories, state.categoryId]
   );
   const feeRate = selectedCategory?.fee_rate ?? 0;
 
   // 수수료 / 실수령액 계산
-  const amountNum = parseFloat(amount) || 0;
-  const feeAmount = feeRate > 0 ? Math.round(amountNum * feeRate / 100) : 0;
+  const amountNum = parseFloat(state.amount) || 0;
+  const feeAmount = feeRate > 0 ? Math.round((amountNum * feeRate) / 100) : 0;
   const netAmount = amountNum - feeAmount;
 
   // Edit mode: initialize from data
   useEffect(() => {
     if (open && isEdit && initialData) {
-      setType(initialData.type);
-      setCategoryId(initialData.category_id || "");
-      setPaidBy(initialData.paid_by || "");
-      setAmount(initialData.amount.toString());
-      setTitle(initialData.title);
-      setDescription(initialData.description || "");
-      setDate(initialData.transaction_date);
+      dispatch({
+        type: "SET_INITIAL",
+        state: {
+          type: initialData.type,
+          categoryId: initialData.category_id || "",
+          paidBy: initialData.paid_by || "",
+          amount: initialData.amount.toString(),
+          title: initialData.title,
+          description: initialData.description || "",
+          date: initialData.transaction_date,
+          amountError: null,
+          titleError: null,
+        },
+      });
     }
     if (open && !isEdit) {
-      // eslint-disable-next-line react-hooks/immutability -- reset은 useEffect 이후 선언된 const이므로 호출 위치 변경 불가
-      reset();
+      dispatch({ type: "RESET" });
     }
   }, [open, isEdit, initialData]);
 
-  const reset = () => {
-    setType("income");
-    setCategoryId("");
-    setPaidBy("");
-    setAmount("");
-    setTitle("");
-    setDescription("");
-    setDate(new Date().toISOString().split("T")[0]);
-    setAmountError(null);
-    setTitleError(null);
-  };
-
   const validateForm = (): boolean => {
-    const newAmountError = validatePositiveNumber(amount);
-    const newTitleError = validateRequired(title, "제목");
-    setAmountError(newAmountError);
-    setTitleError(newTitleError);
+    const newAmountError = validatePositiveNumber(state.amount);
+    const newTitleError = validateRequired(state.title, "제목");
+    setField("amountError", newAmountError);
+    setField("titleError", newTitleError);
     return !newAmountError && !newTitleError;
   };
 
   const isFormValid =
-    !validatePositiveNumber(amount) &&
-    !validateRequired(title, "제목");
+    !validatePositiveNumber(state.amount) &&
+    !validateRequired(state.title, "제목");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,13 +184,18 @@ export function FinanceTransactionForm({
         const { error } = await supabase
           .from("finance_transactions")
           .update({
-            type,
-            category_id: categoryId || null,
-            paid_by: (type === "income" && paidBy && paidBy !== "none") ? paidBy : null,
-            amount: parseInt(amount),
-            title,
-            description: description || null,
-            transaction_date: date,
+            type: state.type,
+            category_id: state.categoryId || null,
+            paid_by:
+              state.type === "income" &&
+              state.paidBy &&
+              state.paidBy !== "none"
+                ? state.paidBy
+                : null,
+            amount: parseInt(state.amount),
+            title: state.title,
+            description: state.description || null,
+            transaction_date: state.date,
           })
           .eq("id", initialData.id);
 
@@ -163,13 +209,18 @@ export function FinanceTransactionForm({
         const { error } = await supabase.from("finance_transactions").insert({
           group_id: groupId,
           project_id: projectId || null,
-          category_id: categoryId || null,
-          type,
-          paid_by: (type === "income" && paidBy && paidBy !== "none") ? paidBy : null,
-          amount: parseInt(amount),
-          title,
-          description: description || null,
-          transaction_date: date,
+          category_id: state.categoryId || null,
+          type: state.type,
+          paid_by:
+            state.type === "income" &&
+            state.paidBy &&
+            state.paidBy !== "none"
+              ? state.paidBy
+              : null,
+          amount: parseInt(state.amount),
+          title: state.title,
+          description: state.description || null,
+          transaction_date: state.date,
           created_by: user?.id,
         });
 
@@ -177,7 +228,7 @@ export function FinanceTransactionForm({
           toast.error("거래 추가에 실패했습니다");
           return;
         }
-        reset();
+        dispatch({ type: "RESET" });
         setOpen(false);
         onSuccess();
       }
@@ -199,16 +250,26 @@ export function FinanceTransactionForm({
         <DialogTitle>{isEdit ? "거래 수정" : "거래 추가"}</DialogTitle>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <Tabs value={type} onValueChange={(v) => setType(v as "income" | "expense")}>
+        <Tabs
+          value={state.type}
+          onValueChange={(v) => setField("type", v as "income" | "expense")}
+        >
           <TabsList className="w-full h-8">
-            <TabsTrigger value="income" className="flex-1 text-xs">입금</TabsTrigger>
-            <TabsTrigger value="expense" className="flex-1 text-xs">출금</TabsTrigger>
+            <TabsTrigger value="income" className="flex-1 text-xs">
+              입금
+            </TabsTrigger>
+            <TabsTrigger value="expense" className="flex-1 text-xs">
+              출금
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
         <div className="space-y-1">
           <Label className="text-xs">카테고리</Label>
-          <Select value={categoryId} onValueChange={setCategoryId}>
+          <Select
+            value={state.categoryId}
+            onValueChange={(v) => setField("categoryId", v)}
+          >
             <SelectTrigger className="h-8 text-sm">
               <SelectValue placeholder="선택사항" />
             </SelectTrigger>
@@ -217,7 +278,9 @@ export function FinanceTransactionForm({
                 <SelectItem key={cat.id} value={cat.id}>
                   <span>{cat.name}</span>
                   {cat.fee_rate > 0 && (
-                    <span className="ml-1.5 text-[10px] text-orange-600">({cat.fee_rate}% 수수료)</span>
+                    <span className="ml-1.5 text-[10px] text-orange-600">
+                      ({cat.fee_rate}% 수수료)
+                    </span>
                   )}
                 </SelectItem>
               ))}
@@ -226,10 +289,13 @@ export function FinanceTransactionForm({
         </div>
 
         {/* 납부자 선택: 수입 거래이고 멤버 목록이 있을 때만 표시 */}
-        {type === "income" && members && members.length > 0 && (
+        {state.type === "income" && members && members.length > 0 && (
           <div className="space-y-1">
             <Label className="text-xs">납부자 (선택)</Label>
-            <Select value={paidBy} onValueChange={setPaidBy}>
+            <Select
+              value={state.paidBy}
+              onValueChange={(v) => setField("paidBy", v)}
+            >
               <SelectTrigger className="h-8 text-sm">
                 <SelectValue placeholder="납부자 선택" />
               </SelectTrigger>
@@ -254,17 +320,23 @@ export function FinanceTransactionForm({
             type="number"
             min="1"
             placeholder="0"
-            value={amount}
+            value={state.amount}
             onChange={(e) => {
-              setAmount(e.target.value);
-              setAmountError(validatePositiveNumber(e.target.value));
+              setField("amount", e.target.value);
+              setField("amountError", validatePositiveNumber(e.target.value));
             }}
-            onBlur={() => setAmountError(validatePositiveNumber(amount))}
+            onBlur={() =>
+              setField("amountError", validatePositiveNumber(state.amount))
+            }
             required
-            className={`h-8 text-sm${amountError ? " border-destructive focus-visible:ring-destructive" : ""}`}
+            className={`h-8 text-sm${
+              state.amountError
+                ? " border-destructive focus-visible:ring-destructive"
+                : ""
+            }`}
           />
-          {amountError && (
-            <p className="text-xs text-destructive">{amountError}</p>
+          {state.amountError && (
+            <p className="text-xs text-destructive">{state.amountError}</p>
           )}
           {/* 수수료 자동 계산 표시 (fee_rate > 0이고 금액이 입력된 경우) */}
           {feeRate > 0 && amountNum > 0 && (
@@ -293,17 +365,23 @@ export function FinanceTransactionForm({
           </Label>
           <Input
             placeholder="거래 내용"
-            value={title}
+            value={state.title}
             onChange={(e) => {
-              setTitle(e.target.value);
-              setTitleError(validateRequired(e.target.value, "제목"));
+              setField("title", e.target.value);
+              setField("titleError", validateRequired(e.target.value, "제목"));
             }}
-            onBlur={() => setTitleError(validateRequired(title, "제목"))}
+            onBlur={() =>
+              setField("titleError", validateRequired(state.title, "제목"))
+            }
             required
-            className={`h-8 text-sm${titleError ? " border-destructive focus-visible:ring-destructive" : ""}`}
+            className={`h-8 text-sm${
+              state.titleError
+                ? " border-destructive focus-visible:ring-destructive"
+                : ""
+            }`}
           />
-          {titleError && (
-            <p className="text-xs text-destructive">{titleError}</p>
+          {state.titleError && (
+            <p className="text-xs text-destructive">{state.titleError}</p>
           )}
         </div>
 
@@ -311,8 +389,8 @@ export function FinanceTransactionForm({
           <Label className="text-xs">설명 (선택)</Label>
           <Textarea
             placeholder="상세 설명"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={state.description}
+            onChange={(e) => setField("description", e.target.value)}
             rows={2}
             className="text-sm"
           />
@@ -322,14 +400,18 @@ export function FinanceTransactionForm({
           <Label className="text-xs">날짜</Label>
           <Input
             type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+            value={state.date}
+            onChange={(e) => setField("date", e.target.value)}
             required
             className="h-8 text-sm"
           />
         </div>
 
-        <Button type="submit" className="w-full h-8 text-sm" disabled={pending || !isFormValid}>
+        <Button
+          type="submit"
+          className="w-full h-8 text-sm"
+          disabled={pending || !isFormValid}
+        >
           {pending ? "저장 중..." : isEdit ? "수정" : "저장"}
         </Button>
       </form>

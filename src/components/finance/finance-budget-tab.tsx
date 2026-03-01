@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { useAuth } from "@/hooks/use-auth";
 import { useFinanceBudget } from "@/hooks/use-finance-budget";
 import { invalidateFinanceBudget } from "@/lib/swr/invalidate";
+import {
+  upsertFinanceBudget,
+  deleteFinanceBudget,
+} from "@/lib/services/finance-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,7 +65,6 @@ function getProgressColor(ratio: number): string {
 }
 
 export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
-  const supabase = createClient();
   const { user } = useAuth();
   const currentMonth = format(new Date(), "yyyy-MM");
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
@@ -119,20 +121,16 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
         return;
       }
 
-      const payload = {
-        entity_type: entityType,
-        entity_id: entityId,
-        year_month: selectedMonth,
-        budget_income: incomeVal,
-        budget_expense: expenseVal,
-        created_by: user.id,
-      };
-
-      const { error } = await supabase
-        .from("finance_budgets")
-        .upsert(payload, { onConflict: "entity_type,entity_id,year_month" });
-
-      if (error) {
+      try {
+        await upsertFinanceBudget({
+          entityType,
+          entityId,
+          yearMonth: selectedMonth,
+          budgetIncome: incomeVal,
+          budgetExpense: expenseVal,
+          createdBy: user.id,
+        });
+      } catch {
         toast.error(TOAST.FINANCE.BUDGET_SAVE_ERROR);
         return;
       }
@@ -148,12 +146,9 @@ export function FinanceBudgetTab({ ctx, canManage, transactions }: Props) {
   const handleDelete = async () => {
     if (!budget) return;
     await execute(async () => {
-      const { error } = await supabase
-        .from("finance_budgets")
-        .delete()
-        .eq("id", budget.id);
-
-      if (error) {
+      try {
+        await deleteFinanceBudget(budget.id);
+      } catch {
         toast.error(TOAST.FINANCE.BUDGET_DELETE_ERROR);
         return;
       }

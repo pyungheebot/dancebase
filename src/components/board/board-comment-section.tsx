@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { formatKo } from "@/lib/date-utils";
 import { useAuth } from "@/hooks/use-auth";
-import { createClient } from "@/lib/supabase/client";
 import type { BoardCommentWithProfile } from "@/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,12 @@ import { TOAST } from "@/lib/toast-messages";
 import { createNotification } from "@/lib/notifications";
 import { ContentReportDialog } from "@/components/board/content-report-dialog";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import {
+  createComment,
+  updateComment,
+  deleteComment,
+  getProfileName,
+} from "@/lib/services/board-service";
 
 interface BoardCommentSectionProps {
   postId: string;
@@ -234,7 +239,6 @@ export function BoardCommentSection({
   // 신고 다이얼로그 상태
   const [reportTargetId, setReportTargetId] = useState<string | null>(null);
 
-  const supabase = createClient();
   const { user } = useAuth();
 
   // 현재 유저 ID (파생값으로 처리)
@@ -250,22 +254,21 @@ export function BoardCommentSection({
     await execFn(async () => {
       if (!user) return;
 
-      const { error } = await supabase.from("board_comments").insert({
-        post_id: postId,
-        author_id: user.id,
-        content: targetContent.trim(),
-        parent_id: parentId ?? null,
-      });
-
-      if (error) {
+      try {
+        await createComment({
+          postId,
+          authorId: user.id,
+          content: targetContent.trim(),
+          parentId: parentId ?? null,
+        });
+      } catch {
         toast.error(TOAST.BOARD.COMMENT_CREATE_ERROR);
         return;
       }
 
       // 게시글 작성자에게 알림 (본인 댓글이면 스킵)
       if (postAuthorId && postAuthorId !== user.id) {
-        const commenterName =
-          (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
+        const commenterName = await getProfileName(user.id);
         await createNotification({
           userId: postAuthorId,
           type: "new_comment",
@@ -286,11 +289,9 @@ export function BoardCommentSection({
   };
 
   const handleDelete = async (commentId: string) => {
-    const { error } = await supabase
-      .from("board_comments")
-      .delete()
-      .eq("id", commentId);
-    if (error) {
+    try {
+      await deleteComment(commentId);
+    } catch {
       toast.error(TOAST.BOARD.COMMENT_DELETE_ERROR);
       return;
     }
@@ -310,11 +311,9 @@ export function BoardCommentSection({
   const handleEditSave = async (commentId: string) => {
     if (!editingContent.trim()) return;
     await executeEdit(async () => {
-      const { error } = await supabase
-        .from("board_comments")
-        .update({ content: editingContent.trim() })
-        .eq("id", commentId);
-      if (error) {
+      try {
+        await updateComment(commentId, editingContent.trim());
+      } catch {
         toast.error(TOAST.BOARD.COMMENT_UPDATE_ERROR);
         return;
       }

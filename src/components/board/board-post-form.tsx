@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, startTransition } from "react";
+import { useReducer, useEffect, useRef, startTransition } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncAction } from "@/hooks/use-async-action";
@@ -54,6 +54,52 @@ interface PendingFile {
   previewUrl: string | null;
 }
 
+// ── State / Action 타입 ────────────────────────────────────────────────────
+
+type FormState = {
+  title: string;
+  content: string;
+  category: string;
+  publishedAt: string | null;
+  pollOptions: string[];
+  allowMultiple: boolean;
+  pollEndsAt: string | null;
+  customEndsAt: string;
+  pendingFiles: PendingFile[];
+};
+
+type FormAction =
+  | { type: "SET_FIELD"; field: keyof FormState; value: FormState[keyof FormState] }
+  | { type: "RESET"; defaultCategory: string }
+  | { type: "SET_INITIAL"; state: Partial<FormState> };
+
+const INITIAL_STATE: FormState = {
+  title: "",
+  content: "",
+  category: "미분류",
+  publishedAt: null,
+  pollOptions: [""],
+  allowMultiple: false,
+  pollEndsAt: null,
+  customEndsAt: "",
+  pendingFiles: [],
+};
+
+function formReducer(state: FormState, action: FormAction): FormState {
+  switch (action.type) {
+    case "SET_FIELD":
+      return { ...state, [action.field]: action.value };
+    case "RESET":
+      return { ...INITIAL_STATE, category: action.defaultCategory };
+    case "SET_INITIAL":
+      return { ...state, ...action.state };
+    default:
+      return state;
+  }
+}
+
+// ── 컴포넌트 ──────────────────────────────────────────────────────────────
+
 export function BoardPostForm({
   groupId,
   projectId,
@@ -63,17 +109,22 @@ export function BoardPostForm({
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
 }: BoardPostFormProps) {
-  const [internalOpen, setInternalOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useReducer(
+    (_: boolean, v: boolean) => v,
+    false
+  );
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = controlledOnOpenChange || setInternalOpen;
 
   const { writeCategories } = useBoardCategories(groupId);
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [category, setCategory] = useState("미분류");
+  const [state, dispatch] = useReducer(formReducer, INITIAL_STATE);
   const { pending: submitting, execute } = useAsyncAction();
   const { user } = useAuth();
+
+  // 헬퍼
+  const setField = <K extends keyof FormState>(field: K, value: FormState[K]) =>
+    dispatch({ type: "SET_FIELD", field, value });
 
   // 드래프트 훅 - 새 글 작성 모드에서만 활성화
   const draftKey = `draft-board-post-${groupId}${projectId ? `-${projectId}` : ""}`;
@@ -83,28 +134,21 @@ export function BoardPostForm({
     debounceMs: 3000,
   });
 
-  // 예약 발행
-  const [publishedAt, setPublishedAt] = useState<string | null>(null);
-
-  // 투표
-  const [pollOptions, setPollOptions] = useState<string[]>([""]);
-  const [allowMultiple, setAllowMultiple] = useState(false);
-  const [pollEndsAt, setPollEndsAt] = useState<string | null>(null);
-  const [customEndsAt, setCustomEndsAt] = useState("");
-
-  // 첨부파일
-  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const supabase = createClient();
 
   useEffect(() => {
     if (open && mode === "edit" && initialData) {
       startTransition(() => {
-        setTitle(initialData.title);
-        setContent(initialData.content);
-        setCategory(initialData.category);
-        setPublishedAt(initialData.published_at ?? null);
+        dispatch({
+          type: "SET_INITIAL",
+          state: {
+            title: initialData.title,
+            content: initialData.content,
+            category: initialData.category,
+            publishedAt: initialData.published_at ?? null,
+          },
+        });
       });
     }
     if (open && mode === "create") {
@@ -112,16 +156,7 @@ export function BoardPostForm({
         ? "미분류"
         : (writeCategories[0] ?? "미분류");
       startTransition(() => {
-        setTitle("");
-        setContent("");
-        // writeCategories에 "미분류"가 있으면 기본값, 없으면 첫 번째 카테고리
-        setCategory(defaultCat);
-        setPublishedAt(null);
-        setPollOptions([""]);
-        setAllowMultiple(false);
-        setPollEndsAt(null);
-        setCustomEndsAt("");
-        setPendingFiles([]);
+        dispatch({ type: "RESET", defaultCategory: defaultCat });
       });
 
       // 드래프트가 있으면 복원 여부를 묻는 토스트 표시
@@ -134,8 +169,13 @@ export function BoardPostForm({
             onClick: () => {
               const draft = restoreDraft();
               if (draft) {
-                setTitle(draft.title ?? "");
-                setContent(draft.content ?? "");
+                dispatch({
+                  type: "SET_INITIAL",
+                  state: {
+                    title: draft.title ?? "",
+                    content: draft.content ?? "",
+                  },
+                });
                 toast.success(TOAST.BOARD.DRAFT_RESTORED);
               }
             },
@@ -155,50 +195,55 @@ export function BoardPostForm({
   // 다이얼로그 닫힐 때 미리보기 URL 정리
   useEffect(() => {
     if (!open) {
-      pendingFiles.forEach((pf) => {
+      state.pendingFiles.forEach((pf) => {
         if (pf.previewUrl) URL.revokeObjectURL(pf.previewUrl);
       });
     }
-  }, [open, pendingFiles]);
+  }, [open, state.pendingFiles]);
 
-  const isVote = category === "투표";
+  const isVote = state.category === "투표";
 
-  const handleAddOption = () => setPollOptions([...pollOptions, ""]);
+  // ── 투표 핸들러 ──────────────────────────────────────────────────────────
+
+  const handleAddOption = () =>
+    setField("pollOptions", [...state.pollOptions, ""]);
+
   const handleRemoveOption = (idx: number) =>
-    setPollOptions(pollOptions.filter((_, i) => i !== idx));
+    setField("pollOptions", state.pollOptions.filter((_, i) => i !== idx));
+
   const handleOptionChange = (idx: number, val: string) =>
-    setPollOptions(pollOptions.map((o, i) => (i === idx ? val : o)));
+    setField(
+      "pollOptions",
+      state.pollOptions.map((o, i) => (i === idx ? val : o))
+    );
 
   const handlePollPreset = (days: number | null) => {
     if (days === null) {
-      setPollEndsAt(null);
-      setCustomEndsAt("");
+      setField("pollEndsAt", null);
+      setField("customEndsAt", "");
     } else {
       const d = new Date();
       d.setDate(d.getDate() + days);
-      // datetime-local 형식: YYYY-MM-DDTHH:mm
       const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
         .toISOString()
         .slice(0, 16);
-      setCustomEndsAt(local);
-      setPollEndsAt(d.toISOString());
+      setField("customEndsAt", local);
+      setField("pollEndsAt", d.toISOString());
     }
   };
 
   const handleCustomEndsAtChange = (val: string) => {
-    setCustomEndsAt(val);
-    if (val) {
-      setPollEndsAt(new Date(val).toISOString());
-    } else {
-      setPollEndsAt(null);
-    }
+    setField("customEndsAt", val);
+    setField("pollEndsAt", val ? new Date(val).toISOString() : null);
   };
+
+  // ── 파일 핸들러 ──────────────────────────────────────────────────────────
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
 
-    const remaining = MAX_FILES - pendingFiles.length;
+    const remaining = MAX_FILES - state.pendingFiles.length;
     if (remaining <= 0) {
       toast.error(`파일은 최대 ${MAX_FILES}개까지 첨부할 수 있습니다`);
       return;
@@ -207,35 +252,41 @@ export function BoardPostForm({
     const toAdd = files.slice(0, remaining);
     const oversized = toAdd.filter((f) => f.size > MAX_FILE_SIZE);
     if (oversized.length > 0) {
-      toast.error(`10MB를 초과하는 파일은 첨부할 수 없습니다: ${oversized.map((f) => f.name).join(", ")}`);
+      toast.error(
+        `10MB를 초과하는 파일은 첨부할 수 없습니다: ${oversized.map((f) => f.name).join(", ")}`
+      );
     }
 
     const valid = toAdd.filter((f) => f.size <= MAX_FILE_SIZE);
     const newPending: PendingFile[] = valid.map((file) => ({
       file,
-      previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+      previewUrl: file.type.startsWith("image/")
+        ? URL.createObjectURL(file)
+        : null,
     }));
 
-    setPendingFiles((prev) => [...prev, ...newPending]);
+    setField("pendingFiles", [...state.pendingFiles, ...newPending]);
 
     // input 초기화 (같은 파일 재선택 허용)
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleRemoveFile = (idx: number) => {
-    setPendingFiles((prev) => {
-      const removed = prev[idx];
-      if (removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
-      return prev.filter((_, i) => i !== idx);
-    });
+    const removed = state.pendingFiles[idx];
+    if (removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+    setField(
+      "pendingFiles",
+      state.pendingFiles.filter((_, i) => i !== idx)
+    );
   };
 
-  const uploadFiles = async (postId: string): Promise<void> => {
-    if (pendingFiles.length === 0) return;
+  // ── 업로드 ────────────────────────────────────────────────────────────────
 
+  const uploadFiles = async (postId: string): Promise<void> => {
+    if (state.pendingFiles.length === 0) return;
     if (!user) return;
 
-    for (const pf of pendingFiles) {
+    for (const pf of state.pendingFiles) {
       const ext = pf.file.name.split(".").pop() ?? "bin";
       const path = `${user.id}/${postId}/${Date.now()}_${pf.file.name}`;
 
@@ -270,8 +321,10 @@ export function BoardPostForm({
     invalidateBoardPostAttachments(postId);
   };
 
+  // ── 제출 ──────────────────────────────────────────────────────────────────
+
   const handleSubmit = async () => {
-    if (!title.trim()) return;
+    if (!state.title.trim()) return;
 
     await execute(async () => {
       if (mode === "edit" && initialData) {
@@ -289,10 +342,10 @@ export function BoardPostForm({
         const { error } = await supabase
           .from("board_posts")
           .update({
-            title: title.trim(),
-            content: content.trim(),
-            category,
-            published_at: publishedAt ?? null,
+            title: state.title.trim(),
+            content: state.content.trim(),
+            category: state.category,
+            published_at: state.publishedAt ?? null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", initialData.id);
@@ -303,7 +356,7 @@ export function BoardPostForm({
         }
 
         // 수정 모드에서도 새 파일 업로드 가능
-        if (pendingFiles.length > 0) {
+        if (state.pendingFiles.length > 0) {
           await uploadFiles(initialData.id);
         }
 
@@ -320,11 +373,11 @@ export function BoardPostForm({
         .insert({
           group_id: groupId,
           project_id: projectId || null,
-          category,
+          category: state.category,
           author_id: user.id,
-          title: title.trim(),
-          content: content.trim(),
-          published_at: publishedAt ?? null,
+          title: state.title.trim(),
+          content: state.content.trim(),
+          published_at: state.publishedAt ?? null,
         })
         .select("id")
         .single();
@@ -336,14 +389,14 @@ export function BoardPostForm({
 
       // 투표 생성
       if (isVote) {
-        const validOptions = pollOptions.filter((o) => o.trim());
+        const validOptions = state.pollOptions.filter((o) => o.trim());
         if (validOptions.length >= 2) {
           const { data: poll } = await supabase
             .from("board_polls")
             .insert({
               post_id: post.id,
-              allow_multiple: allowMultiple,
-              ends_at: pollEndsAt ?? null,
+              allow_multiple: state.allowMultiple,
+              ends_at: state.pollEndsAt ?? null,
             })
             .select("id")
             .single();
@@ -364,7 +417,7 @@ export function BoardPostForm({
       await uploadFiles(post.id);
 
       // 공지사항 카테고리 게시글 작성 시 그룹 멤버 전체에게 알림 (즉시 발행인 경우만)
-      if (category === "공지사항" && !publishedAt) {
+      if (state.category === "공지사항" && !state.publishedAt) {
         const { data: members } = await supabase
           .from("group_members")
           .select("user_id")
@@ -372,20 +425,28 @@ export function BoardPostForm({
 
         if (members && members.length > 0) {
           const authorName =
-            (await supabase.from("profiles").select("name").eq("id", user.id).single()).data?.name ?? "누군가";
+            (
+              await supabase
+                .from("profiles")
+                .select("name")
+                .eq("id", user.id)
+                .single()
+            ).data?.name ?? "누군가";
           const postPath = projectId
             ? `/groups/${groupId}/projects/${projectId}/board/${post.id}`
             : `/groups/${groupId}/board/${post.id}`;
 
           // 본인 제외 멤버에게 알림
-          const otherMembers = members.filter((m: { user_id: string }) => m.user_id !== user.id);
+          const otherMembers = members.filter(
+            (m: { user_id: string }) => m.user_id !== user.id
+          );
           await Promise.all(
             otherMembers.map((m: { user_id: string }) =>
               createNotification({
                 userId: m.user_id,
                 type: "new_post",
                 title: "새 공지",
-                message: `${authorName}님이 공지사항을 작성했습니다: ${title.trim()}`,
+                message: `${authorName}님이 공지사항을 작성했습니다: ${state.title.trim()}`,
                 link: postPath,
               })
             )
@@ -396,24 +457,28 @@ export function BoardPostForm({
       // 제출 성공 후 드래프트 삭제
       clearDraft();
 
-      setTitle("");
-      setContent("");
-      setCategory("미분류");
-      setPublishedAt(null);
-      setPollOptions([""]);
-      setAllowMultiple(false);
-      setPollEndsAt(null);
-      setCustomEndsAt("");
-      setPendingFiles([]);
+      const defaultCat = writeCategories.includes("미분류")
+        ? "미분류"
+        : (writeCategories[0] ?? "미분류");
+      dispatch({ type: "RESET", defaultCategory: defaultCat });
       setOpen(false);
 
-      if (publishedAt && new Date(publishedAt) > new Date()) {
-        toast.success(`글이 예약되었습니다. ${new Date(publishedAt).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })} 발행 예정`);
+      if (state.publishedAt && new Date(state.publishedAt) > new Date()) {
+        toast.success(
+          `글이 예약되었습니다. ${new Date(state.publishedAt).toLocaleString("ko-KR", {
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })} 발행 예정`
+        );
       }
 
       onCreated();
     });
   };
+
+  // ── JSX ───────────────────────────────────────────────────────────────────
 
   const dialogContent = (
     <DialogContent className="max-w-md">
@@ -423,7 +488,11 @@ export function BoardPostForm({
       <div className="space-y-3">
         <div>
           <Label className="text-xs">카테고리</Label>
-          <Select value={category} onValueChange={setCategory} disabled={mode === "edit" && category === "투표"}>
+          <Select
+            value={state.category}
+            onValueChange={(v) => setField("category", v)}
+            disabled={mode === "edit" && state.category === "투표"}
+          >
             <SelectTrigger className="mt-1">
               <SelectValue />
             </SelectTrigger>
@@ -437,16 +506,18 @@ export function BoardPostForm({
           </Select>
         </div>
         <div>
-          <Label className="text-xs">제목 <span className="text-destructive">*</span></Label>
+          <Label className="text-xs">
+            제목 <span className="text-destructive">*</span>
+          </Label>
           <Input
             className="mt-1"
             placeholder="제목을 입력하세요"
-            value={title}
+            value={state.title}
             maxLength={150}
             onChange={(e) => {
-              setTitle(e.target.value);
+              setField("title", e.target.value);
               if (mode === "create") {
-                saveDraft({ title: e.target.value, content });
+                saveDraft({ title: e.target.value, content: state.content });
               }
             }}
           />
@@ -456,12 +527,12 @@ export function BoardPostForm({
           <Textarea
             className="mt-1 min-h-[120px]"
             placeholder="내용을 입력하세요"
-            value={content}
+            value={state.content}
             maxLength={10000}
             onChange={(e) => {
-              setContent(e.target.value);
+              setField("content", e.target.value);
               if (mode === "create") {
-                saveDraft({ title, content: e.target.value });
+                saveDraft({ title: state.title, content: e.target.value });
               }
             }}
           />
@@ -475,12 +546,12 @@ export function BoardPostForm({
               <div className="flex items-center gap-2">
                 <Label className="text-[11px] text-muted-foreground">복수선택</Label>
                 <Switch
-                  checked={allowMultiple}
-                  onCheckedChange={setAllowMultiple}
+                  checked={state.allowMultiple}
+                  onCheckedChange={(v) => setField("allowMultiple", v)}
                 />
               </div>
             </div>
-            {pollOptions.map((opt, idx) => (
+            {state.pollOptions.map((opt, idx) => (
               <div key={idx} className="flex items-center gap-1.5">
                 <Input
                   className="flex-1"
@@ -488,7 +559,7 @@ export function BoardPostForm({
                   value={opt}
                   onChange={(e) => handleOptionChange(idx, e.target.value)}
                 />
-                {pollOptions.length > 1 && (
+                {state.pollOptions.length > 1 && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -524,10 +595,12 @@ export function BoardPostForm({
                   { label: "7일", days: 7 },
                 ].map(({ label, days }) => {
                   const isActive = (() => {
-                    if (!pollEndsAt || !customEndsAt) return false;
+                    if (!state.pollEndsAt || !state.customEndsAt) return false;
                     const d = new Date();
                     d.setDate(d.getDate() + days);
-                    const diff = Math.abs(new Date(pollEndsAt).getTime() - d.getTime());
+                    const diff = Math.abs(
+                      new Date(state.pollEndsAt).getTime() - d.getTime()
+                    );
                     return diff < 60 * 1000;
                   })();
                   return (
@@ -545,7 +618,7 @@ export function BoardPostForm({
                 })}
                 <Button
                   type="button"
-                  variant={!pollEndsAt ? "default" : "outline"}
+                  variant={!state.pollEndsAt ? "default" : "outline"}
                   size="sm"
                   className="h-6 text-[11px] px-2"
                   onClick={() => handlePollPreset(null)}
@@ -556,7 +629,7 @@ export function BoardPostForm({
               <Input
                 type="datetime-local"
                 className="h-7 text-xs"
-                value={customEndsAt}
+                value={state.customEndsAt}
                 onChange={(e) => handleCustomEndsAtChange(e.target.value)}
               />
             </div>
@@ -568,14 +641,14 @@ export function BoardPostForm({
           <div className="flex items-center justify-between">
             <Label className="text-xs">첨부파일</Label>
             <span className="text-[10px] text-muted-foreground">
-              {pendingFiles.length}/{MAX_FILES} · 최대 10MB
+              {state.pendingFiles.length}/{MAX_FILES} · 최대 10MB
             </span>
           </div>
 
           {/* 선택된 파일 목록 */}
-          {pendingFiles.length > 0 && (
+          {state.pendingFiles.length > 0 && (
             <div className="space-y-1.5">
-              {pendingFiles.map((pf, idx) => (
+              {state.pendingFiles.map((pf, idx) => (
                 <div
                   key={idx}
                   className="flex items-center gap-2 rounded-md border px-2.5 py-1.5 bg-muted/40"
@@ -594,7 +667,9 @@ export function BoardPostForm({
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs truncate font-medium">{pf.file.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{formatFileSize(pf.file.size)}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {formatFileSize(pf.file.size)}
+                    </p>
                   </div>
                   <Button
                     variant="ghost"
@@ -611,7 +686,7 @@ export function BoardPostForm({
           )}
 
           {/* 파일 선택 버튼 */}
-          {pendingFiles.length < MAX_FILES && (
+          {state.pendingFiles.length < MAX_FILES && (
             <Button
               variant="outline"
               size="sm"
@@ -635,20 +710,26 @@ export function BoardPostForm({
 
         {/* 예약 발행 */}
         <BoardScheduleInput
-          value={publishedAt}
-          onChange={setPublishedAt}
+          value={state.publishedAt}
+          onChange={(v) => setField("publishedAt", v)}
         />
 
         <Button
           className="w-full"
           onClick={handleSubmit}
-          disabled={submitting || !title.trim()}
+          disabled={submitting || !state.title.trim()}
         >
           {submitting
-            ? (mode === "edit" ? "수정 중..." : "작성 중...")
-            : publishedAt && new Date(publishedAt) > new Date()
-              ? (mode === "edit" ? "예약 수정" : "예약 발행")
-              : (mode === "edit" ? "수정" : "작성")}
+            ? mode === "edit"
+              ? "수정 중..."
+              : "작성 중..."
+            : state.publishedAt && new Date(state.publishedAt) > new Date()
+              ? mode === "edit"
+                ? "예약 수정"
+                : "예약 발행"
+              : mode === "edit"
+                ? "수정"
+                : "작성"}
         </Button>
       </div>
     </DialogContent>

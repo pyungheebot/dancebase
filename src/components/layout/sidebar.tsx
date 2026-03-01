@@ -39,6 +39,13 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useMemo } from "react";
+import { PrefetchLink } from "@/components/shared/prefetch-link";
+import {
+  preloadDashboard,
+  preloadSchedules,
+  preloadMessages,
+  preloadGroupDetail,
+} from "@/lib/swr/preload";
 
 type GroupTreeNode = {
   id: string;
@@ -88,6 +95,7 @@ type NavItem = {
   href: string;
   icon: React.ReactNode;
   badge?: number;
+  preloadFn?: () => void;
 };
 
 const THEME_OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
@@ -120,8 +128,9 @@ function MessageNavItem({
       : label;
 
   return (
-    <Link
+    <PrefetchLink
       href={href}
+      preloadFn={preloadMessages}
       onClick={onNavigate}
       aria-label={ariaLabel}
       className={cn(
@@ -142,7 +151,7 @@ function MessageNavItem({
           {count > 99 ? "99+" : count}
         </Badge>
       )}
-    </Link>
+    </PrefetchLink>
   );
 }
 
@@ -195,8 +204,9 @@ function SidebarGroupItem({
         ) : (
           <span className="w-4 ml-1" />
         )}
-        <Link
+        <PrefetchLink
           href={`/groups/${node.id}`}
+          preloadFn={() => preloadGroupDetail(node.id)}
           onClick={onNavigate}
           className={cn(
             "flex items-center gap-1.5 rounded-sm px-1.5 py-1 text-sm transition-colors flex-1 min-w-0",
@@ -208,7 +218,7 @@ function SidebarGroupItem({
         >
           <Hash className="h-3.5 w-3.5 opacity-40 shrink-0" />
           <span className="truncate">{node.name}</span>
-        </Link>
+        </PrefetchLink>
       </div>
 
       {hasChildren && isExpanded && (
@@ -276,11 +286,13 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
       label: "대시보드",
       href: "/dashboard",
       icon: <LayoutDashboard className="h-4 w-4 opacity-60" />,
+      preloadFn: preloadDashboard,
     },
     {
       label: "전체 일정",
       href: "/schedules",
       icon: <Calendar className="h-4 w-4 opacity-60" />,
+      preloadFn: preloadSchedules,
     },
     {
       label: "그룹 탐색",
@@ -364,9 +376,10 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
                 onNavigate={onNavigate}
               />
             ) : (
-              <Link
+              <PrefetchLink
                 key={item.href}
                 href={item.href}
+                preloadFn={item.preloadFn}
                 onClick={onNavigate}
                 className={cn(
                   "flex items-center gap-2 rounded-sm px-2 py-1 text-sm transition-colors",
@@ -377,7 +390,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
               >
                 {item.icon}
                 <span className="flex-1">{item.label}</span>
-              </Link>
+              </PrefetchLink>
             )
           )}
         </div>

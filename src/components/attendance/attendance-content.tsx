@@ -7,6 +7,10 @@ import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { formatShortDateTime, formatTime } from "@/lib/date-utils";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
+import {
+  bulkUpsertAttendance,
+  bulkDeleteAttendance,
+} from "@/lib/services/attendance-service";
 import { AttendanceTable } from "@/components/attendance/attendance-table";
 import { AttendanceStats } from "@/components/attendance/attendance-stats";
 import { Button } from "@/components/ui/button";
@@ -297,25 +301,15 @@ export function AttendanceContent({
     try {
       const userIds = membersForTable.map((m) => m.user_id);
 
-      if (status === "undecided") {
-        const { error } = await supabase
-          .from("attendance")
-          .delete()
-          .eq("schedule_id", selectedScheduleId)
-          .in("user_id", userIds);
-        if (error) { toast.error(TOAST.ATTENDANCE.BATCH_ERROR); return; }
-      } else {
-        const now = new Date().toISOString();
-        const upsertData = userIds.map((userId) => ({
-          schedule_id: selectedScheduleId,
-          user_id: userId,
-          status,
-          checked_at: now,
-        }));
-        const { error } = await supabase
-          .from("attendance")
-          .upsert(upsertData, { onConflict: "schedule_id,user_id" });
-        if (error) { toast.error(TOAST.ATTENDANCE.BATCH_ERROR); return; }
+      try {
+        if (status === "undecided") {
+          await bulkDeleteAttendance(selectedScheduleId, userIds);
+        } else {
+          await bulkUpsertAttendance(selectedScheduleId, userIds, status);
+        }
+      } catch {
+        toast.error(TOAST.ATTENDANCE.BATCH_ERROR);
+        return;
       }
 
       toast.success(
@@ -327,7 +321,7 @@ export function AttendanceContent({
     } finally {
       setBulkUpdating(false);
     }
-  }, [selectedScheduleId, membersForTable, supabase, fetchAttendance]);
+  }, [selectedScheduleId, membersForTable, fetchAttendance]);
 
   const handleDownloadMemberStatsCsv = () => {
     const dateStr = format(new Date(), "yyyy-MM");
